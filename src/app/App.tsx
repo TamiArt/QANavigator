@@ -152,11 +152,19 @@ const STACKS: { id: AutoStack; label: string; lang: string; badge?: string }[] =
 ];
 
 const CATEGORIES = [...new Set(HANDBOOK.map((t) => t.category))];
+const EXPORTABLE_STORAGE_KEYS = [
+  "qa_navigator_checklists",
+  "qa_navigator_testcases",
+  "qa_navigator_bugreports",
+  "qa_navigator_bookmarks",
+  "qa_navigator_req_text",
+  "qa_navigator_req_result",
+] as const;
 
 // ══════════════════════════════════════════════════════
 // UTILITIES
 // ══════════════════════════════════════════════════════
-const uid = () => Math.random().toString(36).slice(2, 10);
+const uid = () => crypto.randomUUID();
 
 function useLocalStorage<T>(key: string, initial: T): [T, (v: T) => void] {
   const [val, setVal] = useState<T>(() => {
@@ -197,11 +205,12 @@ function enrichNetworkError(e: unknown, provider: string, url: string): Error {
 async function callAI(
   apiKeys: ApiKeys,
   systemPrompt: string,
-  userPrompt: string,
-  onChunk?: (text: string) => void
+  userPrompt: string
 ): Promise<string> {
-  if (!apiKeys.openrouter && !apiKeys.gemini) {
-    throw new Error("API ключ не настроен. Перейдите в Настройки.");
+  const activeKey = apiKeys[apiKeys.provider];
+  if (!activeKey) {
+    const providerName = apiKeys.provider === "gemini" ? "Gemini" : "OpenRouter";
+    throw new Error(`API ключ ${providerName} не настроен. Перейдите в Настройки.`);
   }
 
   if (apiKeys.provider === "gemini" && apiKeys.gemini) {
@@ -392,7 +401,15 @@ function CodeBlock({ code, lang = "text" }: { code: string; lang?: string }) {
 
 // Simple markdown-ish renderer
 function MarkdownView({ content }: { content: string }) {
-  const html = content
+  // AI responses and imported handbook content are untrusted. Escape them before
+  // adding the small, controlled set of markup supported by this renderer.
+  const escapedContent = content
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+  const html = escapedContent
     .replace(/^### (.+)$/gm, '<h3 class="text-base font-semibold mt-4 mb-1.5 text-foreground">$1</h3>')
     .replace(/^## (.+)$/gm, '<h2 class="text-lg font-semibold mt-5 mb-2 text-foreground">$1</h2>')
     .replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold mt-6 mb-2 text-foreground">$1</h1>')
@@ -2758,6 +2775,7 @@ function HandbookModule() {
 // ══════════════════════════════════════════════════════
 function SettingsModule() {
   const { apiKeys, setApiKeys } = useApp();
+  const [dataMessage, setDataMessage] = useState("");
 
   const exportData = () => {
     const data = {
@@ -2765,8 +2783,7 @@ function SettingsModule() {
       version: "1.0",
       data: {} as Record<string, any>,
     };
-    const keys = ["qa_navigator_checklists", "qa_navigator_testcases", "qa_navigator_bugreports", "qa_navigator_bookmarks"];
-    keys.forEach((k) => {
+    EXPORTABLE_STORAGE_KEYS.forEach((k) => {
       try { data.data[k] = JSON.parse(localStorage.getItem(k) ?? "null"); } catch {}
     });
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
@@ -2782,18 +2799,25 @@ function SettingsModule() {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".json";
-    input.onchange = (e: any) => {
-      const file = e.target.files?.[0];
+    input.onchange = (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (ev) => {
         try {
           const parsed = JSON.parse(ev.target?.result as string);
-          Object.entries(parsed.data ?? {}).forEach(([k, v]) => {
-            localStorage.setItem(k, JSON.stringify(v));
+          if (!parsed || typeof parsed.data !== "object" || parsed.data === null) {
+            throw new Error("Некорректная структура резервной копии");
+          }
+          EXPORTABLE_STORAGE_KEYS.forEach((key) => {
+            if (Object.prototype.hasOwnProperty.call(parsed.data, key)) {
+              localStorage.setItem(key, JSON.stringify(parsed.data[key]));
+            }
           });
           window.location.reload();
-        } catch {}
+        } catch (error) {
+          setDataMessage(error instanceof Error ? error.message : "Не удалось импортировать файл");
+        }
       };
       reader.readAsText(file);
     };
@@ -2802,7 +2826,7 @@ function SettingsModule() {
 
   const clearAll = () => {
     if (confirm("Удалить все данные? Это действие необратимо.")) {
-      ["qa_navigator_checklists", "qa_navigator_testcases", "qa_navigator_bugreports", "qa_navigator_bookmarks", "qa_navigator_req_text", "qa_navigator_req_result"].forEach((k) => localStorage.removeItem(k));
+      EXPORTABLE_STORAGE_KEYS.forEach((k) => localStorage.removeItem(k));
       window.location.reload();
     }
   };
@@ -2831,7 +2855,8 @@ function SettingsModule() {
 
       <div className="bg-card border border-border rounded-xl p-5 space-y-3">
         <h3 className="font-semibold text-foreground flex items-center gap-2"><Database className="w-4 h-4 text-primary" /> Данные</h3>
-        <p className="text-sm text-muted-foreground">Все данные хранятся локально в браузере (localStorage). Экспортируйте их для переноса на другое устройство.</p>
+        <p className="text-sm text-muted-foreground">Рабочие данные хранятся локально в браузере (localStorage). Текст, отправленный в AI-функции, передаётся выбранному провайдеру. Экспортируйте резервную копию для переноса на другое устройство.</p>
+        {dataMessage && <p role="alert" className="text-sm text-destructive">{dataMessage}</p>}
         <div className="flex gap-3 flex-wrap">
           <button onClick={exportData} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-card text-sm text-foreground hover:bg-muted transition-colors">
             <Download className="w-4 h-4" /> Экспорт в JSON
@@ -2850,7 +2875,7 @@ function SettingsModule() {
         <div className="space-y-2 text-sm text-muted-foreground">
           <p><span className="text-foreground font-medium">QA Navigator</span> — бесплатный инструмент для тестировщиков</p>
           <p>Стандарты: ISTQB CTFL v4.0 · ISO 25010 · ISO/IEC/IEEE 29119 · OWASP Top 10</p>
-          <p>Хранение: 100% клиентское (localStorage). Данные не покидают браузер.</p>
+          <p>Хранение: клиентское (localStorage); AI-запросы передаются выбранному внешнему провайдеру.</p>
           <p>AI: OpenRouter (бесплатные модели) · Google Gemini Flash</p>
         </div>
       </div>
