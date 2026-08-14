@@ -4,6 +4,8 @@ import {
 
 
 import { HandbookTopic, HANDBOOK } from "./handbook-data";
+import { useLocalStorage } from "./hooks/use-local-storage";
+import { downloadTextFile } from "./lib/download";
 
 import {
   BookOpen, CheckSquare, Bug, Zap, BarChart2, Database, Settings,
@@ -165,25 +167,6 @@ const EXPORTABLE_STORAGE_KEYS = [
 // UTILITIES
 // ══════════════════════════════════════════════════════
 const uid = () => crypto.randomUUID();
-
-function useLocalStorage<T>(key: string, initial: T): [T, (v: T) => void] {
-  const [val, setVal] = useState<T>(() => {
-    try {
-      const stored = localStorage.getItem(key);
-      return stored ? JSON.parse(stored) : initial;
-    } catch {
-      return initial;
-    }
-  });
-  const set = useCallback(
-    (v: T) => {
-      setVal(v);
-      try { localStorage.setItem(key, JSON.stringify(v)); } catch {}
-    },
-    [key]
-  );
-  return [val, set];
-}
 
 // ══════════════════════════════════════════════════════
 // AI HOOK
@@ -2786,13 +2769,11 @@ function SettingsModule() {
     EXPORTABLE_STORAGE_KEYS.forEach((k) => {
       try { data.data[k] = JSON.parse(localStorage.getItem(k) ?? "null"); } catch {}
     });
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `qa-navigator-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadTextFile(
+      JSON.stringify(data, null, 2),
+      `qa-navigator-backup-${new Date().toISOString().slice(0, 10)}.json`,
+      "application/json",
+    );
   };
 
   const importData = () => {
@@ -2932,13 +2913,7 @@ function DocSelect({
 }
 
 function ExportCard({ text, filename }: { text: string; filename: string }) {
-  const download = () => {
-    const blob = new Blob([text], { type: "text/markdown;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = filename; a.click();
-    URL.revokeObjectURL(url);
-  };
+  const download = () => downloadTextFile(text, filename, "text/markdown;charset=utf-8");
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
       <div className="px-4 py-3 border-b border-border bg-muted/50 flex items-center justify-between">
@@ -3106,7 +3081,7 @@ function ChecklistDocSection() {
                 <div className="flex items-center gap-2 pt-1 flex-wrap">
                   <CopyButton text={checklists.map(c => "[" + catLabel[c.category] + "] " + c.text).join("\n")} label="Скопировать" />
                   {aiMarkdown && (
-                    <button onClick={() => { const b = new Blob([aiMarkdown], { type: "text/markdown" }); const u = URL.createObjectURL(b); const a = document.createElement("a"); a.href = u; a.download = "checklist.md"; a.click(); URL.revokeObjectURL(u); }} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-muted text-muted-foreground border border-border hover:text-foreground transition-colors">
+                    <button onClick={() => downloadTextFile(aiMarkdown, "checklist.md", "text/markdown;charset=utf-8")} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-muted text-muted-foreground border border-border hover:text-foreground transition-colors">
                       <Download className="w-3.5 h-3.5" /> .md
                     </button>
                   )}
@@ -3383,11 +3358,7 @@ function TestPlanDocSection() {
               <CopyButton text={uploadedContent} label="Скопировать" />
               <button
                 onClick={() => {
-                  const blob = new Blob([uploadedContent], { type: "text/plain" });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url; a.download = uploadedName; a.click();
-                  URL.revokeObjectURL(url);
+                  downloadTextFile(uploadedContent, uploadedName);
                 }}
                 className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-muted text-muted-foreground hover:text-foreground border border-border transition-colors"
               >
