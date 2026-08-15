@@ -4,6 +4,9 @@ import {
 
 
 import { HandbookTopic, HANDBOOK } from "./handbook-data";
+import { HandbookImages } from "./components/handbook/HandbookImages";
+import { useLocalStorage } from "./hooks/use-local-storage";
+import { downloadTextFile } from "./lib/download";
 
 import {
   BookOpen, CheckSquare, Bug, Zap, BarChart2, Database, Settings,
@@ -152,30 +155,19 @@ const STACKS: { id: AutoStack; label: string; lang: string; badge?: string }[] =
 ];
 
 const CATEGORIES = [...new Set(HANDBOOK.map((t) => t.category))];
+const EXPORTABLE_STORAGE_KEYS = [
+  "qa_navigator_checklists",
+  "qa_navigator_testcases",
+  "qa_navigator_bugreports",
+  "qa_navigator_bookmarks",
+  "qa_navigator_req_text",
+  "qa_navigator_req_result",
+] as const;
 
 // ══════════════════════════════════════════════════════
 // UTILITIES
 // ══════════════════════════════════════════════════════
-const uid = () => Math.random().toString(36).slice(2, 10);
-
-function useLocalStorage<T>(key: string, initial: T): [T, (v: T) => void] {
-  const [val, setVal] = useState<T>(() => {
-    try {
-      const stored = localStorage.getItem(key);
-      return stored ? JSON.parse(stored) : initial;
-    } catch {
-      return initial;
-    }
-  });
-  const set = useCallback(
-    (v: T) => {
-      setVal(v);
-      try { localStorage.setItem(key, JSON.stringify(v)); } catch {}
-    },
-    [key]
-  );
-  return [val, set];
-}
+const uid = () => crypto.randomUUID();
 
 // ══════════════════════════════════════════════════════
 // AI HOOK
@@ -197,11 +189,12 @@ function enrichNetworkError(e: unknown, provider: string, url: string): Error {
 async function callAI(
   apiKeys: ApiKeys,
   systemPrompt: string,
-  userPrompt: string,
-  onChunk?: (text: string) => void
+  userPrompt: string
 ): Promise<string> {
-  if (!apiKeys.openrouter && !apiKeys.gemini) {
-    throw new Error("API ключ не настроен. Перейдите в Настройки.");
+  const activeKey = apiKeys[apiKeys.provider];
+  if (!activeKey) {
+    const providerName = apiKeys.provider === "gemini" ? "Gemini" : "OpenRouter";
+    throw new Error(`API ключ ${providerName} не настроен. Перейдите в Настройки.`);
   }
 
   if (apiKeys.provider === "gemini" && apiKeys.gemini) {
@@ -392,7 +385,15 @@ function CodeBlock({ code, lang = "text" }: { code: string; lang?: string }) {
 
 // Simple markdown-ish renderer
 function MarkdownView({ content }: { content: string }) {
-  const html = content
+  // AI responses and imported handbook content are untrusted. Escape them before
+  // adding the small, controlled set of markup supported by this renderer.
+  const escapedContent = content
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+  const html = escapedContent
     .replace(/^### (.+)$/gm, '<h3 class="text-base font-semibold mt-4 mb-1.5 text-foreground">$1</h3>')
     .replace(/^## (.+)$/gm, '<h2 class="text-lg font-semibold mt-5 mb-2 text-foreground">$1</h2>')
     .replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold mt-6 mb-2 text-foreground">$1</h1>')
@@ -2560,45 +2561,6 @@ function TestDataModule() {
   );
 }
 
-// ══════════════════════════════════════════════════════
-// ── Lightbox & HandbookImages ──────────────────────────
-function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: () => void }) {
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [onClose]);
-  return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4" onClick={onClose}>
-      <button className="absolute top-4 right-4 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors" onClick={onClose}>
-        <X className="w-6 h-6" />
-      </button>
-      <img src={src} alt={alt} className="max-w-full max-h-[92vh] object-contain rounded-xl shadow-2xl" onClick={(e) => e.stopPropagation()} />
-    </div>
-  );
-}
-
-function HandbookImages({ images }: { images: { src: string; alt: string }[] }) {
-  const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
-  return (
-    <>
-      <div className="grid grid-cols-1 gap-3 mt-4">
-        {images.map((img, i) => (
-          <div key={i} className="relative group cursor-zoom-in" onClick={() => setLightbox(img)}>
-            <img src={img.src} alt={img.alt} className="w-full rounded-lg border border-border object-contain max-h-[520px] transition-transform group-hover:scale-[1.01] duration-200" />
-            <div className="absolute inset-0 rounded-lg flex items-center justify-center pointer-events-none">
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs px-3 py-1.5 rounded-full backdrop-blur-sm flex items-center gap-1.5">
-                <Eye className="w-3.5 h-3.5" /> Нажмите для увеличения
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-      {lightbox && <Lightbox src={lightbox.src} alt={lightbox.alt} onClose={() => setLightbox(null)} />}
-    </>
-  );
-}
-
 // MODULE 7: QA HANDBOOK
 // ══════════════════════════════════════════════════════
 function HandbookModule() {
@@ -2758,6 +2720,7 @@ function HandbookModule() {
 // ══════════════════════════════════════════════════════
 function SettingsModule() {
   const { apiKeys, setApiKeys } = useApp();
+  const [dataMessage, setDataMessage] = useState("");
 
   const exportData = () => {
     const data = {
@@ -2765,35 +2728,39 @@ function SettingsModule() {
       version: "1.0",
       data: {} as Record<string, any>,
     };
-    const keys = ["qa_navigator_checklists", "qa_navigator_testcases", "qa_navigator_bugreports", "qa_navigator_bookmarks"];
-    keys.forEach((k) => {
+    EXPORTABLE_STORAGE_KEYS.forEach((k) => {
       try { data.data[k] = JSON.parse(localStorage.getItem(k) ?? "null"); } catch {}
     });
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `qa-navigator-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadTextFile(
+      JSON.stringify(data, null, 2),
+      `qa-navigator-backup-${new Date().toISOString().slice(0, 10)}.json`,
+      "application/json",
+    );
   };
 
   const importData = () => {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".json";
-    input.onchange = (e: any) => {
-      const file = e.target.files?.[0];
+    input.onchange = (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (ev) => {
         try {
           const parsed = JSON.parse(ev.target?.result as string);
-          Object.entries(parsed.data ?? {}).forEach(([k, v]) => {
-            localStorage.setItem(k, JSON.stringify(v));
+          if (!parsed || typeof parsed.data !== "object" || parsed.data === null) {
+            throw new Error("Некорректная структура резервной копии");
+          }
+          EXPORTABLE_STORAGE_KEYS.forEach((key) => {
+            if (Object.prototype.hasOwnProperty.call(parsed.data, key)) {
+              localStorage.setItem(key, JSON.stringify(parsed.data[key]));
+            }
           });
           window.location.reload();
-        } catch {}
+        } catch (error) {
+          setDataMessage(error instanceof Error ? error.message : "Не удалось импортировать файл");
+        }
       };
       reader.readAsText(file);
     };
@@ -2802,7 +2769,7 @@ function SettingsModule() {
 
   const clearAll = () => {
     if (confirm("Удалить все данные? Это действие необратимо.")) {
-      ["qa_navigator_checklists", "qa_navigator_testcases", "qa_navigator_bugreports", "qa_navigator_bookmarks", "qa_navigator_req_text", "qa_navigator_req_result"].forEach((k) => localStorage.removeItem(k));
+      EXPORTABLE_STORAGE_KEYS.forEach((k) => localStorage.removeItem(k));
       window.location.reload();
     }
   };
@@ -2831,7 +2798,8 @@ function SettingsModule() {
 
       <div className="bg-card border border-border rounded-xl p-5 space-y-3">
         <h3 className="font-semibold text-foreground flex items-center gap-2"><Database className="w-4 h-4 text-primary" /> Данные</h3>
-        <p className="text-sm text-muted-foreground">Все данные хранятся локально в браузере (localStorage). Экспортируйте их для переноса на другое устройство.</p>
+        <p className="text-sm text-muted-foreground">Рабочие данные хранятся локально в браузере (localStorage). Текст, отправленный в AI-функции, передаётся выбранному провайдеру. Экспортируйте резервную копию для переноса на другое устройство.</p>
+        {dataMessage && <p role="alert" className="text-sm text-destructive">{dataMessage}</p>}
         <div className="flex gap-3 flex-wrap">
           <button onClick={exportData} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-card text-sm text-foreground hover:bg-muted transition-colors">
             <Download className="w-4 h-4" /> Экспорт в JSON
@@ -2850,7 +2818,7 @@ function SettingsModule() {
         <div className="space-y-2 text-sm text-muted-foreground">
           <p><span className="text-foreground font-medium">QA Navigator</span> — бесплатный инструмент для тестировщиков</p>
           <p>Стандарты: ISTQB CTFL v4.0 · ISO 25010 · ISO/IEC/IEEE 29119 · OWASP Top 10</p>
-          <p>Хранение: 100% клиентское (localStorage). Данные не покидают браузер.</p>
+          <p>Хранение: клиентское (localStorage); AI-запросы передаются выбранному внешнему провайдеру.</p>
           <p>AI: OpenRouter (бесплатные модели) · Google Gemini Flash</p>
         </div>
       </div>
@@ -2907,13 +2875,7 @@ function DocSelect({
 }
 
 function ExportCard({ text, filename }: { text: string; filename: string }) {
-  const download = () => {
-    const blob = new Blob([text], { type: "text/markdown;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = filename; a.click();
-    URL.revokeObjectURL(url);
-  };
+  const download = () => downloadTextFile(text, filename, "text/markdown;charset=utf-8");
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
       <div className="px-4 py-3 border-b border-border bg-muted/50 flex items-center justify-between">
@@ -3081,7 +3043,7 @@ function ChecklistDocSection() {
                 <div className="flex items-center gap-2 pt-1 flex-wrap">
                   <CopyButton text={checklists.map(c => "[" + catLabel[c.category] + "] " + c.text).join("\n")} label="Скопировать" />
                   {aiMarkdown && (
-                    <button onClick={() => { const b = new Blob([aiMarkdown], { type: "text/markdown" }); const u = URL.createObjectURL(b); const a = document.createElement("a"); a.href = u; a.download = "checklist.md"; a.click(); URL.revokeObjectURL(u); }} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-muted text-muted-foreground border border-border hover:text-foreground transition-colors">
+                    <button onClick={() => downloadTextFile(aiMarkdown, "checklist.md", "text/markdown;charset=utf-8")} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-muted text-muted-foreground border border-border hover:text-foreground transition-colors">
                       <Download className="w-3.5 h-3.5" /> .md
                     </button>
                   )}
@@ -3358,11 +3320,7 @@ function TestPlanDocSection() {
               <CopyButton text={uploadedContent} label="Скопировать" />
               <button
                 onClick={() => {
-                  const blob = new Blob([uploadedContent], { type: "text/plain" });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url; a.download = uploadedName; a.click();
-                  URL.revokeObjectURL(url);
+                  downloadTextFile(uploadedContent, uploadedName);
                 }}
                 className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-muted text-muted-foreground hover:text-foreground border border-border transition-colors"
               >
