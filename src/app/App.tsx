@@ -393,7 +393,19 @@ function MarkdownView({ content }: { content: string }) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
-  const html = escapedContent
+  const contentWithTables = escapedContent.replace(
+    /(?:^\|.*\|[ \t]*$\n?){2,}/gm,
+    (block) => {
+      const rows = block
+        .trim()
+        .split("\n")
+        .map((line) => line.split("|").slice(1, -1).map((cell) => cell.trim()));
+      const columnCount = Math.max(...rows.map((row) => row.length));
+
+      return `<div role="table" class="my-4 overflow-hidden rounded-xl border border-border bg-card text-sm"><div class="grid bg-muted font-semibold text-foreground" style="grid-template-columns:repeat(${columnCount},minmax(0,1fr))">${rows[0].map((cell) => `<div role="columnheader" class="border-r border-border px-3 py-2 last:border-r-0">${cell}</div>`).join("")}</div>${rows.slice(1).map((row) => `<div role="row" class="grid border-t border-border text-muted-foreground" style="grid-template-columns:repeat(${columnCount},minmax(0,1fr))">${row.map((cell) => `<div role="cell" class="border-r border-border px-3 py-2 last:border-r-0">${cell}</div>`).join("")}</div>`).join("")}</div>`;
+    },
+  );
+  const html = contentWithTables
     .replace(/^### (.+)$/gm, '<h3 class="text-base font-semibold mt-4 mb-1.5 text-foreground">$1</h3>')
     .replace(/^## (.+)$/gm, '<h2 class="text-lg font-semibold mt-5 mb-2 text-foreground">$1</h2>')
     .replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold mt-6 mb-2 text-foreground">$1</h1>')
@@ -401,10 +413,6 @@ function MarkdownView({ content }: { content: string }) {
     .replace(/`{3}(\w*)\n([\s\S]*?)`{3}/gm, '<pre class="bg-muted border border-border rounded-lg p-3 my-2 text-xs font-mono overflow-x-auto whitespace-pre-wrap">$2</pre>')
     .replace(/`([^`]+)`/g, '<code class="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-primary">$1</code>')
     .replace(/^> (.+)$/gm, '<blockquote class="border-l-4 border-primary pl-3 my-2 text-sm text-muted-foreground italic">$1</blockquote>')
-    .replace(/^\| (.+) \|$/gm, (line) => {
-      const cells = line.split("|").filter(Boolean).map(c => c.trim());
-      return `<tr>${cells.map(c => `<td class="border border-border px-2 py-1 text-sm">${c}</td>`).join("")}</tr>`;
-    })
     .replace(/^(\d+)\. (.+)$/gm, '<li class="ml-4 list-decimal text-sm mb-0.5">$2</li>')
     .replace(/^[•\-] (.+)$/gm, '<li class="ml-4 list-disc text-sm mb-0.5">$1</li>')
     .replace(/^✅ (.+)$/gm, '<li class="ml-4 text-sm mb-0.5 text-emerald-600 dark:text-emerald-400 list-none">✅ $1</li>')
