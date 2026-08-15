@@ -4,6 +4,7 @@ import {
 
 
 import { HandbookTopic, HANDBOOK } from "./handbook-data";
+import { HandbookImages } from "./components/handbook/HandbookImages";
 import { useLocalStorage } from "./hooks/use-local-storage";
 import { downloadTextFile } from "./lib/download";
 
@@ -2557,45 +2558,6 @@ function TestDataModule() {
         </div>
       </div>
     </div>
-  );
-}
-
-// ══════════════════════════════════════════════════════
-// ── Lightbox & HandbookImages ──────────────────────────
-function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: () => void }) {
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [onClose]);
-  return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4" onClick={onClose}>
-      <button className="absolute top-4 right-4 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors" onClick={onClose}>
-        <X className="w-6 h-6" />
-      </button>
-      <img src={src} alt={alt} className="max-w-full max-h-[92vh] object-contain rounded-xl shadow-2xl" onClick={(e) => e.stopPropagation()} />
-    </div>
-  );
-}
-
-function HandbookImages({ images }: { images: { src: string; alt: string }[] }) {
-  const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
-  return (
-    <>
-      <div className="grid grid-cols-1 gap-3 mt-4">
-        {images.map((img, i) => (
-          <div key={i} className="relative group cursor-zoom-in" onClick={() => setLightbox(img)}>
-            <img src={img.src} alt={img.alt} className="w-full rounded-lg border border-border object-contain max-h-[520px] transition-transform group-hover:scale-[1.01] duration-200" />
-            <div className="absolute inset-0 rounded-lg flex items-center justify-center pointer-events-none">
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 text-white text-xs px-3 py-1.5 rounded-full backdrop-blur-sm flex items-center gap-1.5">
-                <Eye className="w-3.5 h-3.5" /> Нажмите для увеличения
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-      {lightbox && <Lightbox src={lightbox.src} alt={lightbox.alt} onClose={() => setLightbox(null)} />}
-    </>
   );
 }
 
