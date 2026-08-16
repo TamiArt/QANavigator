@@ -3,6 +3,7 @@ import { Eye, Minus, Plus, RotateCcw, X } from "lucide-react";
 
 interface HandbookImage {
   src: string;
+  thumbnailSrc?: string;
   alt: string;
 }
 
@@ -107,7 +108,7 @@ export function HandbookImages({ images }: { images: HandbookImage[] }) {
 
   return (
     <>
-      <div className="mt-4 grid grid-cols-1 gap-3">
+      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
         {images.map((image) => (
           <button
             type="button"
@@ -116,7 +117,7 @@ export function HandbookImages({ images }: { images: HandbookImage[] }) {
             aria-label={`Открыть и увеличить изображение: ${image.alt}`}
             onClick={() => setSelectedImage(image)}
           >
-            <img src={image.src} alt={image.alt} loading="lazy" className="max-h-[520px] w-full rounded-lg border border-border object-contain transition-transform duration-200 group-hover:scale-[1.01]" />
+            <img src={image.thumbnailSrc ?? image.src} alt={image.alt} loading="lazy" decoding="async" className="h-64 w-full rounded-lg border border-border bg-muted/20 object-contain transition-transform duration-200 group-hover:scale-[1.01]" />
             <span className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-lg">
               <span className="flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5 text-xs text-white opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
                 <Eye className="h-3.5 w-3.5" /> Нажмите для увеличения

@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "vite"
+    "dev": "vite",
+    "check:conflicts": "node scripts/check-conflicts.mjs",
+    "verify": "npm run check:conflicts && npm run build"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",

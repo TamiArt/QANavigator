@@ -7,6 +7,8 @@ import { HandbookTopic, HANDBOOK } from "./handbook-data";
 import { HandbookImages } from "./components/handbook/HandbookImages";
 import { useLocalStorage } from "./hooks/use-local-storage";
 import { downloadTextFile } from "./lib/download";
+import { ProjectWorkspace } from "./features/project-workspace/ProjectWorkspace";
+import { BeginnerWizard } from "./features/beginner-wizard/BeginnerWizard";
 
 import {
   BookOpen, CheckSquare, Bug, Zap, BarChart2, Database, Settings,
@@ -23,7 +25,7 @@ import {
 // ══════════════════════════════════════════════════════
 type Theme = "light" | "dark";
 type Module =
-  | "requirements" | "test-design" | "test-execution"
+  | "workspace" | "beginner-wizard" | "requirements" | "test-design" | "test-execution"
   | "automation" | "release-report" | "test-data" | "handbook" | "documentation" | "settings";
 type TestStatus = "pending" | "passed" | "failed" | "blocked";
 type Severity = "critical" | "high" | "medium" | "low";
@@ -1918,6 +1920,7 @@ function TestExecutionModule() {
   const [generatingBug, setGeneratingBug] = useState(false);
   const [pendingBug, setPendingBug] = useState<Partial<BugReport> | null>(null);
   const [env, setEnv] = useState("Chrome 124, Windows 11, Staging");
+  const [bugGenerationError, setBugGenerationError] = useState("");
 
   const setStatus = (id: string, status: TestStatus) => {
     setChecklists(checklists.map((c) => c.id === id ? { ...c, status } : c));
@@ -1930,6 +1933,7 @@ function TestExecutionModule() {
   const generateBugReport = async () => {
     if (!activeBugItem) return;
     setGeneratingBug(true);
+    setBugGenerationError("");
     try {
       const result = await callAI(
         apiKeys,
@@ -1955,7 +1959,9 @@ function TestExecutionModule() {
         environment: env,
         testCaseRef: activeBugItem.id,
       });
-    } catch {}
+    } catch (error) {
+      setBugGenerationError(error instanceof Error ? error.message : "Не удалось создать баг-репорт");
+    }
     setGeneratingBug(false);
   };
 
@@ -2104,6 +2110,7 @@ function TestExecutionModule() {
               <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-3 text-sm text-red-700 dark:text-red-400">
                 <span className="font-medium">Упавший тест:</span> {activeBugItem.text}
               </div>
+              {bugGenerationError && <p role="alert" className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{bugGenerationError}</p>}
 
               {!pendingBug ? (
                 <button
@@ -2390,6 +2397,7 @@ function ReleaseReportModule() {
   const { checklists, bugReports } = useApp();
   const [loading, setLoading] = useState(false);
   const [reportText, setReportText] = useState("");
+  const [reportError, setReportError] = useState("");
   const { apiKeys } = useApp();
 
   const stats = {
@@ -2410,6 +2418,7 @@ function ReleaseReportModule() {
 
   const generateReport = async () => {
     setLoading(true);
+    setReportError("");
     try {
       const text = await callAI(
         apiKeys,
@@ -2443,7 +2452,9 @@ ${bugReports.map((b) => `- [${b.severity.toUpperCase()}] ${b.title}`).join("\n")
 ### Вердикт о готовности к релизу (Go/No-Go с обоснованием)`
       );
       setReportText(text);
-    } catch {}
+    } catch (error) {
+      setReportError(error instanceof Error ? error.message : "Не удалось создать релизный отчёт");
+    }
     setLoading(false);
   };
 
@@ -2489,6 +2500,7 @@ ${bugReports.map((b) => `- [${b.severity.toUpperCase()}] ${b.title}`).join("\n")
         </button>
         {reportText && <CopyButton text={reportText} label="Скопировать отчёт" />}
       </div>
+      {reportError && <p role="alert" className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{reportError}</p>}
 
       {reportText && (
         <div className="bg-card border border-border rounded-xl p-5 max-h-96 overflow-y-auto">
@@ -2731,14 +2743,20 @@ function SettingsModule() {
   const [dataMessage, setDataMessage] = useState("");
 
   const exportData = () => {
+    setDataMessage("");
     const data = {
       timestamp: new Date().toISOString(),
       version: "1.0",
       data: {} as Record<string, any>,
     };
-    EXPORTABLE_STORAGE_KEYS.forEach((k) => {
-      try { data.data[k] = JSON.parse(localStorage.getItem(k) ?? "null"); } catch {}
-    });
+    try {
+      EXPORTABLE_STORAGE_KEYS.forEach((key) => {
+        data.data[key] = JSON.parse(localStorage.getItem(key) ?? "null");
+      });
+    } catch (error) {
+      setDataMessage(error instanceof Error ? `Экспорт остановлен: ${error.message}` : "Не удалось прочитать локальные данные");
+      return;
+    }
     downloadTextFile(
       JSON.stringify(data, null, 2),
       `qa-navigator-backup-${new Date().toISOString().slice(0, 10)}.json`,
@@ -2747,6 +2765,7 @@ function SettingsModule() {
   };
 
   const importData = () => {
+    setDataMessage("");
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".json";
@@ -2943,6 +2962,7 @@ function ChecklistDocSection() {
 
   const expandToTestCase = async (item: ChecklistItem) => {
     setExpandingId(item.id);
+    setAiError("");
     try {
       const result = await callAI(apiKeys, QA_SYSTEM_PROMPT,
         "Разверни проверку из чек-листа в детальный тест-кейс по ISO/IEC/IEEE 29119:\n\nПроверка: \"" + item.text + "\"\nКонтекст: " + (featureDesc || "общая функциональность") +
@@ -2952,7 +2972,9 @@ function ChecklistDocSection() {
       const testCase: TestCase = { id: uid(), title: tc.title, preconditions: tc.preconditions, steps: tc.steps, expected: tc.expected, priority: tc.priority as "P1" | "P2" | "P3", status: "pending", source: item.text };
       setChecklists(checklists.map(c => c.id === item.id ? { ...c, testCase } : c));
       setTestCases([...testCases.filter(t => t.id !== testCase.id), testCase]);
-    } catch {}
+    } catch (error) {
+      setAiError(error instanceof Error ? error.message : "Не удалось развернуть проверку в тест-кейс");
+    }
     setExpandingId(null);
   };
 
@@ -3826,6 +3848,8 @@ function DocumentationModule() {
 // NAVIGATION
 // ══════════════════════════════════════════════════════
 const NAV_ITEMS: { id: Module; label: string; icon: React.ReactNode; shortLabel: string }[] = [
+  { id: "workspace", label: "Рабочее пространство", shortLabel: "Проекты", icon: <Clipboard className="w-4 h-4" /> },
+  { id: "beginner-wizard", label: "Мастер для новичка", shortLabel: "Старт", icon: <GraduationCap className="w-4 h-4" /> },
   { id: "requirements", label: "Анализ требований", shortLabel: "Требования", icon: <Brain className="w-4 h-4" /> },
   { id: "test-design", label: "Тест-дизайн", shortLabel: "Тест-дизайн", icon: <CheckSquare className="w-4 h-4" /> },
   { id: "test-execution", label: "Выполнение тестов", shortLabel: "Выполнение", icon: <Play className="w-4 h-4" /> },
@@ -3882,6 +3906,8 @@ export default function App() {
 
   const renderModule = () => {
     switch (activeModule) {
+      case "workspace": return <ProjectWorkspace />;
+      case "beginner-wizard": return <BeginnerWizard />;
       case "requirements": return <RequirementsModule />;
       case "test-design": return <TestDesignModule />;
       case "test-execution": return <TestExecutionModule />;
