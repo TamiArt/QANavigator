@@ -32,6 +32,15 @@ export interface TestObjectConfig {
   hasBody?: boolean;
   hasAuthorization?: boolean;
   requiredApiFields?: string;
+  hasFilters?: boolean;
+  hasSorting?: boolean;
+  hasPagination?: boolean;
+  databaseConstraints?: string;
+  acceptedFileTypes?: string;
+  minFileSizeMb?: number;
+  maxFileSizeMb?: number;
+  roles?: string;
+  checkoutRules?: string;
   states?: string;
   transitions?: string;
   hasMultipleConditions?: boolean;
@@ -110,6 +119,9 @@ export const createInitialObjectConfig = (): TestObjectConfig => ({
   hasParameters: false,
   hasBody: false,
   hasAuthorization: false,
+  hasFilters: false,
+  hasSorting: false,
+  hasPagination: false,
   hasMultipleConditions: false,
   hasManyCombinations: false,
 });
