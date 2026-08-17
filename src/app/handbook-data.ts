@@ -20,7 +20,17 @@ import { HANDBOOK_PART_7 } from "./handbook-data-part-7";
 import { HANDBOOK_PART_8 } from "./handbook-data-part-8";
 import { HANDBOOK_PART_9 } from "./handbook-data-part-9";
 
-const DUPLICATE_TOPIC_IDS = new Set(["web2", "web7", "web8"]);
+// Canonical articles below replace older, narrower versions of the same subject.
+// Keep the richer topic and hide the overlapping card instead of showing the same material twice.
+const DUPLICATE_TOPIC_IDS = new Set([
+  "f3",    // merged into f6: SDLC + STLC
+  "web2",  // merged into api1: REST API testing
+  "web5",  // merged into api4: authentication + authorization
+  "web7",  // merged into db1: SQL for QA
+  "web8",  // merged into mob1: mobile app types + strategy
+  "web9",  // split into canonical git1 + tools/environment material; avoid duplicate Git card
+  "web10", // covered by focused tool articles + tools1 map
+]);
 
 const CATEGORY_BY_PREFIX: Record<string, string> = {
   f: "Основы тестирования",
