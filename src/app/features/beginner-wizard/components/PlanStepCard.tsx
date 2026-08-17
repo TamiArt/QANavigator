@@ -28,6 +28,9 @@ const categoryLabels: Record<TestPlanCategory, string> = {
 
 export function PlanStepCard({ step, index, total }: Props) {
   const [showWhy, setShowWhy] = useState(false);
+  const isFormatStep = step.id.endsWith("-format");
+  const formatRequirement = isFormatStep ? step.examples?.[0] : undefined;
+
   return <div className="space-y-4">
     <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
       <span>Шаг {index + 1} из {total}</span>
@@ -37,14 +40,19 @@ export function PlanStepCard({ step, index, total }: Props) {
     <div>
       <p className="text-xs font-medium uppercase tracking-wide text-primary">Что проверить</p>
       <h3 className="mt-1 text-lg font-semibold">{step.title}</h3>
-      <p className="mt-2 text-sm leading-6">{step.action}</p>
+      {isFormatStep ? <div className="mt-2 space-y-2 text-sm leading-6">
+        {formatRequirement && <p><span className="font-medium">Требование к формату:</span> <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{formatRequirement}</code></p>}
+        <p><b>1.</b> Введи одно корректное значение, которое соответствует этому формату, и отправь форму.</p>
+        <p><b>2.</b> Затем меняй только одну часть значения за раз и снова отправляй форму: убери обязательный символ, добавь лишний символ, нарушь порядок или замени часть на недопустимую.</p>
+        <p><b>3.</b> Сравни результат: корректное значение должно приниматься, а значение с нарушенным форматом — отклоняться согласно требованиям.</p>
+      </div> : <p className="mt-2 text-sm leading-6">{step.action}</p>}
     </div>
 
     {step.technique && <div className="rounded-lg bg-muted/60 p-3 text-sm">
       <span className="font-medium">Техника: </span>{step.technique.ru} / {step.technique.en}{step.technique.short ? ` (${step.technique.short})` : ""}
     </div>}
 
-    {!!step.examples?.length && <div>
+    {!isFormatStep && !!step.examples?.length && <div>
       <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">Пример / тестовые данные</p>
       <div className="flex flex-wrap gap-2">{step.examples.map((example) => <code key={example} className="rounded-md border border-border bg-muted px-2 py-1 text-xs">{example}</code>)}</div>
     </div>}
