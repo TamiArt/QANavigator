@@ -1,4 +1,5 @@
 import { VISUAL_IMAGES_BY_TOPIC, VISUAL_UNIQUE_TOPICS } from "./handbook-visual-topics";
+import { API_REST_SOAP_CONTENT } from "./handbook-content-api";
 
 export interface HandbookTopic {
   id: string;
@@ -20,7 +21,14 @@ import { HANDBOOK_PART_7 } from "./handbook-data-part-7";
 import { HANDBOOK_PART_8 } from "./handbook-data-part-8";
 import { HANDBOOK_PART_9 } from "./handbook-data-part-9";
 
-const DUPLICATE_TOPIC_IDS = new Set(["web2", "web7", "web8"]);
+const TITLE_OVERRIDES: Record<string, string> = {
+  f6: "SDLC и STLC",
+  api1: "REST и SOAP API: основы и тестирование",
+};
+
+const CONTENT_OVERRIDES: Record<string, string> = {
+  api1: API_REST_SOAP_CONTENT,
+};
 
 const CATEGORY_BY_PREFIX: Record<string, string> = {
   f: "Основы тестирования",
@@ -49,12 +57,12 @@ const CORE_TOPICS = [
 ];
 
 export const HANDBOOK: HandbookTopic[] = [
-  ...CORE_TOPICS
-    .filter((topic) => !DUPLICATE_TOPIC_IDS.has(topic.id))
-    .map((topic) => ({
-      ...topic,
-      category: canonicalCategory(topic),
-      images: VISUAL_IMAGES_BY_TOPIC[topic.id] ?? topic.images,
-    })),
+  ...CORE_TOPICS.map((topic) => ({
+    ...topic,
+    title: TITLE_OVERRIDES[topic.id] ?? topic.title,
+    content: CONTENT_OVERRIDES[topic.id] ?? topic.content,
+    category: canonicalCategory(topic),
+    images: VISUAL_IMAGES_BY_TOPIC[topic.id] ?? topic.images,
+  })),
   ...VISUAL_UNIQUE_TOPICS,
 ];
