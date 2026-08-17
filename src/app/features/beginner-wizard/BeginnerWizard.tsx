@@ -35,7 +35,8 @@ export function BeginnerWizard() {
   const [config, setConfig] = useState<TestObjectConfig>(() => createInitialObjectConfig());
   const [done, setDone] = useState(false);
   const plan = useMemo(() => buildTestPlan(config), [config]);
-  const currentPlanStep = plan[Math.min(planIndex, Math.max(0, plan.length - 1))];
+  const safePlanIndex = Math.min(planIndex, Math.max(0, plan.length - 1));
+  const currentPlanStep = plan[safePlanIndex];
 
   const reset = () => {
     setWizardStep(0); setPlanIndex(0); setName(""); setType("web"); setGoal(""); setRisks([]);
@@ -55,15 +56,18 @@ export function BeginnerWizard() {
     setPlanIndex(0);
   };
   const previous = () => {
-    if (wizardStep === wizardSteps.length - 1 && planIndex > 0) setPlanIndex((value) => value - 1);
+    if (wizardStep === wizardSteps.length - 1 && safePlanIndex > 0) setPlanIndex((value) => Math.max(0, value - 1));
     else setWizardStep((value) => Math.max(0, value - 1));
   };
 
   if (done) return <div className="mx-auto max-w-xl rounded-xl border border-emerald-500/30 bg-card p-6 text-center">
     <CheckCircle2 className="mx-auto h-10 w-10 text-emerald-500"/>
     <h2 className="mt-3 text-xl font-semibold">Проект готов</h2>
-    <p className="mt-2 text-sm text-muted-foreground">Проект сохранён. Используй пройденный план как последовательность проверок: от Happy Path и входных данных до устойчивости, Error Guessing и регрессии.</p>
-    <button onClick={reset} className="mt-4 rounded-lg border border-border px-3 py-2 text-sm">Создать ещё один</button>
+    <p className="mt-2 text-sm text-muted-foreground">Проект сохранён. Маршрут остаётся доступен, чтобы вернуться к проверкам, Retest и Regression.</p>
+    <div className="mt-4 flex flex-wrap justify-center gap-2">
+      <button onClick={() => { setDone(false); setWizardStep(wizardSteps.length - 1); setPlanIndex(Math.max(0, plan.length - 1)); }} className="rounded-lg border border-border px-3 py-2 text-sm">Вернуться к плану</button>
+      <button onClick={reset} className="rounded-lg border border-border px-3 py-2 text-sm">Создать ещё один</button>
+    </div>
   </div>;
 
   return <div className="mx-auto max-w-2xl space-y-4">
@@ -84,12 +88,12 @@ export function BeginnerWizard() {
 
       {wizardStep === 2 && <div>
         <div className="mb-3"><p className="text-xs text-muted-foreground">Этап 3 из {wizardSteps.length}</p><h3 className="font-semibold">Что конкретно нужно проверить?</h3><p className="text-xs text-muted-foreground">Это объект текущего тестирования, а не тип всего проекта.</p></div>
-        <div className="grid gap-2 sm:grid-cols-2">{TEST_OBJECT_OPTIONS.map((option) => <button key={option.id} onClick={() => setConfig({...config, objectType:option.id})} className={`rounded-lg border p-3 text-left ${config.objectType === option.id ? "border-primary bg-primary/10" : "border-border"}`}><b className="text-sm">{option.label}</b><span className="block text-xs text-muted-foreground">{option.hint}</span></button>)}</div>
+        <div className="grid gap-2 sm:grid-cols-2">{TEST_OBJECT_OPTIONS.map((option) => <button key={option.id} onClick={() => { setConfig({...config, objectType:option.id}); setPlanIndex(0); }} className={`rounded-lg border p-3 text-left ${config.objectType === option.id ? "border-primary bg-primary/10" : "border-border"}`}><b className="text-sm">{option.label}</b><span className="block text-xs text-muted-foreground">{option.hint}</span></button>)}</div>
       </div>}
 
       {wizardStep === 3 && <div>
         <div className="mb-3"><p className="text-xs text-muted-foreground">Этап 4 из {wizardSteps.length}</p><h3 className="font-semibold">Уточни известные характеристики</h3></div>
-        <ObjectCharacteristics config={config} onChange={setConfig}/>
+        <ObjectCharacteristics config={config} onChange={(next) => { setConfig(next); setPlanIndex(0); }}/>
       </div>}
 
       {wizardStep === 4 && <div>
@@ -99,14 +103,14 @@ export function BeginnerWizard() {
 
       {wizardStep === 5 && currentPlanStep && <div>
         <div className="mb-4"><p className="text-xs text-muted-foreground">Этап 6 из {wizardSteps.length} · персональный маршрут</p><h3 className="font-semibold">Что делать сейчас</h3></div>
-        <PlanStepCard step={currentPlanStep} index={planIndex} total={plan.length}/>
+        <PlanStepCard key={currentPlanStep.id} step={currentPlanStep} index={safePlanIndex} total={plan.length}/>
       </div>}
 
       <div className="mt-5 flex justify-between gap-3">
-        <button disabled={wizardStep === 0 && planIndex === 0} onClick={previous} className="flex items-center gap-1 rounded-lg border border-border px-3 py-2 text-sm disabled:opacity-30"><ArrowLeft className="h-4 w-4"/>Назад</button>
+        <button disabled={wizardStep === 0 && safePlanIndex === 0} onClick={previous} className="flex items-center gap-1 rounded-lg border border-border px-3 py-2 text-sm disabled:opacity-30"><ArrowLeft className="h-4 w-4"/>Назад</button>
         {wizardStep < wizardSteps.length - 1 && <button onClick={nextWizardStep} className="flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground">Далее<ArrowRight className="h-4 w-4"/></button>}
-        {wizardStep === wizardSteps.length - 1 && planIndex < plan.length - 1 && <button onClick={() => setPlanIndex((value) => value + 1)} className="flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground">Выполнено, дальше<ArrowRight className="h-4 w-4"/></button>}
-        {wizardStep === wizardSteps.length - 1 && planIndex === plan.length - 1 && <button onClick={finish} className="rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground">Завершить и создать проект</button>}
+        {wizardStep === wizardSteps.length - 1 && safePlanIndex < plan.length - 1 && <button onClick={() => setPlanIndex((value) => Math.min(plan.length - 1, value + 1))} className="flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground">Выполнено, дальше<ArrowRight className="h-4 w-4"/></button>}
+        {wizardStep === wizardSteps.length - 1 && safePlanIndex === plan.length - 1 && <button onClick={finish} className="rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground">Завершить и создать проект</button>}
       </div>
     </section>
   </div>;
