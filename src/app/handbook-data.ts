@@ -29,6 +29,7 @@ const DUPLICATE_TOPIC_IDS = new Set([
   "web8",  // mobile types/strategy are fully covered by mob1
   "web9",  // Git has git1; Docker/environment are covered by focused DevOps topics
   "web10", // generic tool survey is superseded by focused articles + tools1
+  "tt6",   // remove the unclear OWASP/security card; security checks remain in focused QA topics
 ]);
 
 const TITLE_OVERRIDES: Record<string, string> = {
