@@ -20,18 +20,6 @@ import { HANDBOOK_PART_7 } from "./handbook-data-part-7";
 import { HANDBOOK_PART_8 } from "./handbook-data-part-8";
 import { HANDBOOK_PART_9 } from "./handbook-data-part-9";
 
-// Canonical articles replace older, narrower versions of the same subject.
-const DUPLICATE_TOPIC_IDS = new Set([
-  "f3",    // STLC is fully covered by f6
-  "web2",  // REST API is fully covered by api1
-  "web5",  // auth concepts are covered in greater depth by api4
-  "web7",  // SQL is fully covered by db1
-  "web8",  // mobile types/strategy are fully covered by mob1
-  "web9",  // Git has git1; Docker/environment are covered by focused DevOps topics
-  "web10", // generic tool survey is superseded by focused articles + tools1
-  "tt6",   // remove the unclear OWASP/security card; security checks remain in focused QA topics
-]);
-
 const TITLE_OVERRIDES: Record<string, string> = {
   f6: "SDLC и STLC",
 };
@@ -63,13 +51,11 @@ const CORE_TOPICS = [
 ];
 
 export const HANDBOOK: HandbookTopic[] = [
-  ...CORE_TOPICS
-    .filter((topic) => !DUPLICATE_TOPIC_IDS.has(topic.id))
-    .map((topic) => ({
-      ...topic,
-      title: TITLE_OVERRIDES[topic.id] ?? topic.title,
-      category: canonicalCategory(topic),
-      images: VISUAL_IMAGES_BY_TOPIC[topic.id] ?? topic.images,
-    })),
+  ...CORE_TOPICS.map((topic) => ({
+    ...topic,
+    title: TITLE_OVERRIDES[topic.id] ?? topic.title,
+    category: canonicalCategory(topic),
+    images: VISUAL_IMAGES_BY_TOPIC[topic.id] ?? topic.images,
+  })),
   ...VISUAL_UNIQUE_TOPICS,
 ];
