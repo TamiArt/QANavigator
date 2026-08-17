@@ -97,7 +97,7 @@ export const TEST_OBJECT_OPTIONS: { id: TestObjectType; label: string; hint: str
 ];
 
 export const FIELD_TYPE_OPTIONS: { id: FieldDataType; label: string }[] = [
-  { id: "text", label: "Текст" },
+  { id: "text", label: "Текст / строка" },
   { id: "number", label: "Число" },
   { id: "email", label: "Email" },
   { id: "phone", label: "Телефон" },
