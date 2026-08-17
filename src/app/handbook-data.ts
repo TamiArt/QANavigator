@@ -1,4 +1,5 @@
 import { VISUAL_IMAGES_BY_TOPIC, VISUAL_UNIQUE_TOPICS } from "./handbook-visual-topics";
+import { API_REST_SOAP_CONTENT } from "./handbook-content-api";
 
 export interface HandbookTopic {
   id: string;
@@ -22,6 +23,11 @@ import { HANDBOOK_PART_9 } from "./handbook-data-part-9";
 
 const TITLE_OVERRIDES: Record<string, string> = {
   f6: "SDLC и STLC",
+  api1: "REST и SOAP API: основы и тестирование",
+};
+
+const CONTENT_OVERRIDES: Record<string, string> = {
+  api1: API_REST_SOAP_CONTENT,
 };
 
 const CATEGORY_BY_PREFIX: Record<string, string> = {
@@ -54,6 +60,7 @@ export const HANDBOOK: HandbookTopic[] = [
   ...CORE_TOPICS.map((topic) => ({
     ...topic,
     title: TITLE_OVERRIDES[topic.id] ?? topic.title,
+    content: CONTENT_OVERRIDES[topic.id] ?? topic.content,
     category: canonicalCategory(topic),
     images: VISUAL_IMAGES_BY_TOPIC[topic.id] ?? topic.images,
   })),
