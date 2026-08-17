@@ -20,7 +20,7 @@ function FieldEditor({ field, index, onChange, onRemove, canRemove }: { field: F
       <input type="number" min="0" value={field.minLength ?? ""} onChange={(event) => onChange({...field, minLength:numberOrUndefined(event.target.value)})} placeholder="min длина — если известна" className={inputClass}/>
       <input type="number" min="0" value={field.maxLength ?? ""} onChange={(event) => onChange({...field, maxLength:numberOrUndefined(event.target.value)})} placeholder="max длина — если известна" className={inputClass}/>
     </div>}
-    <input value={field.format ?? ""} onChange={(event) => onChange({...field, format:event.target.value || undefined})} placeholder="Формат/маска — только если известны" className={inputClass}/>
+    <input value={field.format ?? ""} onChange={(event) => onChange({...field, format:event.target.value || undefined})} placeholder="Например: +7 (999) 999-99-99 · name@example.com · DD.MM.YYYY · AAA-999" className={inputClass}/>
   </div>;
 }
 
