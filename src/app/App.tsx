@@ -5,6 +5,7 @@ import {
 
 import { HandbookTopic, HANDBOOK } from "./handbook-data";
 import { HandbookImages } from "./components/handbook/HandbookImages";
+import { HighlightedText, normalizeSearchQuery, SearchMatches } from "./components/handbook/SearchHighlights";
 import { useLocalStorage } from "./hooks/use-local-storage";
 import { downloadTextFile } from "./lib/download";
 import { ProjectWorkspace } from "./features/project-workspace/ProjectWorkspace";
@@ -2592,8 +2593,10 @@ function HandbookModule() {
   const [cheatSheet, setCheatSheet] = useState(false);
 
   const filtered = useMemo(() => {
+    const query = normalizeSearchQuery(search).toLocaleLowerCase("ru");
     return HANDBOOK.filter((t) => {
-      const matchSearch = !search || t.title.toLowerCase().includes(search.toLowerCase()) || t.content.toLowerCase().includes(search.toLowerCase()) || t.tags.some((tag) => tag.toLowerCase().includes(search.toLowerCase()));
+      const searchableText = `${t.title}\n${t.content}\n${t.tags.join(" ")}`.toLocaleLowerCase("ru");
+      const matchSearch = !query || searchableText.includes(query);
       const matchCat = !activeCategory || t.category === activeCategory;
       const matchLevel = !levelFilter || t.level === levelFilter;
       const matchBookmark = !cheatSheet || bookmarks.includes(t.id);
@@ -2679,16 +2682,17 @@ function HandbookModule() {
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-0.5">
-                    <span className="font-medium text-sm text-foreground">{topic.title}</span>
+                    <span className="font-medium text-sm text-foreground"><HighlightedText text={topic.title} query={search} /></span>
                     <Badge variant={topic.level as any}>
                       {topic.level === "beginner" ? "Новичок" : topic.level === "intermediate" ? "Мидл" : "Эксперт"}
                     </Badge>
                   </div>
                   <div className="flex flex-wrap gap-1">
                     {topic.tags.slice(0, 4).map((tag) => (
-                      <span key={tag} className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded font-mono">{tag}</span>
+                      <span key={tag} className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded font-mono"><HighlightedText text={tag} query={search} /></span>
                     ))}
                   </div>
+                  <SearchMatches content={topic.content} query={search} />
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <button

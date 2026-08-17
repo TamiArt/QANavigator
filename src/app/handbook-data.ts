@@ -18,6 +18,7 @@ import { HANDBOOK_PART_5 } from "./handbook-data-part-5";
 import { HANDBOOK_PART_6 } from "./handbook-data-part-6";
 import { HANDBOOK_PART_7 } from "./handbook-data-part-7";
 import { HANDBOOK_PART_8 } from "./handbook-data-part-8";
+import { HANDBOOK_PART_9 } from "./handbook-data-part-9";
 
 const DUPLICATE_TOPIC_IDS = new Set(["web2", "web7", "web8"]);
 
@@ -44,6 +45,7 @@ function canonicalCategory(topic: HandbookTopic): string {
 const CORE_TOPICS = [
   ...HANDBOOK_PART_1, ...HANDBOOK_PART_2, ...HANDBOOK_PART_3, ...HANDBOOK_PART_4,
   ...HANDBOOK_PART_5, ...HANDBOOK_PART_6, ...HANDBOOK_PART_7, ...HANDBOOK_PART_8,
+  ...HANDBOOK_PART_9,
 ];
 
 export const HANDBOOK: HandbookTopic[] = [
