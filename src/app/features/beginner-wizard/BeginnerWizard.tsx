@@ -14,14 +14,7 @@ const productOptions: { id: ProductType; label: string; hint: string }[] = [
   { id: "desktop", label: "Desktop", hint: "Windows/macOS/Linux" },
 ];
 
-const riskSuggestions: Record<ProductType, string[]> = {
-  web: ["Пользователь не может выполнить основной сценарий", "Ошибки валидации формы", "Некорректная работа в браузерах"],
-  api: ["Нарушен контракт API", "Ошибки авторизации", "Повторный запрос создаёт дубликат"],
-  mobile: ["Потеря данных при прерывании", "Сбой на части устройств", "Проблемы при слабой сети"],
-  desktop: ["Ошибка установки/обновления", "Потеря локальных данных", "Несовместимость с ОС"],
-};
-
-const wizardSteps = ["Контекст", "Продукт", "Объект", "Характеристики", "Риски", "План"];
+const wizardSteps = ["Контекст", "Продукт", "Объект", "Характеристики", "План"];
 
 export function BeginnerWizard() {
   const [projects, setProjects] = useLocalStorage<QAProject[]>(PROJECTS_STORAGE_KEY, []);
@@ -31,7 +24,6 @@ export function BeginnerWizard() {
   const [name, setName] = useState("");
   const [type, setType] = useState<ProductType>("web");
   const [goal, setGoal] = useState("");
-  const [risks, setRisks] = useState<string[]>([]);
   const [config, setConfig] = useState<TestObjectConfig>(() => createInitialObjectConfig());
   const [done, setDone] = useState(false);
   const plan = useMemo(() => buildTestPlan(config), [config]);
@@ -39,14 +31,14 @@ export function BeginnerWizard() {
   const currentPlanStep = plan[safePlanIndex];
 
   const reset = () => {
-    setWizardStep(0); setPlanIndex(0); setName(""); setType("web"); setGoal(""); setRisks([]);
+    setWizardStep(0); setPlanIndex(0); setName(""); setType("web"); setGoal("");
     setConfig(createInitialObjectConfig()); setDone(false);
   };
 
   const finish = () => {
     const project: QAProject = {
       id: crypto.randomUUID(), name: name.trim() || "Мой первый QA-проект", description: goal.trim(),
-      productType: type, environment: "Staging", risks, createdAt: new Date().toISOString(),
+      productType: type, environment: "Staging", risks: [], createdAt: new Date().toISOString(),
     };
     setProjects([...projects, project]); setActiveId(project.id); setDone(true);
   };
@@ -96,13 +88,8 @@ export function BeginnerWizard() {
         <ObjectCharacteristics config={config} onChange={(next) => { setConfig(next); setPlanIndex(0); }}/>
       </div>}
 
-      {wizardStep === 4 && <div>
-        <div className="mb-3"><p className="text-xs text-muted-foreground">Этап 5 из {wizardSteps.length}</p><h3 className="font-semibold">Какие риски особенно важны?</h3><p className="text-xs text-muted-foreground">Необязательно. Они сохранятся в рабочем контексте проекта.</p></div>
-        <div className="space-y-2">{riskSuggestions[type].map((risk) => <label key={risk} className="flex gap-2 rounded-lg border border-border p-3 text-sm"><input type="checkbox" checked={risks.includes(risk)} onChange={() => setRisks(risks.includes(risk) ? risks.filter((item) => item !== risk) : [...risks, risk])}/>{risk}</label>)}</div>
-      </div>}
-
-      {wizardStep === 5 && currentPlanStep && <div>
-        <div className="mb-4"><p className="text-xs text-muted-foreground">Этап 6 из {wizardSteps.length} · персональный маршрут</p><h3 className="font-semibold">Что делать сейчас</h3></div>
+      {wizardStep === 4 && currentPlanStep && <div>
+        <div className="mb-4"><p className="text-xs text-muted-foreground">Этап 5 из {wizardSteps.length} · персональный маршрут</p><h3 className="font-semibold">Что делать сейчас</h3></div>
         <PlanStepCard key={currentPlanStep.id} step={currentPlanStep} index={safePlanIndex} total={plan.length}/>
       </div>}
 
