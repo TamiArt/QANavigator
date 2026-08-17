@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
-import type { TestPlanStep } from "../types";
+import type { TestPlanCategory, TestPlanStep } from "../types";
 
 interface Props {
   step: TestPlanStep;
@@ -8,12 +8,30 @@ interface Props {
   total: number;
 }
 
+const categoryLabels: Record<TestPlanCategory, string> = {
+  requirements: "Требования",
+  positive: "Позитивная проверка",
+  validation: "Валидация",
+  negative: "Негативная проверка",
+  combinations: "Комбинации",
+  state: "Состояния",
+  integration: "Интеграция",
+  ux: "UX",
+  accessibility: "Accessibility",
+  compatibility: "Совместимость",
+  security: "Безопасность",
+  reliability: "Надёжность",
+  destructive: "Деструктивная",
+  exploratory: "Исследовательская",
+  regression: "Регрессия",
+};
+
 export function PlanStepCard({ step, index, total }: Props) {
   const [showWhy, setShowWhy] = useState(false);
   return <div className="space-y-4">
     <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
       <span>Шаг {index + 1} из {total}</span>
-      <span className="rounded-full bg-muted px-2 py-1">{step.category}</span>
+      <span className="rounded-full bg-muted px-2 py-1">{categoryLabels[step.category]}</span>
     </div>
 
     <div>
