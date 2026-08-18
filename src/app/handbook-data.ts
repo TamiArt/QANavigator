@@ -59,6 +59,44 @@ function canonicalCategory(topic: HandbookTopic): string {
   return prefix ? CATEGORY_BY_PREFIX[prefix] : topic.category;
 }
 
+const TABLE_SEPARATOR = /^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$/;
+const HORIZONTAL_RULE = /^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/;
+
+/**
+ * Handbook content comes from several curated Markdown sources, while the app uses
+ * a deliberately small Markdown renderer. Normalize unsupported presentational
+ * syntax here so source markup never leaks into the readable textbook text.
+ * Code fences are preserved byte-for-byte apart from harmless Unicode cleanup.
+ */
+function normalizeHandbookContent(content: string): string {
+  let inCodeFence = false;
+
+  return content
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .replace(/\u00A0/g, " ")
+    .split("\n")
+    .map((rawLine) => {
+      const line = rawLine.replace(/\s+$/g, "");
+      const trimmed = line.trim();
+
+      if (trimmed.startsWith("```")) {
+        inCodeFence = !inCodeFence;
+        return line;
+      }
+      if (inCodeFence) return line;
+
+      if (/^#{4,6}\s+/.test(line)) return line.replace(/^#{4,6}\s+/, "### ");
+      if (TABLE_SEPARATOR.test(line) || HORIZONTAL_RULE.test(line)) return "";
+      if (/^\s*\*\s+/.test(line)) return line.replace(/^\s*\*\s+/, "- ");
+      if (/^\s*\d+\)\s+/.test(line)) return line.replace(/^(\s*\d+)\)\s+/, "$1. ");
+
+      return line;
+    })
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 const CORE_TOPICS = [
   ...FOUNDATION_TOPICS,
   ...HANDBOOK_PART_1, ...HANDBOOK_PART_2, ...HANDBOOK_PART_3, ...HANDBOOK_PART_4,
@@ -74,7 +112,7 @@ export const HANDBOOK: HandbookTopic[] = CORE_TOPICS
   .map((topic) => ({
     ...topic,
     title: TITLE_OVERRIDES[topic.id] ?? topic.title,
-    content: CONTENT_OVERRIDES[topic.id] ?? topic.content,
+    content: normalizeHandbookContent(CONTENT_OVERRIDES[topic.id] ?? topic.content),
     category: canonicalCategory(topic),
     images: VISUAL_IMAGES_BY_TOPIC[topic.id] ?? topic.images,
   }))
