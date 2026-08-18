@@ -1,5 +1,11 @@
 import { VISUAL_IMAGES_BY_TOPIC, VISUAL_UNIQUE_TOPICS } from "./handbook-visual-topics";
 import { API_REST_SOAP_CONTENT } from "./handbook-content-api";
+import {
+  CURATED_CONTENT,
+  CURRICULUM_ORDER,
+  FOUNDATION_TOPICS,
+  MERGED_TOPIC_IDS,
+} from "./handbook-curriculum";
 
 export interface HandbookTopic {
   id: string;
@@ -23,10 +29,13 @@ import { HANDBOOK_PART_9 } from "./handbook-data-part-9";
 
 const TITLE_OVERRIDES: Record<string, string> = {
   f6: "SDLC и STLC",
+  f8: "Agile, Scrum и Kanban для тестировщика",
   api1: "REST и SOAP API: основы и тестирование",
+  tt6: "Тестирование безопасности для QA",
 };
 
 const CONTENT_OVERRIDES: Record<string, string> = {
+  ...CURATED_CONTENT,
   api1: API_REST_SOAP_CONTENT,
 };
 
@@ -51,18 +60,26 @@ function canonicalCategory(topic: HandbookTopic): string {
 }
 
 const CORE_TOPICS = [
+  ...FOUNDATION_TOPICS,
   ...HANDBOOK_PART_1, ...HANDBOOK_PART_2, ...HANDBOOK_PART_3, ...HANDBOOK_PART_4,
   ...HANDBOOK_PART_5, ...HANDBOOK_PART_6, ...HANDBOOK_PART_7, ...HANDBOOK_PART_8,
   ...HANDBOOK_PART_9,
+  ...VISUAL_UNIQUE_TOPICS,
 ];
 
-export const HANDBOOK: HandbookTopic[] = [
-  ...CORE_TOPICS.map((topic) => ({
+const ORDER_INDEX = new Map(CURRICULUM_ORDER.map((id, index) => [id, index]));
+
+export const HANDBOOK: HandbookTopic[] = CORE_TOPICS
+  .filter((topic) => !MERGED_TOPIC_IDS.has(topic.id))
+  .map((topic) => ({
     ...topic,
     title: TITLE_OVERRIDES[topic.id] ?? topic.title,
     content: CONTENT_OVERRIDES[topic.id] ?? topic.content,
     category: canonicalCategory(topic),
     images: VISUAL_IMAGES_BY_TOPIC[topic.id] ?? topic.images,
-  })),
-  ...VISUAL_UNIQUE_TOPICS,
-];
+  }))
+  .sort((left, right) => {
+    const leftOrder = ORDER_INDEX.get(left.id) ?? Number.MAX_SAFE_INTEGER;
+    const rightOrder = ORDER_INDEX.get(right.id) ?? Number.MAX_SAFE_INTEGER;
+    return leftOrder - rightOrder;
+  });

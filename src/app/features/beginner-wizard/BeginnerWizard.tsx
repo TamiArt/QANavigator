@@ -4,6 +4,7 @@ import { useLocalStorage } from "../../hooks/use-local-storage";
 import { PROJECTS_STORAGE_KEY, ACTIVE_PROJECT_STORAGE_KEY, type ProductType, type QAProject } from "../project-workspace/types";
 import { ObjectCharacteristics } from "./components/ObjectCharacteristics";
 import { TestPlanOverview } from "./components/TestPlanOverview";
+import { buildIntermediateBoundarySteps } from "./intermediate-boundary-rules";
 import { buildTestPlan } from "./test-plan-rules";
 import { TEST_OBJECT_OPTIONS, createInitialObjectConfig, type TestObjectConfig } from "./types";
 
@@ -16,7 +17,19 @@ const productOptions: { id: ProductType; label: string; hint: string }[] = [
 
 const wizardSteps = ["Продукт", "Объект", "Характеристики", "План"];
 
-export function BeginnerWizard() {
+interface BeginnerWizardProps {
+  onOpenKnowledge?: (query: string) => void;
+}
+
+function openHandbookFallback(query: string) {
+  sessionStorage.setItem("qa_navigator_handbook_query", query);
+  const handbookButton = Array.from(document.querySelectorAll("nav button")).find((button) =>
+    button.textContent?.includes("База знаний")
+  ) as HTMLButtonElement | undefined;
+  handbookButton?.click();
+}
+
+export function BeginnerWizard({ onOpenKnowledge }: BeginnerWizardProps) {
   const [projects, setProjects] = useLocalStorage<QAProject[]>(PROJECTS_STORAGE_KEY, []);
   const [, setActiveId] = useLocalStorage(ACTIVE_PROJECT_STORAGE_KEY, "");
   const [wizardStep, setWizardStep] = useState(0);
@@ -26,8 +39,10 @@ export function BeginnerWizard() {
 
   const plan = useMemo(() => {
     const generated = buildTestPlan(config);
-    if (config.objectType !== "form" && config.objectType !== "auth") return generated;
-    return generated.filter((item) => !item.id.includes("-positive") || item.id === "form-happy");
+    const withoutRepeatedPositive = config.objectType === "form" || config.objectType === "auth"
+      ? generated.filter((item) => !item.id.includes("-positive") || item.id === "form-happy")
+      : generated;
+    return [...withoutRepeatedPositive, ...buildIntermediateBoundarySteps(config)];
   }, [config]);
 
   const reset = () => {
@@ -105,7 +120,7 @@ export function BeginnerWizard() {
           <h3 className="font-semibold">Что проверять</h3>
           <p className="text-xs text-muted-foreground">Готовый план без режима «24 шага». Все необходимые проверки собраны по смысловым разделам.</p>
         </div>
-        <TestPlanOverview steps={plan}/>
+        <TestPlanOverview steps={plan} onOpenKnowledge={onOpenKnowledge ?? openHandbookFallback}/>
       </div>}
 
       <div className="mt-5 flex justify-between gap-3">

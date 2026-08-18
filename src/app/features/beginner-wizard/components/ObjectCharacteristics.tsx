@@ -13,9 +13,37 @@ function FieldEditor({ field, index, onChange, onRemove, canRemove }: { field: F
       <select aria-label={`Тип поля ${index + 1}`} value={field.dataType} onChange={(event) => onChange({...field, dataType:event.target.value as FieldConfig["dataType"]})} className={inputClass}>{FIELD_TYPE_OPTIONS.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select>
     </div>
     <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={field.required} onChange={(event) => onChange({...field, required:event.target.checked})}/>Обязательное поле</label>
-    {field.dataType === "number" ? <div className="grid gap-2 sm:grid-cols-2">
-      <input type="number" value={field.min ?? ""} onChange={(event) => onChange({...field, min:numberOrUndefined(event.target.value)})} placeholder="min — если известен" className={inputClass}/>
-      <input type="number" value={field.max ?? ""} onChange={(event) => onChange({...field, max:numberOrUndefined(event.target.value)})} placeholder="max — если известен" className={inputClass}/>
+    {field.dataType === "number" ? <div className="space-y-2">
+      <div className="grid gap-2 sm:grid-cols-2">
+        <input type="number" value={field.min ?? ""} onChange={(event) => onChange({...field, min:numberOrUndefined(event.target.value)})} placeholder="min — если известен" className={inputClass}/>
+        <input type="number" value={field.max ?? ""} onChange={(event) => onChange({...field, max:numberOrUndefined(event.target.value)})} placeholder="max — если известен" className={inputClass}/>
+      </div>
+      <label className="flex items-start gap-2 rounded-lg border border-border p-3 text-sm">
+        <input
+          className="mt-0.5"
+          type="checkbox"
+          checked={!!field.hasIntermediateRanges}
+          onChange={(event) => onChange({
+            ...field,
+            hasIntermediateRanges:event.target.checked,
+            valueRanges:event.target.checked ? field.valueRanges : undefined,
+          })}
+        />
+        <span>
+          <b>Есть промежуточные диапазоны или правила</b>
+          <span className="block text-xs text-muted-foreground">Например, возраст делится на несколько групп и на границах меняется ожидаемое поведение.</span>
+        </span>
+      </label>
+      {field.hasIntermediateRanges && <div>
+        <input
+          value={field.valueRanges ?? ""}
+          onChange={(event) => onChange({...field, valueRanges:event.target.value || undefined})}
+          placeholder="Например: 0-17; 18-59; 60-100"
+          aria-label={`Промежуточные диапазоны поля ${index + 1}`}
+          className={inputClass}
+        />
+        <p className="mt-1 text-xs text-muted-foreground">Укажи диапазоны так, как они заданы в требованиях. Разделяй их точкой с запятой. Если граница неоднозначна, например <code>0-18; 18-60</code>, мастер попросит уточнить, к какому диапазону относится <code>18</code>.</p>
+      </div>}
     </div> : <div className="grid gap-2 sm:grid-cols-2">
       <input type="number" min="0" value={field.minLength ?? ""} onChange={(event) => onChange({...field, minLength:numberOrUndefined(event.target.value)})} placeholder="min длина — если известна" className={inputClass}/>
       <input type="number" min="0" value={field.maxLength ?? ""} onChange={(event) => onChange({...field, maxLength:numberOrUndefined(event.target.value)})} placeholder="max длина — если известна" className={inputClass}/>

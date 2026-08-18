@@ -22,6 +22,9 @@ export interface FieldConfig {
   minLength?: number;
   maxLength?: number;
   format?: string;
+  hasIntermediateRanges?: boolean;
+  valueRanges?: string;
+  intermediateBoundaries?: number[];
 }
 
 export interface TestObjectConfig {
@@ -111,6 +114,7 @@ export const createEmptyField = (index = 0): FieldConfig => ({
   name: index === 0 ? "Поле" : `Поле ${index + 1}`,
   dataType: "text",
   required: false,
+  hasIntermediateRanges: false,
 });
 
 export const createInitialObjectConfig = (): TestObjectConfig => ({
