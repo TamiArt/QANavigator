@@ -16,7 +16,11 @@ const productOptions: { id: ProductType; label: string; hint: string }[] = [
 
 const wizardSteps = ["Продукт", "Объект", "Характеристики", "План"];
 
-export function BeginnerWizard() {
+interface BeginnerWizardProps {
+  onOpenKnowledge?: (query: string) => void;
+}
+
+export function BeginnerWizard({ onOpenKnowledge }: BeginnerWizardProps) {
   const [projects, setProjects] = useLocalStorage<QAProject[]>(PROJECTS_STORAGE_KEY, []);
   const [, setActiveId] = useLocalStorage(ACTIVE_PROJECT_STORAGE_KEY, "");
   const [wizardStep, setWizardStep] = useState(0);
@@ -105,7 +109,7 @@ export function BeginnerWizard() {
           <h3 className="font-semibold">Что проверять</h3>
           <p className="text-xs text-muted-foreground">Готовый план без режима «24 шага». Все необходимые проверки собраны по смысловым разделам.</p>
         </div>
-        <TestPlanOverview steps={plan}/>
+        <TestPlanOverview steps={plan} onOpenKnowledge={onOpenKnowledge}/>
       </div>}
 
       <div className="mt-5 flex justify-between gap-3">
