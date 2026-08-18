@@ -3,6 +3,7 @@ import type { TestPlanCategory, TestPlanStep } from "../types";
 
 interface Props {
   steps: TestPlanStep[];
+  onOpenKnowledge?: (query: string) => void;
 }
 
 interface PlanGroup {
@@ -101,7 +102,7 @@ const techniqueKnowledge: Record<string, string> = {
   "Retesting": "Retest",
 };
 
-function CheckItem({ step }: { step: TestPlanStep }) {
+function CheckItem({ step, onOpenKnowledge }: { step: TestPlanStep; onOpenKnowledge?: (query: string) => void }) {
   const knowledge = step.technique ? techniqueKnowledge[step.technique.en] : undefined;
   return <div className="rounded-lg border border-border bg-card p-3 space-y-2">
     <div>
@@ -121,14 +122,19 @@ function CheckItem({ step }: { step: TestPlanStep }) {
     {step.expected && <p className="text-xs text-muted-foreground"><span className="font-medium text-foreground">Ожидаем: </span>{step.expected}</p>}
     {step.warning && <div className="flex gap-2 rounded-md bg-amber-500/10 p-2 text-xs"><AlertTriangle className="h-4 w-4 shrink-0 text-amber-500"/><span>{step.warning}</span></div>}
 
-    {knowledge && <div className="flex items-center gap-1.5 text-xs text-primary">
+    {knowledge && <button
+      type="button"
+      onClick={() => onOpenKnowledge?.(knowledge)}
+      className="flex items-center gap-1.5 text-xs text-primary hover:underline disabled:cursor-default disabled:no-underline"
+      disabled={!onOpenKnowledge}
+    >
       <BookOpen className="h-3.5 w-3.5"/>
       <span>В Базе знаний: {knowledge}</span>
-    </div>}
+    </button>}
   </div>;
 }
 
-export function TestPlanOverview({ steps }: Props) {
+export function TestPlanOverview({ steps, onOpenKnowledge }: Props) {
   const groups = GROUPS.map((group) => ({
     ...group,
     steps: steps.filter((step) => group.categories.includes(step.category)),
@@ -152,7 +158,7 @@ export function TestPlanOverview({ steps }: Props) {
         </div>
       </div>
       <div className="space-y-2 p-3">
-        {group.steps.map((step) => <CheckItem key={step.id} step={step}/>) }
+        {group.steps.map((step) => <CheckItem key={step.id} step={step} onOpenKnowledge={onOpenKnowledge}/>) }
       </div>
     </section>)}
   </div>;
