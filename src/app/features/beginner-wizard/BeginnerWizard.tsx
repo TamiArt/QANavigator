@@ -20,6 +20,14 @@ interface BeginnerWizardProps {
   onOpenKnowledge?: (query: string) => void;
 }
 
+function openHandbookFallback(query: string) {
+  sessionStorage.setItem("qa_navigator_handbook_query", query);
+  const handbookButton = Array.from(document.querySelectorAll("nav button")).find((button) =>
+    button.textContent?.includes("База знаний")
+  ) as HTMLButtonElement | undefined;
+  handbookButton?.click();
+}
+
 export function BeginnerWizard({ onOpenKnowledge }: BeginnerWizardProps) {
   const [projects, setProjects] = useLocalStorage<QAProject[]>(PROJECTS_STORAGE_KEY, []);
   const [, setActiveId] = useLocalStorage(ACTIVE_PROJECT_STORAGE_KEY, "");
@@ -109,7 +117,7 @@ export function BeginnerWizard({ onOpenKnowledge }: BeginnerWizardProps) {
           <h3 className="font-semibold">Что проверять</h3>
           <p className="text-xs text-muted-foreground">Готовый план без режима «24 шага». Все необходимые проверки собраны по смысловым разделам.</p>
         </div>
-        <TestPlanOverview steps={plan} onOpenKnowledge={onOpenKnowledge}/>
+        <TestPlanOverview steps={plan} onOpenKnowledge={onOpenKnowledge ?? openHandbookFallback}/>
       </div>}
 
       <div className="mt-5 flex justify-between gap-3">
