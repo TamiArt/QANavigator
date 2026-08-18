@@ -19,6 +19,7 @@ export interface FieldConfig {
   required: boolean;
   min?: number;
   max?: number;
+  intermediateBoundaries?: number[];
   minLength?: number;
   maxLength?: number;
   format?: string;
