@@ -4,6 +4,15 @@ import { FIELD_TYPE_OPTIONS, createEmptyField, type FieldConfig, type TestObject
 interface Props { config: TestObjectConfig; onChange: (config: TestObjectConfig) => void; }
 const inputClass = "w-full rounded-lg border border-border bg-input-background px-3 py-2 text-sm";
 const numberOrUndefined = (value: string) => value === "" ? undefined : Number(value);
+const parseBoundaries = (value: string): number[] | undefined => {
+  const numbers = value
+    .split(/[;,\s]+/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map(Number)
+    .filter(Number.isFinite);
+  return numbers.length ? [...new Set(numbers)] : undefined;
+};
 
 function FieldEditor({ field, index, onChange, onRemove, canRemove }: { field: FieldConfig; index: number; onChange: (field: FieldConfig) => void; onRemove: () => void; canRemove: boolean; }) {
   return <div className="space-y-3 rounded-lg border border-border p-3">
@@ -13,9 +22,21 @@ function FieldEditor({ field, index, onChange, onRemove, canRemove }: { field: F
       <select aria-label={`Тип поля ${index + 1}`} value={field.dataType} onChange={(event) => onChange({...field, dataType:event.target.value as FieldConfig["dataType"]})} className={inputClass}>{FIELD_TYPE_OPTIONS.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select>
     </div>
     <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={field.required} onChange={(event) => onChange({...field, required:event.target.checked})}/>Обязательное поле</label>
-    {field.dataType === "number" ? <div className="grid gap-2 sm:grid-cols-2">
-      <input type="number" value={field.min ?? ""} onChange={(event) => onChange({...field, min:numberOrUndefined(event.target.value)})} placeholder="min — если известен" className={inputClass}/>
-      <input type="number" value={field.max ?? ""} onChange={(event) => onChange({...field, max:numberOrUndefined(event.target.value)})} placeholder="max — если известен" className={inputClass}/>
+    {field.dataType === "number" ? <div className="space-y-2">
+      <div className="grid gap-2 sm:grid-cols-2">
+        <input type="number" value={field.min ?? ""} onChange={(event) => onChange({...field, min:numberOrUndefined(event.target.value)})} placeholder="min — если известен" className={inputClass}/>
+        <input type="number" value={field.max ?? ""} onChange={(event) => onChange({...field, max:numberOrUndefined(event.target.value)})} placeholder="max — если известен" className={inputClass}/>
+      </div>
+      <div>
+        <input
+          value={field.intermediateBoundaries?.join(", ") ?? ""}
+          onChange={(event) => onChange({...field, intermediateBoundaries:parseBoundaries(event.target.value)})}
+          placeholder="Промежуточные границы/пороги — например: 18, 65"
+          aria-label={`Промежуточные границы поля ${index + 1}`}
+          className={inputClass}
+        />
+        <p className="mt-1 text-xs text-muted-foreground">Если правило меняется внутри диапазона. Например: возраст до 18 и от 18 — укажи <code>18</code>. Для нескольких порогов: <code>18, 65</code>.</p>
+      </div>
     </div> : <div className="grid gap-2 sm:grid-cols-2">
       <input type="number" min="0" value={field.minLength ?? ""} onChange={(event) => onChange({...field, minLength:numberOrUndefined(event.target.value)})} placeholder="min длина — если известна" className={inputClass}/>
       <input type="number" min="0" value={field.maxLength ?? ""} onChange={(event) => onChange({...field, maxLength:numberOrUndefined(event.target.value)})} placeholder="max длина — если известна" className={inputClass}/>
