@@ -4,6 +4,7 @@ import { useLocalStorage } from "../../hooks/use-local-storage";
 import { PROJECTS_STORAGE_KEY, ACTIVE_PROJECT_STORAGE_KEY, type ProductType, type QAProject } from "../project-workspace/types";
 import { ObjectCharacteristics } from "./components/ObjectCharacteristics";
 import { TestPlanOverview } from "./components/TestPlanOverview";
+import { buildIntermediateBoundarySteps } from "./intermediate-boundary-rules";
 import { buildTestPlan } from "./test-plan-rules";
 import { TEST_OBJECT_OPTIONS, createInitialObjectConfig, type TestObjectConfig } from "./types";
 
@@ -38,8 +39,10 @@ export function BeginnerWizard({ onOpenKnowledge }: BeginnerWizardProps) {
 
   const plan = useMemo(() => {
     const generated = buildTestPlan(config);
-    if (config.objectType !== "form" && config.objectType !== "auth") return generated;
-    return generated.filter((item) => !item.id.includes("-positive") || item.id === "form-happy");
+    const withoutRepeatedPositive = config.objectType === "form" || config.objectType === "auth"
+      ? generated.filter((item) => !item.id.includes("-positive") || item.id === "form-happy")
+      : generated;
+    return [...withoutRepeatedPositive, ...buildIntermediateBoundarySteps(config)];
   }, [config]);
 
   const reset = () => {
