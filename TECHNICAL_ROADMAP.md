@@ -520,3 +520,14 @@ Fixed the next concrete CI failure in the storage verification gate:
 - storage production code and persisted localStorage contracts were not changed.
 
 Next: validate the updated storage test and continue the full `npm run verify` gate.
+
+
+### 7.1.14 RTM CSV regression assertion correction — 2026-09-28
+
+Fixed the next Documentation test-gate failure:
+- the RTM CSV escaping implementation correctly produced a row with four columns when the test-case list was empty;
+- the regression assertion incorrectly expected an additional empty test-case column;
+- corrected the assertion to match the actual CSV schema for the zero-test-case input;
+- CSV escaping behavior itself was not changed.
+
+Next: rerun the Documentation test and continue the full `verify` gate.
