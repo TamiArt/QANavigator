@@ -85,8 +85,8 @@ test("state transition generator ignores invalid transition references", () => {
 test("decision table generates all boolean combinations", () => {
   const columns = algorithms.generateDecisionColumns(3, 4);
   assert.equal(columns.length, 8);
-  assert.deepEqual(columns[0], [true, true, true]);
-  assert.deepEqual(columns[7], [false, false, false]);
+  assert.deepEqual(Array.from(columns[0]), [true, true, true]);
+  assert.deepEqual(Array.from(columns[7]), [false, false, false]);
 });
 
 test("decision table action matrix is normalized to column count", () => {
@@ -95,7 +95,7 @@ test("decision table action matrix is normalized to column count", () => {
     { a1: [true] },
     3,
   );
-  assert.deepEqual(matrix, { a1: [true, false, false] });
+  assert.deepEqual(JSON.parse(JSON.stringify(matrix)), { a1: [true, false, false] });
 });
 
 test("decision table text preserves conditions and selected actions", () => {
