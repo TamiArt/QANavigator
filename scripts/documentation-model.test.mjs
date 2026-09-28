@@ -16,6 +16,7 @@ function loadModel(relativePath) {
   return module.exports;
 }
 
+const tabs = loadModel("src/app/features/documentation/documentation-model.ts");
 const rtm = loadModel("src/app/features/documentation/rtm-model.ts");
 const documents = loadModel("src/app/features/documentation/document-markdown.ts");
 
@@ -28,6 +29,19 @@ const testCases = [
   { id: "2", tcId: "TC-002", title: "Reset password" },
 ];
 const links = new Set(["REQ-001:TC-001", "REQ-002:TC-002"]);
+
+test("documentation tabs expose the complete stable tab contract", () => {
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(tabs.DOCUMENT_TAB_IDS)),
+    ["checklist", "testcase", "testplan", "bugreport", "testreport", "rtm"],
+  );
+  assert.equal(tabs.DOCUMENT_TABS.length, tabs.DOCUMENT_TAB_IDS.length);
+  assert.equal(new Set(tabs.DOCUMENT_TAB_IDS).size, tabs.DOCUMENT_TAB_IDS.length);
+  for (const tab of tabs.DOCUMENT_TABS) {
+    assert.ok(tab.label);
+    assert.ok(tab.iconName);
+  }
+});
 
 test("RTM coverage counts linked test cases per requirement", () => {
   assert.deepEqual(
