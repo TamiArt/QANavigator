@@ -7,6 +7,7 @@ import { PRESETS } from "../../core/constants";
 import { callAI, QA_SYSTEM_PROMPT, uid } from "../../core/ai";
 import type { ChecklistItem, TestCase, Module, Severity } from "../../domain/types";
 import { DOCUMENT_TABS } from "./documentation-model";
+import { buildTestCaseMarkdown } from "./document-markdown";
 import { buildRTMCsv, calculateRTMCoverage } from "./rtm-model";
 import type { RTMRequirement, RTMTestCase } from "./rtm-model";
 import { HANDBOOK } from "../../handbook-data";
@@ -275,6 +276,7 @@ function ChecklistDocSection() {
 }
 
 // ─── Test Case Template ───────────────────────────────
+// ─── Test Case Template ───────────────────────────────
 function TestCaseDocSection() {
   const today = new Date().toISOString().slice(0, 10);
   const [tcId, setTcId] = useState("TC-001");
@@ -291,29 +293,9 @@ function TestCaseDocSection() {
   const [date, setDate] = useState(today);
   const [testData, setTestData] = useState("");
 
-  const markdown = [
-    "# Тест-кейс " + tcId,
-    "",
-    "**Название:** " + (title || "—"),
-    "**Модуль/Функция:** " + (module || "—"),
-    "**Приоритет:** " + priority + " | **Серьёзность:** " + severity,
-    "**Статус:** " + status + " | **Автор:** " + (author || "—") + " | **Дата:** " + date,
-    "",
-    "## Предусловия *",
-    preconditions || "—",
-    "",
-    "## Тестовые данные",
-    testData || "—",
-    "",
-    "## Шаги воспроизведения *",
-    steps || "—",
-    "",
-    "## Ожидаемый результат *",
-    expected || "—",
-    "",
-    "## Фактический результат",
-    actualResult || "Заполняется при выполнении",
-  ].join("\n");
+
+  const markdown = buildTestCaseMarkdown({ tcId, title, module, preconditions, steps, expected, actualResult, priority, severity, status, author, date, testData });
+
 
   return (
     <div className="space-y-5">
