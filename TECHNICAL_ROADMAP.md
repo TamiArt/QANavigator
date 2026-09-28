@@ -499,3 +499,13 @@ Next stage:
 - validate the complete `npm run verify` gate through GitHub Actions;
 - resolve only repository-level failures that the verification pipeline exposes;
 - treat Vercel free-plan deployment-rate-limit failures as external infrastructure status, not source-code verification evidence.
+
+
+### 7.1.12 CI dependency resolution — 2026-09-28
+
+Resolved the first real CI gate failure after the Documentation milestone:
+- GitHub Actions failed before `npm run verify` because `@radix-ui/react-radio-group@1.2.5` does not exist in the npm registry;
+- changed the pinned dependency to the published `1.2.3` release, preserving the existing Radix major/minor line and avoiding an unrelated dependency upgrade;
+- failure was dependency-resolution infrastructure, not an application test/type/build failure.
+
+Next: re-run the verification pipeline and fix only any subsequent source-level failures.
