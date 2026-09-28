@@ -455,3 +455,17 @@ Next:
 - extract other stable pure document-generation helpers;
 - keep React state and presentation inside document sections;
 - run the full verification gate after the current decomposition batch.
+
+
+### 7.1.9 Documentation export-model stabilization — 2026-09-28
+
+Completed the next Documentation decomposition milestone:
+- extracted Test Case Markdown generation from React UI into `features/documentation/document-markdown.ts`;
+- kept document state and presentation in `DocumentationModule.tsx`;
+- preserved the existing exported Markdown structure and filenames;
+- RTM generation remains isolated in `rtm-model.ts`;
+- the Documentation feature now has explicit boundaries between tab metadata, shared fields, and pure document generators.
+
+The remaining large sections are still intentionally kept intact where they combine form state, file handling, validation/display logic and export composition. Further extraction will be done only where a stable pure boundary exists.
+
+Next stage: add focused regression coverage for document generators, then run the full verification gate and close the Documentation refactor milestone if all checks pass.
