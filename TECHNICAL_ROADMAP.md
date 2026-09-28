@@ -306,3 +306,5 @@ When a new agent starts work, it must read this file first, determine the curren
 - Добавлен Node built-in smoke-test suite: `scripts/architecture-smoke.test.mjs`.
 - `npm run verify` теперь включает `npm run test:smoke` перед typecheck/build.
 - GitHub Actions подтвердил успешные conflict/module-size gates; smoke suite выявил и зафиксировал реальные проблемы конфигурации, которые исправляются до финального зелёного прогона.
+
+- PR #11 reopened on 2026-09-28 so the current branch head is validated by GitHub Actions against `main`.
