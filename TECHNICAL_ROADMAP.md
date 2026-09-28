@@ -400,3 +400,22 @@ Next:
 - split the largest document sections only where a stable responsibility boundary exists;
 - keep every resulting module below the 1500-line limit;
 - add regression coverage for document tab availability and export formatting.
+
+
+### 7.1.6 Figma scaffold cleanup — 2026-09-28
+
+Audited the active branch for remnants of the original Figma/Make scaffold.
+
+Removed:
+- the unused `figma:asset/*` Vite resolver;
+- Figma/Make-specific comments from the Vite configuration;
+- the Figma-generated package name `@figma/my-make-file`, replaced with the canonical project name `qa-navigator`.
+
+Verified by repository search that no `figma:asset/`, `@figma` or `figma.com` references remain in the searchable source tree.
+
+No application behavior or localStorage keys were intentionally changed. No other branch was modified.
+
+Next cleanup target:
+- audit package dependencies against actual imports;
+- remove only dependencies proven unused, in a separate focused change;
+- then run the full verification pipeline.
