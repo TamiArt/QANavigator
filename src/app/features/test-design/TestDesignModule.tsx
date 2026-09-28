@@ -13,6 +13,9 @@ import {
   type STState,
   type STTestCase,
   type STTransition,
+  generateBVA,
+  type BVAField,
+  type BVAPoint,
 } from "./algorithms";
 
 // ══════════════════════════════════════════════════════
@@ -438,49 +441,7 @@ function EPTab() {
 }
 
 // ── Boundary Value Analysis ───────────────────────────
-interface BVAField {
-  id: string;
-  name: string;
-  min: string;
-  max: string;
-  step: string;
-  required: boolean;
-  isInteger: boolean;
-}
-
-interface BVAPoint {
-  label: string;
-  value: string;
-  type: "valid" | "invalid";
-  expected: string;
-}
-
-function generateBVA(field: BVAField): BVAPoint[] {
-  const min = parseFloat(field.min);
-  const max = parseFloat(field.max);
-  const step = parseFloat(field.step) || 1;
-  if (isNaN(min) || isNaN(max) || min >= max) return [];
-
-  const fmt = (n: number) => {
-    if (field.isInteger) return String(Math.round(n));
-    const dec = step.toString().includes(".") ? step.toString().split(".")[1].length : 0;
-    return n.toFixed(dec);
-  };
-
-  const pts: BVAPoint[] = [];
-  pts.push({ label: "min − 1 (ниже минимума)", value: fmt(min - step), type: "invalid", expected: "Отклонить / ошибка валидации" });
-  pts.push({ label: "min (минимально допустимое)", value: fmt(min), type: "valid", expected: "Принять значение" });
-  if (min + step < max) pts.push({ label: "min + 1 (чуть выше минимума)", value: fmt(min + step), type: "valid", expected: "Принять значение" });
-  const mid = (min + max) / 2;
-  if (Math.abs(mid - min) > step && Math.abs(mid - max) > step)
-    pts.push({ label: "среднее (номинальное)", value: fmt(mid), type: "valid", expected: "Принять значение" });
-  if (max - step > min) pts.push({ label: "max − 1 (чуть ниже максимума)", value: fmt(max - step), type: "valid", expected: "Принять значение" });
-  pts.push({ label: "max (максимально допустимое)", value: fmt(max), type: "valid", expected: "Принять значение" });
-  pts.push({ label: "max + 1 (выше максимума)", value: fmt(max + step), type: "invalid", expected: "Отклонить / ошибка валидации" });
-  pts.push({ label: "нечисловое значение", value: "abc", type: "invalid", expected: "Ошибка формата" });
-  if (field.required) pts.push({ label: "пустое поле (обязательное)", value: "(пусто)", type: "invalid", expected: "Поле обязательно" });
-  return pts;
-}
+// BVA model and generator live in the pure algorithms layer.
 
 function BVATab() {
   const [fields, setFields] = useState<BVAField[]>([
