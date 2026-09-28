@@ -6,6 +6,9 @@ export interface DataBackup {
   data: Record<string, unknown>;
 }
 
+export type BackupValueValidator = (value: unknown) => boolean;
+export type BackupValueValidators = Readonly<Record<string, BackupValueValidator>>;
+
 export function createDataBackup(
   data: Record<string, unknown>,
   timestamp: string,
@@ -20,6 +23,7 @@ export function createDataBackup(
 export function parseDataBackup(
   raw: string,
   allowedKeys: readonly string[],
+  validators: BackupValueValidators = {},
 ): DataBackup {
   const parsed: unknown = JSON.parse(raw);
 
@@ -42,7 +46,12 @@ export function parseDataBackup(
   const allowed = new Set(allowedKeys);
   const data: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(parsed.data)) {
-    if (allowed.has(key)) data[key] = value;
+    if (!allowed.has(key)) continue;
+    const validator = validators[key];
+    if (validator && !validator(value)) {
+      throw new Error(`Некорректные данные резервной копии: ${key}`);
+    }
+    data[key] = value;
   }
 
   return {
