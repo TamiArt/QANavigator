@@ -1221,3 +1221,34 @@ function StateTransitionTab() {
 // ══════════════════════════════════════════════════════
 // MODULE 2: TEST DESIGN
 // ══════════════════════════════════════════════════════
+
+
+export function TestDesignModule() {
+  const tabs = [
+    { id: "pairwise", label: "Pairwise", component: <PairwiseTab /> },
+    { id: "equivalence", label: "Эквивалентные классы", component: <EPTab /> },
+    { id: "boundary", label: "Граничные значения", component: <BVATab /> },
+    { id: "decision", label: "Таблица решений", component: <DecisionTableTab /> },
+    { id: "state", label: "Переходы состояний", component: <StateTransitionTab /> },
+  ];
+  const [active, setActive] = useState(tabs[0]?.id ?? "pairwise");
+  const current = tabs.find((tab) => tab.id === active) ?? tabs[0];
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-xl font-semibold text-foreground mb-1">🧪 Тест-дизайн</h2>
+        <p className="text-sm text-muted-foreground">Генераторы техник тест-дизайна: Pairwise, классы эквивалентности, граничные значения, таблица решений и переходы состояний.</p>
+      </div>
+      <div className="overflow-x-auto -mx-1 px-1">
+        <div className="flex gap-1 bg-muted rounded-xl p-1 w-max">
+          {tabs.map((tab) => (
+            <button key={tab.id} onClick={() => setActive(tab.id)} className={"px-3 py-1.5 rounded-lg text-xs font-medium transition-all " + (active === tab.id ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {current?.component}
+    </div>
+  );
+}
