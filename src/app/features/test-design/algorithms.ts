@@ -217,7 +217,7 @@ interface BVAPoint {
   expected: string;
 }
 
-function generateBVA(field: BVAField): BVAPoint[] {
+export function generateBVA(field: BVAField): BVAPoint[] {
   const min = parseFloat(field.min);
   const max = parseFloat(field.max);
   const step = parseFloat(field.step) || 1;
