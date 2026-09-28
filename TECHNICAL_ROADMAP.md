@@ -581,3 +581,15 @@ Next stage:
 - do not add validators without a concrete data contract.
 
 No other branch was modified.
+
+
+### 7.1.17 Backup regression assertion correction — 2026-09-28
+
+CI precisely localized a failure in `scripts/data-backup.test.mjs`:
+- the backup parser produced the expected data structure;
+- the test loaded the TypeScript module in a separate VM realm, so arrays/objects had different prototypes from the test realm;
+- `assert.deepEqual` therefore rejected structurally equal cross-realm values;
+- normalized the parsed value through JSON before assertion;
+- production backup parsing behavior was not changed.
+
+Next: rerun the full verification gate and continue only from the next concrete CI result.
