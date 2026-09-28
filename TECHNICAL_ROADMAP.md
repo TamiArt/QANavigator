@@ -74,15 +74,15 @@ Completed:
 - `main` was not modified.
 
 Current branch:
-`refactor/production-architecture`
+`refactor/handbook-hierarchy`
 
 Current PR:
-#11 — modular architecture refactor.
+#12 — handbook hierarchy and test-design decomposition.
 
-Important verification status:
-- static local import/export validation: passed;
-- repository build/typecheck: **not yet verified in the agent environment**;
-- GitHub Actions result must be checked before considering this stage complete.
+Verification baseline:
+- GitHub Actions `verify` passed for commit `41412e1c` after the latest TypeScript export fix;
+- subsequent storage-layer commits are awaiting their own CI run;
+- Vercel may independently report a build-rate-limit failure; this is external to the repository verification pipeline.
 
 ---
 
@@ -197,14 +197,20 @@ Split large documentation logic into:
 - export logic.
 
 ### Phase 4 — Storage layer
-**Status: PLANNED**
+**Status: IN PROGRESS**
 
-Create a small persistence layer:
-- typed storage adapter;
-- schema version;
-- migrations;
-- safe JSON parsing;
-- centralized storage keys.
+Implemented:
+- versioned persistence boundary in `src/app/core/storage.ts`;
+- schema version `1` envelope for new writes;
+- backward-compatible reads of legacy raw JSON values;
+- safe fallback for invalid JSON;
+- `useLocalStorage` migrated to the new boundary;
+- storage schema regression tests integrated into `verify`.
+
+Next:
+- centralize storage key definitions;
+- add explicit migrations for future schema versions;
+- validate persisted structured data at read boundaries.
 
 ### Phase 5 — Validation and tests
 **Status: PLANNED**
@@ -341,8 +347,6 @@ No other branch was modified.
 
 ### 7.1.2 Test Design decomposition — 2026-09-28
 
-### 7.1.2 Test Design decomposition — 2026-09-28
-
 Implemented on `refactor/handbook-hierarchy`:
 
 - extracted Pairwise/IPOG, Equivalence Partitioning and State Transition generators into `src/app/features/test-design/algorithms.ts`;
@@ -365,3 +369,18 @@ Continued on `refactor/handbook-hierarchy`:
 - `TestDesignModule.tsx` remains below the 1500-line limit.
 
 No other branch was modified.
+
+
+### 7.1.4 Persistence boundary — 2026-09-28
+
+Implemented on `refactor/handbook-hierarchy`:
+
+- added `src/app/core/storage.ts` as the persistence serialization boundary;
+- introduced storage schema version `1`;
+- new writes use a versioned `{ version, data }` envelope;
+- legacy raw JSON values remain readable, so existing user data is not invalidated;
+- invalid JSON safely falls back to the caller-provided initial value;
+- updated `useLocalStorage` to use the versioned boundary;
+- added `scripts/storage-schema.test.mjs` and integrated it into `verify`.
+
+No existing localStorage keys were renamed or removed. No other branch was modified.
