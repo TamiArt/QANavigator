@@ -6,10 +6,9 @@ import { CopyButton, Badge, EmptyState } from "../../components/shared";
 import { PRESETS } from "../../core/constants";
 import { callAI, QA_SYSTEM_PROMPT, uid } from "../../core/ai";
 import type { ChecklistItem, TestCase, Module, Severity } from "../../domain/types";
+import { DOCUMENT_TABS } from "./documentation-model";
 import { HANDBOOK } from "../../handbook-data";
 import { downloadTextFile } from "../../lib/download";
-
-type DocTab = "checklist" | "testcase" | "testplan" | "bugreport" | "testreport" | "rtm";
 
 // ─── shared helper ────────────────────────────────────
 function FieldLabel({ label, required }: { label: string; required?: boolean }) {
@@ -957,14 +956,16 @@ function RTMSection() {
 export function DocumentationModule() {
   const [activeTab, setActiveTab] = useState<DocTab>("testplan");
 
-  const tabs: { id: DocTab; label: string; icon: React.ReactNode }[] = [
-    { id: "checklist", label: "Чек-лист", icon: <CheckSquare className="w-4 h-4" /> },
-    { id: "testcase", label: "Тест-кейс", icon: <FileText className="w-4 h-4" /> },
-    { id: "testplan", label: "Тест-план", icon: <Clipboard className="w-4 h-4" /> },
-    { id: "bugreport", label: "Баг-репорт", icon: <Bug className="w-4 h-4" /> },
-    { id: "testreport", label: "Test Report", icon: <BarChart2 className="w-4 h-4" /> },
-    { id: "rtm", label: "RTM", icon: <Layers className="w-4 h-4" /> },
-  ];
+  const tabs = DOCUMENT_TABS.map((tab) => ({
+    ...tab,
+    icon:
+      tab.iconName === "CheckSquare" ? <CheckSquare className="w-4 h-4" /> :
+      tab.iconName === "FileText" ? <FileText className="w-4 h-4" /> :
+      tab.iconName === "Clipboard" ? <Clipboard className="w-4 h-4" /> :
+      tab.iconName === "Bug" ? <Bug className="w-4 h-4" /> :
+      tab.iconName === "BarChart2" ? <BarChart2 className="w-4 h-4" /> :
+      <Layers className="w-4 h-4" />,
+  }));
 
   return (
     <div className="space-y-5">
