@@ -18,6 +18,7 @@ import { SettingsModule } from "./features/settings/SettingsModule";
 import { ApiModal } from "./components/ApiModal";
 import { Tooltip } from "./components/shared";
 import { AppContext } from "./core/app-context";
+import { STORAGE_KEYS } from "./core/constants";
 import { useLocalStorage } from "./hooks/use-local-storage";
 import type {
   ApiKeys, BugReport, ChecklistItem, Module, TestCase, Theme,
@@ -38,20 +39,20 @@ const NAV_ITEMS: { id: Module; label: string; icon: ReactNode }[] = [
 ];
 
 export default function App() {
-  const [theme, setTheme] = useLocalStorage<Theme>("qa_nav_theme", "dark");
+  const [theme, setTheme] = useLocalStorage<Theme>(STORAGE_KEYS.theme, "dark");
   const [activeModule, setActiveModule] = useState<Module>("requirements");
   const [selectedTechnique, setSelectedTechnique] = useState<string | null>(null);
-  const [apiKeys, setApiKeys] = useLocalStorage<ApiKeys>("qa_nav_apikeys", {
+  const [apiKeys, setApiKeys] = useLocalStorage<ApiKeys>(STORAGE_KEYS.apiKeys, {
     openrouter: "", gemini: "", provider: "openrouter",
   });
-  const [checklists, setChecklists] = useLocalStorage<ChecklistItem[]>("qa_navigator_checklists", []);
-  const [testCases, setTestCases] = useLocalStorage<TestCase[]>("qa_navigator_testcases", []);
-  const [bugReports, setBugReports] = useLocalStorage<BugReport[]>("qa_navigator_bugreports", []);
-  const [bookmarks, setBookmarks] = useLocalStorage<string[]>("qa_navigator_bookmarks", []);
+  const [checklists, setChecklists] = useLocalStorage<ChecklistItem[]>(STORAGE_KEYS.checklists, []);
+  const [testCases, setTestCases] = useLocalStorage<TestCase[]>(STORAGE_KEYS.testCases, []);
+  const [bugReports, setBugReports] = useLocalStorage<BugReport[]>(STORAGE_KEYS.bugReports, []);
+  const [bookmarks, setBookmarks] = useLocalStorage<string[]>(STORAGE_KEYS.bookmarks, []);
   const [showApiModal, setShowApiModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [requirementsText, setRequirementsText] = useLocalStorage<string>("qa_navigator_req_text", "");
-  const [requirementsResult, setRequirementsResult] = useLocalStorage<string>("qa_navigator_req_result", "");
+  const [requirementsText, setRequirementsText] = useLocalStorage<string>(STORAGE_KEYS.requirementsText, "");
+  const [requirementsResult, setRequirementsResult] = useLocalStorage<string>(STORAGE_KEYS.requirementsResult, "");
 
   const toggleTheme = useCallback(() => {
     setTheme(theme === "dark" ? "light" : "dark");
