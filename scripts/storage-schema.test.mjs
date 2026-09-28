@@ -35,6 +35,13 @@ test("storage schema keeps legacy raw values readable", () => {
   assert.deepEqual(Array.from(parseStoredValue(JSON.stringify(["legacy"]), [])), ["legacy"]);
 });
 
+test("storage schema rejects unsupported future versions", () => {
+  assert.deepEqual(
+    parseStoredValue(JSON.stringify({ version: STORAGE_SCHEMA_VERSION + 1, data: ["future"] }), ["initial"]),
+    ["initial"],
+  );
+});
+
 test("storage schema falls back to initial data on invalid JSON", () => {
   assert.deepEqual(Array.from(parseStoredValue("{broken", ["initial"])), ["initial"]);
 });
