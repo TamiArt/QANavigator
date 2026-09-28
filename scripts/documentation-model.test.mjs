@@ -48,3 +48,12 @@ test("RTM CSV contains requirement, test-case and coverage columns", () => {
   assert.match(csv, /"REQ-001","Login",high,✓,,Покрыто/);
   assert.match(csv, /"REQ-002","Password reset",medium,,✓,Покрыто/);
 });
+
+test("RTM CSV escapes commas and quotes in requirement text", () => {
+  const csv = model.buildRTMCsv(
+    [{ id: "3", reqId: "REQ-003", title: 'Login, "remember me"', priority: "low" }],
+    [],
+    new Set(),
+  );
+  assert.match(csv, /"REQ-003","Login, ""remember me""",low,,Не покрыто/);
+});
