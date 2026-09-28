@@ -419,3 +419,23 @@ Next cleanup target:
 - audit package dependencies against actual imports;
 - remove only dependencies proven unused, in a separate focused change;
 - then run the full verification pipeline.
+
+
+### 7.1.7 Documentation shared UI extraction — 2026-09-28
+
+Continued the Documentation decomposition on `refactor/handbook-hierarchy`:
+- extracted `FieldLabel`, `DocField`, `DocSelect` and `ExportCard` into `features/documentation/documentation-fields.tsx`;
+- kept these helpers scoped to the Documentation feature because they are document-editor primitives rather than global UI;
+- `DocumentationModule.tsx` now focuses more narrowly on document-specific state, generation and presentation;
+- preserved existing field behavior, Markdown export and copy/download actions.
+
+Cleanup in the same branch:
+- removed the unused `src/app/components/figma/ImageWithFallback.tsx` Figma scaffold;
+- removed the unused root `default_shadcn_theme.css` Figma/Make theme artifact;
+- no Figma references remain in the searchable repository source;
+- no application storage keys were changed.
+
+Next:
+- continue extracting document-specific models/generation helpers only where the responsibility is stable;
+- audit the large generated `components/ui` set and dependencies against actual imports before deleting any additional shared UI;
+- run the full verification gate after the cleanup batch.
