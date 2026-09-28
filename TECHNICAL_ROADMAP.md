@@ -337,3 +337,19 @@ Completed on `refactor/handbook-hierarchy`:
 - added `test:handbook` to the verification pipeline.
 
 No other branch was modified.
+
+
+### 7.1.2 Test Design decomposition — 2026-09-28
+
+### 7.1.2 Test Design decomposition — 2026-09-28
+
+Implemented on `refactor/handbook-hierarchy`:
+
+- extracted Pairwise/IPOG, Equivalence Partitioning and State Transition generators into `src/app/features/test-design/algorithms.ts`;
+- extracted Boundary Value Analysis (BVA) model and generator into the same pure algorithms layer;
+- exported algorithm contracts explicitly so the UI module depends on reusable logic rather than local implementations;
+- kept `TestDesignModule.tsx` as the React/UI layer; current size is below the 1500-line project limit;
+- added executable algorithm tests using the existing TypeScript dependency and Node's built-in test runner;
+- added the Test Design test suite to the main `verify` pipeline.
+
+No other branch was modified.
