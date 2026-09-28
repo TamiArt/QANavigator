@@ -114,24 +114,21 @@ export const HANDBOOK_SECTIONS: HandbookSection[] = [
   {
     id: "10-automation",
     title: "10. Автоматизация и CI/CD",
-    description: "Пирамида тестирования, стратегия автоматизации, POM, фреймворки и pipeline.",
+    description: "Пирамида тестирования, стратегия автоматизации, POM, фреймворки, CI/CD и pipeline.",
     topicIds: [
       "auto3",
       "auto1",
       "auto2",
-      "auto4",
     ],
   },
   {
     id: "11-tools-devops",
     title: "11. Инструменты QA и DevOps",
-    description: "Git, Bash, Docker, DevTools, API-инструменты и карта рабочих инструментов.",
+    description: "Git, Bash, Docker, DevTools, API-инструменты, тест-менеджмент и карта рабочих инструментов.",
     topicIds: [
       "tools1",
       "web9",
-      "web10",
       "git1",
-      "git2",
       "bash1",
       "bash2",
     ],
