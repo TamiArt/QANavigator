@@ -39,7 +39,7 @@ test("backup parser keeps only supported storage keys", () => {
 
   const parsed = parseDataBackup(raw, allowedKeys);
 
-  assert.deepEqual(parsed.data, {
+  assert.deepEqual(JSON.parse(JSON.stringify(parsed.data)), {
     qa_navigator_testcases: [{ id: "TC-1" }],
     qa_navigator_bookmarks: ["topic-1"],
   });
