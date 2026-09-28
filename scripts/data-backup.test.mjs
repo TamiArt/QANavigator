@@ -21,6 +21,10 @@ const { BACKUP_SCHEMA_VERSION, createDataBackup, parseDataBackup } = loadModel(
 );
 
 const allowedKeys = ["qa_navigator_testcases", "qa_navigator_bookmarks"];
+const validators = {
+  qa_navigator_testcases: (value) => Array.isArray(value) && value.every((item) => item && typeof item.id === "string"),
+  qa_navigator_bookmarks: (value) => Array.isArray(value) && value.every((item) => typeof item === "string"),
+};
 
 test("backup model creates the current versioned envelope", () => {
   const backup = createDataBackup({ qa_navigator_testcases: [{ id: "TC-1" }] }, "2026-09-28T12:00:00.000Z");
@@ -37,7 +41,7 @@ test("backup parser keeps only supported storage keys", () => {
     unknown_key: "must be ignored",
   }, "2026-09-28T12:00:00.000Z"));
 
-  const parsed = parseDataBackup(raw, allowedKeys);
+  const parsed = parseDataBackup(raw, allowedKeys, validators);
 
   assert.deepEqual(JSON.parse(JSON.stringify(parsed.data)), {
     qa_navigator_testcases: [{ id: "TC-1" }],
@@ -60,4 +64,29 @@ test("backup parser rejects malformed backup structure", () => {
   assert.throws(() => parseDataBackup(JSON.stringify({ version: BACKUP_SCHEMA_VERSION, data: {} }), allowedKeys), /Некорректная дата/);
   assert.throws(() => parseDataBackup(JSON.stringify({ version: BACKUP_SCHEMA_VERSION, timestamp: "now", data: [] }), allowedKeys), /Некорректная структура/);
   assert.throws(() => parseDataBackup("not-json", allowedKeys));
+});
+
+
+test("backup parser rejects malformed supported storage values", () => {
+  const raw = JSON.stringify(createDataBackup({
+    qa_navigator_testcases: [{ id: "TC-1", steps: "broken" }],
+  }, "2026-09-28T12:00:00.000Z"));
+
+  assert.throws(
+    () => parseDataBackup(raw, allowedKeys, validators),
+    /Некорректные данные резервной копии: qa_navigator_testcases/,
+  );
+});
+
+test("backup parser accepts supported values after validation", () => {
+  const raw = JSON.stringify(createDataBackup({
+    qa_navigator_testcases: [{ id: "TC-2" }],
+    qa_navigator_bookmarks: ["topic-2"],
+  }, "2026-09-28T12:00:00.000Z"));
+
+  const parsed = parseDataBackup(raw, allowedKeys, validators);
+  assert.deepEqual(JSON.parse(JSON.stringify(parsed.data)), {
+    qa_navigator_testcases: [{ id: "TC-2" }],
+    qa_navigator_bookmarks: ["topic-2"],
+  });
 });
