@@ -5,10 +5,18 @@ interface VersionedEnvelope<T> {
   data: T;
 }
 
+function isObject(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object";
+}
+
 function isVersionedEnvelope<T>(value: unknown): value is VersionedEnvelope<T> {
-  if (!value || typeof value !== "object") return false;
-  const candidate = value as { version?: unknown; data?: unknown };
-  return candidate.version === STORAGE_SCHEMA_VERSION && "data" in candidate;
+  if (!isObject(value)) return false;
+  return value.version === STORAGE_SCHEMA_VERSION && "data" in value;
+}
+
+function isUnsupportedVersionedEnvelope(value: unknown): boolean {
+  if (!isObject(value)) return false;
+  return "version" in value && "data" in value && value.version !== STORAGE_SCHEMA_VERSION;
 }
 
 export function parseStoredValue<T>(raw: string | null, initial: T): T {
@@ -16,6 +24,7 @@ export function parseStoredValue<T>(raw: string | null, initial: T): T {
   try {
     const parsed: unknown = JSON.parse(raw);
     if (isVersionedEnvelope<T>(parsed)) return parsed.data;
+    if (isUnsupportedVersionedEnvelope(parsed)) return initial;
     return parsed as T;
   } catch {
     return initial;
