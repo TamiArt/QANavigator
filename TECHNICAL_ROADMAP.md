@@ -80,8 +80,7 @@ Current PR:
 #12 — handbook hierarchy and test-design decomposition.
 
 Verification baseline:
-- GitHub Actions `verify` passed for commit `41412e1c` after the latest TypeScript export fix;
-- subsequent storage-layer commits are awaiting their own CI run;
+- GitHub Actions `verify` passed for the latest CI cycle after the DocTab/plugin-react fixes;
 - Vercel may independently report a build-rate-limit failure; this is external to the repository verification pipeline.
 
 ---
@@ -204,12 +203,12 @@ Implemented:
 - schema version `1` envelope for new writes;
 - backward-compatible reads of legacy raw JSON values;
 - safe fallback for invalid JSON;
+- unsupported future version envelopes are rejected instead of being interpreted as current data;
 - `useLocalStorage` migrated to the new boundary;
 - storage schema regression tests integrated into `verify`.
 
 Next:
-- centralize storage key definitions;
-- add explicit migrations for future schema versions;
+- add explicit migrations when schema version `2+` is actually introduced;
 - validate persisted structured data at read boundaries.
 
 ### Phase 5 — Validation and tests
@@ -531,3 +530,28 @@ Fixed the next Documentation test-gate failure:
 - CSV escaping behavior itself was not changed.
 
 Next: rerun the Documentation test and continue the full `verify` gate.
+
+
+### 7.1.15 CI gate restored — 2026-09-28
+
+The full GitHub Actions verification run completed successfully after the concrete CI fixes:
+- dependency installation completed successfully;
+- `npm run verify` completed successfully;
+- TypeScript typecheck passed;
+- production build passed;
+- handbook, Test Design, storage and Documentation regression suites passed.
+
+This closes the current CI-recovery stage. No further CI changes are required unless a new failing run exposes a concrete regression.
+
+
+### 7.1.16 Storage compatibility hardening — 2026-09-28
+
+Implemented the next concrete Storage-layer hardening step:
+- unsupported versioned storage envelopes are now rejected and safely fall back to the caller-provided initial value;
+- legacy unversioned JSON values remain readable;
+- current schema version `1` continues to deserialize normally;
+- added a regression test for a future schema version;
+- no existing localStorage keys were renamed or removed;
+- no schema migration is introduced until a real version `2` format exists.
+
+Next stage: rerun the complete `verify` gate, then move to explicit structured-data validation only where persisted data contracts are known.
