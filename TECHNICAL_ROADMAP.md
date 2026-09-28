@@ -250,6 +250,37 @@ Before production release:
 - backup/import compatibility verified;
 - documentation updated.
 
+
+## 7.1 Handbook hierarchy refactor
+
+**Status: IN PROGRESS**
+
+The QA Knowledge Base is being reorganized into a learning hierarchy without deleting or shortening existing educational content.
+
+Current hierarchy:
+
+1. Foundations
+2. Requirements and lifecycle
+3. Testing levels, types and cycles
+4. Test design
+5. Web testing
+6. API testing
+7. Databases and test data
+8. Environments and release
+9. Test documentation and defects
+10. Automation and CI/CD
+11. QA tools and DevOps
+12. Specialized testing
+
+Implementation rules:
+- Existing topic text and meaning are preserved.
+- Existing topic IDs are preserved for compatibility with bookmarks and other stored references.
+- Curriculum order is separated from topic content.
+- Hierarchy metadata is kept in `src/app/handbook-hierarchy.ts`.
+- The handbook UI displays section boundaries while search, level filters and bookmarks continue to work against the same topic records.
+- Existing merged topics remain governed by `MERGED_TOPIC_IDS` and are not duplicated in the visible list.
+- Further content consolidation must be performed only after exact source text is inspected and verified; do not delete content merely because topics overlap.
+
 ---
 
 ## 8. Definition of Done
