@@ -129,7 +129,7 @@ export function TestExecutionModule() {
           <div className="divide-y divide-border">
             {checklists.map((item) => (
               <div key={item.id} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors">
-                <Badge variant={item.category as any} />
+                <Badge variant={item.category as any}>{item.category}</Badge>
                 <span className="flex-1 text-sm text-foreground">{item.text}</span>
                 <div className="flex items-center gap-1.5">
                   {(["passed", "failed", "blocked"] as TestStatus[]).map((s) => (
