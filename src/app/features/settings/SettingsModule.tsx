@@ -3,6 +3,13 @@ import { useState } from "react";
 import { Database, Download, Key, Info, Trash2, Upload } from "lucide-react";
 import { useApp } from "../../core/app-context";
 import { EXPORTABLE_STORAGE_KEYS } from "../../core/constants";
+import {
+  isBookmarksStorageValue,
+  isBugReportsStorageValue,
+  isChecklistsStorageValue,
+  isTestCasesStorageValue,
+  isTextStorageValue,
+} from "../../core/storage-validators";
 import { downloadTextFile } from "../../lib/download";
 import { createDataBackup, parseDataBackup } from "./data-backup";
 
@@ -43,7 +50,14 @@ export function SettingsModule() {
       const reader = new FileReader();
       reader.onload = (ev) => {
         try {
-          const backup = parseDataBackup(String(ev.target?.result ?? ""), EXPORTABLE_STORAGE_KEYS);
+          const backup = parseDataBackup(String(ev.target?.result ?? ""), EXPORTABLE_STORAGE_KEYS, {
+            qa_navigator_checklists: isChecklistsStorageValue,
+            qa_navigator_testcases: isTestCasesStorageValue,
+            qa_navigator_bugreports: isBugReportsStorageValue,
+            qa_navigator_bookmarks: isBookmarksStorageValue,
+            qa_navigator_req_text: isTextStorageValue,
+            qa_navigator_req_result: isTextStorageValue,
+          });
           Object.entries(backup.data).forEach(([key, value]) => {
             localStorage.setItem(key, JSON.stringify(value));
           });
