@@ -509,3 +509,14 @@ Resolved the first real CI gate failure after the Documentation milestone:
 - failure was dependency-resolution infrastructure, not an application test/type/build failure.
 
 Next: re-run the verification pipeline and fix only any subsequent source-level failures.
+
+
+### 7.1.13 Storage schema test transpilation — 2026-09-28
+
+Fixed the next concrete CI failure in the storage verification gate:
+- `scripts/storage-schema.test.mjs` was executing the TypeScript source `src/app/core/storage.ts` directly in Node's VM;
+- Node 22 correctly rejected TypeScript-only syntax such as `as const` before any storage assertions could run;
+- updated the test loader to transpile the TypeScript module with the repository's existing TypeScript dependency, matching the established Documentation model test approach;
+- storage production code and persisted localStorage contracts were not changed.
+
+Next: validate the updated storage test and continue the full `npm run verify` gate.
