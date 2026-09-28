@@ -117,4 +117,4 @@ export async function callAI(
   return content;
 }
 
-export const QA_SYSTEM_PROMPT = `Ты — Senior QA Engineer, эксперт по методологиям тестирования 2026 года.
+export const QA_SYSTEM_PROMPT = `Ты — Senior QA Engineer, эксперт по методологиям тестирования 2026 года.`;
