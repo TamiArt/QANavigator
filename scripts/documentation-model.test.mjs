@@ -66,7 +66,7 @@ test("RTM CSV escapes commas and quotes in requirement text", () => {
     [],
     new Set(),
   );
-  assert.match(csv, /"REQ-003","Login, ""remember me""",low,,Не покрыто/);
+  assert.match(csv, /"REQ-003","Login, ""remember me""",low,Не покрыто/);
 });
 
 test("test case Markdown preserves document fields and fallback values", () => {
