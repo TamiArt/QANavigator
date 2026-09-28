@@ -22,7 +22,7 @@ const { BACKUP_SCHEMA_VERSION, createDataBackup, parseDataBackup } = loadModel(
 
 const allowedKeys = ["qa_navigator_testcases", "qa_navigator_bookmarks"];
 const validators = {
-  qa_navigator_testcases: (value) => Array.isArray(value) && value.every((item) => item && typeof item.id === "string"),
+  qa_navigator_testcases: (value) => Array.isArray(value) && value.every((item) => item && typeof item.id === "string" && Array.isArray(item.steps)),
   qa_navigator_bookmarks: (value) => Array.isArray(value) && value.every((item) => typeof item === "string"),
 };
 
