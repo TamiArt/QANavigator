@@ -381,6 +381,7 @@ Implemented on `refactor/handbook-hierarchy`:
 - legacy raw JSON values remain readable, so existing user data is not invalidated;
 - invalid JSON safely falls back to the caller-provided initial value;
 - updated `useLocalStorage` to use the versioned boundary;
+- centralized all existing persistence keys without renaming them;
 - added `scripts/storage-schema.test.mjs` and integrated it into `verify`.
 
 No existing localStorage keys were renamed or removed. No other branch was modified.
