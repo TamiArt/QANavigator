@@ -75,6 +75,7 @@ export const HANDBOOK_SECTIONS: HandbookSection[] = [
       "api2",
       "api3",
       "api4",
+      "web5",
       "web6",
       "web11",
     ],
@@ -85,6 +86,7 @@ export const HANDBOOK_SECTIONS: HandbookSection[] = [
     description: "SQL, NoSQL, MongoDB и управление тестовыми данными.",
     topicIds: [
       "db1",
+      "web7",
       "db2",
       "db3",
     ],
@@ -126,6 +128,8 @@ export const HANDBOOK_SECTIONS: HandbookSection[] = [
     description: "Git, Bash, Docker, DevTools, API-инструменты и карта рабочих инструментов.",
     topicIds: [
       "tools1",
+      "web9",
+      "web10",
       "git1",
       "git2",
       "bash1",
@@ -140,6 +144,7 @@ export const HANDBOOK_SECTIONS: HandbookSection[] = [
       "tt6",
       "tt7",
       "tt4",
+      "web8",
       "mob1",
       "mob2",
       "mob3",
