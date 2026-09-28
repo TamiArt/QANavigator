@@ -7,6 +7,8 @@ import { PRESETS } from "../../core/constants";
 import { callAI, QA_SYSTEM_PROMPT, uid } from "../../core/ai";
 import type { ChecklistItem, TestCase, Module, Severity } from "../../domain/types";
 import { DOCUMENT_TABS } from "./documentation-model";
+import { buildRTMCsv, calculateRTMCoverage } from "./rtm-model";
+import type { RTMRequirement, RTMTestCase } from "./rtm-model";
 import { HANDBOOK } from "../../handbook-data";
 import { downloadTextFile } from "../../lib/download";
 import { DocField, DocSelect, ExportCard, FieldLabel } from "./documentation-fields";
@@ -700,8 +702,6 @@ function TestReportDocSection() {
 }
 
 // ─── RTM (Requirement Traceability Matrix) ────────────
-import { buildRTMCsv, calculateRTMCoverage } from "./rtm-model";
-
 function RTMSection() {
   const [requirements, setRequirements] = useState<RTMRequirement[]>([
     { id: uid(), reqId: "REQ-001", title: "Пользователь может авторизоваться по email и паролю", priority: "high" },
