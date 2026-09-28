@@ -305,6 +305,6 @@ When a new agent starts work, it must read this file first, determine the curren
 - Удалён `noUncheckedIndexedAccess`, который создавал несовместимый с существующим legacy-кодом поток каскадных ошибок; `strict` остаётся включённым.
 - Добавлен Node built-in smoke-test suite: `scripts/architecture-smoke.test.mjs`.
 - `npm run verify` теперь включает `npm run test:smoke` перед typecheck/build.
-- GitHub Actions подтвердил успешные conflict/module-size gates; smoke suite выявил и зафиксировал реальные проблемы конфигурации, которые исправляются до финального зелёного прогона.
+- GitHub Actions подтвердил успешный полный `verify`: conflict gate, module-size gate, smoke tests, TypeScript typecheck и production build.
 
 - PR #11 reopened on 2026-09-28 so the current branch head is validated by GitHub Actions against `main`.
