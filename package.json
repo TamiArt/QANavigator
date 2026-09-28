@@ -7,9 +7,10 @@
     "build": "vite build",
     "dev": "vite",
     "check:conflicts": "node scripts/check-conflicts.mjs",
-    "verify": "npm run check:conflicts && npm run check:module-size && npm run typecheck && npm run build",
+    "verify": "npm run check:conflicts && npm run check:module-size && npm run test:handbook && npm run typecheck && npm run build",
     "typecheck": "tsc --noEmit",
-    "check:module-size": "node scripts/check-module-size.mjs"
+    "check:module-size": "node scripts/check-module-size.mjs",
+    "test:handbook": "node --test scripts/handbook-hierarchy.test.mjs"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
