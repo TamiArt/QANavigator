@@ -205,14 +205,18 @@ Implemented:
 - safe fallback for invalid JSON;
 - unsupported future version envelopes are rejected instead of being interpreted as current data;
 - `useLocalStorage` migrated to the new boundary;
-- storage schema regression tests integrated into `verify`.
+- storage schema regression tests integrated into `verify`;
+- versioned backup contract for Settings export/import;
+- backup parser rejects unsupported versions and malformed structure;
+- backup import is allowlisted to known application storage keys;
+- backup model regression tests integrated into `verify`.
 
 Next:
 - add explicit migrations when schema version `2+` is actually introduced;
-- validate persisted structured data at read boundaries.
+- validate persisted structured data at read boundaries where concrete contracts exist.
 
 ### Phase 5 — Validation and tests
-**Status: PLANNED**
+**Status: IN PROGRESS**
 
 Add:
 - unit tests for pure algorithms;
@@ -555,3 +559,25 @@ Implemented the next concrete Storage-layer hardening step:
 - no schema migration is introduced until a real version `2` format exists.
 
 Next stage: rerun the complete `verify` gate, then move to explicit structured-data validation only where persisted data contracts are known.
+
+
+### 7.1.17 Settings backup contract hardening — 2026-09-28
+
+Implemented the next concrete Phase 5 validation step on `refactor/handbook-hierarchy`:
+- extracted backup envelope creation and parsing from `SettingsModule.tsx` into `features/settings/data-backup.ts`;
+- introduced an explicit backup schema version `1`;
+- import rejects unsupported backup versions instead of interpreting unknown formats;
+- import rejects malformed top-level backup structures;
+- import allowlists only known application storage keys and ignores unknown keys;
+- export and import now use the same pure backup contract;
+- added `scripts/data-backup.test.mjs` with regression coverage for creation, key filtering, unsupported versions and malformed input;
+- added `test:backup` to `npm run verify`.
+
+The Settings UI remains responsible for browser file selection, localStorage I/O and reload behavior. The backup model contains no React or browser dependencies.
+
+Next stage:
+- run the complete GitHub Actions `verify` gate;
+- if green, audit remaining import/export and AI-generated structured data boundaries;
+- do not add validators without a concrete data contract.
+
+No other branch was modified.
