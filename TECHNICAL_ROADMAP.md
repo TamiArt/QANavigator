@@ -593,3 +593,21 @@ CI precisely localized a failure in `scripts/data-backup.test.mjs`:
 - production backup parsing behavior was not changed.
 
 Next: rerun the full verification gate and continue only from the next concrete CI result.
+
+
+### 7.1.18 Persisted data validation — 2026-09-28
+
+Implemented the next concrete Phase 5 validation boundary on `refactor/handbook-hierarchy`:
+- added `src/app/core/storage-validators.ts` with runtime contracts for the application's persisted theme, API keys, checklists, test cases, bug reports, bookmarks and text values;
+- validators accept both the current versioned storage envelope and legacy raw values;
+- unsupported storage versions and malformed structured values are rejected;
+- Settings backup import now validates each supported persisted value before writing it back to localStorage;
+- added dedicated regression tests for valid current values, legacy compatibility, malformed structures and unsupported versions;
+- extended the backup regression suite to prove malformed supported values are rejected before import;
+- added the validator suite to the main `verify` pipeline.
+
+This closes the concrete imported-JSON validation milestone for the currently defined storage contracts. No new schema migration was introduced.
+
+Next stage:
+- verify the full GitHub Actions pipeline for this change;
+- then audit critical UI flows and add browser smoke coverage only if a runnable deployment/dev-server target is available.
