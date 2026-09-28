@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import { Key, X, Eye, EyeOff } from "lucide-react";
+import { Key, X, Eye, EyeOff, Lightbulb } from "lucide-react";
 import { useApp } from "../core/app-context";
 
 export function ApiModal({ open, onClose }: { open: boolean; onClose: () => void }) {
