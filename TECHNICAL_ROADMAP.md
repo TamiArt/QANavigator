@@ -483,3 +483,19 @@ Completed the Documentation model test gate:
 This completes the current Documentation decomposition milestone. Further extraction is intentionally deferred until another stable responsibility boundary is identified.
 
 Next stage: run the full `verify` gate and use its result to close the refactor stage or fix the next concrete architecture/test failure.
+
+
+### 7.1.11 Documentation contract regression coverage — 2026-09-28
+
+Completed the remaining focused regression check for the Documentation decomposition:
+- added executable coverage for the stable Documentation tab contract in `documentation-model.ts`;
+- verifies the complete tab ID set, one-to-one ID uniqueness, matching tab/ID counts and required label/icon metadata;
+- keeps the test independent of React rendering, so tab configuration regressions fail early in the model test gate;
+- no document state, UI behavior or localStorage contract changed.
+
+The Documentation decomposition milestone is now implementation-complete. Further splitting is intentionally deferred unless a new stable responsibility boundary appears.
+
+Next stage:
+- validate the complete `npm run verify` gate through GitHub Actions;
+- resolve only repository-level failures that the verification pipeline exposes;
+- treat Vercel free-plan deployment-rate-limit failures as external infrastructure status, not source-code verification evidence.
