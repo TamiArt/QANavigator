@@ -469,3 +469,17 @@ Completed the next Documentation decomposition milestone:
 The remaining large sections are still intentionally kept intact where they combine form state, file handling, validation/display logic and export composition. Further extraction will be done only where a stable pure boundary exists.
 
 Next stage: add focused regression coverage for document generators, then run the full verification gate and close the Documentation refactor milestone if all checks pass.
+
+
+### 7.1.10 Documentation generator regression coverage — 2026-09-28
+
+Completed the Documentation model test gate:
+- expanded `scripts/documentation-model.test.mjs` to cover `document-markdown.ts`;
+- verified required metadata, multiline steps and fallback values;
+- retained RTM coverage and CSV escaping regression tests;
+- both pure Documentation generators are now covered by focused Node tests;
+- no React state, UI behavior or localStorage contracts changed.
+
+This completes the current Documentation decomposition milestone. Further extraction is intentionally deferred until another stable responsibility boundary is identified.
+
+Next stage: run the full `verify` gate and use its result to close the refactor stage or fix the next concrete architecture/test failure.
