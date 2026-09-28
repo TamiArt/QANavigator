@@ -5,6 +5,7 @@ import { useApp } from "../../core/app-context";
 import { CopyButton, Badge, EmptyState, MarkdownView } from "../../components/shared";
 import { CATEGORIES } from "../../core/constants";
 import { HANDBOOK } from "../../handbook-data";
+import { HANDBOOK_SECTION_BY_TOPIC } from "../../handbook-hierarchy";
 import { HandbookImages } from "../../components/handbook/HandbookImages";
 import { HighlightedText, normalizeSearchQuery, SearchMatches } from "../../components/handbook/SearchHighlights";
 
@@ -97,8 +98,26 @@ export function HandbookModule() {
         {filtered.length === 0 ? (
           <EmptyState icon={<BookOpen />} title="Ничего не найдено" desc="Попробуйте изменить фильтры или поисковый запрос" />
         ) : (
-          filtered.map((topic) => (
-            <div key={topic.id} className="bg-card border border-border rounded-xl overflow-hidden">
+          (() => {
+            let lastSectionId = "";
+            return filtered.map((topic) => {
+              const section = HANDBOOK_SECTION_BY_TOPIC.get(topic.id);
+              const showSection = Boolean(section && section.id !== lastSectionId);
+              lastSectionId = section?.id ?? lastSectionId;
+
+              return (
+                <React.Fragment key={topic.id}>
+                  {showSection && section && (
+                    <div className="pt-5 pb-2 first:pt-0">
+                      <div className="flex items-end justify-between gap-3">
+                        <div>
+                          <h3 className="text-base font-semibold text-foreground">{section.title}</h3>
+                          <p className="text-xs text-muted-foreground mt-0.5">{section.description}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div className="bg-card border border-border rounded-xl overflow-hidden">
               <div
                 role="button"
                 tabIndex={0}
@@ -157,8 +176,11 @@ export function HandbookModule() {
                   </div>
                 </div>
               )}
-            </div>
-          ))
+                  </div>
+                </React.Fragment>
+              );
+            });
+          })()
         )}
       </div>
     </div>
