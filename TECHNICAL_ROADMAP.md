@@ -439,3 +439,19 @@ Next:
 - continue extracting document-specific models/generation helpers only where the responsibility is stable;
 - audit the large generated `components/ui` set and dependencies against actual imports before deleting any additional shared UI;
 - run the full verification gate after the cleanup batch.
+
+
+### 7.1.8 Documentation RTM model extraction — 2026-09-28
+
+Continued the Documentation decomposition on `refactor/handbook-hierarchy`:
+- extracted RTM requirement/test-case contracts, coverage calculation and CSV generation into `features/documentation/rtm-model.ts`;
+- kept RTM state mutation and rendering inside `DocumentationModule.tsx`;
+- added regression tests for RTM coverage counts and CSV output;
+- integrated the documentation model test into the main `verify` pipeline.
+
+No existing document behavior or localStorage keys were changed. No other branch was modified.
+
+Next:
+- extract other stable pure document-generation helpers;
+- keep React state and presentation inside document sections;
+- run the full verification gate after the current decomposition batch.
