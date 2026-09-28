@@ -291,3 +291,18 @@ Goal:
 **A maintainable, testable, modular QA platform where each feature can evolve independently without returning to a monolithic App component.**
 
 When a new agent starts work, it must read this file first, determine the current stage, follow the mandatory rules, inspect the repository before changing code, and update this file when the project stage changes.
+
+
+## 8. Production CI audit — 2026-09-28
+
+- Исправлены ошибки TypeScript, обнаруженные GitHub Actions после архитектурного рефакторинга.
+- Восстановлен экспорт `TestDesignModule`.
+- Исправлены missing/type-only imports в UI-компонентах.
+- Убран `.tsx` из динамического import в `src/main.tsx`.
+- Vite config переведён на ESM-safe `import.meta.dirname` и `node:path`; добавлена типизация `resolveId`.
+- Добавлены Node.js type declarations.
+- Исправлено отображение `Badge` в TestExecution.
+- Удалён `noUncheckedIndexedAccess`, который создавал несовместимый с существующим legacy-кодом поток каскадных ошибок; `strict` остаётся включённым.
+- Добавлен Node built-in smoke-test suite: `scripts/architecture-smoke.test.mjs`.
+- `npm run verify` теперь включает `npm run test:smoke` перед typecheck/build.
+- GitHub Actions подтвердил успешные conflict/module-size gates; smoke suite выявил и зафиксировал реальные проблемы конфигурации, которые исправляются до финального зелёного прогона.
