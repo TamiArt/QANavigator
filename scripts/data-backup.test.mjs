@@ -36,7 +36,7 @@ test("backup model creates the current versioned envelope", () => {
 
 test("backup parser keeps only supported storage keys", () => {
   const raw = JSON.stringify(createDataBackup({
-    qa_navigator_testcases: [{ id: "TC-1" }],
+    qa_navigator_testcases: [{ id: "TC-1", steps: [] }],
     qa_navigator_bookmarks: ["topic-1"],
     unknown_key: "must be ignored",
   }, "2026-09-28T12:00:00.000Z"));
@@ -80,7 +80,7 @@ test("backup parser rejects malformed supported storage values", () => {
 
 test("backup parser accepts supported values after validation", () => {
   const raw = JSON.stringify(createDataBackup({
-    qa_navigator_testcases: [{ id: "TC-2" }],
+    qa_navigator_testcases: [{ id: "TC-2", steps: [] }],
     qa_navigator_bookmarks: ["topic-2"],
   }, "2026-09-28T12:00:00.000Z"));
 
