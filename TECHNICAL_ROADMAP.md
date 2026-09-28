@@ -353,3 +353,15 @@ Implemented on `refactor/handbook-hierarchy`:
 - added the Test Design test suite to the main `verify` pipeline.
 
 No other branch was modified.
+
+
+### 7.1.3 Decision Table extraction — 2026-09-28
+
+Continued on `refactor/handbook-hierarchy`:
+
+- extracted Decision Table combination generation, action-matrix normalization and test-case text generation into `test-design/algorithms.ts`;
+- kept the React component responsible for state, editing and presentation only;
+- added executable coverage for Decision Table helpers;
+- `TestDesignModule.tsx` remains below the 1500-line limit.
+
+No other branch was modified.
