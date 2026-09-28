@@ -385,3 +385,18 @@ Implemented on `refactor/handbook-hierarchy`:
 - added `scripts/storage-schema.test.mjs` and integrated it into `verify`.
 
 No existing localStorage keys were renamed or removed. No other branch was modified.
+
+
+### 7.1.5 Documentation decomposition — 2026-09-28
+
+Started on `refactor/handbook-hierarchy`:
+- extracted the documentation tab model into `features/documentation/documentation-model.ts`;
+- tab IDs, labels and icon contracts are now separated from the large UI module;
+- `DocumentationModule.tsx` consumes the shared tab model while retaining presentation and document-specific state.
+
+Next:
+- extract reusable document-field/export helpers;
+- separate document data models from rendering;
+- split the largest document sections only where a stable responsibility boundary exists;
+- keep every resulting module below the 1500-line limit;
+- add regression coverage for document tab availability and export formatting.
