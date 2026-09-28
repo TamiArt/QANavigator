@@ -1,6 +1,6 @@
 export type PwAlgorithmParam = { name: string; values: string[] };
 
-function ipogPairwise(params: { name: string; values: string[] }[]): Record<string, string>[] {
+export function ipogPairwise(params: { name: string; values: string[] }[]): Record<string, string>[] {
   const n = params.length;
   if (n < 2) return [];
 
@@ -78,9 +78,9 @@ function ipogPairwise(params: { name: string; values: string[] }[]): Record<stri
   });
 }
 
-type EPFieldType = "number" | "string" | "email" | "date" | "phone";
+export type EPFieldType = "number" | "string" | "email" | "date" | "phone";
 
-interface EPField {
+export interface EPField {
   id: string;
   name: string;
   type: EPFieldType;
@@ -91,7 +91,7 @@ interface EPField {
   maxLen: string;
 }
 
-interface EPClass {
+export interface EPClass {
   fieldName: string;
   classType: "valid" | "invalid";
   description: string;
@@ -99,7 +99,7 @@ interface EPClass {
   expected: string;
 }
 
-function generateEquivalenceClasses(fields: EPField[]): EPClass[] {
+export function generateEquivalenceClasses(fields: EPField[]): EPClass[] {
   const classes: EPClass[] = [];
   for (const field of fields) {
     const fn = field.name.trim() || "Поле";
@@ -180,11 +180,11 @@ function generateEquivalenceClasses(fields: EPField[]): EPClass[] {
   return classes;
 }
 
-interface STState { id: string; name: string; isInitial: boolean; isFinal: boolean }
-interface STTransition { id: string; fromId: string; event: string; toId: string; expectedAction: string }
-interface STTestCase { no: number; title: string; precondition: string; trigger: string; expected: string }
+export interface STState { id: string; name: string; isInitial: boolean; isFinal: boolean }
+export interface STTransition { id: string; fromId: string; event: string; toId: string; expectedAction: string }
+export interface STTestCase { no: number; title: string; precondition: string; trigger: string; expected: string }
 
-function generateSTTests(states: STState[], transitions: STTransition[]): STTestCase[] {
+export function generateSTTests(states: STState[], transitions: STTransition[]): STTestCase[] {
   return transitions.flatMap((t, idx) => {
     const from = states.find(s => s.id === t.fromId);
     const to = states.find(s => s.id === t.toId);
@@ -197,4 +197,49 @@ function generateSTTests(states: STState[], transitions: STTransition[]): STTest
       expected: 'Переход в "' + to.name + '"' + (t.expectedAction ? ". " + t.expectedAction : ""),
     }];
   });
+}
+
+
+interface BVAField {
+  id: string;
+  name: string;
+  min: string;
+  max: string;
+  step: string;
+  required: boolean;
+  isInteger: boolean;
+}
+
+interface BVAPoint {
+  label: string;
+  value: string;
+  type: "valid" | "invalid";
+  expected: string;
+}
+
+function generateBVA(field: BVAField): BVAPoint[] {
+  const min = parseFloat(field.min);
+  const max = parseFloat(field.max);
+  const step = parseFloat(field.step) || 1;
+  if (isNaN(min) || isNaN(max) || min >= max) return [];
+
+  const fmt = (n: number) => {
+    if (field.isInteger) return String(Math.round(n));
+    const dec = step.toString().includes(".") ? step.toString().split(".")[1].length : 0;
+    return n.toFixed(dec);
+  };
+
+  const pts: BVAPoint[] = [];
+  pts.push({ label: "min − 1 (ниже минимума)", value: fmt(min - step), type: "invalid", expected: "Отклонить / ошибка валидации" });
+  pts.push({ label: "min (минимально допустимое)", value: fmt(min), type: "valid", expected: "Принять значение" });
+  if (min + step < max) pts.push({ label: "min + 1 (чуть выше минимума)", value: fmt(min + step), type: "valid", expected: "Принять значение" });
+  const mid = (min + max) / 2;
+  if (Math.abs(mid - min) > step && Math.abs(mid - max) > step)
+    pts.push({ label: "среднее (номинальное)", value: fmt(mid), type: "valid", expected: "Принять значение" });
+  if (max - step > min) pts.push({ label: "max − 1 (чуть ниже максимума)", value: fmt(max - step), type: "valid", expected: "Принять значение" });
+  pts.push({ label: "max (максимально допустимое)", value: fmt(max), type: "valid", expected: "Принять значение" });
+  pts.push({ label: "max + 1 (выше максимума)", value: fmt(max + step), type: "invalid", expected: "Отклонить / ошибка валидации" });
+  pts.push({ label: "нечисловое значение", value: "abc", type: "invalid", expected: "Ошибка формата" });
+  if (field.required) pts.push({ label: "пустое поле (обязательное)", value: "(пусто)", type: "invalid", expected: "Поле обязательно" });
+  return pts;
 }
