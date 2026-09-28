@@ -44,7 +44,7 @@ test("backup parser keeps only supported storage keys", () => {
   const parsed = parseDataBackup(raw, allowedKeys, validators);
 
   assert.deepEqual(JSON.parse(JSON.stringify(parsed.data)), {
-    qa_navigator_testcases: [{ id: "TC-1" }],
+    qa_navigator_testcases: [{ id: "TC-1", steps: [] }],
     qa_navigator_bookmarks: ["topic-1"],
   });
   assert.equal("unknown_key" in parsed.data, false);
@@ -86,7 +86,7 @@ test("backup parser accepts supported values after validation", () => {
 
   const parsed = parseDataBackup(raw, allowedKeys, validators);
   assert.deepEqual(JSON.parse(JSON.stringify(parsed.data)), {
-    qa_navigator_testcases: [{ id: "TC-2" }],
+    qa_navigator_testcases: [{ id: "TC-2", steps: [] }],
     qa_navigator_bookmarks: ["topic-2"],
   });
 });
