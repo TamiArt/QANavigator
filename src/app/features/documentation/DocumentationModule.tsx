@@ -700,8 +700,7 @@ function TestReportDocSection() {
 }
 
 // ─── RTM (Requirement Traceability Matrix) ────────────
-interface RTMRequirement { id: string; reqId: string; title: string; priority: "high" | "medium" | "low" }
-interface RTMTestCase { id: string; tcId: string; title: string }
+import { buildRTMCsv, calculateRTMCoverage } from "./rtm-model";
 
 function RTMSection() {
   const [requirements, setRequirements] = useState<RTMRequirement[]>([
@@ -745,24 +744,14 @@ function RTMSection() {
   const removeReq = (id: string) => setRequirements(r => r.filter(x => x.id !== id));
   const removeTc = (id: string) => setTestCaseRows(t => t.filter(x => x.id !== id));
 
-  const coverage = requirements.map(req => {
-    const covered = testCaseRows.filter(tc => links.has(req.reqId + ":" + tc.tcId)).length;
-    return { reqId: req.reqId, total: testCaseRows.length, covered };
-  });
+  const coverage = calculateRTMCoverage(requirements, testCaseRows, links);
 
   const totalCovered = coverage.filter(c => c.covered > 0).length;
   const coveragePercent = requirements.length > 0 ? Math.round(totalCovered / requirements.length * 100) : 0;
 
   const prioColor = { high: "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300", medium: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300", low: "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300" };
 
-  const csvText = [
-    "Требование,Описание,Приоритет," + testCaseRows.map(tc => tc.tcId).join(",") + ",Покрытие",
-    ...requirements.map(req => {
-      const covCount = testCaseRows.filter(tc => links.has(req.reqId + ":" + tc.tcId)).length;
-      const cells = testCaseRows.map(tc => links.has(req.reqId + ":" + tc.tcId) ? "✓" : "").join(",");
-      return '"' + req.reqId + '","' + req.title + '",' + req.priority + "," + cells + "," + (covCount > 0 ? "Покрыто" : "Не покрыто");
-    })
-  ].join("\n");
+  const csvText = buildRTMCsv(requirements, testCaseRows, links);
 
   return (
     <div className="space-y-5">
