@@ -2,7 +2,7 @@ import { lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles/index.css";
 
-const App = lazy(() => import("./app/App.tsx"));
+const App = lazy(() => import("./app/App"));
 
 function StartupFallback() {
   return (
