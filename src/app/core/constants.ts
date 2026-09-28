@@ -49,6 +49,17 @@ export const STACKS: { id: AutoStack; label: string; lang: string; badge?: strin
 ];
 
 export const CATEGORIES = [...new Set(HANDBOOK.map((t) => t.category))];
+
+export const STORAGE_KEYS = {
+  theme: "qa_nav_theme",
+  apiKeys: "qa_nav_apikeys",
+  checklists: "qa_navigator_checklists",
+  testCases: "qa_navigator_testcases",
+  bugReports: "qa_navigator_bugreports",
+  bookmarks: "qa_navigator_bookmarks",
+  requirementsText: "qa_navigator_req_text",
+  requirementsResult: "qa_navigator_req_result",
+} as const;
 export const EXPORTABLE_STORAGE_KEYS = [
   "qa_navigator_checklists",
   "qa_navigator_testcases",
