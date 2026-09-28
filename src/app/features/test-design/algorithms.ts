@@ -243,3 +243,51 @@ export function generateBVA(field: BVAField): BVAPoint[] {
   if (field.required) pts.push({ label: "пустое поле (обязательное)", value: "(пусто)", type: "invalid", expected: "Поле обязательно" });
   return pts;
 }
+
+
+export interface DTCondition { id: string; name: string }
+export interface DTAction { id: string; name: string }
+
+export function generateDecisionColumns(conditionCount: number, maxConditions = 4): boolean[][] {
+  const n = Math.min(Math.max(conditionCount, 0), maxConditions);
+  const numCols = Math.pow(2, n);
+  return Array.from({ length: numCols }, (_, col) =>
+    Array.from({ length: n }, (__, ci) => {
+      const period = Math.pow(2, n - 1 - ci);
+      return Math.floor(col / period) % 2 === 0;
+    })
+  );
+}
+
+export function normalizeDecisionActionMatrix(
+  actions: DTAction[],
+  actionMatrix: Record<string, boolean[]>,
+  numCols: number,
+): Record<string, boolean[]> {
+  const matrix: Record<string, boolean[]> = {};
+  for (const action of actions) {
+    const current = actionMatrix[action.id] ?? [];
+    matrix[action.id] = Array.from({ length: numCols }, (_, i) => current[i] ?? false);
+  }
+  return matrix;
+}
+
+export function buildDecisionTableText(
+  conditions: DTCondition[],
+  actions: DTAction[],
+  actionMatrix: Record<string, boolean[]>,
+  colValues: boolean[][],
+  maxConditions = 4,
+): string {
+  return colValues.map((colConds, ci) => {
+    const cPart = conditions
+      .slice(0, maxConditions)
+      .map((condition, i) => `${condition.name || "Условие " + (i + 1)}: ${colConds[i] ? "Да" : "Нет"}`)
+      .join("; ");
+    const aPart = actions
+      .filter(action => (actionMatrix[action.id] ?? [])[ci])
+      .map(action => action.name || "Действие")
+      .join(", ") || "нет действий";
+    return `ТК${ci + 1}: [${cPart}] → ${aPart}`;
+  }).join("\n");
+}
