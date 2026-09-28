@@ -80,3 +80,35 @@ test("state transition generator ignores invalid transition references", () => {
   );
   assert.deepEqual(result, []);
 });
+
+
+test("decision table generates all boolean combinations", () => {
+  const columns = algorithms.generateDecisionColumns(3, 4);
+  assert.equal(columns.length, 8);
+  assert.deepEqual(columns[0], [true, true, true]);
+  assert.deepEqual(columns[7], [false, false, false]);
+});
+
+test("decision table action matrix is normalized to column count", () => {
+  const matrix = algorithms.normalizeDecisionActionMatrix(
+    [{ id: "a1", name: "Показать" }],
+    { a1: [true] },
+    3,
+  );
+  assert.deepEqual(matrix, { a1: [true, false, false] });
+});
+
+test("decision table text preserves conditions and selected actions", () => {
+  const conditions = [{ id: "c1", name: "Авторизован?" }];
+  const actions = [{ id: "a1", name: "Показать контент" }];
+  const text = algorithms.buildDecisionTableText(
+    conditions,
+    actions,
+    { a1: [true, false] },
+    [[true], [false]],
+    4,
+  );
+  assert.match(text, /ТК1/);
+  assert.match(text, /Авторизован\?: Да/);
+  assert.match(text, /Показать контент/);
+});
