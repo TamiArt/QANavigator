@@ -1,5 +1,3 @@
-import type { HandbookTopic } from "./handbook-data";
-
 export interface HandbookSection {
   id: string;
   title: string;
