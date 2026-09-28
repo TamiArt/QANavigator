@@ -16,6 +16,11 @@ import {
   generateBVA,
   type BVAField,
   type BVAPoint,
+  generateDecisionColumns,
+  normalizeDecisionActionMatrix,
+  buildDecisionTableText,
+  type DTCondition,
+  type DTAction,
 } from "./algorithms";
 
 // ══════════════════════════════════════════════════════
@@ -597,9 +602,6 @@ function BVATab() {
 }
 
 // ── Decision Table Tab ────────────────────────────────
-interface DTCondition { id: string; name: string }
-interface DTAction { id: string; name: string }
-
 function DecisionTableTab() {
   const [conditions, setConditions] = useState<DTCondition[]>([
     { id: uid(), name: "Пользователь авторизован?" },
@@ -617,15 +619,10 @@ function DecisionTableTab() {
   const MAX_CONDITIONS = 4;
   const numCols = Math.pow(2, Math.min(conditions.length, MAX_CONDITIONS));
 
-  const colValues = useMemo(() => {
-    const n = Math.min(conditions.length, MAX_CONDITIONS);
-    return Array.from({ length: numCols }, (_, col) =>
-      Array.from({ length: n }, (__, ci) => {
-        const period = Math.pow(2, n - 1 - ci);
-        return Math.floor(col / period) % 2 === 0;
-      })
-    );
-  }, [conditions.length, numCols]);
+  const colValues = useMemo(
+    () => generateDecisionColumns(conditions.length, MAX_CONDITIONS),
+    [conditions.length]
+  );
 
   const addCondition = () => {
     if (conditions.length >= MAX_CONDITIONS) return;
@@ -638,12 +635,7 @@ function DecisionTableTab() {
   const removeAction = (id: string) => setActions(a => a.filter(x => x.id !== id));
 
   const generate = () => {
-    const matrix: Record<string, boolean[]> = {};
-    for (const action of actions) {
-      const cur = actionMatrix[action.id] ?? [];
-      matrix[action.id] = Array.from({ length: numCols }, (_, i) => cur[i] ?? false);
-    }
-    setActionMatrix(matrix);
+    setActionMatrix(normalizeDecisionActionMatrix(actions, actionMatrix, numCols));
     setGenerated(true);
   };
 
@@ -654,11 +646,7 @@ function DecisionTableTab() {
     }));
   };
 
-  const tcText = colValues.map((colConds, ci) => {
-    const cPart = conditions.slice(0, MAX_CONDITIONS).map((c, i) => `${c.name || "Условие " + (i + 1)}: ${colConds[i] ? "Да" : "Нет"}`).join("; ");
-    const aPart = actions.filter(a => (actionMatrix[a.id] ?? [])[ci]).map(a => a.name || "Действие").join(", ") || "нет действий";
-    return `ТК${ci + 1}: [${cPart}] → ${aPart}`;
-  }).join("\n");
+  const tcText = buildDecisionTableText(conditions, actions, actionMatrix, colValues, MAX_CONDITIONS);
 
   return (
     <div className="space-y-5">
