@@ -36,8 +36,6 @@ export const HANDBOOK_SECTIONS: HandbookSection[] = [
     description: "Уровни тестирования и повторяемые циклы проверок от Smoke до Regression.",
     topicIds: [
       "tt2",
-      "tt7",
-      "tt4",
     ],
   },
   {
@@ -140,6 +138,8 @@ export const HANDBOOK_SECTIONS: HandbookSection[] = [
     description: "Безопасность, мобильные приложения, crowdtesting и игровые проекты.",
     topicIds: [
       "tt6",
+      "tt7",
+      "tt4",
       "mob1",
       "mob2",
       "mob3",
