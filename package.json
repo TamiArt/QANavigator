@@ -7,7 +7,10 @@
     "build": "vite build",
     "dev": "vite",
     "check:conflicts": "node scripts/check-conflicts.mjs",
-    "verify": "npm run check:conflicts && npm run build"
+    "verify": "npm run check:conflicts && npm run check:module-size && npm run test:smoke && npm run typecheck && npm run build",
+    "typecheck": "tsc --noEmit",
+    "check:module-size": "node scripts/check-module-size.mjs",
+    "test:smoke": "node --test scripts/architecture-smoke.test.mjs"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
@@ -70,7 +73,11 @@
     "@tailwindcss/vite": "4.1.12",
     "@vitejs/plugin-react": "4.7.0",
     "tailwindcss": "4.1.12",
-    "vite": "6.3.5"
+    "vite": "6.3.5",
+    "typescript": "5.9.3",
+    "@types/react": "18.3.24",
+    "@types/react-dom": "18.3.7",
+    "@types/node": "22.15.3"
   },
   "peerDependencies": {
     "react": "18.3.1",
