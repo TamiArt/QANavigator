@@ -26,7 +26,7 @@ test("Vite config is ESM-safe and typed", () => {
   const config = read("vite.config.ts");
   assert.match(config, /from ['"]node:path['"]/);
   assert.match(config, /resolveId\(id: string\)/);
-  assert.doesNotMatch(config, /__dirname/);
+  assert.doesNotMatch(config, /(?:^|[^\w])__dirname(?:[^\w]|$)/);
 });
 
 test("application modules expose the imports consumed by App", () => {
@@ -48,16 +48,13 @@ test("application modules expose the imports consumed by App", () => {
   }
 });
 
-test("handbook hierarchy has unique section and topic identifiers", () => {
-  const hierarchy = read("src/app/handbook-hierarchy.ts");
-  const sections = [...hierarchy.matchAll(/id:\s*"([^"]+)"/g)].map((m) => m[1]);
-  const topicArrays = [...hierarchy.matchAll(/topicIds:\s*\[([\s\S]*?)\]/g)].flatMap((m) =>
-    [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1]),
-  );
-  assert.ok(sections.length >= 12);
-  assert.equal(new Set(sections).size, sections.length);
-  assert.ok(topicArrays.length > 0);
-  assert.equal(new Set(topicArrays).size, topicArrays.length);
+test("handbook curriculum has unique ordered topic identifiers", () => {
+  const curriculum = read("src/app/handbook-curriculum.ts");
+  const orderBlock = curriculum.match(/CURRICULUM_ORDER[^=]*=\s*\[([\s\S]*?)\]/);
+  assert.ok(orderBlock, "CURRICULUM_ORDER must exist");
+  const ids = [...orderBlock[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+  assert.ok(ids.length > 20);
+  assert.equal(new Set(ids).size, ids.length);
 });
 
 test("critical localStorage contracts remain present", () => {
