@@ -200,7 +200,7 @@ export function generateSTTests(states: STState[], transitions: STTransition[]):
 }
 
 
-interface BVAField {
+export interface BVAField {
   id: string;
   name: string;
   min: string;
@@ -210,7 +210,7 @@ interface BVAField {
   isInteger: boolean;
 }
 
-interface BVAPoint {
+export interface BVAPoint {
   label: string;
   value: string;
   type: "valid" | "invalid";
