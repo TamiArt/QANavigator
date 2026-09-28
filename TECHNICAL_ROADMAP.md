@@ -322,3 +322,18 @@ Goal:
 **A maintainable, testable, modular QA platform where each feature can evolve independently without returning to a monolithic App component.**
 
 When a new agent starts work, it must read this file first, determine the current stage, follow the mandatory rules, inspect the repository before changing code, and update this file when the project stage changes.
+
+
+### 7.1.1 Handbook consolidation — 2026-09-28
+
+Completed on `refactor/handbook-hierarchy`:
+
+- merged the full `auto4` CI/CD content into `auto3`;
+- merged the full `git2` branching / Pull Request content into `git1`;
+- merged the full `web10` QA tooling content into `tools1`;
+- preserved the source educational text while removing the merged duplicate topic IDs from the visible curriculum;
+- updated hierarchy descriptions and canonical titles for the consolidated topics;
+- added `scripts/handbook-hierarchy.test.mjs` to verify topic coverage, uniqueness, curriculum order and merged-topic exclusion;
+- added `test:handbook` to the verification pipeline.
+
+No other branch was modified.
