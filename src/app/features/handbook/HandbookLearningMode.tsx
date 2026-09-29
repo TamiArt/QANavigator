@@ -47,7 +47,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
         </button>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <GraduationCap className="w-4 h-4" />
-          Прогресс: {completedCount}/{module.lessons.length} ({progressPercent}%)
+          Прогресс модуля: {completedCount}/{module.lessons.length} ({progressPercent}%)
         </div>
       </div>
 
