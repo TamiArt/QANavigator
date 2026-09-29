@@ -611,3 +611,14 @@ This closes the concrete imported-JSON validation milestone for the currently de
 Next stage:
 - verify the full GitHub Actions pipeline for this change;
 - then audit critical UI flows and add browser smoke coverage only if a runnable deployment/dev-server target is available.
+
+
+### 7.1.19 Critical navigation contract — 2026-09-29
+
+Implemented the next Phase 5 regression boundary:
+- extracted the application's canonical navigation list into `src/app/domain/navigation.ts`;
+- App UI now derives labels and icon rendering from that single contract instead of maintaining a second navigation list;
+- added `scripts/navigation-contract.test.mjs` to verify all 11 application modules are present exactly once and have non-empty labels;
+- added the navigation test to the main `verify` gate.
+
+This closes the static navigation-integrity milestone. Browser smoke testing remains dependent on access to a runnable deployment; the deployment URL recorded in PR #12 is not currently accessible through the connected Vercel integration.
