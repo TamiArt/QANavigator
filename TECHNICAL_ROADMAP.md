@@ -1050,3 +1050,30 @@ Implemented:
 - extended the handbook-learning regression test to assert all 10 Module 4 topics, exact order, count and key Bug Report/Test Summary/Severity/Priority anchors.
 
 Where severity definitions or priority policies vary between teams, the lesson states that the project-specific rules take precedence.
+
+
+### 7.1.27 Module 4 extension: defect lifecycle, documentation workflow and bug localization — 2026-09-29
+
+Extended Module 4 with the next seven user-supplied topics, preserving all previous topics and their order:
+
+11. Жизненный цикл дефекта (Bug Life Cycle)
+12. Баг vs задача на доработку (Feature Request)
+13. Основные шаги документирования дефекта
+14. Pre-release баг и Production Bug
+15. Где ведут тестовую документацию
+16. Локализация багов
+17. Работа с задачей при написании тестовой документации
+
+Implemented:
+- documented the full defect lifecycle from New through Closed, Reopened, Rejected, Deferred and Duplicate;
+- separated defects from feature requests;
+- documented a practical defect-reporting sequence and a complete example;
+- explained differences between pre-release and production defects;
+- documented common categories of test-documentation storage and management tools;
+- added a step-by-step bug-localization algorithm using reproduction, DevTools, Network/Console, database checks and logs;
+- documented QA work with a task from requirements clarification through test design, test-case writing and review;
+- added test-case best practices: clear naming, expected results, test-data references, design links, priority and atomicity;
+- extended the regression test to cover all 17 Module 4 topics and key anchors;
+- kept the learning curriculum sequential and did not introduce Module 5.
+
+As with earlier lessons, the material notes that concrete workflows, statuses and tools vary by company and project.
