@@ -1095,3 +1095,19 @@ The lesson includes:
 - the final one-line map: documentation → plan → case → checklist → bug report → severity → priority → retest → localization → feature request.
 
 The existing 17 Module 4 topics remain unchanged in order; the new lesson consolidates and reinforces them rather than replacing their detailed material. Regression coverage was extended from 17 to 18 topics and checks the new exam anchors.
+
+
+### 7.1.29 Telegram Mini App CSP hardening — 2026-09-29
+
+Verified the reported Telegram WebView console output against the current branch.
+
+Confirmed repository-side issue:
+- src/styles/fonts.css imported Google Fonts from https://fonts.googleapis.com/.
+- Telegram Mini App WebViews can enforce style-src 'self' 'unsafe-inline', which blocks that external stylesheet.
+- Removed the external import so the application no longer depends on a third-party stylesheet and falls back to the existing local/system font stack.
+
+Telegram SDK messages were also traced:
+- web_app_request_theme, web_app_request_viewport, safe-area requests, web_app_ready, and web_app_expand are Telegram WebView initialization messages, not application errors.
+- The Header color is not supported in version 6.0 and Background color is not supported in version 6.0 warnings originate from Telegram's injected WebApp SDK. The repository contains no direct Telegram.WebApp.setHeaderColor / setBackgroundColor call and no Telegram WebApp SDK dependency, so these warnings are not currently attributable to repository code and should not be fixed by inventing an app-side workaround.
+
+No Telegram API behavior was changed without a repository-side call to modify.
