@@ -24,19 +24,20 @@ import type {
   ApiKeys, BugReport, ChecklistItem, Module, TestCase, Theme,
 } from "./domain/types";
 
-const NAV_ITEMS: { id: Module; label: string; icon: ReactNode }[] = [
-  { id: "workspace", label: "Рабочее пространство", icon: <Clipboard className="w-4 h-4" /> },
-  { id: "beginner-wizard", label: "Мастер для новичка", icon: <GraduationCap className="w-4 h-4" /> },
-  { id: "requirements", label: "Анализ требований", icon: <Brain className="w-4 h-4" /> },
-  { id: "test-design", label: "Тест-дизайн", icon: <CheckSquare className="w-4 h-4" /> },
-  { id: "test-execution", label: "Выполнение тестов", icon: <Play className="w-4 h-4" /> },
-  { id: "automation", label: "Автотесты", icon: <Terminal className="w-4 h-4" /> },
-  { id: "release-report", label: "Релизный отчёт", icon: <BarChart2 className="w-4 h-4" /> },
-  { id: "test-data", label: "Генератор данных", icon: <Database className="w-4 h-4" /> },
-  { id: "handbook", label: "База знаний QA", icon: <BookOpen className="w-4 h-4" /> },
-  { id: "documentation", label: "Документация", icon: <FileText className="w-4 h-4" /> },
-  { id: "settings", label: "Настройки", icon: <Settings className="w-4 h-4" /> },
-];
+const NAV_ICONS: Record<Module, ReactNode> = {
+  workspace: <Clipboard className="w-4 h-4" />,
+  "beginner-wizard": <GraduationCap className="w-4 h-4" />,
+  requirements: <Brain className="w-4 h-4" />,
+  "test-design": <CheckSquare className="w-4 h-4" />,
+  "test-execution": <Play className="w-4 h-4" />,
+  automation: <Terminal className="w-4 h-4" />,
+  "release-report": <BarChart2 className="w-4 h-4" />,
+  "test-data": <Database className="w-4 h-4" />,
+  handbook: <BookOpen className="w-4 h-4" />,
+  documentation: <FileText className="w-4 h-4" />,
+  settings: <Settings className="w-4 h-4" />,
+};
+const NAV_ITEMS = APP_NAVIGATION.map((item) => ({ ...item, icon: NAV_ICONS[item.id] }));
 
 export default function App() {
   const [theme, setTheme] = useLocalStorage<Theme>(STORAGE_KEYS.theme, "dark");
