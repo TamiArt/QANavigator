@@ -19,6 +19,7 @@ import { ApiModal } from "./components/ApiModal";
 import { Tooltip } from "./components/shared";
 import { AppContext } from "./core/app-context";
 import { STORAGE_KEYS } from "./core/constants";
+import { APP_NAVIGATION } from "./domain/navigation";
 import { useLocalStorage } from "./hooks/use-local-storage";
 import type {
   ApiKeys, BugReport, ChecklistItem, Module, TestCase, Theme,
