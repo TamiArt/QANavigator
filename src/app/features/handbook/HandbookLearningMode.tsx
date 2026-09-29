@@ -16,9 +16,10 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
     STORAGE_KEYS.handbookLearningProgress,
     INITIAL_PROGRESS,
   );
-  const module = HANDBOOK_LEARNING_MODULES[0];
+  const [moduleIndex, setModuleIndex] = React.useState(0);
   const [activeIndex, setActiveIndex] = React.useState(0);
 
+  const module = HANDBOOK_LEARNING_MODULES[moduleIndex] ?? HANDBOOK_LEARNING_MODULES[0];
   const completed = new Set(progress.completedLessonIds);
   const activeLesson = module.lessons[activeIndex];
   const completedCount = module.lessons.filter((lesson) => completed.has(lesson.id)).length;
