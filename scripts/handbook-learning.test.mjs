@@ -135,9 +135,16 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
     "Баг-репорт (Bug Report)",
     "Пример отчета по тестированию (Test Summary Report)",
     "Баг, ошибка, дефект и их классификация",
+    "Жизненный цикл дефекта (Bug Life Cycle)",
+    "Баг vs задача на доработку (Feature Request)",
+    "Основные шаги документирования дефекта",
+    "Pre-release баг и Production Bug",
+    "Где ведут тестовую документацию",
+    "Локализация багов",
+    "Работа с задачей при написании тестовой документации",
   ];
   for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
-  assert.equal((source.match(/id: "m4-\\d{2}"/g) ?? []).length, 10);
+  assert.equal((source.match(/id: "m4-\\d{2}"/g) ?? []).length, 17);
   for (let i = 0; i < expected.length - 1; i += 1) {
     assert.ok(source.indexOf(expected[i]) < source.indexOf(expected[i + 1]));
   }
@@ -159,4 +166,14 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
   assert.match(source, /Priority/);
   assert.match(source, /High/);
   assert.match(source, /Severity и Priority/);
+  assert.match(source, /Bug Life Cycle/);
+  assert.match(source, /Ready for Retest/);
+  assert.match(source, /Feature Request/);
+  assert.match(source, /Основные шаги документирования дефекта/);
+  assert.match(source, /Production Bug/);
+  assert.match(source, /TestRail/);
+  assert.match(source, /Локализация бага/);
+  assert.match(source, /Network/);
+  assert.match(source, /Уточнение требований/);
+  assert.match(source, /Атомарность/);
 });
