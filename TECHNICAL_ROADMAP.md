@@ -1077,3 +1077,21 @@ Implemented:
 - kept the learning curriculum sequential and did not introduce Module 5.
 
 As with earlier lessons, the material notes that concrete workflows, statuses and tools vary by company and project.
+
+
+### 7.1.28 Module 4 exam-focused consolidation and test-case best practices — 2026-09-29
+
+Added the user-supplied exam-oriented consolidation layer to Module 4 without changing the existing topic order.
+
+Added topic 18:
+18. Лучшие практики тест-кейсов
+
+The lesson includes:
+- the universal learning/answering formula: **Что это? → Зачем? → Из чего состоит? → Пример**;
+- practical rules for test-case naming, steps, test data, design links, priority and atomicity;
+- a detailed example of a structured oral exam answer;
+- the 12-item “most important cheat sheet”;
+- 15 short phrases to memorize;
+- the final one-line map: documentation → plan → case → checklist → bug report → severity → priority → retest → localization → feature request.
+
+The existing 17 Module 4 topics remain unchanged in order; the new lesson consolidates and reinforces them rather than replacing their detailed material. Regression coverage was extended from 17 to 18 topics and checks the new exam anchors.
