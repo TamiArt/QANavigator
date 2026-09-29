@@ -142,9 +142,10 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
     "Где ведут тестовую документацию",
     "Локализация багов",
     "Работа с задачей при написании тестовой документации",
+    "Лучшие практики тест-кейсов",
   ];
   for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
-  assert.equal((source.match(/id: "m4-\\d{2}"/g) ?? []).length, 17);
+  assert.equal((source.match(/id: "m4-\\d{2}"/g) ?? []).length, 18);
   for (let i = 0; i < expected.length - 1; i += 1) {
     assert.ok(source.indexOf(expected[i]) < source.indexOf(expected[i + 1]));
   }
@@ -176,4 +177,7 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
   assert.match(source, /Network/);
   assert.match(source, /Уточнение требований/);
   assert.match(source, /Атомарность/);
+  assert.match(source, /Что это\? → Зачем\? → Из чего состоит\? → Пример/);
+  assert.match(source, /15 фраз для запоминания/);
+  assert.match(source, /Супер-шпаргалка/);
 });
