@@ -1,1 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+/* External font loading is intentionally avoided. Telegram Mini Apps may enforce a restrictive
+ * style-src CSP that blocks Google Fonts. Keep the app functional with the local system stack. */
+:root {
+  --qa-font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --qa-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
