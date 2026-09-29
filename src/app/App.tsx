@@ -19,6 +19,15 @@ import { ApiModal } from "./components/ApiModal";
 import { Tooltip } from "./components/shared";
 import { AppContext } from "./core/app-context";
 import { STORAGE_KEYS } from "./core/constants";
+import {
+  isApiKeysStorageValue,
+  isBugReportsStorageValue,
+  isChecklistsStorageValue,
+  isBookmarksStorageValue,
+  isTestCasesStorageValue,
+  isTextStorageValue,
+  isThemeStorageValue,
+} from "./core/storage-validators";
 import { APP_NAVIGATION } from "./domain/navigation";
 import { useLocalStorage } from "./hooks/use-local-storage";
 import type {
@@ -41,20 +50,46 @@ const NAV_ICONS: Record<Module, ReactNode> = {
 const NAV_ITEMS = APP_NAVIGATION.map((item) => ({ ...item, icon: NAV_ICONS[item.id] }));
 
 export default function App() {
-  const [theme, setTheme] = useLocalStorage<Theme>(STORAGE_KEYS.theme, "dark");
+  const [theme, setTheme] = useLocalStorage<Theme>(STORAGE_KEYS.theme, "dark", isThemeStorageValue);
   const [activeModule, setActiveModule] = useState<Module>("requirements");
   const [selectedTechnique, setSelectedTechnique] = useState<string | null>(null);
-  const [apiKeys, setApiKeys] = useLocalStorage<ApiKeys>(STORAGE_KEYS.apiKeys, {
-    openrouter: "", gemini: "", provider: "openrouter",
-  });
-  const [checklists, setChecklists] = useLocalStorage<ChecklistItem[]>(STORAGE_KEYS.checklists, []);
-  const [testCases, setTestCases] = useLocalStorage<TestCase[]>(STORAGE_KEYS.testCases, []);
-  const [bugReports, setBugReports] = useLocalStorage<BugReport[]>(STORAGE_KEYS.bugReports, []);
-  const [bookmarks, setBookmarks] = useLocalStorage<string[]>(STORAGE_KEYS.bookmarks, []);
+  const [apiKeys, setApiKeys] = useLocalStorage<ApiKeys>(
+    STORAGE_KEYS.apiKeys,
+    { openrouter: "", gemini: "", provider: "openrouter" },
+    isApiKeysStorageValue,
+  );
+  const [checklists, setChecklists] = useLocalStorage<ChecklistItem[]>(
+    STORAGE_KEYS.checklists,
+    [],
+    isChecklistsStorageValue,
+  );
+  const [testCases, setTestCases] = useLocalStorage<TestCase[]>(
+    STORAGE_KEYS.testCases,
+    [],
+    isTestCasesStorageValue,
+  );
+  const [bugReports, setBugReports] = useLocalStorage<BugReport[]>(
+    STORAGE_KEYS.bugReports,
+    [],
+    isBugReportsStorageValue,
+  );
+  const [bookmarks, setBookmarks] = useLocalStorage<string[]>(
+    STORAGE_KEYS.bookmarks,
+    [],
+    isBookmarksStorageValue,
+  );
   const [showApiModal, setShowApiModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [requirementsText, setRequirementsText] = useLocalStorage<string>(STORAGE_KEYS.requirementsText, "");
-  const [requirementsResult, setRequirementsResult] = useLocalStorage<string>(STORAGE_KEYS.requirementsResult, "");
+  const [requirementsText, setRequirementsText] = useLocalStorage<string>(
+    STORAGE_KEYS.requirementsText,
+    "",
+    isTextStorageValue,
+  );
+  const [requirementsResult, setRequirementsResult] = useLocalStorage<string>(
+    STORAGE_KEYS.requirementsResult,
+    "",
+    isTextStorageValue,
+  );
 
   const toggleTheme = useCallback(() => {
     setTheme(theme === "dark" ? "light" : "dark");
