@@ -18,6 +18,7 @@ export function HandbookModule() {
   const [levelFilter, setLevelFilter] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [cheatSheet, setCheatSheet] = useState(false);
+  const [learningMode, setLearningMode] = useState(false);
 
   const filtered = useMemo(() => {
     const query = normalizeSearchQuery(search).toLocaleLowerCase("ru");
@@ -36,8 +37,8 @@ export function HandbookModule() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-semibold text-foreground mb-1">📚 База знаний QA</h2>
-        <p className="text-sm text-muted-foreground">Интерактивный справочник по теории тестирования. Основан на ISTQB CTFL v4.0, ISO 25010, OWASP Top 10.</p>
+        <div className="flex flex-wrap items-start justify-between gap-3">\n          <div>\n            <h2 className="text-xl font-semibold text-foreground mb-1">📚 База знаний QA</h2>\n            <p className="text-sm text-muted-foreground">Интерактивный справочник по теории тестирования.</p>\n          </div>\n          <button\n            onClick={() => setLearningMode(true)}\n            className="flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-3 py-2 text-sm font-medium"\n          >\n            <GraduationCap className="w-4 h-4" /> Режим обучения\n          </button>\n        </div>
+        
       </div>
 
       {/* Search & Filters */}
