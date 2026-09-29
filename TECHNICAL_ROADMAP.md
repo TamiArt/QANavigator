@@ -983,3 +983,25 @@ Implemented:
 The source states that frontend/backend percentages are project-dependent; the material therefore does not treat 20%/80% as a universal rule.
 
 No Module 4 or Module 5 topics were introduced.
+
+
+### 7.1.24 Module 4 learning materials — 2026-09-29
+
+Extended the separate Handbook learning mode with **Module 4. Тестовая документация** using the user's supplied curriculum and study material.
+
+Implemented:
+- kept exactly four Module 4 topics in the supplied order:
+  1. Что такое тестовая документация?
+  2. В чем важность тестовой документации?
+  3. Тест-план (Test Plan)
+  4. Тест-кейс (Test Case);
+- added the supplied explanation of the purpose and value of test documentation;
+- added the eight key documentation types: Test Strategy, Test Plan, Test Case, Test Scenario, RTM, Test Data, Bug Report and Test Summary Report;
+- added the Test Plan structure with eight parts, entry/exit criteria, resources, procedures, prerequisites and risks;
+- added the supplied travel-app Test Plan example;
+- added Test Case types, atomicity, regression use and the full field structure;
+- added a minimal Test Case example and exam-ready summaries;
+- connected Module 4 to the existing sequential learning-mode module selector;
+- added regression coverage for exact topic count, order and key documentation/test-case anchors.
+
+No Module 5 topics were introduced.
