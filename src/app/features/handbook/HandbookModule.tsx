@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState, useMemo } from "react";
-import { BookOpen, Search, Star, ChevronDown, ArrowRight, ChevronUp } from "lucide-react";
+import { BookOpen, Search, Star, ChevronDown, ArrowRight, ChevronUp, GraduationCap } from "lucide-react";
 import { useApp } from "../../core/app-context";
 import { CopyButton, Badge, EmptyState, MarkdownView } from "../../components/shared";
 import { CATEGORIES } from "../../core/constants";
