@@ -925,3 +925,7 @@ Regression coverage:
 - learning progress storage key contract.
 
 The learning mode is intentionally separate from the existing reference-mode UI so the handbook remains usable as both a reference and a sequential course.
+
+
+### 7.1.21 Module 1 STLC lesson — 2026-09-29
+Added the user-requested **STLC: Жизненный цикл тестирования ПО** lesson directly after SDLC. The lesson reuses only the existing STLC section already present in the f6 handbook topic; no new external theory was introduced. Module 1 now contains 11 lessons.
