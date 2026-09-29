@@ -1027,3 +1027,26 @@ Implemented:
 A factual correction was applied to the supplied API example: HTTP **201 Created** is used instead of the technically incorrect “201 OK”.
 
 Regression coverage now checks all seven Module 4 topics, their exact order, and key API/checklist anchors.
+
+
+### 7.1.26 Module 4 extension: Bug Report, Test Summary Report and defect classification — 2026-09-29
+
+Extended **Module 4. Тестовая документация** with the next three user-supplied topics, appended after the existing seven topics:
+
+8. Баг-репорт (Bug Report)
+9. Пример отчета по тестированию (Test Summary Report)
+10. Баг, ошибка, дефект и их классификация
+
+Implemented:
+- added the Bug Report definition, purpose, developer-oriented writing rule, minimum structure, reproduction example and practical writing advice;
+- added the Test Summary Report example with project context, testing goals, methods, tools, environment, checklists and testing results;
+- added the Error → Defect/Bug distinction and examples;
+- added common reasons why defects occur;
+- added Severity classification: Blocker, Critical, Major, Minor and Trivial;
+- added Priority classification: High, Medium and Low;
+- explicitly separated Severity (impact) from Priority (urgency);
+- preserved the existing seven Module 4 topics and their order;
+- kept the module as a strict sequential learning curriculum with no Module 5 topics introduced;
+- extended the handbook-learning regression test to assert all 10 Module 4 topics, exact order, count and key Bug Report/Test Summary/Severity/Priority anchors.
+
+Where severity definitions or priority policies vary between teams, the lesson states that the project-specific rules take precedence.
