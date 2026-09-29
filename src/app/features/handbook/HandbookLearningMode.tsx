@@ -64,6 +64,25 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
         </p>
       </div>
 
+      <div className="grid gap-2 sm:grid-cols-2">
+        {HANDBOOK_LEARNING_MODULES.map((item, index) => {
+          const isActive = index === moduleIndex;
+          const itemCompleted = item.lessons.filter((lesson) => completed.has(lesson.id)).length;
+          return (
+            <button
+              key={item.id}
+              onClick={() => selectModule(index)}
+              className={isActive ? "rounded-xl border border-primary bg-primary/10 px-4 py-3 text-left" : "rounded-xl border border-border px-4 py-3 text-left hover:bg-muted/30"}
+            >
+              <div className="text-sm font-semibold text-foreground">{item.title}</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {itemCompleted}/{item.lessons.length} тем изучено
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
       <div className="h-2 rounded-full bg-muted overflow-hidden">
         <div
           className="h-full bg-primary transition-all"
