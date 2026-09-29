@@ -27,7 +27,7 @@ test("learning lesson range configuration excludes unrelated content", () => {
   assert.match(source, /sectionEnd: "\*\*STLC/);
   assert.match(source, /sectionStart: "### Severity vs Priority:/);
   assert.match(source, /sectionStart: "## Пирамида тестирования"/);
-  assert.match(source, /sectionEnd: "---\\\\n\\\\n## CI\\/CD"/);
+  assert.ok(source.includes('sectionEnd: "---\\n\\n## CI/CD"'));
 });
 
 test("learning progress uses the existing versioned local storage boundary", () => {
