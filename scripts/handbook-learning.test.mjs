@@ -34,3 +34,37 @@ test("learning progress uses the existing versioned local storage boundary", () 
   const constants = fs.readFileSync("src/app/core/constants.ts", "utf8");
   assert.match(constants, /handbookLearningProgress: "qa_navigator_handbook_learning_progress"/);
 });
+
+test("learning mode contains the approved Module 2 topics in exact order", () => {
+  const source = fs.readFileSync("src/app/features/handbook/handbook-learning-module2.ts", "utf8");
+  const expected = [
+    "Что такое стек проекта?",
+    "Команда проекта",
+    "Методологии разработки: как организовать работу над проектом",
+    "Scrum",
+    "Спринт",
+    "Покер планирования",
+    "Ретроспектива",
+    "Видео мероприятий Scrum",
+    "Видео о методологиях",
+    "Kanban",
+    "Смешанные модели",
+    "Типы компаний",
+  ];
+  for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
+  assert.equal((source.match(/id: "m2-\\d{2}"/g) ?? []).length, 12);
+  assert.ok(source.indexOf("Что такое стек проекта?") < source.indexOf("Команда проекта"));
+  assert.ok(source.indexOf("Команда проекта") < source.indexOf("Методологии разработки: как организовать работу над проектом"));
+  assert.ok(source.indexOf("Покер планирования") < source.indexOf("Ретроспектива"));
+  assert.ok(source.indexOf("Kanban") < source.indexOf("Смешанные модели"));
+  assert.match(source, /Shift-Left Testing/);
+  assert.match(source, /V-Model/);
+  assert.match(source, /Planning Poker/);
+  assert.match(source, /Definition of Done/);
+  assert.match(source, /Definition of Ready/);
+  assert.match(source, /Story Points/);
+  assert.match(source, /Lead Time/);
+  assert.match(source, /Cycle Time/);
+  assert.match(source, /Scrumban/);
+  assert.match(source, /Kanplan/);
+});
