@@ -11,13 +11,14 @@ test("learning mode contains exactly the approved Module 1 lessons", () => {
     "Верификация и валидация",
     "Требования",
     "SDLC: Жизненный цикл разработки ПО",
+    "STLC: Жизненный цикл тестирования ПО",
     "Severity vs Priority: Серьёзность и срочность багов",
     "Виды тестирования: классификация с примерами",
     "Пирамида тестирования: Уровни и их назначения",
     "Техники тест-дизайна: как придумывать тест-кейсы",
   ];
   for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
-  assert.equal((source.match(/id: "m1-\\d{2}"/g) ?? []).length, 10);
+  assert.equal((source.match(/id: "m1-\\d{2}"/g) ?? []).length, 11);
   assert.doesNotMatch(source, /Модуль 2|Модуль 3|Модуль 4|Модуль 5/);
 });
 
