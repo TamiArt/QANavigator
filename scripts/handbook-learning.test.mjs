@@ -95,3 +95,28 @@ test("learning mode contains the approved Module 3 topics in exact order", () =>
   assert.match(source, /2xx/);
   assert.match(source, /5xx/);
 });
+
+test("learning mode contains the approved Module 4 topics in exact order", () => {
+  const source = fs.readFileSync("src/app/features/handbook/handbook-learning-module4.ts", "utf8");
+  const expected = [
+    "Что такое тестовая документация?",
+    "В чем важность тестовой документации?",
+    "Тест-план (Test Plan)",
+    "Тест-кейс (Test Case)",
+  ];
+  for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
+  assert.equal((source.match(/id: "m4-\\d{2}"/g) ?? []).length, 4);
+  assert.ok(source.indexOf("Что такое тестовая документация?") < source.indexOf("В чем важность тестовой документации?"));
+  assert.ok(source.indexOf("В чем важность тестовой документации?") < source.indexOf("Тест-план (Test Plan)"));
+  assert.ok(source.indexOf("Тест-план (Test Plan)") < source.indexOf("Тест-кейс (Test Case)"));
+  assert.match(source, /Test Strategy/);
+  assert.match(source, /Requirements Traceability Matrix/);
+  assert.match(source, /Test Summary Report/);
+  assert.match(source, /Критерии начала/);
+  assert.match(source, /Критерии завершения/);
+  assert.match(source, /Passed/);
+  assert.match(source, /Failed/);
+  assert.match(source, /Blocked/);
+  assert.match(source, /Skipped/);
+  assert.match(source, /Постусловия/);
+});
