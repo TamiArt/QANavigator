@@ -59,6 +59,7 @@ export const STORAGE_KEYS = {
   bookmarks: "qa_navigator_bookmarks",
   requirementsText: "qa_navigator_req_text",
   requirementsResult: "qa_navigator_req_result",
+  handbookLearningProgress: "qa_navigator_handbook_learning_progress",
 } as const;
 export const EXPORTABLE_STORAGE_KEYS = [
   "qa_navigator_checklists",
