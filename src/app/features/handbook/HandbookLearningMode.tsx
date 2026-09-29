@@ -3,6 +3,7 @@ import { ArrowLeft, Check, ChevronLeft, ChevronRight, GraduationCap } from "luci
 import { MarkdownView } from "../../components/shared";
 import { useLocalStorage } from "../../hooks/use-local-storage";
 import { STORAGE_KEYS } from "../../core/constants";
+import { isHandbookLearningProgressStorageValue } from "../../core/storage-validators";
 import { HANDBOOK_LEARNING_MODULES, getLearningLessonContent } from "./handbook-learning";
 
 interface LearningProgress {
@@ -15,6 +16,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
   const [progress, setProgress] = useLocalStorage<LearningProgress>(
     STORAGE_KEYS.handbookLearningProgress,
     INITIAL_PROGRESS,
+    isHandbookLearningProgressStorageValue,
   );
   const [moduleIndex, setModuleIndex] = React.useState(0);
   const [activeIndex, setActiveIndex] = React.useState(0);
