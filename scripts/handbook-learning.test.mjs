@@ -68,3 +68,30 @@ test("learning mode contains the approved Module 2 topics in exact order", () =>
   assert.match(source, /Scrumban/);
   assert.match(source, /Kanplan/);
 });
+
+test("learning mode contains the approved Module 3 topics in exact order", () => {
+  const source = fs.readFileSync("src/app/features/handbook/handbook-learning-module3.ts", "utf8");
+  const expected = [
+    "Что такое фронтенд и бэкенд",
+    "Тестовые окружения (стенды)",
+    "Тестирование фронтенда",
+    "Мини-гайд по тестированию GUI",
+    "HTML",
+    "CSS",
+    "DevTools — главный инструмент",
+  ];
+  for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
+  assert.equal((source.match(/id: "m3-\\d{2}"/g) ?? []).length, 7);
+  assert.ok(source.indexOf("Что такое фронтенд и бэкенд") < source.indexOf("Тестовые окружения (стенды)"));
+  assert.ok(source.indexOf("Тестовые окружения (стенды)") < source.indexOf("Тестирование фронтенда"));
+  assert.ok(source.indexOf("Тестирование фронтенда") < source.indexOf("Мини-гайд по тестированию GUI"));
+  assert.ok(source.indexOf("Мини-гайд по тестированию GUI") < source.indexOf("HTML"));
+  assert.ok(source.indexOf("HTML") < source.indexOf("CSS"));
+  assert.ok(source.indexOf("CSS") < source.indexOf("DevTools — главный инструмент"));
+  assert.match(source, /Network/);
+  assert.match(source, /Console/);
+  assert.match(source, /Elements/);
+  assert.match(source, /F12/);
+  assert.match(source, /2xx/);
+  assert.match(source, /5xx/);
+});
