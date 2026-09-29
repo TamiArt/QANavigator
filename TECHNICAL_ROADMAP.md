@@ -1005,3 +1005,25 @@ Implemented:
 - added regression coverage for exact topic count, order and key documentation/test-case anchors.
 
 No Module 5 topics were introduced.
+
+
+### 7.1.25 Module 4 extension: API test cases and checklists — 2026-09-29
+
+Extended Module 4 with the user's additional study material, preserving the existing four topics and appending exactly three new topics in order:
+
+1. Тест-кейсы для бэкенда и API
+2. Чек-лист (Checklist)
+3. Тест-кейсы vs Чек-листы — что и когда выбирать
+
+Implemented:
+- backend/API testing focus: API contract, HTTP methods/endpoints, response statuses and structure, business logic, error handling, Kafka and database checks;
+- API test-case documentation rules and a concrete API + Kafka + DB example;
+- checklist definition, use cases, advantages, limitations and a real analytical-report checklist example;
+- checklist wording variants;
+- detailed Test Case vs Checklist comparison and context-based selection;
+- hybrid approach for critical versus routine checks;
+- exam-ready rules and guidance for time-constrained testing.
+
+A factual correction was applied to the supplied API example: HTTP **201 Created** is used instead of the technically incorrect “201 OK”.
+
+Regression coverage now checks all seven Module 4 topics, their exact order, and key API/checklist anchors.
