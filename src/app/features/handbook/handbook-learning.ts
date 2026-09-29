@@ -1,5 +1,6 @@
 import { HANDBOOK } from "../../handbook-data";
 import { HANDBOOK_LEARNING_MODULE_2_LESSONS } from "./handbook-learning-module2";
+import { HANDBOOK_LEARNING_MODULE_3_LESSONS } from "./handbook-learning-module3";
 
 export interface LearningLesson {
   id: string;
@@ -38,6 +39,11 @@ export const HANDBOOK_LEARNING_MODULES: readonly LearningModule[] = [
     id: "module-2-project-context",
     title: "Модуль 2. Погружение в контекст",
     lessons: HANDBOOK_LEARNING_MODULE_2_LESSONS,
+  },
+  {
+    id: "module-3-frontend",
+    title: "Модуль 3. Тестирование фронтенда",
+    lessons: HANDBOOK_LEARNING_MODULE_3_LESSONS,
   },
 ];
 
