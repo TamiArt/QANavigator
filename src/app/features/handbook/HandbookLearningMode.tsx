@@ -25,8 +25,13 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
   const completedCount = module.lessons.filter((lesson) => completed.has(lesson.id)).length;
   const progressPercent = Math.round((completedCount / module.lessons.length) * 100);
 
+  const selectModule = (index: number) => {
+    setModuleIndex(index);
+    setActiveIndex(0);
+  };
+
   const markCompleted = () => {
-    if (completed.has(activeLesson.id)) return;
+    if (!activeLesson || completed.has(activeLesson.id)) return;
     setProgress({
       completedLessonIds: [...progress.completedLessonIds, activeLesson.id],
     });
