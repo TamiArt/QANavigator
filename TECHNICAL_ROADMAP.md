@@ -899,3 +899,29 @@ Then introduce the smallest stable project-context contract and regression tests
 
 The first milestone must preserve all existing localStorage keys and existing feature behavior.
 
+
+
+## 7.1.20 Handbook learning mode — 2026-09-29
+
+Implemented the first learning-mode slice without changing the approved curriculum.
+
+Scope:
+- added a dedicated **Режим обучения** entry point to the existing QA Knowledge Base;
+- added exactly **Module 1. Теория тестирования**;
+- added exactly the 10 user-approved lessons, in the requested order;
+- reused only existing handbook material already present in the repository;
+- for SDLC, Severity vs Priority, and Test Pyramid, configured bounded content extraction so unrelated neighboring material is not shown in the lesson;
+- grouped the existing test-design topics under the single approved Module 1 lesson;
+- added local, versioned learning progress storage;
+- added previous/next navigation and explicit completion state;
+- kept the existing handbook search, filters, bookmarks, hierarchy and topic IDs unchanged.
+
+No additional learning topics were introduced.
+
+Regression coverage:
+- exact Module 1 lesson titles and count;
+- no Module 2–5 content introduced;
+- bounded-section configuration for topics containing adjacent material;
+- learning progress storage key contract.
+
+The learning mode is intentionally separate from the existing reference-mode UI so the handbook remains usable as both a reference and a sequential course.
