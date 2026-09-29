@@ -132,9 +132,12 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
     "Тест-кейсы для бэкенда и API",
     "Чек-лист (Checklist)",
     "Тест-кейсы vs Чек-листы — что и когда выбирать",
+    "Баг-репорт (Bug Report)",
+    "Пример отчета по тестированию (Test Summary Report)",
+    "Баг, ошибка, дефект и их классификация",
   ];
   for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
-  assert.equal((source.match(/id: "m4-\\d{2}"/g) ?? []).length, 7);
+  assert.equal((source.match(/id: "m4-\\d{2}"/g) ?? []).length, 10);
   for (let i = 0; i < expected.length - 1; i += 1) {
     assert.ok(source.indexOf(expected[i]) < source.indexOf(expected[i + 1]));
   }
@@ -147,4 +150,13 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
   assert.match(source, /Критерий/);
   assert.match(source, /Smoke/);
   assert.match(source, /Гибридный подход/);
+  assert.match(source, /Баг-репорт/);
+  assert.match(source, /Шаги воспроизведения/);
+  assert.match(source, /Test Summary Report/);
+  assert.match(source, /Цели тестирования/);
+  assert.match(source, /Severity/);
+  assert.match(source, /Blocker/);
+  assert.match(source, /Priority/);
+  assert.match(source, /High/);
+  assert.match(source, /Severity и Priority/);
 });
