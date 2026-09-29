@@ -114,4 +114,8 @@ export function isBookmarksStorageValue(value: unknown): boolean {
 export function isTextStorageValue(value: unknown): boolean {
   const data = unwrapCurrentStorageValue(value);
   return typeof data === "string";
+
+export function isHandbookLearningProgressStorageValue(value: unknown): boolean {
+  const data = unwrapCurrentStorageValue(value);
+  return isRecord(data) && isStringArray(data.completedLessonIds);
 }
