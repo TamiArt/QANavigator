@@ -622,3 +622,280 @@ Implemented the next Phase 5 regression boundary:
 - added the navigation test to the main `verify` gate.
 
 This closes the static navigation-integrity milestone. Browser smoke testing remains dependent on access to a runnable deployment; the deployment URL recorded in PR #12 is not currently accessible through the connected Vercel integration.
+
+
+---
+
+## 10. Product evolution — QA Assistant
+
+### Architecture constraint — AI is optional, not required
+
+QA Navigator must remain fully useful without AI.
+
+Mandatory constraints:
+- no paid API or paid backend is required for core functionality;
+- no local LLM installation is required;
+- no Ollama, LM Studio or similar local model runtime is required;
+- the application must work in a normal browser using its local QA engine;
+- AI is an optional accelerator, available only through a user-provided external provider/API when configured;
+- core QA logic must never depend on an AI response;
+- structured AI output must be validated before entering application state;
+- if AI is unavailable, the same QA task must remain possible through deterministic rules, generators, templates and user input.
+
+Target architecture:
+
+```
+QA Navigator
+│
+├── QA CORE ENGINE
+│   ├── requirements analysis
+│   ├── test design
+│   ├── test cases
+│   ├── test data
+│   ├── execution
+│   ├── bugs
+│   ├── traceability
+│   └── reports
+│
+└── OPTIONAL AI LAYER
+    └── user-provided external provider
+```
+
+The AI layer may improve suggestions, explanations and generation quality, but it must not become a mandatory runtime dependency.
+
+### Product goal
+
+Evolution target:
+
+```
+Collection of QA tools
+        ↓
+Shared QA workspace
+        ↓
+QA work environment
+        ↓
+QA Assistant
+        ↓
+Optional AI-enhanced QA Assistant
+```
+
+The assistant is not a separate chatbot placed beside the existing tools. It is a common layer over the same project data and QA workflow.
+
+### Development roadmap
+
+#### Stage A — Project Context & QA Workspace
+**Goal:** give all QA modules one shared project context.
+
+Simple meaning:
+- create a QA project;
+- store project name, product/version and basic context;
+- make requirements, test cases, bugs, execution results and other artifacts belong to a project;
+- allow modules to reuse the same project data instead of working as isolated tools;
+- keep the first implementation local/browser-based.
+
+Expected result:
+**the user can open one project and see all QA work connected to it.**
+
+#### Stage B — QA Assistant shell
+**Goal:** create the assistant's central working area.
+
+Simple meaning:
+- show the current project context;
+- show what QA work already exists;
+- provide actions such as “analyze requirement”, “create tests”, “prepare test data”, “check coverage”;
+- initially these actions use the deterministic QA core, not AI.
+
+Expected result:
+**the app starts behaving like an assistant, even with AI completely disabled.**
+
+#### Stage C — Requirement Intelligence
+**Goal:** automatically find problems in requirements using deterministic rules.
+
+Simple meaning:
+- detect empty or incomplete requirements;
+- find ambiguous wording where rules can identify it;
+- detect missing acceptance criteria;
+- identify missing actors, inputs, outputs or expected behavior where applicable;
+- show exactly why a requirement needs attention.
+
+Expected result:
+**the tester gets a structured requirement-quality report instead of only a text-analysis box.**
+
+#### Stage D — Test Design Assistant
+**Goal:** turn requirements into appropriate test-design work.
+
+Simple meaning:
+- determine which test-design techniques fit the requirement;
+- generate equivalence classes;
+- generate boundary values;
+- generate decision tables;
+- generate state-transition cases;
+- generate pairwise combinations where appropriate;
+- explain which technique was selected and why.
+
+Expected result:
+**the tester can move from requirement → test ideas without manually rebuilding the same data.**
+
+#### Stage E — Test Case Factory
+**Goal:** convert test ideas into usable test cases.
+
+Simple meaning:
+- generate structured test cases from selected scenarios;
+- reuse project conventions and templates;
+- connect each test case to its source requirement;
+- detect duplicate or nearly duplicate cases;
+- allow editing before saving.
+
+Expected result:
+**test cases become reusable project artifacts rather than temporary generated text.**
+
+#### Stage F — Traceability & Evidence
+**Goal:** connect the whole QA chain.
+
+Simple meaning:
+- requirement → test case;
+- test case → execution;
+- execution → bug;
+- requirement → coverage;
+- keep evidence and notes connected to the relevant artifact.
+
+Expected result:
+**the tester can answer “what was tested, why, and what happened?” without searching through separate modules.**
+
+#### Stage G — Test Execution Workspace
+**Goal:** make QA Navigator useful during an actual test cycle.
+
+Simple meaning:
+- create test runs;
+- execute selected test cases;
+- record passed/failed/blocked results;
+- attach notes/evidence;
+- create or link bugs directly from failed tests;
+- calculate execution progress.
+
+Expected result:
+**the application can be used during real manual testing, not only during test preparation.**
+
+#### Stage H — Bug Assistant
+**Goal:** make bug reporting faster and more consistent.
+
+Simple meaning:
+- create a bug from a failed test;
+- reuse steps, expected result and actual result;
+- validate required bug fields;
+- detect obvious missing information;
+- keep the bug connected to the test and requirement.
+
+Expected result:
+**a failed test can become a structured bug report without copying information manually.**
+
+#### Stage I — Risk Engine
+**Goal:** help the tester decide where attention is needed based on transparent rules.
+
+Simple meaning:
+- calculate risk indicators from impact, priority, coverage, failures and other explicit project data;
+- show the factors behind each indicator;
+- never hide the calculation behind an unexplained AI score.
+
+Expected result:
+**the tester can see which areas require additional testing and why.**
+
+#### Stage J — Release Assistant
+**Goal:** assemble the QA state into a release picture.
+
+Simple meaning:
+- show execution progress;
+- show pass/fail/blocked results;
+- show open bugs by severity/priority;
+- show requirement coverage;
+- show known risks;
+- generate a structured release report.
+
+Expected result:
+**the tester can prepare a release QA summary from project data instead of collecting it manually.**
+
+#### Stage K — Optional AI Grounding
+**Goal:** add AI only after the deterministic core is useful on its own.
+
+Simple meaning:
+- send only the necessary project context to the user-selected external provider;
+- ask AI for suggestions, alternative test ideas, explanations or review;
+- validate returned structured data;
+- never make AI-generated content silently become trusted project data.
+
+Expected result:
+**AI makes the assistant more helpful, but the product still works when the API key is absent, unavailable or the provider fails.**
+
+#### Stage L — Knowledge Assistant
+**Goal:** connect the QA handbook to the current task.
+
+Simple meaning:
+- explain QA concepts in simple language;
+- point the tester to relevant handbook topics;
+- explain why a technique is useful for the current requirement;
+- eventually use project context to make explanations more relevant.
+
+Expected result:
+**the application can act as both a work tool and a learning assistant.**
+
+#### Stage M — API / Web Assistant
+**Goal:** extend the assistant from project artifacts to real application checks.
+
+Simple meaning:
+- help prepare API test scenarios;
+- inspect HTTP requests/responses supplied by the user;
+- generate checks and test data;
+- support repeatable manual API testing workflows.
+
+Expected result:
+**QA Navigator becomes useful for practical web/API testing, not only documentation.**
+
+#### Stage N — Automation Assistant
+**Goal:** prepare the tester for automation without making automation mandatory.
+
+Simple meaning:
+- generate automation-ready scenarios from existing test cases;
+- suggest selectors/assertions/test structure where deterministic rules allow;
+- optionally generate code through the external AI layer;
+- keep generated automation reviewable before use.
+
+Expected result:
+**manual testing artifacts can become a starting point for automation.**
+
+### Order of implementation
+
+The order is intentional:
+
+1. **Project Context** — first connect the data.
+2. **Assistant shell** — then connect the user experience.
+3. **Requirement Intelligence** — understand what needs testing.
+4. **Test Design** — derive test ideas.
+5. **Test Case Factory** — turn ideas into artifacts.
+6. **Traceability** — connect artifacts.
+7. **Execution** — use them during testing.
+8. **Bug Assistant** — close the failure loop.
+9. **Risk Engine** — prioritize attention using transparent rules.
+10. **Release Assistant** — summarize the whole project.
+11. **Optional AI** — accelerate the mature workflow.
+12. **Knowledge/API/Automation assistants** — extend the product.
+
+This sequence prevents the project from becoming a collection of disconnected AI features.
+
+### Immediate implementation milestone
+
+**Next development milestone: Stage A — Project Context & QA Workspace.**
+
+Before changing application behavior, inspect:
+- `src/app/domain/types.ts`;
+- `src/app/core/app-context.tsx`;
+- `src/app/core/constants.ts`;
+- current Project Workspace models;
+- Requirements models;
+- Test Execution models;
+- Documentation models;
+- existing localStorage boundaries.
+
+Then introduce the smallest stable project-context contract and regression tests before integrating it into UI.
+
+The first milestone must preserve all existing localStorage keys and existing feature behavior.
+
