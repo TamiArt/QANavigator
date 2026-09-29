@@ -5,6 +5,8 @@ interface VersionedEnvelope<T> {
   data: T;
 }
 
+export type StoredValueValidator = (value: unknown) => boolean;
+
 function isObject(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object";
 }
@@ -19,13 +21,21 @@ function isUnsupportedVersionedEnvelope(value: unknown): boolean {
   return "version" in value && "data" in value && value.version !== STORAGE_SCHEMA_VERSION;
 }
 
-export function parseStoredValue<T>(raw: string | null, initial: T): T {
+export function parseStoredValue<T>(
+  raw: string | null,
+  initial: T,
+  validate?: StoredValueValidator,
+): T {
   if (!raw) return initial;
+
   try {
     const parsed: unknown = JSON.parse(raw);
-    if (isVersionedEnvelope<T>(parsed)) return parsed.data;
+
     if (isUnsupportedVersionedEnvelope(parsed)) return initial;
-    return parsed as T;
+
+    const value = isVersionedEnvelope<T>(parsed) ? parsed.data : parsed;
+
+    return !validate || validate(value) ? (value as T) : initial;
   } catch {
     return initial;
   }
