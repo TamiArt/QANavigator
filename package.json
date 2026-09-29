@@ -7,7 +7,7 @@
     "build": "vite build",
     "dev": "vite",
     "check:conflicts": "node scripts/check-conflicts.mjs",
-    "verify": "npm run check:conflicts && npm run check:module-size && npm run test:handbook && npm run test:navigation && npm run test:test-design && npm run test:storage && npm run test:storage-validators && npm run test:documentation && npm run test:backup && npm run typecheck && npm run build",
+    "verify": "npm run check:conflicts && npm run check:module-size && npm run test:handbook && npm run test:handbook-learning && npm run test:navigation && npm run test:test-design && npm run test:storage && npm run test:storage-validators && npm run test:documentation && npm run test:backup && npm run typecheck && npm run build",
     "typecheck": "tsc --noEmit",
     "check:module-size": "node scripts/check-module-size.mjs",
     "test:handbook": "node --test scripts/handbook-hierarchy.test.mjs",
@@ -16,7 +16,8 @@
     "test:documentation": "node --test scripts/documentation-model.test.mjs",
     "test:backup": "node --test scripts/data-backup.test.mjs",
     "test:storage-validators": "node --test scripts/storage-validators.test.mjs",
-    "test:navigation": "node --test scripts/navigation-contract.test.mjs"
+    "test:navigation": "node --test scripts/navigation-contract.test.mjs",
+    "test:handbook-learning": "node --test scripts/handbook-learning.test.mjs"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
