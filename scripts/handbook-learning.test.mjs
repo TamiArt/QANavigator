@@ -120,3 +120,31 @@ test("learning mode contains the approved Module 4 topics in exact order", () =>
   assert.match(source, /Skipped/);
   assert.match(source, /Постусловия/);
 });
+
+
+test("learning mode contains the extended Module 4 topics in exact order", () => {
+  const source = fs.readFileSync("src/app/features/handbook/handbook-learning-module4.ts", "utf8");
+  const expected = [
+    "Что такое тестовая документация?",
+    "В чем важность тестовой документации?",
+    "Тест-план (Test Plan)",
+    "Тест-кейс (Test Case)",
+    "Тест-кейсы для бэкенда и API",
+    "Чек-лист (Checklist)",
+    "Тест-кейсы vs Чек-листы — что и когда выбирать",
+  ];
+  for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
+  assert.equal((source.match(/id: "m4-\\d{2}"/g) ?? []).length, 7);
+  for (let i = 0; i < expected.length - 1; i += 1) {
+    assert.ok(source.indexOf(expected[i]) < source.indexOf(expected[i + 1]));
+  }
+  assert.match(source, /HTTP-метод и endpoint/);
+  assert.match(source, /POST \/create/);
+  assert.match(source, /201 Created/);
+  assert.match(source, /create\\.payment/);
+  assert.match(source, /401/);
+  assert.match(source, /409 Conflict/);
+  assert.match(source, /Критерий/);
+  assert.match(source, /Smoke/);
+  assert.match(source, /Гибридный подход/);
+});
