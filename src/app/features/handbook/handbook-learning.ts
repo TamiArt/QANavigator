@@ -1,4 +1,5 @@
 import { HANDBOOK } from "../../handbook-data";
+import { HANDBOOK_LEARNING_MODULE_2_LESSONS } from "./handbook-learning-module2";
 
 export interface LearningLesson {
   id: string;
@@ -6,6 +7,7 @@ export interface LearningLesson {
   topicIds: string[];
   sectionStart?: string;
   sectionEnd?: string;
+  content?: string;
 }
 
 export interface LearningModule {
@@ -32,6 +34,11 @@ export const HANDBOOK_LEARNING_MODULES: readonly LearningModule[] = [
       { id: "m1-11", title: "Техники тест-дизайна: как придумывать тест-кейсы", topicIds: ["td1", "td2", "td3", "td4", "td5", "td6"] },
     ],
   },
+  {
+    id: "module-2-project-context",
+    title: "Модуль 2. Погружение в контекст",
+    lessons: HANDBOOK_LEARNING_MODULE_2_LESSONS,
+  },
 ];
 
 function findTopic(topicId: string) {
@@ -47,6 +54,8 @@ function extractRange(content: string, start?: string, end?: string): string {
 }
 
 export function getLearningLessonContent(lesson: LearningLesson): string {
+  if (lesson.content) return lesson.content;
+
   const parts = lesson.topicIds
     .map(findTopic)
     .filter(Boolean)
