@@ -958,3 +958,28 @@ Implemented:
 - added regression coverage for Module 2 title/order/content anchors.
 
 No Module 3–5 topics were introduced.
+
+
+### 7.1.23 Module 3 learning materials — 2026-09-29
+
+Extended the separate Handbook learning mode with **Module 3. Тестирование фронтенда** using the user's supplied curriculum and material.
+
+Implemented:
+- kept the exact seven Module 3 topics and their order:
+  1. Что такое фронтенд и бэкенд
+  2. Тестовые окружения (стенды)
+  3. Тестирование фронтенда
+  4. Мини-гайд по тестированию GUI
+  5. HTML
+  6. CSS
+  7. DevTools — главный инструмент;
+- added the supplied frontend/backend/API interaction and Network-based bug localization material;
+- added Dev/QA-Stage/Integration/Preprod/Prod environment guidance;
+- added frontend, GUI, HTML and CSS QA checklists;
+- added the supplied DevTools, HTTP status-code and troubleshooting flow;
+- preserved the learning-mode curriculum as a separate sequential layer over the reference Handbook;
+- added regression coverage for Module 3 topic count, exact order and key content anchors.
+
+The source states that frontend/backend percentages are project-dependent; the material therefore does not treat 20%/80% as a universal rule.
+
+No Module 4 or Module 5 topics were introduced.
