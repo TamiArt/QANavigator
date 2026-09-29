@@ -929,3 +929,32 @@ The learning mode is intentionally separate from the existing reference-mode UI 
 
 ### 7.1.21 Module 1 STLC lesson — 2026-09-29
 Added the user-requested **STLC: Жизненный цикл тестирования ПО** lesson directly after SDLC. The lesson reuses only the existing STLC section already present in the f6 handbook topic; no new external theory was introduced. Module 1 now contains 11 lessons.
+
+
+### 7.1.22 Module 2 learning materials — 2026-09-29
+
+Extended the separate Handbook learning mode with **Module 2. Погружение в контекст** using the user's supplied curriculum and study material.
+
+Implemented:
+- kept the exact Module 2 topic order:
+  1. Что такое стек проекта?
+  2. Команда проекта
+  3. Методологии разработки: как организовать работу над проектом
+  4. Scrum
+  5. Спринт
+  6. Покер планирования
+  7. Ретроспектива
+  8. Видео мероприятий Scrum
+  9. Видео о методологиях
+  10. Kanban
+  11. Смешанные модели
+  12. Типы компаний;
+- added the supplied project-stack, team-role, methodology, Scrum, Sprint, Planning Poker, retrospective, Kanban and hybrid-model material;
+- placed Shift-Left Testing inside the Methodologies lesson;
+- included the supplied V-Model, Spiral, Iterative, Agile, Scrum, Kanban, Scrumban and Kanplan comparison material in the Methodologies lesson;
+- kept the two video lessons and Type of Companies lesson in the curriculum without inventing missing source material;
+- moved Module 2 learning content into a dedicated handbook-learning-module2.ts file to keep responsibilities modular;
+- added module selection to the learning-mode UI while preserving the existing Module 1 order and progress storage;
+- added regression coverage for Module 2 title/order/content anchors.
+
+No Module 3–5 topics were introduced.
