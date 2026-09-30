@@ -1235,3 +1235,43 @@ Fixes:
 - changed `LearningModule.lessons` to `readonly LearningLesson[]` so the module contract matches the existing immutable lesson collections.
 
 No lesson content or curriculum order was changed.
+
+
+### 7.1.37 Learning Mode visual infographic style standard — 2026-09-30
+
+Defined the reusable visual standard for all future Learning Mode lesson infographics.
+
+Style contract:
+- premium educational IT infographic / visual learning cheat sheet;
+- vertical portrait format, approximately 2:3;
+- white or very light background;
+- clean flat-vector illustration with a subtle paper/card aesthetic;
+- modular information architecture using rounded rectangular cards;
+- thin borders, very light pastel card backgrounds and minimal shadows;
+- dark navy headings with prominent blue numbered section markers;
+- secondary soft pastel palette: blue, lavender, mint, pale yellow, light pink and soft orange;
+- modern rounded/geometric sans-serif typography in the style of Manrope, Inter, Nunito Sans, Rubik or Montserrat;
+- friendly flat educational vector illustrations that support the concept without competing with text;
+- consistent outline/flat-fill icon set with matching stroke width and visual weight;
+- diagrams, flowcharts, cycles, timelines, comparison tables and visual models used to turn complex concepts into understandable structures;
+- concise educational text: information must be compressed visually while preserving the full meaning;
+- optional labels such as «Важно», «Суть», «Пример» and «Где применяется»;
+- a compact «Шпаргалка» summary area may be used for final revision.
+
+Language and content rules:
+- primary infographic text is strictly Russian Cyrillic;
+- English is allowed only for professional terms such as API, QA, Test Case and Bug Report;
+- the infographic must explain and model the topic visually rather than merely decorate the lesson;
+- the target feeling is: «Сложную IT-тему разложили на одну красивую, понятную страницу».
+
+Explicit exclusions:
+- no photorealism;
+- no 3D rendering;
+- no glassmorphism;
+- no dark backgrounds;
+- no excessive gradients;
+- no heavy shadows;
+- no excessive decorative elements;
+- no corporate-presentation visual style.
+
+This standard is a reusable design contract for future Module 1–4 and subsequent Learning Mode infographic creation. It does not itself create or replace any infographic assets.
