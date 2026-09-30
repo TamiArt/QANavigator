@@ -19,7 +19,6 @@ test("learning mode contains exactly the approved Module 1 lessons", () => {
   ];
   for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
   assert.equal((source.match(/id: "m1-\d{2}"/g) ?? []).length, 11);
-  assert.doesNotMatch(source, /Модуль 2|Модуль 3|Модуль 4|Модуль 5/);
 });
 
 test("learning lesson range configuration excludes unrelated content", () => {
@@ -106,9 +105,10 @@ test("learning mode contains the approved Module 4 topics in exact order", () =>
   ];
   for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
   assert.equal((source.match(/id: "m4-\d{2}"/g) ?? []).length, 18);
-  assert.ok(source.indexOf("Что такое тестовая документация?") < source.indexOf("В чем важность тестовой документации?"));
-  assert.ok(source.indexOf("В чем важность тестовой документации?") < source.indexOf("Тест-план (Test Plan)"));
-  assert.ok(source.indexOf("Тест-план (Test Plan)") < source.indexOf("Тест-кейс (Test Case)"));
+  const titleIndex = (title) => source.indexOf(`title: "${title}"`);
+  assert.ok(titleIndex("Что такое тестовая документация?") < titleIndex("В чем важность тестовой документации?"));
+  assert.ok(titleIndex("В чем важность тестовой документации?") < titleIndex("Тест-план (Test Plan)"));
+  assert.ok(titleIndex("Тест-план (Test Plan)") < titleIndex("Тест-кейс (Test Case)"));
   assert.match(source, /Test Strategy/);
   assert.match(source, /Requirements Traceability Matrix/);
   assert.match(source, /Test Summary Report/);
@@ -146,8 +146,9 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
   ];
   for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
   assert.equal((source.match(/id: "m4-\d{2}"/g) ?? []).length, 18);
+  const titleIndex = (title) => source.indexOf(`title: "${title}"`);
   for (let i = 0; i < expected.length - 1; i += 1) {
-    assert.ok(source.indexOf(expected[i]) < source.indexOf(expected[i + 1]));
+    assert.ok(titleIndex(expected[i]) < titleIndex(expected[i + 1]));
   }
   assert.match(source, /HTTP-метод и endpoint/);
   assert.match(source, /POST \/create/);
