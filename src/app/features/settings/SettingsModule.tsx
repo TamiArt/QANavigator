@@ -4,8 +4,10 @@ import { Database, Download, Key, Info, Trash2, Upload } from "lucide-react";
 import { useApp } from "../../core/app-context";
 import { EXPORTABLE_STORAGE_KEYS } from "../../core/constants";
 import {
+  isActiveProjectStorageValue,
   isBookmarksStorageValue,
   isBugReportsStorageValue,
+  isProjectsStorageValue,
   isChecklistsStorageValue,
   isTestCasesStorageValue,
   isTextStorageValue,
@@ -51,6 +53,8 @@ export function SettingsModule() {
       reader.onload = (ev) => {
         try {
           const backup = parseDataBackup(String(ev.target?.result ?? ""), EXPORTABLE_STORAGE_KEYS, {
+            qa_navigator_projects: isProjectsStorageValue,
+            qa_navigator_active_project: isActiveProjectStorageValue,
             qa_navigator_checklists: isChecklistsStorageValue,
             qa_navigator_testcases: isTestCasesStorageValue,
             qa_navigator_bugreports: isBugReportsStorageValue,
