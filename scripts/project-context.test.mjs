@@ -10,7 +10,7 @@ async function loadModule(path) {
   const compiled = ts.transpileModule(source, {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
   }).outputText;
-  const testModule = new Module(path, module);
+  const testModule = new Module(path);
   testModule.filename = join(process.cwd(), path);
   testModule.paths = Module._nodeModulePaths(process.cwd());
   testModule._compile(compiled, testModule.filename);
