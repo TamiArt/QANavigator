@@ -106,22 +106,52 @@ test("testing types topic keeps a valid template-string boundary", () => {
   const start = source.indexOf('id: "tt2"');
   const end = source.indexOf('id: "tt3"', start);
   assert.ok(start >= 0 && end > start, "tt2/tt3 boundaries must exist");
+
   const tt2 = source.slice(start, end);
-  assert.match(
-    tt2,
-    /content: \`## Архитектура и классификация видов тестирования ПО/,
-    "tt2 content must start with a real template delimiter immediately followed by the expected heading",
+  const contentMatch = tt2.match(/content: `([\\s\\S]*)\\n`,\\n  \\},\\n$/);
+  assert.ok(contentMatch, "tt2 content must close before the tt3 topic");
+  const content = contentMatch[1];
+
+  assert.equal(
+    content.startsWith("## Архитектура и классификация видов тестирования ПО"),
+    true,
+    "tt2 content must start with the expected heading",
   );
-  assert.ok(!tt2.includes("content: \\`## Архитектура"), "tt2 content must not start with an escaped template delimiter");
-  assert.ok(!tt2.includes("content:\\`##"), "tt2 content must contain a normal space after the colon");
-  assert.ok(!tt2.includes("\` ## Архитектура"), "tt2 content must not contain a space after the opening delimiter");
-  assert.ok(!tt2.includes("\u00a0"), "tt2 content must not contain non-breaking spaces");
-  assert.ok(!tt2.includes("\\`,\n  }"), "tt2 content must close with a real template delimiter");
-  assert.match(tt2, /\\n\`,\n  \\},\n  \\{\n    id: "tt3"/, "tt2 content must be closed before the tt3 topic");});
+  for (const anchor of [
+    "## 2. По степени знания системы: уровни «ящиков»",
+    "### Black-box — чёрный ящик",
+    "### Gray-box — серый ящик",
+    "### White-box — белый ящик",
+    "## 3. По времени и цели проведения",
+    "Решение о релизе",
+    "## 8. По уровням тестирования: масштаб проверки",
+  ]) {
+    assert.equal(content.includes(anchor), true, "tt2 content must contain the complete section: " + anchor);
+  }
+
+  assert.equal(tt2.includes("content: \\`## Архитектура"), false, "tt2 must not use an escaped opening delimiter");
+  assert.equal(tt2.includes("content:\\`##"), false, "tt2 content must keep a space after content:");
+  assert.equal(tt2.includes("` ## Архитектура"), false, "tt2 must not have a space after the opening delimiter");
+  assert.equal(tt2.includes("\u00a0"), false, "tt2 content must not contain non-breaking spaces");
+  assert.equal(tt2.includes("\\`,\n  }"), false, "tt2 must not contain an escaped closing delimiter");
+  assert.match(source.slice(end - 20, end + 40), /\n  \},\n  \{\n    id: "tt3"/, "tt2 must be closed before tt3");
+});
 
 test("handbook data has balanced template literals and no hidden whitespace hazards", () => {
   const source = fs.readFileSync("src/app/handbook-data-part-1.ts", "utf8");
-  assert.equal((source.match(/`/g) || []).length % 2, 0, "handbook data must have balanced template delimiters");
+
+  let unescapedBackticks = 0;
+  let escaped = false;
+  for (const char of source) {
+    if (char === "\\") {
+      escaped = !escaped;
+      continue;
+    }
+    if (char === "`" && !escaped) unescapedBackticks += 1;
+    escaped = false;
+  }
+
+  assert.equal(unescapedBackticks % 2, 0, "handbook data must have balanced unescaped template delimiters");
   assert.equal(source.includes("\u00a0"), false, "handbook data must not contain non-breaking spaces");
   assert.equal(source.includes("\r"), false, "handbook data must not contain carriage returns");
   assert.equal(source.includes("\t"), false, "handbook data must not contain tab characters");
