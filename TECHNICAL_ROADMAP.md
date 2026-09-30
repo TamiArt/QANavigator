@@ -1327,3 +1327,21 @@ Content remains in the existing `tt2` topic; no topic IDs, curriculum order or L
 Added a regression contract in `scripts/handbook-hierarchy.test.mjs` to protect the eight classification axes and key terminology from accidental removal.
 
 No other branch was modified.
+
+### 7.1.40 Learning Mode infographic semantic/presentation refinement — 2026-09-30
+
+Refined the Learning Mode infographic layer without changing any lesson content, titles, IDs or curriculum order.
+
+Implemented:
+- upgraded all 48 lesson visual definitions from a generic card model to explicit topic-specific visual metadata;
+- added six reusable pastel accent variants while keeping the light educational visual standard;
+- added explicit visual-model labels for sequence, layers, cycle, comparison, checklist, relationships, action order and testing levels;
+- improved responsive layouts for 3-, 4- and 18-lesson module collections;
+- added numbered visual steps, clearer card hierarchy and topic-model badges;
+- improved long-label wrapping so professional terms remain readable on narrow screens;
+- added semantic `aria-label` attributes to infographic sections and decorative icons;
+- kept the infographic strictly presentation-only: lesson source text and curriculum data were not modified;
+- strengthened regression coverage so every one of the 48 lessons must have an explicit semantic `V(...)` infographic definition.
+
+The infographic layer remains deterministic and asset-free, using the existing icon library and Tailwind classes.
+

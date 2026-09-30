@@ -185,16 +185,22 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
 });
 
 
-test("Learning Mode has an infographic contract for every lesson in Modules 1–4", () => {
+test("Learning Mode has a semantic infographic contract for every lesson in Modules 1–4", () => {
   const infographic = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
   const expectedIds = Array.from({ length: 11 }, (_, i) => "m1-" + String(i + 1).padStart(2, "0"))
     .concat(Array.from({ length: 12 }, (_, i) => "m2-" + String(i + 1).padStart(2, "0")))
     .concat(Array.from({ length: 7 }, (_, i) => "m3-" + String(i + 1).padStart(2, "0")))
     .concat(Array.from({ length: 18 }, (_, i) => "m4-" + String(i + 1).padStart(2, "0")));
   assert.equal(expectedIds.length, 48);
-  for (const id of expectedIds) assert.ok(infographic.includes('"' + id + '"'), "Missing infographic definition for " + id);
-  assert.match(infographic, /mode: "module"/);
+  for (const id of expectedIds) {
+    assert.ok(infographic.includes('"' + id + '": V('), "Missing semantic infographic definition for " + id);
+  }
+  assert.match(infographic, /type VisualKind/);
+  assert.match(infographic, /accent: Accent/);
   assert.match(infographic, /Карта модуля/);
+  assert.match(infographic, /Визуальная шпаргалка/);
+  assert.match(infographic, /KIND_LABELS/);
+  assert.match(infographic, /aria-label=/);
 });
 
 test("Learning Mode renders module and lesson infographics", () => {
