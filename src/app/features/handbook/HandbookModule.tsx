@@ -1,11 +1,13 @@
 import * as React from "react";
 import { useState, useMemo } from "react";
-import { BookOpen, Search, Star, ChevronDown, ArrowRight, ChevronUp } from "lucide-react";
+import { BookOpen, Search, Star, ChevronDown, ArrowRight, ChevronUp, GraduationCap } from "lucide-react";
 import { useApp } from "../../core/app-context";
 import { CopyButton, Badge, EmptyState, MarkdownView } from "../../components/shared";
 import { CATEGORIES } from "../../core/constants";
 import { HANDBOOK } from "../../handbook-data";
+import { HANDBOOK_SECTION_BY_TOPIC } from "../../handbook-hierarchy";
 import { HandbookImages } from "../../components/handbook/HandbookImages";
+import { HandbookLearningMode } from "./HandbookLearningMode";
 import { HighlightedText, normalizeSearchQuery, SearchMatches } from "../../components/handbook/SearchHighlights";
 
 // MODULE 7: QA HANDBOOK
@@ -17,6 +19,7 @@ export function HandbookModule() {
   const [levelFilter, setLevelFilter] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [cheatSheet, setCheatSheet] = useState(false);
+  const [learningMode, setLearningMode] = useState(false);
 
   const filtered = useMemo(() => {
     const query = normalizeSearchQuery(search).toLocaleLowerCase("ru");
@@ -32,11 +35,26 @@ export function HandbookModule() {
 
   const techDesignTopics = ["td1", "td2", "td3", "td4", "td5"];
 
+  if (learningMode) {
+    return <HandbookLearningMode onBack={() => setLearningMode(false)} />;
+  }
+
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-semibold text-foreground mb-1">📚 База знаний QA</h2>
-        <p className="text-sm text-muted-foreground">Интерактивный справочник по теории тестирования. Основан на ISTQB CTFL v4.0, ISO 25010, OWASP Top 10.</p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold text-foreground mb-1">📚 База знаний QA</h2>
+            <p className="text-sm text-muted-foreground">Интерактивный справочник по теории тестирования.</p>
+          </div>
+          <button
+            onClick={() => setLearningMode(true)}
+            className="flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-3 py-2 text-sm font-medium"
+          >
+            <GraduationCap className="w-4 h-4" /> Режим обучения
+          </button>
+        </div>
+        
       </div>
 
       {/* Search & Filters */}
@@ -97,8 +115,26 @@ export function HandbookModule() {
         {filtered.length === 0 ? (
           <EmptyState icon={<BookOpen />} title="Ничего не найдено" desc="Попробуйте изменить фильтры или поисковый запрос" />
         ) : (
-          filtered.map((topic) => (
-            <div key={topic.id} className="bg-card border border-border rounded-xl overflow-hidden">
+          (() => {
+            let lastSectionId = "";
+            return filtered.map((topic) => {
+              const section = HANDBOOK_SECTION_BY_TOPIC.get(topic.id);
+              const showSection = Boolean(section && section.id !== lastSectionId);
+              lastSectionId = section?.id ?? lastSectionId;
+
+              return (
+                <React.Fragment key={topic.id}>
+                  {showSection && section && (
+                    <div className="pt-5 pb-2 first:pt-0">
+                      <div className="flex items-end justify-between gap-3">
+                        <div>
+                          <h3 className="text-base font-semibold text-foreground">{section.title}</h3>
+                          <p className="text-xs text-muted-foreground mt-0.5">{section.description}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div className="bg-card border border-border rounded-xl overflow-hidden">
               <div
                 role="button"
                 tabIndex={0}
@@ -157,8 +193,11 @@ export function HandbookModule() {
                   </div>
                 </div>
               )}
-            </div>
-          ))
+                  </div>
+                </React.Fragment>
+              );
+            });
+          })()
         )}
       </div>
     </div>

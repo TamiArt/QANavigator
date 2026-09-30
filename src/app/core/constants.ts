@@ -21,35 +21,46 @@ export const TEST_DATA = {
 };
 
 export const STACKS: { id: AutoStack; label: string; lang: string; badge?: string }[] = [
-  // Python
   { id: "python-playwright", label: "Python + Playwright", lang: "python", badge: "🔥 популярный" },
-  { id: "python-selenium",   label: "Python + Selenium",   lang: "python" },
-  { id: "python-requests",   label: "Python + Pytest + Requests (API)", lang: "python", badge: "API" },
-  // TypeScript / JavaScript
-  { id: "ts-playwright",     label: "TypeScript + Playwright", lang: "typescript", badge: "🔥 популярный" },
-  { id: "ts-cypress",        label: "TypeScript + Cypress",    lang: "typescript" },
-  { id: "js-playwright",     label: "JavaScript + Playwright", lang: "javascript" },
-  { id: "js-cypress",        label: "JavaScript + Cypress",    lang: "javascript" },
-  // Java
-  { id: "java-junit",        label: "Java + Selenium + JUnit 5",  lang: "java", badge: "🔥 популярный" },
-  { id: "java-testng",       label: "Java + Selenium + TestNG",    lang: "java" },
-  { id: "java-restassured",  label: "Java + REST Assured (API)",   lang: "java", badge: "API" },
-  // Kotlin
-  { id: "kotlin-junit",      label: "Kotlin + JUnit 5",     lang: "kotlin" },
-  { id: "kotlin-espresso",   label: "Kotlin + Espresso (Android)", lang: "kotlin", badge: "Mobile" },
-  // C#
-  { id: "csharp-nunit",      label: "C# + NUnit",           lang: "csharp", badge: "🔥 популярный" },
-  { id: "csharp-xunit",      label: "C# + xUnit",           lang: "csharp" },
-  { id: "csharp-specflow",   label: "C# + SpecFlow (BDD)",  lang: "csharp", badge: "BDD" },
-  // Другие языки
-  { id: "ruby-capybara",     label: "Ruby + Capybara + RSpec", lang: "ruby" },
-  { id: "go-playwright",     label: "Go + Playwright",         lang: "go" },
-  { id: "swift-xcuitest",    label: "Swift + XCUITest (iOS)",  lang: "swift", badge: "Mobile" },
-  { id: "php-codeception",   label: "PHP + Codeception",       lang: "php" },
+  { id: "python-selenium", label: "Python + Selenium", lang: "python" },
+  { id: "python-requests", label: "Python + Pytest + Requests (API)", lang: "python", badge: "API" },
+  { id: "ts-playwright", label: "TypeScript + Playwright", lang: "typescript", badge: "🔥 популярный" },
+  { id: "ts-cypress", label: "TypeScript + Cypress", lang: "typescript" },
+  { id: "js-playwright", label: "JavaScript + Playwright", lang: "javascript" },
+  { id: "js-cypress", label: "JavaScript + Cypress", lang: "javascript" },
+  { id: "java-junit", label: "Java + Selenium + JUnit 5", lang: "java", badge: "🔥 популярный" },
+  { id: "java-testng", label: "Java + Selenium + TestNG", lang: "java" },
+  { id: "java-restassured", label: "Java + REST Assured (API)", lang: "java", badge: "API" },
+  { id: "kotlin-junit", label: "Kotlin + JUnit 5", lang: "kotlin" },
+  { id: "kotlin-espresso", label: "Kotlin + Espresso (Android)", lang: "kotlin", badge: "Mobile" },
+  { id: "csharp-nunit", label: "C# + NUnit", lang: "csharp", badge: "🔥 популярный" },
+  { id: "csharp-xunit", label: "C# + xUnit", lang: "csharp" },
+  { id: "csharp-specflow", label: "C# + SpecFlow (BDD)", lang: "csharp", badge: "BDD" },
+  { id: "ruby-capybara", label: "Ruby + Capybara + RSpec", lang: "ruby" },
+  { id: "go-playwright", label: "Go + Playwright", lang: "go" },
+  { id: "swift-xcuitest", label: "Swift + XCUITest (iOS)", lang: "swift", badge: "Mobile" },
+  { id: "php-codeception", label: "PHP + Codeception", lang: "php" },
 ];
 
 export const CATEGORIES = [...new Set(HANDBOOK.map((t) => t.category))];
+
+export const STORAGE_KEYS = {
+  theme: "qa_nav_theme",
+  apiKeys: "qa_nav_apikeys",
+  projects: "qa_navigator_projects",
+  activeProject: "qa_navigator_active_project",
+  checklists: "qa_navigator_checklists",
+  testCases: "qa_navigator_testcases",
+  bugReports: "qa_navigator_bugreports",
+  bookmarks: "qa_navigator_bookmarks",
+  requirementsText: "qa_navigator_req_text",
+  requirementsResult: "qa_navigator_req_result",
+  handbookLearningProgress: "qa_navigator_handbook_learning_progress",
+} as const;
+
 export const EXPORTABLE_STORAGE_KEYS = [
+  "qa_navigator_projects",
+  "qa_navigator_active_project",
   "qa_navigator_checklists",
   "qa_navigator_testcases",
   "qa_navigator_bugreports",

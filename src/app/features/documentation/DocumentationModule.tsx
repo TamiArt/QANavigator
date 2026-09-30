@@ -6,71 +6,13 @@ import { CopyButton, Badge, EmptyState } from "../../components/shared";
 import { PRESETS } from "../../core/constants";
 import { callAI, QA_SYSTEM_PROMPT, uid } from "../../core/ai";
 import type { ChecklistItem, TestCase, Module, Severity } from "../../domain/types";
+import { DOCUMENT_TABS } from "./documentation-model";
+import { buildTestCaseMarkdown } from "./document-markdown";
+import { buildRTMCsv, calculateRTMCoverage } from "./rtm-model";
+import type { RTMRequirement, RTMTestCase } from "./rtm-model";
 import { HANDBOOK } from "../../handbook-data";
 import { downloadTextFile } from "../../lib/download";
-
-type DocTab = "checklist" | "testcase" | "testplan" | "bugreport" | "testreport" | "rtm";
-
-// ─── shared helper ────────────────────────────────────
-function FieldLabel({ label, required }: { label: string; required?: boolean }) {
-  return (
-    <label className="text-xs text-muted-foreground block mb-1">
-      {label}{required && <span className="text-destructive ml-0.5">*</span>}
-    </label>
-  );
-}
-
-function DocField({
-  label, required, value, onChange, placeholder, type = "text", multiline, rows = 3,
-}: {
-  label: string; required?: boolean; value: string; onChange: (v: string) => void;
-  placeholder?: string; type?: string; multiline?: boolean; rows?: number;
-}) {
-  const cls = "w-full bg-input-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary focus:outline-none resize-none";
-  return (
-    <div>
-      <FieldLabel label={label} required={required} />
-      {multiline
-        ? <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={rows} className={cls} />
-        : <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className={cls} />
-      }
-    </div>
-  );
-}
-
-function DocSelect({
-  label, required, value, onChange, options,
-}: {
-  label: string; required?: boolean; value: string; onChange: (v: string) => void;
-  options: { value: string; label: string }[];
-}) {
-  return (
-    <div>
-      <FieldLabel label={label} required={required} />
-      <select value={value} onChange={e => onChange(e.target.value)} className="w-full bg-input-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none">
-        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
-    </div>
-  );
-}
-
-function ExportCard({ text, filename }: { text: string; filename: string }) {
-  const download = () => downloadTextFile(text, filename, "text/markdown;charset=utf-8");
-  return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden">
-      <div className="px-4 py-3 border-b border-border bg-muted/50 flex items-center justify-between">
-        <span className="text-sm font-medium text-foreground">Предпросмотр / Экспорт</span>
-        <div className="flex items-center gap-2">
-          <CopyButton text={text} label="Копировать" />
-          <button onClick={download} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
-            <Download className="w-3.5 h-3.5" /> .md
-          </button>
-        </div>
-      </div>
-      <pre className="px-4 py-4 text-xs text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed max-h-72 overflow-y-auto">{text}</pre>
-    </div>
-  );
-}
+import { DocField, DocSelect, ExportCard, FieldLabel } from "./documentation-fields";
 
 // ─── Checklist (AI + Manual) ──────────────────────────
 interface ChecklistDocItem { id: string; text: string; category: "positive" | "negative" | "boundary" | "nonfunctional"; priority: "P1" | "P2" | "P3" }
@@ -334,6 +276,7 @@ function ChecklistDocSection() {
 }
 
 // ─── Test Case Template ───────────────────────────────
+// ─── Test Case Template ───────────────────────────────
 function TestCaseDocSection() {
   const today = new Date().toISOString().slice(0, 10);
   const [tcId, setTcId] = useState("TC-001");
@@ -350,29 +293,9 @@ function TestCaseDocSection() {
   const [date, setDate] = useState(today);
   const [testData, setTestData] = useState("");
 
-  const markdown = [
-    "# Тест-кейс " + tcId,
-    "",
-    "**Название:** " + (title || "—"),
-    "**Модуль/Функция:** " + (module || "—"),
-    "**Приоритет:** " + priority + " | **Серьёзность:** " + severity,
-    "**Статус:** " + status + " | **Автор:** " + (author || "—") + " | **Дата:** " + date,
-    "",
-    "## Предусловия *",
-    preconditions || "—",
-    "",
-    "## Тестовые данные",
-    testData || "—",
-    "",
-    "## Шаги воспроизведения *",
-    steps || "—",
-    "",
-    "## Ожидаемый результат *",
-    expected || "—",
-    "",
-    "## Фактический результат",
-    actualResult || "Заполняется при выполнении",
-  ].join("\n");
+
+  const markdown = buildTestCaseMarkdown({ tcId, title, module, preconditions, steps, expected, actualResult, priority, severity, status, author, date, testData });
+
 
   return (
     <div className="space-y-5">
@@ -761,9 +684,6 @@ function TestReportDocSection() {
 }
 
 // ─── RTM (Requirement Traceability Matrix) ────────────
-interface RTMRequirement { id: string; reqId: string; title: string; priority: "high" | "medium" | "low" }
-interface RTMTestCase { id: string; tcId: string; title: string }
-
 function RTMSection() {
   const [requirements, setRequirements] = useState<RTMRequirement[]>([
     { id: uid(), reqId: "REQ-001", title: "Пользователь может авторизоваться по email и паролю", priority: "high" },
@@ -806,24 +726,14 @@ function RTMSection() {
   const removeReq = (id: string) => setRequirements(r => r.filter(x => x.id !== id));
   const removeTc = (id: string) => setTestCaseRows(t => t.filter(x => x.id !== id));
 
-  const coverage = requirements.map(req => {
-    const covered = testCaseRows.filter(tc => links.has(req.reqId + ":" + tc.tcId)).length;
-    return { reqId: req.reqId, total: testCaseRows.length, covered };
-  });
+  const coverage = calculateRTMCoverage(requirements, testCaseRows, links);
 
   const totalCovered = coverage.filter(c => c.covered > 0).length;
   const coveragePercent = requirements.length > 0 ? Math.round(totalCovered / requirements.length * 100) : 0;
 
   const prioColor = { high: "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300", medium: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300", low: "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300" };
 
-  const csvText = [
-    "Требование,Описание,Приоритет," + testCaseRows.map(tc => tc.tcId).join(",") + ",Покрытие",
-    ...requirements.map(req => {
-      const covCount = testCaseRows.filter(tc => links.has(req.reqId + ":" + tc.tcId)).length;
-      const cells = testCaseRows.map(tc => links.has(req.reqId + ":" + tc.tcId) ? "✓" : "").join(",");
-      return '"' + req.reqId + '","' + req.title + '",' + req.priority + "," + cells + "," + (covCount > 0 ? "Покрыто" : "Не покрыто");
-    })
-  ].join("\n");
+  const csvText = buildRTMCsv(requirements, testCaseRows, links);
 
   return (
     <div className="space-y-5">
@@ -957,14 +867,16 @@ function RTMSection() {
 export function DocumentationModule() {
   const [activeTab, setActiveTab] = useState<DocTab>("testplan");
 
-  const tabs: { id: DocTab; label: string; icon: React.ReactNode }[] = [
-    { id: "checklist", label: "Чек-лист", icon: <CheckSquare className="w-4 h-4" /> },
-    { id: "testcase", label: "Тест-кейс", icon: <FileText className="w-4 h-4" /> },
-    { id: "testplan", label: "Тест-план", icon: <Clipboard className="w-4 h-4" /> },
-    { id: "bugreport", label: "Баг-репорт", icon: <Bug className="w-4 h-4" /> },
-    { id: "testreport", label: "Test Report", icon: <BarChart2 className="w-4 h-4" /> },
-    { id: "rtm", label: "RTM", icon: <Layers className="w-4 h-4" /> },
-  ];
+  const tabs = DOCUMENT_TABS.map((tab) => ({
+    ...tab,
+    icon:
+      tab.iconName === "CheckSquare" ? <CheckSquare className="w-4 h-4" /> :
+      tab.iconName === "FileText" ? <FileText className="w-4 h-4" /> :
+      tab.iconName === "Clipboard" ? <Clipboard className="w-4 h-4" /> :
+      tab.iconName === "Bug" ? <Bug className="w-4 h-4" /> :
+      tab.iconName === "BarChart2" ? <BarChart2 className="w-4 h-4" /> :
+      <Layers className="w-4 h-4" />,
+  }));
 
   return (
     <div className="space-y-5">

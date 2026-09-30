@@ -273,6 +273,550 @@ Backlog → To Do → In Progress → Testing → Done
 
 Для QA особенно важно не превращать колонку Testing в очередь из десятков готовых задач: тестирование должно идти вместе с разработкой, а проблемы качества — возвращаться в работу как можно раньше.`,
 
+  auto3: `## Пирамида тестирования
+
+### Концепция (Mike Cohn, 2009)
+\`\`\`
+        /E2E\         ← Мало, медленно, дорого
+       /──────\
+      /  API   \      ← Среднее количество
+     /──────────\
+    /  Unit Tests \   ← Много, быстро, дёшево
+   /──────────────\
+\`\`\`
+
+### Три уровня пирамиды
+
+#### Низ: Unit Tests (70%)
+- Тестируют функции / методы в изоляции
+- Выполняются за секунды, всей суммой
+- Покрытие цели: 80%+ branches
+- ROI: очень высокий
+
+#### Середина: API / Integration Tests (20%)
+- Тестируют взаимодействие компонентов
+- Быстрее E2E, надёжнее unit
+- Инструменты: REST Assured, Supertest, pytest + httpx
+- Идеальны для проверки бизнес-логики без UI
+
+#### Верх: E2E / UI Tests (10%)
+- Имитируют пользовательские сценарии через UI
+- Медленные, флакающие, дорогие в поддержке
+- Используйте только для **критических happy paths**
+- Инструменты: Playwright, Selenium, Cypress
+
+### Антипаттерны
+
+**«Мороженое»** (перевёрнутая пирамида) — много E2E, мало unit:
+\`\`\`
+    /───────────\
+   /  Много E2E  \   ← Хрупкие, медленные
+  /──────────────\
+ /   Мало API     \
+/──────────────────\
+       Нет Unit     ← Проблемы обнаруживаются поздно
+\`\`\`
+
+**«Кубок»** — много unit + много E2E, мало API-тестов.
+
+### Что автоматизировать?
+**Высокий приоритет:**
+- Регрессия: стабильная функциональность, не меняющаяся часто
+- Smoke-тесты (запускать при каждом деплое)
+- CRUD-операции через API
+- Сценарии с данными (data-driven)
+
+**Низкий приоритет / не автоматизировать:**
+- Разовые проверки
+- Часто меняющийся UI
+- Exploratory testing
+- Юзабилити и визуальные проверки (лучше глазами)
+
+### ROI автоматизации
+\`\`\`
+ROI = (Стоимость ручного тестирования × Количество запусков)
+       ÷ Стоимость создания + поддержки автотестов
+
+Если ROI > 1 — автоматизация выгодна
+\`\`\`
+
+> 💡 **Правило «10 запусков»:** автоматизируйте тест, если он будет запущен ≥10 раз. Меньше — чаще дешевле выполнять вручную.
+
+---
+
+## CI/CD и автоматизация тестирования
+
+### CI/CD — основные понятия
+- **CI (Continuous Integration)** — автоматическая сборка и тестирование при каждом коммите/пуше в ветку
+- **CD (Continuous Delivery)** — автоматическая доставка до стейджинга, ручной деплой на прод
+- **CD (Continuous Deployment)** — полностью автоматический деплой до продакшена
+
+### Типичный пайплайн с тестами
+\`\`\`
+git push → Trigger CI
+  │
+  ├─► Lint + Static Analysis
+  ├─► Build (компиляция/сборка)
+  ├─► Unit Tests (быстрые, <2 мин)
+  ├─► Integration Tests (<10 мин)
+  ├─► Deploy to Test Environment
+  ├─► Smoke Tests (критические E2E, <5 мин)
+  ├─► API Regression Tests
+  └─► [если всё зелёное] → Deploy to Staging
+                               └─► Full E2E Regression
+                                    └─► Deploy to Production
+\`\`\`
+
+### GitHub Actions — пример конфигурации
+\`\`\`yaml
+name: QA Pipeline
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: npm ci
+      - name: Run unit tests
+        run: npm test
+      - name: Run API tests
+        run: npm run test:api
+      - name: Run Playwright E2E
+        run: npx playwright test --project=chromium
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+\`\`\`
+
+### Ключевые принципы интеграции тестов в CI
+1. **Fast feedback** — unit-тесты должны падать первыми (< 2 минут)
+2. **Fail fast** — пайплайн останавливается при первой красной ступени
+3. **Изолированность** — тесты не зависят от порядка выполнения
+4. **Детерминированность** — один и тот же код → один и тот же результат
+5. **Артефакты** — сохранять HTML-отчёты, скриншоты, видео падений
+
+### Работа с флакающими (flaky) тестами
+\`\`\`
+Симптом: тест иногда красный, иногда зелёный
+Причины: гонки условий, зависимость от времени/сети, нечистое состояние
+
+Решения:
+- Добавить явные ожидания (explicit waits)
+- Изолировать тест-данные
+- Retry механизм (только как временная мера!)
+- Карантин: отдельный flaky suite, не блокирующий деплой
+\`\`\`
+
+### Полезные инструменты CI/CD для QA
+| Инструмент | Для чего |
+| GitHub Actions | CI в GitHub-проектах |
+| GitLab CI | CI в GitLab, встроенный |
+| Jenkins | Self-hosted, гибкий |
+| Allure Report | Красивые HTML-отчёты о тестах |
+| TestRail CI Plugin | Синхронизация результатов |
+
+> 💡 QA должен **активно участвовать** в настройке пайплайна, а не просто ждать зелёной сборки.`,
+
+  git1: `## Git для тестировщика
+
+### Зачем QA знать Git?
+
+- Хранить автотесты и тест-кейсы в репозитории
+- Участвовать в code review автотестов
+- Смотреть что изменилось перед тестированием (\`git diff\`)
+- Создавать ветки для наборов тестов
+- Работать в CI/CD пайплайне
+
+### Первоначальная настройка
+
+\`\`\`bash
+git config --global user.name "Иванова Анна"
+git config --global user.email "anna@example.com"
+git config --global core.editor "code --wait"  # VS Code как редактор
+git config --list  # проверить настройки
+\`\`\`
+
+### Базовые команды
+
+**Инициализация и клонирование:**
+\`\`\`bash
+git init                          # создать новый репозиторий
+git clone https://github.com/org/repo.git  # клонировать
+git clone repo.git my_folder     # клонировать в конкретную папку
+\`\`\`
+
+**Статус и история:**
+\`\`\`bash
+git status                        # текущее состояние
+git log                           # история коммитов
+git log --oneline                 # краткая история
+git log --oneline -20             # последние 20 коммитов
+git log --oneline --graph --all   # граф всех веток
+git show abc1234                  # детали коммита
+git diff                          # несохранённые изменения
+git diff HEAD~1                   # изменения последнего коммита
+git diff main..feature-branch     # разница между ветками
+\`\`\`
+
+**Staging и коммиты:**
+\`\`\`bash
+git add file.py                   # добавить файл в staging
+git add tests/                    # добавить директорию
+git add -A                        # добавить все изменения
+git add -p                        # интерактивно выбрать изменения
+
+git commit -m "feat: add login smoke test"    # коммит
+git commit -m "fix: correct expected result"  # коммит
+
+git reset HEAD file.py            # убрать из staging (не удаляет изменения)
+git checkout -- file.py           # отменить изменения в файле (⚠️ необратимо)
+\`\`\`
+
+### Ветки (Branches)
+
+\`\`\`bash
+git branch                        # список локальных веток
+git branch -a                     # все ветки (включая remote)
+
+git checkout -b qa/sprint-24-smoke  # создать и переключиться
+git switch -c qa/sprint-24-smoke    # то же самое (новый синтаксис)
+
+git checkout main                 # переключиться на main
+git switch main
+
+git branch -d qa/old-branch       # удалить ветку (если слита)
+git branch -D qa/old-branch       # удалить принудительно
+\`\`\`
+
+### Синхронизация с remote
+
+\`\`\`bash
+git fetch                         # скачать изменения (не применять)
+git pull                          # скачать и применить (fetch + merge)
+git pull --rebase                 # скачать и rebase (чистая история)
+
+git push origin qa/sprint-24      # отправить ветку
+git push -u origin qa/sprint-24   # отправить + установить upstream
+
+git remote -v                     # список remote репозиториев
+git remote add origin https://...  # добавить remote
+\`\`\`
+
+### Конвенция коммитов (Conventional Commits)
+
+Структура: \`тип(скоуп): описание\`
+
+\`\`\`
+feat:     новая функциональность
+fix:      исправление бага
+test:     добавление/изменение тестов
+refactor: рефакторинг (не новая фича, не фикс)
+docs:     документация
+chore:    обслуживание (обновление зависимостей, конфиги)
+
+Примеры:
+  feat(auth): add bearer token validation test
+  fix(login): correct expected error message
+  test(checkout): add payment failure scenarios
+  docs: update test setup instructions
+\`\`\`
+
+### .gitignore для QA-проекта
+
+\`\`\`gitignore
+# Результаты тестов
+test-results/
+playwright-report/
+allure-results/
+allure-report/
+*.xml
+coverage/
+
+# Окружение и секреты
+.env
+.env.local
+config/secrets.yaml
+*.key
+
+# IDE
+.vscode/settings.json
+.idea/
+*.pyc
+__pycache__/
+
+# Зависимости
+node_modules/
+venv/
+.pytest_cache/
+\`\`\`
+
+---
+
+## Git: ветвление и командная работа
+
+### Git Flow — модель ветвления
+
+\`\`\`
+main (production-ready)
+  └── develop (интеграция)
+        ├── feature/add-payment-tests  (новые тесты)
+        ├── feature/fix-login-test     (исправление теста)
+        └── release/2.5.0             (подготовка релиза)
+              └── hotfix/critical-bug  (срочные фиксы)
+\`\`\`
+
+**Ветки для QA:**
+\`\`\`
+Соглашение по именованию:
+  qa/smoke-sprint-25        — smoke тесты для спринта
+  qa/regression-v2.5        — регрессия для релиза
+  test/payment-module        — тесты для модуля оплаты
+  fix/flaky-test-TC-123      — фикс нестабильного теста
+\`\`\`
+
+### Слияние веток (Merge vs Rebase)
+
+**Merge — объединить ветки:**
+\`\`\`bash
+git checkout main
+git merge feature/add-tests        # merge commit создаётся
+git merge --squash feature/tests   # все коммиты в один
+git merge --no-ff feature/tests    # явный merge commit
+\`\`\`
+
+**Rebase — перенести коммиты на новую базу:**
+\`\`\`bash
+git checkout feature/tests
+git rebase main          # перенести коммиты поверх main
+
+# Interactive rebase — редактировать историю
+git rebase -i HEAD~3     # последние 3 коммита
+# pick → squash (объединить)
+# pick → reword (переименовать)
+# pick → drop (удалить коммит)
+\`\`\`
+
+**Разница:**
+\`\`\`
+Merge:  сохраняет историю ветки, создаёт merge commit
+Rebase: линейная история, нет merge commit
+        ⚠️ Никогда не rebase публичные ветки (main, develop)!
+\`\`\`
+
+### Разрешение конфликтов
+
+\`\`\`bash
+# При merge/rebase возник конфликт:
+git status           # показывает файлы с конфликтами
+
+# Конфликт в файле выглядит так:
+< < < < < < < HEAD (текущая ветка)
+expected_result = "Успешно авторизован"
+= = = = = = =
+expected_result = "Авторизация выполнена успешно"
+> > > > > > > feature/tests (входящая ветка)
+
+# Решение:
+# 1. Открыть файл, выбрать нужный вариант (или объединить)
+# 2. Удалить маркеры <<<<<<<, =======, >>>>>>>
+# 3. git add файл
+# 4. git commit (при merge) или git rebase --continue
+\`\`\`
+
+### Pull Request (PR) — процесс
+
+\`\`\`
+1. Создать ветку: git checkout -b test/checkout-flow
+2. Написать тесты, сделать коммиты
+3. Запушить: git push origin test/checkout-flow
+4. Открыть PR на GitHub/GitLab:
+   - Заголовок: "test: add checkout flow E2E tests"
+   - Описание: что сделано, что протестировано, ссылка на задачу
+   - Reviewers: назначить коллег
+5. Code Review: исправить комментарии
+6. Merge после апрува
+\`\`\`
+
+**Хороший PR от QA:**
+\`\`\`markdown
+## Что сделано
+- Добавлены E2E тесты для флоу оплаты (TC-101, TC-102, TC-103)
+- Добавлены негативные сценарии: невалидная карта, истёкшая карта
+- Обновлены page objects: PaymentPage, ConfirmationPage
+
+## Тесты покрывают
+- Happy path: успешная оплата картой
+- Неверный CVV → сообщение об ошибке
+- Отмена оплаты → возврат в корзину
+
+## Как запустить
+\`\`\`bash
+pytest tests/e2e/test_checkout.py -v
+\`\`\`
+
+## Задача
+Jira: PROJ-456
+\`\`\`
+
+### Полезные команды для анализа кода перед тестированием
+
+\`\`\`bash
+# Что изменилось в этой ветке относительно main?
+git diff main...HEAD --name-only           # только имена файлов
+git diff main...HEAD --stat                # краткая статистика
+
+# Кто последний менял файл?
+git blame tests/test_login.py
+
+# Когда был изменён файл?
+git log --oneline -- src/payment/service.py
+
+# Поиск коммита по сообщению
+git log --oneline --grep="payment" --all
+
+# Откат к предыдущей версии файла
+git checkout HEAD~1 -- tests/test_login.py
+
+# Stash — временно сохранить незакоммиченные изменения
+git stash                    # сохранить
+git stash list               # список
+git stash pop                # восстановить последний
+git stash apply stash@{2}    # восстановить конкретный
+\`\`\``,
+
+  tools1: `## Как выбирать инструмент
+
+Инструмент выбирают под задачу, протокол, стек команды и требования к хранению данных. Ни одна программа не заменяет понимание ожидаемого результата. Для старта достаточно бесплатных встроенных или open-source решений; платный облачный сервис не является обязательным.
+
+| Задача | Инструменты | Для чего применяются |
+| Требования и заметки | Markdown, LibreOffice, draw.io | Ревью требований, чек-листы, схемы состояний и процессов |
+| Задачи и дефекты | GitLab Issues, GitHub Issues, Redmine | Баг-репорты, приоритеты, связи с требованиями и контроль статусов |
+| Тест-кейсы | Kiwi TCMS, TestLink, Allure TestOps alternatives via reports | Наборы кейсов, прогоны, история результатов; простой проект может хранить versioned Markdown |
+| Web-интерфейс | Chrome / Firefox DevTools | DOM и CSS, Console, Network, Storage, производительность, responsive-режим |
+| Сверка дизайна | Figma inspect, PixelPerfect extensions, ImageMagick | Размеры, цвета, шрифты и визуальное сравнение скриншотов |
+| REST / GraphQL API | Bruno, Insomnia, Postman desktop, curl | Запросы, заголовки, авторизация, переменные окружений и проверки ответов |
+| SOAP | SoapUI Open Source | Импорт WSDL, XML-запросы, схемы и SOAP Fault |
+| Перехват трафика | mitmproxy, Fiddler Classic, Charles alternative tools | Просмотр и модификация HTTP(S)-трафика; только на разрешённых стендах |
+| Базы данных | DBeaver Community, pgAdmin, MySQL Workbench, sqlite3 | SQL-проверки данных, схем, ограничений и транзакций |
+| Логи и метрики | OpenSearch Dashboards, Kibana, Grafana, Sentry self-hosted | Поиск ошибки по времени, request / trace ID, построение графиков и алертов |
+| Очереди сообщений | Kafka UI, Redpanda Console, RabbitMQ Management | Топики и очереди, сообщения, consumer lag, повторная доставка и DLQ |
+| Командная строка | Bash / PowerShell, ssh, jq | Файлы, процессы, HTTP-запросы, фильтрация JSON и чтение серверных логов |
+| Версии и review | Git, GitLab / GitHub | Ветки, diff, история изменения тестов и участие в code review |
+| Контейнеры | Docker, Docker Compose, Podman | Воспроизводимая локальная среда, зависимости и просмотр логов контейнеров |
+| CI/CD | GitLab CI, GitHub Actions, Jenkins | Сборка, автоматические проверки, отчёты и продвижение артефакта |
+| UI-автоматизация | Playwright, Selenium, Cypress | Повторяемые браузерные сценарии и регрессия |
+| API-автоматизация | pytest + requests, REST Assured, Playwright API | Контрактные и функциональные проверки без UI |
+| Нагрузка | k6, JMeter, Gatling | Время ответа, throughput, ошибки и устойчивость под моделью нагрузки |
+| Mobile | Android Studio / ADB, Xcode, Appium, Espresso, XCUITest | Эмуляторы, логи, установка сборок и автоматизация Android / iOS |
+| Доступность | axe-core, Lighthouse, NVDA, VoiceOver | Семантика, клавиатура, контраст и работа со скринридером |
+| Безопасность | OWASP ZAP, dependency scanners, linters | Разрешённое динамическое сканирование, зависимости и статический анализ |
+
+### Рабочая связка при дефекте
+
+1. Зафиксировать сборку, окружение, тестовые данные и точное время.
+2. Воспроизвести проблему и сохранить скриншот или короткую запись.
+3. В DevTools проверить Console, Network, payload, ответ и status code.
+4. По correlation ID найти связанные серверные логи и при необходимости проверить запись в БД или сообщение в очереди.
+5. Создать воспроизводимый баг-репорт, приложив только нужные артефакты без токенов и персональных данных.
+
+> Инструменты перехвата, нагрузки и безопасности применяют только с разрешения владельца системы и в согласованном окружении.
+
+---
+
+## Экосистема инструментов QA
+
+### Трекинг задач и дефектов
+
+#### Jira (Atlassian)
+Стандарт для управления проектами и баг-трекинга.
+- **Issue types:** Bug, Story, Task, Epic, Subtask
+- **Workflow:** Backlog → To Do → In Progress → Review → Done
+- **JQL (Jira Query Language):**
+\`\`\`jql
+project = MYAPP AND issuetype = Bug AND status != Closed ORDER BY priority ASC
+assignee = currentUser() AND status = "In Progress"
+created >= -7d AND issuetype = Bug AND priority in (Blocker, Critical)
+\`\`\`
+- **Полезные функции:** метки (labels), связи задач (blocks/is blocked by), поиск дубликатов
+
+#### YouTrack, Linear, GitLab Issues
+Альтернативы Jira. Принципы те же: создать задачу, описать, назначить, отследить.
+
+### Управление тест-кейсами
+
+#### TestRail
+Классический инструмент для ведения тест-кейсов.
+- **Test Suite** → Test Section → Test Case
+- **Test Run** — запуск набора тестов с фиксацией результатов (Passed/Failed/Blocked/Skipped)
+- Интеграция с Jira: тест-кейс → дефект
+
+#### Qase.io
+Современная альтернатива TestRail, удобный UX.
+- Встроенные дефекты и интеграции (Jira, GitHub)
+- Репортинг: можно видеть прогресс по релизу
+
+#### TestIT
+Российская платформа управления тестированием. Популярна в enterprise-проектах РФ.
+
+### API-тестирование
+
+#### Postman
+Де-факто стандарт для ручного и полуавтоматического API-тестирования.
+
+**Ключевые возможности:**
+\`\`\`javascript
+// Pre-request Script — подготовка
+pm.environment.set("timestamp", Date.now());
+
+// Tests — проверки после запроса
+pm.test("Status 200", () => pm.response.to.have.status(200));
+pm.test("Has user id", () => {
+  const body = pm.response.json();
+  pm.expect(body.id).to.be.a('number');
+});
+
+// Сохранить токен из ответа
+const token = pm.response.json().access_token;
+pm.environment.set("auth_token", token);
+\`\`\`
+
+**Collections** — группируют запросы по модулям. **Environments** — переменные (url, token) для разных сред (dev/stage/prod).
+
+**Newman** — запуск коллекций Postman из CLI:
+\`\`\`bash
+newman run collection.json -e staging.json --reporters html
+\`\`\`
+
+#### Bruno / Insomnia
+Open source альтернативы Postman (без обязательной авторизации).
+
+### Мониторинг и логи
+
+#### Kibana / ELK Stack
+- **Elasticsearch** — хранение и поиск логов
+- **Logstash** — сбор и обработка логов
+- **Kibana** — визуализация и поиск
+
+**Для QA:** при воспроизведении бага смотреть логи в Kibana:
+\`\`\`
+поиск: request_id:"abc-123-xyz" AND level:ERROR
+временной фильтр: "Last 15 minutes"
+\`\`\`
+
+#### Sentry
+Автоматический трекинг ошибок в продакшене. QA проверяет, что ошибки не исчезают из Sentry после фикса.
+
+### Документация и проектирование
+
+| Инструмент | Назначение |
+| Confluence | Вики-документация (требования, процессы) |
+| Notion | Гибкая база знаний команды |
+| Miro | Диаграммы, mindmaps, визуализация тест-стратегии |
+| Figma | Прототипы UI (QA сверяет реализацию с макетами) |`,
+
   tt6: `## Тестирование безопасности для QA
 
 Безопасность проверяет, может ли система защищать данные, действия и ресурсы от несанкционированного доступа и некорректной обработки ввода. Такие проверки выполняются только на разрешённых тестовых средах и в согласованных границах.
@@ -334,6 +878,9 @@ export const MERGED_TOPIC_IDS = new Set([
   "tt5",
   "tt3",
   "web2",
+  "auto4",
+  "git2",
+  "web10",
 ]);
 
 export const CURRICULUM_ORDER = [
@@ -343,55 +890,57 @@ export const CURRICULUM_ORDER = [
   "f7",
   "f1",
   "f2",
-  "tt2",
-  "tt4",
-  "tt6",
-  "f6",
   "fundamentals-development-models",
+  "f6",
   "f8",
   "f4",
+  "tt2",
   "td1",
   "td2",
   "td3",
   "td4",
   "td6",
   "td5",
-  "doc2",
-  "doc1",
-  "doc5",
-  "doc3",
-  "doc4",
+  "web1",
   "web4",
   "web3",
-  "web1",
-  "api1",
-  "api3",
-  "api2",
-  "api4",
-  "web6",
-  "web11",
-  "db1",
-  "db2",
-  "db3",
   "webtest1",
   "input1",
   "webtest2",
   "webtest4",
   "webtest3",
-  "tt7",
-  "mob1",
-  "mob2",
-  "mob3",
+  "api1",
+  "api2",
+  "api3",
+  "api4",
+  "web5",
+  "web6",
+  "web11",
+  "db1",
+  "web7",
+  "db2",
+  "db3",
   "env1",
-  "tools1",
-  "git1",
-  "git2",
-  "bash1",
-  "bash2",
+  "doc2",
+  "doc3",
+  "doc4",
+  "doc1",
+  "doc5",
   "auto3",
   "auto1",
   "auto2",
-  "auto4",
+  "tools1",
+  "web9",
+  "git1",
+  "bash1",
+  "bash2",
+  "tt6",
+  "tt7",
+  "tt4",
+  "web8",
+  "mob1",
+  "mob2",
+  "mob3",
   "crowdtesting",
   "game1",
   "game2",

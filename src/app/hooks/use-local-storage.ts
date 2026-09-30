@@ -1,10 +1,18 @@
 import { useCallback, useState } from "react";
+import {
+  parseStoredValue,
+  serializeStoredValue,
+  type StoredValueValidator,
+} from "../core/storage";
 
-export function useLocalStorage<T>(key: string, initial: T): [T, (value: T) => void] {
+export function useLocalStorage<T>(
+  key: string,
+  initial: T,
+  validate?: StoredValueValidator,
+): [T, (value: T) => void] {
   const [value, setValue] = useState<T>(() => {
     try {
-      const stored = localStorage.getItem(key);
-      return stored ? JSON.parse(stored) : initial;
+      return parseStoredValue(localStorage.getItem(key), initial, validate);
     } catch {
       return initial;
     }
@@ -13,9 +21,9 @@ export function useLocalStorage<T>(key: string, initial: T): [T, (value: T) => v
   const persistValue = useCallback((nextValue: T) => {
     setValue(nextValue);
     try {
-      localStorage.setItem(key, JSON.stringify(nextValue));
+      localStorage.setItem(key, serializeStoredValue(nextValue));
     } catch {
-      // React state remains usable when browser storage is unavailable or full.
+      /* React state remains usable when browser storage is unavailable or full. */
     }
   }, [key]);
 

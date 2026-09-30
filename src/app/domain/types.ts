@@ -1,5 +1,7 @@
 // TYPES
 // ══════════════════════════════════════════════════════
+import type { QAProject } from "./project";
+
 export type Theme = "light" | "dark";
 export type Module =
   | "workspace" | "beginner-wizard" | "requirements" | "test-design" | "test-execution"
@@ -52,7 +54,6 @@ export interface BugReport {
   testCaseRef?: string;
 }
 
-
 export interface AppCtx {
   activeModule: Module;
   setActiveModule: (m: Module) => void;
@@ -62,6 +63,12 @@ export interface AppCtx {
   toggleTheme: () => void;
   apiKeys: ApiKeys;
   setApiKeys: (k: ApiKeys) => void;
+  projects: QAProject[];
+  activeProjectId: string;
+  setActiveProjectId: (id: string) => void;
+  createProject: (project: QAProject) => void;
+  updateProject: (id: string, patch: Partial<Omit<QAProject, "id" | "createdAt">>) => void;
+  removeProject: (id: string) => void;
   checklists: ChecklistItem[];
   setChecklists: (items: ChecklistItem[]) => void;
   testCases: TestCase[];

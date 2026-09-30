@@ -3,7 +3,17 @@ import { useState } from "react";
 import { Database, Download, Key, Info, Trash2, Upload } from "lucide-react";
 import { useApp } from "../../core/app-context";
 import { EXPORTABLE_STORAGE_KEYS } from "../../core/constants";
+import {
+  isActiveProjectStorageValue,
+  isBookmarksStorageValue,
+  isBugReportsStorageValue,
+  isProjectsStorageValue,
+  isChecklistsStorageValue,
+  isTestCasesStorageValue,
+  isTextStorageValue,
+} from "../../core/storage-validators";
 import { downloadTextFile } from "../../lib/download";
+import { createDataBackup, parseDataBackup } from "./data-backup";
 
 // ══════════════════════════════════════════════════════
 // MODULE 8: SETTINGS
@@ -14,24 +24,21 @@ export function SettingsModule() {
 
   const exportData = () => {
     setDataMessage("");
-    const data = {
-      timestamp: new Date().toISOString(),
-      version: "1.0",
-      data: {} as Record<string, any>,
-    };
     try {
+      const data: Record<string, unknown> = {};
       EXPORTABLE_STORAGE_KEYS.forEach((key) => {
-        data.data[key] = JSON.parse(localStorage.getItem(key) ?? "null");
+        data[key] = JSON.parse(localStorage.getItem(key) ?? "null");
       });
+
+      const backup = createDataBackup(data, new Date().toISOString());
+      downloadTextFile(
+        JSON.stringify(backup, null, 2),
+        `qa-navigator-backup-${new Date().toISOString().slice(0, 10)}.json`,
+        "application/json",
+      );
     } catch (error) {
       setDataMessage(error instanceof Error ? `Экспорт остановлен: ${error.message}` : "Не удалось прочитать локальные данные");
-      return;
     }
-    downloadTextFile(
-      JSON.stringify(data, null, 2),
-      `qa-navigator-backup-${new Date().toISOString().slice(0, 10)}.json`,
-      "application/json",
-    );
   };
 
   const importData = () => {
@@ -45,14 +52,18 @@ export function SettingsModule() {
       const reader = new FileReader();
       reader.onload = (ev) => {
         try {
-          const parsed = JSON.parse(ev.target?.result as string);
-          if (!parsed || typeof parsed.data !== "object" || parsed.data === null) {
-            throw new Error("Некорректная структура резервной копии");
-          }
-          EXPORTABLE_STORAGE_KEYS.forEach((key) => {
-            if (Object.prototype.hasOwnProperty.call(parsed.data, key)) {
-              localStorage.setItem(key, JSON.stringify(parsed.data[key]));
-            }
+          const backup = parseDataBackup(String(ev.target?.result ?? ""), EXPORTABLE_STORAGE_KEYS, {
+            qa_navigator_projects: isProjectsStorageValue,
+            qa_navigator_active_project: isActiveProjectStorageValue,
+            qa_navigator_checklists: isChecklistsStorageValue,
+            qa_navigator_testcases: isTestCasesStorageValue,
+            qa_navigator_bugreports: isBugReportsStorageValue,
+            qa_navigator_bookmarks: isBookmarksStorageValue,
+            qa_navigator_req_text: isTextStorageValue,
+            qa_navigator_req_result: isTextStorageValue,
+          });
+          Object.entries(backup.data).forEach(([key, value]) => {
+            localStorage.setItem(key, JSON.stringify(value));
           });
           window.location.reload();
         } catch (error) {
