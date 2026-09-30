@@ -1152,3 +1152,27 @@ Fix:
 - no curriculum/content changes were made.
 
 The fix is isolated to the syntax corruption reported by the deployment build.
+
+
+### 7.1.32 CI test regression — Module 4 Kafka topic assertion — 2026-09-30
+
+Investigated the reported `npm run verify` failure in the extended Module 4 learning test.
+
+Root cause was localized to the regression test, not the handbook content:
+- the test used `/create\\.payment/`, which requires a literal backslash before the dot;
+- the documented topic is correctly `create.payment` and contains no backslash;
+- therefore the assertion could never match the valid source text.
+
+Fix:
+- replaced the ambiguous regular-expression assertion with an exact `source.includes("create.payment")` contract assertion;
+- kept the Kafka topic documentation unchanged;
+- retained the existing Module 4 title/order/count and content assertions.
+
+Additional verification performed:
+- inspected all current `scripts/*.test.mjs` files for similar escaping patterns;
+- inspected the current navigation contract and project-context tests;
+- confirmed no Git conflict markers in the repository search;
+- confirmed the branch remains `refactor/handbook-hierarchy` and PR #12 targets `main` without modifying `main`.
+
+Execution limitation:
+- the current environment cannot resolve `github.com` for a local clone, and GitHub reports no workflow run associated with the new head commit yet; therefore a new remote `npm run verify` result is not claimed until GitHub/Vercel executes it.
