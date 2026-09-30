@@ -4,14 +4,19 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import vm from "node:vm";
 import ts from "typescript";
+import { Module } from "node:module";
 
 async function loadModule(path) {
   const source = await readFile(join(process.cwd(), path), "utf8");
   const compiled = ts.transpileModule(source, {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
   }).outputText;
-  const module = { exports: {} };
-  vm.runInNewContext(compiled, { module, exports: module.exports, console });
+  const module = new Module(path, module);
+  module.filename = join(process.cwd(), path);
+  module.paths = Module._nodeModulePaths(process.cwd());
+  vm.runInThisContext(`(function (exports, require, module, __filename, __dirname) { ${compiled}\\n})`, {
+    filename: module.filename,
+  })(module.exports, module.require.bind(module), module, module.filename, process.cwd());
   return module.exports;
 }
 
