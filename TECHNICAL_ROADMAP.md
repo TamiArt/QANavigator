@@ -1176,3 +1176,19 @@ Additional verification performed:
 
 Execution limitation:
 - the current environment cannot resolve `github.com` for a local clone, and GitHub reports no workflow run associated with the new head commit yet; therefore a new remote `npm run verify` result is not claimed until GitHub/Vercel executes it.
+
+### 7.1.33 CI regression — cross-realm project-domain assertions — 2026-09-30
+
+Investigated the next failure exposed after the Module 4 test was corrected.
+
+Root cause:
+- `scripts/project-context.test.mjs` transpiled TypeScript and executed it with `vm.runInNewContext`;
+- returned objects and arrays therefore belonged to a separate JavaScript realm;
+- Node's strict `assert.deepEqual` rejected values with identical structure because their prototypes came from different realms;
+- the project-domain implementation itself returned the expected normalized data.
+
+Fix:
+- changed the test loader to compile and execute the transpiled CommonJS module through Node's `Module` in the host realm;
+- preserved the existing assertions so they continue to verify actual object structure rather than weakening them with serialization-based comparisons.
+
+No production project-domain behavior was changed.
