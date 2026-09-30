@@ -59,6 +59,8 @@ export const STORAGE_KEYS = {
 } as const;
 
 export const EXPORTABLE_STORAGE_KEYS = [
+  "qa_navigator_projects",
+  "qa_navigator_active_project",
   "qa_navigator_checklists",
   "qa_navigator_testcases",
   "qa_navigator_bugreports",
