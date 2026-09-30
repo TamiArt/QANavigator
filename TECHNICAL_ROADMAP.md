@@ -1345,3 +1345,17 @@ Implemented:
 
 The infographic layer remains deterministic and asset-free, using the existing icon library and Tailwind classes.
 
+### 7.1.41 Fix invalid template-string delimiters in testing types topic — 2026-09-30
+
+Fixed a TypeScript parsing failure in `src/app/handbook-data-part-1.ts` around the `tt2` topic.
+
+Root cause:
+- the opening and closing template-string delimiters of `tt2.content` had been written as escaped backticks at the TypeScript source level;
+- this produced parser errors such as `TS1127: Invalid character` and cascading `TS1005: ',' expected` diagnostics.
+
+Fix:
+- restored real template-string delimiters for `tt2.content`;
+- preserved the escaped Markdown code-fence backticks inside the template string;
+- added a regression test that protects the `tt2` template-string boundary.
+
+No lesson content or classification structure was changed.

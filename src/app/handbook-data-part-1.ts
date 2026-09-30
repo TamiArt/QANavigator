@@ -291,7 +291,7 @@ STLC — последовательность конкретных действ�
     category: "Виды тестирования",
     level: "beginner",
     tags: ["виды тестирования", "functional", "non-functional", "black-box", "gray-box", "white-box", "Smoke", "Sanity", "Regression", "Re-testing", "static", "dynamic", "manual", "automated", "exploratory", "Unit", "Integration", "System", "Acceptance"],
-    content: \`## Архитектура и классификация видов тестирования ПО
+    content: `## Архитектура и классификация видов тестирования ПО
 
 Одну систему проверяют с разных сторон. Классификация помогает понять, **что именно проверяется, на каком уровне, каким способом и с какой целью**. Один и тот же тест может одновременно относиться к нескольким классификациям.
 
@@ -530,7 +530,7 @@ Regression
 НАСколько формально? → Scripted / Exploratory / Ad hoc
 КАКОЙ масштаб?       → Unit / Integration / System / Acceptance
 \`\`\`
-\`,
+`,
   },  {
     id: "tt3",
     title: "OWASP Top 10: Основы безопасности для QA",

@@ -100,3 +100,14 @@ test("testing-types knowledge topic keeps the eight-axis classification contract
     assert.ok(topic.includes(anchor), "tt2 must preserve the testing-types anchor: " + anchor);
   }
 });
+
+test("testing types topic keeps a valid template-string boundary", () => {
+  const source = fs.readFileSync("src/app/handbook-data-part-1.ts", "utf8");
+  const start = source.indexOf('id: "tt2"');
+  const end = source.indexOf('id: "tt3"', start);
+  assert.ok(start >= 0 && end > start, "tt2/tt3 boundaries must exist");
+  const tt2 = source.slice(start, end);
+  assert.match(tt2, /content: \\`## Архитектура и классификация видов тестирования ПО/);
+  assert.ok(!tt2.includes("content: \\\\`## Архитектура"), "tt2 content must not start with an escaped template delimiter");
+  assert.ok(!tt2.includes("\\\\`,\\n  }"), "tt2 content must close with a real template delimiter");
+});
