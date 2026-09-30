@@ -15,7 +15,7 @@ export interface LearningLesson {
 export interface LearningModule {
   id: string;
   title: string;
-  lessons: LearningLesson[];
+  lessons: readonly LearningLesson[];
 }
 
 export const HANDBOOK_LEARNING_MODULES: readonly LearningModule[] = [
