@@ -1220,3 +1220,18 @@ Fix:
 - restored the affected header block as real multiline JSX;
 - preserved the learning-mode button and surrounding UI behavior;
 - verified the corrupt block is isolated rather than replacing valid template-literal escapes globally.
+
+### 7.1.36 TypeScript regression — malformed Module 4 array separator and readonly lesson collections — 2026-09-30
+
+Investigated the remaining `tsc` errors after the JSX and template-literal fixes.
+
+Two independent issues were localized:
+
+1. `src/app/features/handbook/handbook-learning-module4.ts` contained a stray `},,` between lessons 7 and 8. The extra comma creates an `undefined` element in the array, which caused the array to be inferred as a union containing `undefined`.
+2. `LearningModule.lessons` in `handbook-learning.ts` was mutable (`LearningLesson[]`) while Module 2–4 lesson constants are intentionally readonly arrays.
+
+Fixes:
+- removed the stray array separator;
+- changed `LearningModule.lessons` to `readonly LearningLesson[]` so the module contract matches the existing immutable lesson collections.
+
+No lesson content or curriculum order was changed.
