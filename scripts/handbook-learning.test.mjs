@@ -18,7 +18,7 @@ test("learning mode contains exactly the approved Module 1 lessons", () => {
     "Техники тест-дизайна: как придумывать тест-кейсы",
   ];
   for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
-  assert.equal((source.match(/id: "m1-\\d{2}"/g) ?? []).length, 11);
+  assert.equal((source.match(/id: "m1-\d{2}"/g) ?? []).length, 11);
   assert.doesNotMatch(source, /Модуль 2|Модуль 3|Модуль 4|Модуль 5/);
 });
 
@@ -52,7 +52,7 @@ test("learning mode contains the approved Module 2 topics in exact order", () =>
     "Типы компаний",
   ];
   for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
-  assert.equal((source.match(/id: "m2-\\d{2}"/g) ?? []).length, 12);
+  assert.equal((source.match(/id: "m2-\d{2}"/g) ?? []).length, 12);
   assert.ok(source.indexOf("Что такое стек проекта?") < source.indexOf("Команда проекта"));
   assert.ok(source.indexOf("Команда проекта") < source.indexOf("Методологии разработки: как организовать работу над проектом"));
   assert.ok(source.indexOf("Покер планирования") < source.indexOf("Ретроспектива"));
@@ -81,7 +81,7 @@ test("learning mode contains the approved Module 3 topics in exact order", () =>
     "DevTools — главный инструмент",
   ];
   for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
-  assert.equal((source.match(/id: "m3-\\d{2}"/g) ?? []).length, 7);
+  assert.equal((source.match(/id: "m3-\d{2}"/g) ?? []).length, 7);
   assert.ok(source.indexOf("Что такое фронтенд и бэкенд") < source.indexOf("Тестовые окружения (стенды)"));
   assert.ok(source.indexOf("Тестовые окружения (стенды)") < source.indexOf("Тестирование фронтенда"));
   assert.ok(source.indexOf("Тестирование фронтенда") < source.indexOf("Мини-гайд по тестированию GUI"));
@@ -105,7 +105,7 @@ test("learning mode contains the approved Module 4 topics in exact order", () =>
     "Тест-кейс (Test Case)",
   ];
   for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
-  assert.equal((source.match(/id: "m4-\\d{2}"/g) ?? []).length, 18);
+  assert.equal((source.match(/id: "m4-\d{2}"/g) ?? []).length, 18);
   assert.ok(source.indexOf("Что такое тестовая документация?") < source.indexOf("В чем важность тестовой документации?"));
   assert.ok(source.indexOf("В чем важность тестовой документации?") < source.indexOf("Тест-план (Test Plan)"));
   assert.ok(source.indexOf("Тест-план (Test Plan)") < source.indexOf("Тест-кейс (Test Case)"));
@@ -145,7 +145,7 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
     "Лучшие практики тест-кейсов",
   ];
   for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
-  assert.equal((source.match(/id: "m4-\\d{2}"/g) ?? []).length, 18);
+  assert.equal((source.match(/id: "m4-\d{2}"/g) ?? []).length, 18);
   for (let i = 0; i < expected.length - 1; i += 1) {
     assert.ok(source.indexOf(expected[i]) < source.indexOf(expected[i + 1]));
   }
