@@ -154,6 +154,7 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
   assert.match(source, /POST \/create/);
   assert.match(source, /201 Created/);
   assert.ok(source.includes("create.payment"), "Kafka payment topic example must be documented");
+  assert.ok(!source.includes("create\\\\.payment"), "Kafka topic assertion must not contain an escaped-dot literal");
   assert.match(source, /401/);
   assert.match(source, /409 Conflict/);
   assert.match(source, /Критерий/);
