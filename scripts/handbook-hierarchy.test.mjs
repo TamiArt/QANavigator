@@ -107,8 +107,14 @@ test("testing types topic keeps a valid template-string boundary", () => {
   const end = source.indexOf('id: "tt3"', start);
   assert.ok(start >= 0 && end > start, "tt2/tt3 boundaries must exist");
   const tt2 = source.slice(start, end);
-  assert.match(tt2, /content: \\`## Архитектура и классификация видов тестирования ПО/);
-  assert.ok(!tt2.includes("content: \\\\`## Архитектура"), "tt2 content must not start with an escaped template delimiter");
-  assert.ok(!tt2.includes("\\\\`,\\n  }"), "tt2 content must close with a real template delimiter");
-  assert.match(tt2, /\\n`,\\n  \\},\\n  \\{\\n    id: "tt3"/, "tt2 content must be closed before the tt3 topic");
-});
+  assert.match(
+    tt2,
+    /content: \`## Архитектура и классификация видов тестирования ПО/,
+    "tt2 content must start with a real template delimiter immediately followed by the expected heading",
+  );
+  assert.ok(!tt2.includes("content: \\`## Архитектура"), "tt2 content must not start with an escaped template delimiter");
+  assert.ok(!tt2.includes("content:\\`##"), "tt2 content must contain a normal space after the colon");
+  assert.ok(!tt2.includes("\` ## Архитектура"), "tt2 content must not contain a space after the opening delimiter");
+  assert.ok(!tt2.includes("\u00a0"), "tt2 content must not contain non-breaking spaces");
+  assert.ok(!tt2.includes("\\`,\n  }"), "tt2 content must close with a real template delimiter");
+  assert.match(tt2, /\\n\`,\n  \\},\n  \\{\n    id: "tt3"/, "tt2 content must be closed before the tt3 topic");});
