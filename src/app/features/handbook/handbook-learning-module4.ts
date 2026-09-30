@@ -492,7 +492,7 @@ export const HANDBOOK_LEARNING_MODULE_4_LESSONS: readonly LearningLesson[] = [
 
 **Главная мысль:** документация должна помогать тестированию, а не мешать ему.
 `,
-  },,
+  },
   {
     id: "m4-08",
     title: "Баг-репорт (Bug Report)",
