@@ -1136,3 +1136,19 @@ Compatibility:
 Next Stage A slice:
 - connect project identity to requirements, test cases, executions and defects without breaking existing stored artifacts;
 - add project-scoped derived metrics to the Workspace only after the artifact ownership contract is established.
+
+
+### 7.1.31 Build regression — HandbookModule JSX escape corruption — 2026-09-30
+
+Fixed a concrete Vite/esbuild build failure in `src/app/features/handbook/HandbookModule.tsx`.
+
+Root cause:
+- a generated edit had inserted literal `\\n` sequences into JSX markup instead of real line breaks;
+- the resulting source contained a backslash immediately before JSX content, so esbuild reported `Expected ">" but found "\\"` at the affected `<div>` block.
+
+Fix:
+- restored the affected JSX block as valid multiline JSX;
+- preserved the learning-mode button and surrounding handbook UI behavior;
+- no curriculum/content changes were made.
+
+The fix is isolated to the syntax corruption reported by the deployment build.
