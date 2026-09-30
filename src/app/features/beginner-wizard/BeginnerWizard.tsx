@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
-import { useLocalStorage } from "../../hooks/use-local-storage";
-import { PROJECTS_STORAGE_KEY, ACTIVE_PROJECT_STORAGE_KEY, type ProductType, type QAProject } from "../project-workspace/types";
+import { useApp } from "../../core/app-context";
+import type { ProductType } from "../../domain/project";
 import { ObjectCharacteristics } from "./components/ObjectCharacteristics";
 import { TestPlanOverview } from "./components/TestPlanOverview";
 import { buildIntermediateBoundarySteps } from "./intermediate-boundary-rules";
@@ -30,8 +30,7 @@ function openHandbookFallback(query: string) {
 }
 
 export function BeginnerWizard({ onOpenKnowledge }: BeginnerWizardProps) {
-  const [projects, setProjects] = useLocalStorage<QAProject[]>(PROJECTS_STORAGE_KEY, []);
-  const [, setActiveId] = useLocalStorage(ACTIVE_PROJECT_STORAGE_KEY, "");
+  const { createProject } = useApp();
   const [wizardStep, setWizardStep] = useState(0);
   const [type, setType] = useState<ProductType>("web");
   const [config, setConfig] = useState<TestObjectConfig>(() => createInitialObjectConfig());
@@ -54,7 +53,7 @@ export function BeginnerWizard({ onOpenKnowledge }: BeginnerWizardProps) {
 
   const finish = () => {
     const objectLabel = TEST_OBJECT_OPTIONS.find((option) => option.id === config.objectType)?.label ?? "QA-проверка";
-    const project: QAProject = {
+    createProject({
       id: crypto.randomUUID(),
       name: objectLabel,
       description: "",
@@ -62,9 +61,7 @@ export function BeginnerWizard({ onOpenKnowledge }: BeginnerWizardProps) {
       environment: "Staging",
       risks: [],
       createdAt: new Date().toISOString(),
-    };
-    setProjects([...projects, project]);
-    setActiveId(project.id);
+    });
     setDone(true);
   };
 
