@@ -1,4 +1,5 @@
 import type { ApiKeys, BugReport, ChecklistItem, TestCase, TestStatus, Severity } from "../domain/types";
+import type { ProductType, QAProject } from "../domain/project";
 
 export type StorageValueValidator = (value: unknown) => boolean;
 
@@ -6,6 +7,7 @@ const TEST_STATUSES: readonly TestStatus[] = ["pending", "passed", "failed", "bl
 const SEVERITIES: readonly Severity[] = ["critical", "high", "medium", "low"];
 const PRIORITIES = ["P1", "P2", "P3"] as const;
 const CHECKLIST_CATEGORIES = ["positive", "negative", "boundary", "nonfunctional"] as const;
+const PRODUCT_TYPES: readonly ProductType[] = ["web", "api", "mobile", "desktop"];
 const UNSUPPORTED_VERSION = {};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -77,6 +79,20 @@ function isApiKeys(value: unknown): value is ApiKeys {
   );
 }
 
+function isProject(value: unknown): value is QAProject {
+  if (!isRecord(value)) return false;
+  return (
+    typeof value.id === "string" &&
+    typeof value.name === "string" &&
+    typeof value.description === "string" &&
+    typeof value.productType === "string" &&
+    PRODUCT_TYPES.includes(value.productType as ProductType) &&
+    typeof value.environment === "string" &&
+    isStringArray(value.risks) &&
+    typeof value.createdAt === "string"
+  );
+}
+
 function unwrapCurrentStorageValue(value: unknown): unknown {
   if (!isRecord(value) || !("version" in value) || !("data" in value)) return value;
   return value.version === 1 ? value.data : UNSUPPORTED_VERSION;
@@ -89,6 +105,16 @@ export function isThemeStorageValue(value: unknown): boolean {
 
 export function isApiKeysStorageValue(value: unknown): boolean {
   return isApiKeys(unwrapCurrentStorageValue(value));
+}
+
+export function isProjectsStorageValue(value: unknown): boolean {
+  const data = unwrapCurrentStorageValue(value);
+  return Array.isArray(data) && data.every(isProject);
+}
+
+export function isActiveProjectStorageValue(value: unknown): boolean {
+  const data = unwrapCurrentStorageValue(value);
+  return typeof data === "string";
 }
 
 export function isChecklistsStorageValue(value: unknown): boolean {
