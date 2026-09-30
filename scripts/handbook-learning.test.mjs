@@ -183,3 +183,23 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
   assert.match(source, /15 фраз для запоминания/);
   assert.match(source, /Супер-шпаргалка/);
 });
+
+
+test("Learning Mode has an infographic contract for every lesson in Modules 1–4", () => {
+  const infographic = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  const expectedIds = Array.from({ length: 11 }, (_, i) => "m1-" + String(i + 1).padStart(2, "0"))
+    .concat(Array.from({ length: 12 }, (_, i) => "m2-" + String(i + 1).padStart(2, "0")))
+    .concat(Array.from({ length: 7 }, (_, i) => "m3-" + String(i + 1).padStart(2, "0")))
+    .concat(Array.from({ length: 18 }, (_, i) => "m4-" + String(i + 1).padStart(2, "0")));
+  assert.equal(expectedIds.length, 48);
+  for (const id of expectedIds) assert.ok(infographic.includes('"' + id + '"'), "Missing infographic definition for " + id);
+  assert.match(infographic, /mode: "module"/);
+  assert.match(infographic, /Карта модуля/);
+});
+
+test("Learning Mode renders module and lesson infographics", () => {
+  const source = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
+  assert.match(source, /LearningInfographic/);
+  assert.match(source, /mode="module"/);
+  assert.match(source, /mode="lesson"/);
+});

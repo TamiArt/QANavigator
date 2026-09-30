@@ -1275,3 +1275,19 @@ Explicit exclusions:
 - no corporate-presentation visual style.
 
 This standard is a reusable design contract for future Module 1–4 and subsequent Learning Mode infographic creation. It does not itself create or replace any infographic assets.
+
+
+### 7.1.38 Learning Mode lesson infographics — 2026-09-30
+
+Implemented the complete infographic presentation layer for Learning Mode without changing lesson content.
+
+Completed:
+- added `src/app/features/handbook/LearningInfographic.tsx` as a reusable visual layer;
+- added a dedicated module overview infographic for every Learning Mode module;
+- added an individual infographic definition for all 48 existing lessons across Modules 1–4 (11 + 12 + 7 + 18);
+- used topic-specific visual models: flows, layers, cycles, comparisons, checklists, networks, timelines and pyramids;
+- kept all existing lesson text, titles, order and IDs unchanged;
+- integrated module and lesson infographics into `HandbookLearningMode.tsx`;
+- added regression coverage requiring an infographic definition for every lesson ID and verifying both infographic levels are rendered.
+
+The infographic layer is presentation-only: it does not replace, rewrite or mutate educational lesson content.

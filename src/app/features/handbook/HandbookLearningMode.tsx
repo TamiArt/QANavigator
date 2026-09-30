@@ -5,6 +5,7 @@ import { useLocalStorage } from "../../hooks/use-local-storage";
 import { STORAGE_KEYS } from "../../core/constants";
 import { isHandbookLearningProgressStorageValue } from "../../core/storage-validators";
 import { HANDBOOK_LEARNING_MODULES, getLearningLessonContent } from "./handbook-learning";
+import { LearningInfographic } from "./LearningInfographic";
 
 interface LearningProgress {
   completedLessonIds: string[];
@@ -92,6 +93,8 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
         />
       </div>
 
+      <LearningInfographic mode="module" module={module} />
+
       <div className="grid gap-2">
         {module.lessons.map((lesson, index) => {
           const isActive = index === activeIndex;
@@ -122,7 +125,10 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
           </div>
           <h3 className="text-lg font-semibold text-foreground">{activeLesson.title}</h3>
         </div>
-        <MarkdownView content={getLearningLessonContent(activeLesson)} />
+        <LearningInfographic mode="lesson" lesson={activeLesson} />
+        <div className="mt-6">
+          <MarkdownView content={getLearningLessonContent(activeLesson)} />
+        </div>
 
         <div className="flex flex-wrap justify-between gap-2 pt-5 mt-5 border-t border-border">
           <button
