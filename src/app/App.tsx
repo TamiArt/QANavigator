@@ -20,19 +20,21 @@ import { Tooltip } from "./components/shared";
 import { AppContext } from "./core/app-context";
 import { STORAGE_KEYS } from "./core/constants";
 import {
+  isActiveProjectStorageValue,
   isApiKeysStorageValue,
   isBugReportsStorageValue,
   isChecklistsStorageValue,
   isBookmarksStorageValue,
+  isProjectsStorageValue,
   isTestCasesStorageValue,
   isTextStorageValue,
   isThemeStorageValue,
 } from "./core/storage-validators";
 import { APP_NAVIGATION } from "./domain/navigation";
+import { createProject as buildProject, removeProject as removeProjectFromList, resolveActiveProjectId, updateProject as updateProjectList } from "./domain/project";
 import { useLocalStorage } from "./hooks/use-local-storage";
-import type {
-  ApiKeys, BugReport, ChecklistItem, Module, TestCase, Theme,
-} from "./domain/types";
+import type { ApiKeys, BugReport, ChecklistItem, Module, TestCase, Theme } from "./domain/types";
+import type { QAProject } from "./domain/project";
 
 const NAV_ICONS: Record<Module, ReactNode> = {
   workspace: <Clipboard className="w-4 h-4" />,
@@ -57,6 +59,16 @@ export default function App() {
     STORAGE_KEYS.apiKeys,
     { openrouter: "", gemini: "", provider: "openrouter" },
     isApiKeysStorageValue,
+  );
+  const [projects, setProjects] = useLocalStorage<QAProject[]>(
+    STORAGE_KEYS.projects,
+    [],
+    isProjectsStorageValue,
+  );
+  const [activeProjectId, setActiveProjectId] = useLocalStorage(
+    STORAGE_KEYS.activeProject,
+    "",
+    isActiveProjectStorageValue,
   );
   const [checklists, setChecklists] = useLocalStorage<ChecklistItem[]>(
     STORAGE_KEYS.checklists,
@@ -99,6 +111,28 @@ export default function App() {
     setBookmarks(bookmarks.includes(id) ? bookmarks.filter((b) => b !== id) : [...bookmarks, id]);
   }, [bookmarks, setBookmarks]);
 
+  const createProject = useCallback((project: QAProject) => {
+    setProjects([...projects, project]);
+    setActiveProjectId(project.id);
+  }, [projects, setProjects, setActiveProjectId]);
+
+  const updateProject = useCallback((id: string, patch: Partial<Omit<QAProject, "id" | "createdAt">>) => {
+    setProjects(updateProjectList(projects, id, patch));
+  }, [projects, setProjects]);
+
+  const removeProject = useCallback((id: string) => {
+    const nextProjects = removeProjectFromList(projects, id);
+    setProjects(nextProjects);
+    if (activeProjectId === id) {
+      setActiveProjectId(resolveActiveProjectId(nextProjects, ""));
+    }
+  }, [activeProjectId, projects, setProjects, setActiveProjectId]);
+
+  useEffect(() => {
+    const resolvedId = resolveActiveProjectId(projects, activeProjectId);
+    if (resolvedId !== activeProjectId) setActiveProjectId(resolvedId);
+  }, [activeProjectId, projects, setActiveProjectId]);
+
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
@@ -107,10 +141,11 @@ export default function App() {
 
   const ctx = {
     activeModule, setActiveModule, selectedTechnique, setSelectedTechnique,
-    theme, toggleTheme, apiKeys, setApiKeys, checklists, setChecklists,
-    testCases, setTestCases, bugReports, setBugReports, bookmarks, toggleBookmark,
-    showApiModal, setShowApiModal, requirementsText, setRequirementsText,
-    requirementsResult, setRequirementsResult,
+    theme, toggleTheme, apiKeys, setApiKeys,
+    projects, activeProjectId, setActiveProjectId, createProject, updateProject, removeProject,
+    checklists, setChecklists, testCases, setTestCases, bugReports, setBugReports,
+    bookmarks, toggleBookmark, showApiModal, setShowApiModal,
+    requirementsText, setRequirementsText, requirementsResult, setRequirementsResult,
   };
 
   const renderModule = () => {
