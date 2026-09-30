@@ -1291,3 +1291,39 @@ Completed:
 - added regression coverage requiring an infographic definition for every lesson ID and verifying both infographic levels are rendered.
 
 The infographic layer is presentation-only: it does not replace, rewrite or mutate educational lesson content.
+
+
+### 7.1.39 Knowledge Base — testing types classification expansion — 2026-09-30
+
+Expanded the canonical **«Виды тестирования»** knowledge-base topic (`tt2`) on `refactor/handbook-hierarchy`.
+
+Added and structured the eight classification axes:
+1. by object and goals;
+2. by system knowledge;
+3. by timing and purpose;
+4. by code execution;
+5. by automation;
+6. by scenario positivity;
+7. by degree of formalization;
+8. by testing level / scale.
+
+Also added:
+- Functional vs Non-functional testing;
+- Performance subtypes;
+- Usability, Security, L10n/I18n, Accessibility, Compatibility and Installation;
+- Black-box / Gray-box / White-box;
+- Smoke / Sanity / Regression / Re-test / Critical path;
+- Static / Dynamic;
+- Manual / Automated;
+- Positive / Negative / Destructive;
+- Scripted / Exploratory / Ad hoc;
+- Unit / Integration / System / Acceptance (UAT);
+- testing-level pyramid;
+- explanation of how classifications intersect;
+- compact revision cheat sheet.
+
+Content remains in the existing `tt2` topic; no topic IDs, curriculum order or Learning Mode lesson content were changed.
+
+Added a regression contract in `scripts/handbook-hierarchy.test.mjs` to protect the eight classification axes and key terminology from accidental removal.
+
+No other branch was modified.

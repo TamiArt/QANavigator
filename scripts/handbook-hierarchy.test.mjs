@@ -64,3 +64,39 @@ test("merged topic IDs are not visible in the hierarchy", () => {
     assert.equal(hierarchyIds.includes(id), false, `merged topic ${id} must not appear in visible hierarchy`);
   }
 });
+
+
+test("testing-types knowledge topic keeps the eight-axis classification contract", () => {
+  const source = fs.readFileSync("src/app/handbook-data-part-1.ts", "utf8");
+  const start = source.indexOf('id: "tt2"');
+  const end = source.indexOf('id: "tt3"', start);
+  assert.ok(start >= 0, "testing-types topic tt2 must exist");
+  assert.ok(end > start, "testing-types topic tt2 must have a following topic boundary");
+
+  const topic = source.slice(start, end);
+  for (const anchor of [
+    "По объекту и целям",
+    "По степени знания системы",
+    "По времени и цели проведения",
+    "По запуску кода",
+    "По степени автоматизации",
+    "По позитивности сценариев",
+    "По степени формализации",
+    "По уровням тестирования",
+    "Smoke",
+    "Sanity",
+    "Regression",
+    "Re-test",
+    "Black-box",
+    "Gray-box",
+    "White-box",
+    "Unit (Модульное)",
+    "Integration (Интеграционное)",
+    "System (Системное)",
+    "Acceptance / UAT",
+    "Пирамида уровней тестирования",
+    "Шпаргалка",
+  ]) {
+    assert.ok(topic.includes(anchor), "tt2 must preserve the testing-types anchor: " + anchor);
+  }
+});
