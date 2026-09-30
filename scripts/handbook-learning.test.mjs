@@ -179,7 +179,7 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
   assert.match(source, /Network/);
   assert.match(source, /Уточнение требований/);
   assert.match(source, /Атомарность/);
-  assert.match(source, /Что это\? → Зачем\? → Из чего состоит\? → Пример/);
+  assert.ok(source.includes("1. Что это? → 2. Зачем? → 3. Из чего состоит? → 4. Пример."), "Module 4 exam formula must preserve its numbered form");
   assert.match(source, /15 фраз для запоминания/);
   assert.match(source, /Супер-шпаргалка/);
 });
