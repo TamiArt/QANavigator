@@ -203,6 +203,14 @@ test("Learning Mode has a semantic infographic contract for every lesson in Modu
   assert.match(infographic, /aria-label=/);
 });
 
+test("Handbook exposes a reachable Learning Mode from the knowledge base", () => {
+  const source = fs.readFileSync("src/app/features/handbook/HandbookModule.tsx", "utf8");
+  assert.match(source, /HandbookLearningMode/);
+  assert.match(source, /onClick=\{\(\) => setLearningMode\(true\)\}/);
+  assert.match(source, /if \(learningMode\)/);
+  assert.match(source, /onBack=\{\(\) => setLearningMode\(false\)\}/);
+});
+
 test("Learning Mode renders module and lesson infographics", () => {
   const source = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
   assert.match(source, /LearningInfographic/);

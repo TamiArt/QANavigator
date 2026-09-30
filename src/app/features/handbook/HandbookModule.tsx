@@ -7,6 +7,7 @@ import { CATEGORIES } from "../../core/constants";
 import { HANDBOOK } from "../../handbook-data";
 import { HANDBOOK_SECTION_BY_TOPIC } from "../../handbook-hierarchy";
 import { HandbookImages } from "../../components/handbook/HandbookImages";
+import { HandbookLearningMode } from "./HandbookLearningMode";
 import { HighlightedText, normalizeSearchQuery, SearchMatches } from "../../components/handbook/SearchHighlights";
 
 // MODULE 7: QA HANDBOOK
@@ -33,6 +34,10 @@ export function HandbookModule() {
   }, [search, activeCategory, levelFilter, cheatSheet, bookmarks]);
 
   const techDesignTopics = ["td1", "td2", "td3", "td4", "td5"];
+
+  if (learningMode) {
+    return <HandbookLearningMode onBack={() => setLearningMode(false)} />;
+  }
 
   return (
     <div className="space-y-5">
