@@ -1192,3 +1192,17 @@ Fix:
 - preserved the existing assertions so they continue to verify actual object structure rather than weakening them with serialization-based comparisons.
 
 No production project-domain behavior was changed.
+
+### 7.1.34 TypeScript regression — Markdown backticks inside Module 4 template literals — 2026-09-30
+
+Investigated the TypeScript failures exposed after the project-context test loader was corrected.
+
+Root cause:
+- several Module 4 lesson bodies are stored as TypeScript template literals;
+- the lesson content also contains Markdown inline-code spans and fenced code blocks using backticks;
+- unescaped backticks prematurely terminated those template literals and caused the cascade of TS1127/TS1005/TS1109/TS17002 syntax errors reported by `tsc`.
+
+Fix:
+- escaped the 34 raw Markdown backticks inside Module 4 template-literal lesson bodies;
+- kept the rendered Markdown content semantically unchanged;
+- did not alter the Module 4 curriculum or lesson order.
