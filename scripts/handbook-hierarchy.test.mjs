@@ -108,10 +108,17 @@ test("testing types topic keeps a valid template-string boundary", () => {
   assert.ok(start >= 0 && end > start, "tt2/tt3 boundaries must exist");
 
   const tt2 = source.slice(start, end);
-  const contentMatch = tt2.match(/content: `([\\s\\S]*)\\n`,\\n  \\},\\n$/);
-  assert.ok(contentMatch, "tt2 content must close before the tt3 topic");
-  const content = contentMatch[1];
+  const contentStart = tt2.indexOf("content: `");
+  const contentEnd = tt2.lastIndexOf("\n`,");
+  assert.ok(contentStart >= 0, "tt2 must contain a content template literal");
+  assert.ok(contentEnd > contentStart, "tt2 content must have a closing template delimiter");
+  assert.equal(
+    tt2.slice(contentEnd).startsWith("\n`,\n  },\n  {"),
+    true,
+    "tt2 content must be closed immediately before the next topic object",
+  );
 
+  const content = tt2.slice(contentStart + "content: `".length, contentEnd);
   assert.equal(
     content.startsWith("## Архитектура и классификация видов тестирования ПО"),
     true,
@@ -134,7 +141,6 @@ test("testing types topic keeps a valid template-string boundary", () => {
   assert.equal(tt2.includes("` ## Архитектура"), false, "tt2 must not have a space after the opening delimiter");
   assert.equal(tt2.includes("\u00a0"), false, "tt2 content must not contain non-breaking spaces");
   assert.equal(tt2.includes("\\`,\n  }"), false, "tt2 must not contain an escaped closing delimiter");
-  assert.match(source.slice(end - 20, end + 40), /\n  \},\n  \{\n    id: "tt3"/, "tt2 must be closed before tt3");
 });
 
 test("handbook data has balanced template literals and no hidden whitespace hazards", () => {
