@@ -110,4 +110,5 @@ test("testing types topic keeps a valid template-string boundary", () => {
   assert.match(tt2, /content: \\`## Архитектура и классификация видов тестирования ПО/);
   assert.ok(!tt2.includes("content: \\\\`## Архитектура"), "tt2 content must not start with an escaped template delimiter");
   assert.ok(!tt2.includes("\\\\`,\\n  }"), "tt2 content must close with a real template delimiter");
+  assert.match(tt2, /\\n`,\\n  \\},\\n  \\{\\n    id: "tt3"/, "tt2 content must be closed before the tt3 topic");
 });

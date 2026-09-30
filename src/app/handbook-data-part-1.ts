@@ -531,7 +531,8 @@ Regression
 КАКОЙ масштаб?       → Unit / Integration / System / Acceptance
 \`\`\`
 `,
-  },  {
+  },
+  {
     id: "tt3",
     title: "OWASP Top 10: Основы безопасности для QA",
     category: "Виды тестирования",
