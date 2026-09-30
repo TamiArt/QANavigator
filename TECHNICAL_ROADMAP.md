@@ -1111,3 +1111,28 @@ Telegram SDK messages were also traced:
 - The Header color is not supported in version 6.0 and Background color is not supported in version 6.0 warnings originate from Telegram's injected WebApp SDK. The repository contains no direct Telegram.WebApp.setHeaderColor / setBackgroundColor call and no Telegram WebApp SDK dependency, so these warnings are not currently attributable to repository code and should not be fixed by inventing an app-side workaround.
 
 No Telegram API behavior was changed without a repository-side call to modify.
+
+
+### 7.1.30 Stage A project context foundation — 2026-09-30
+
+Started the immediate **Stage A — Project Context & QA Workspace** milestone.
+
+Implemented:
+- introduced a stable `QAProject` domain contract in `src/app/domain/project.ts`;
+- extracted project creation, update, removal and active-project resolution into pure, reusable domain functions;
+- centralized the existing project localStorage keys under `STORAGE_KEYS` without renaming them;
+- added runtime validation for persisted projects and the active-project ID;
+- moved project state into the global AppContext so the Workspace is no longer a second independent persistence boundary;
+- preserved the existing project creation, selection and deletion behavior while making the active project available to all future feature modules;
+- added executable regression coverage for project-domain operations and project persistence validation;
+- integrated the project-context test into `npm run verify`.
+
+Compatibility:
+- existing `qa_navigator_projects` and `qa_navigator_active_project` storage keys remain unchanged;
+- legacy raw JSON remains readable through the existing storage boundary;
+- no existing QA artifact storage keys were changed;
+- `main` remains untouched.
+
+Next Stage A slice:
+- connect project identity to requirements, test cases, executions and defects without breaking existing stored artifacts;
+- add project-scoped derived metrics to the Workspace only after the artifact ownership contract is established.
