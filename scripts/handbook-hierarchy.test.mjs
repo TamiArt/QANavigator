@@ -118,3 +118,11 @@ test("testing types topic keeps a valid template-string boundary", () => {
   assert.ok(!tt2.includes("\u00a0"), "tt2 content must not contain non-breaking spaces");
   assert.ok(!tt2.includes("\\`,\n  }"), "tt2 content must close with a real template delimiter");
   assert.match(tt2, /\\n\`,\n  \\},\n  \\{\n    id: "tt3"/, "tt2 content must be closed before the tt3 topic");});
+
+test("handbook data has balanced template literals and no hidden whitespace hazards", () => {
+  const source = fs.readFileSync("src/app/handbook-data-part-1.ts", "utf8");
+  assert.equal((source.match(/`/g) || []).length % 2, 0, "handbook data must have balanced template delimiters");
+  assert.equal(source.includes("\u00a0"), false, "handbook data must not contain non-breaking spaces");
+  assert.equal(source.includes("\r"), false, "handbook data must not contain carriage returns");
+  assert.equal(source.includes("\t"), false, "handbook data must not contain tab characters");
+});
