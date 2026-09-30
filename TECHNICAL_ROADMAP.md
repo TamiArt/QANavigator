@@ -1206,3 +1206,17 @@ Fix:
 - escaped the 34 raw Markdown backticks inside Module 4 template-literal lesson bodies;
 - kept the rendered Markdown content semantically unchanged;
 - did not alter the Module 4 curriculum or lesson order.
+
+### 7.1.35 TypeScript regression — literal \\n sequences in HandbookModule JSX — 2026-09-30
+
+Investigated the remaining `tsc` failure after Module 4 template-literal syntax was corrected.
+
+Root cause:
+- `src/app/features/handbook/HandbookModule.tsx` contained a generated JSX header block with literal `\\n` text instead of actual line breaks;
+- TypeScript parsed the backslash characters as invalid JSX content and reported TS1127/TS1382/TS17002 plus cascading syntax errors.
+- the only other `\\n` occurrence in the file is inside an intentional JavaScript template literal used to build searchable text and is valid.
+
+Fix:
+- restored the affected header block as real multiline JSX;
+- preserved the learning-mode button and surrounding UI behavior;
+- verified the corrupt block is isolated rather than replacing valid template-literal escapes globally.
