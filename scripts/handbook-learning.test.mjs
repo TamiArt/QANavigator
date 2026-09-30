@@ -153,7 +153,7 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
   assert.match(source, /HTTP-метод и endpoint/);
   assert.match(source, /POST \/create/);
   assert.match(source, /201 Created/);
-  assert.match(source, /create\.payment/);
+  assert.ok(source.includes("create.payment"), "Kafka payment topic example must be documented");
   assert.match(source, /401/);
   assert.match(source, /409 Conflict/);
   assert.match(source, /Критерий/);
