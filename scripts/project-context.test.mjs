@@ -2,7 +2,6 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import vm from "node:vm";
 import ts from "typescript";
 import { Module } from "node:module";
 
@@ -11,13 +10,11 @@ async function loadModule(path) {
   const compiled = ts.transpileModule(source, {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
   }).outputText;
-  const module = new Module(path, module);
-  module.filename = join(process.cwd(), path);
-  module.paths = Module._nodeModulePaths(process.cwd());
-  vm.runInThisContext(`(function (exports, require, module, __filename, __dirname) { ${compiled}\\n})`, {
-    filename: module.filename,
-  })(module.exports, module.require.bind(module), module, module.filename, process.cwd());
-  return module.exports;
+  const testModule = new Module(path, module);
+  testModule.filename = join(process.cwd(), path);
+  testModule.paths = Module._nodeModulePaths(process.cwd());
+  testModule._compile(compiled, testModule.filename);
+  return testModule.exports;
 }
 
 const projectDomain = await loadModule("src/app/domain/project.ts");
