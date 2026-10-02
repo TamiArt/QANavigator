@@ -42,19 +42,16 @@ export function HandbookModule() {
   return (
     <div className="space-y-5">
       <div>
-        <div className="space-y-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold text-foreground mb-1">📚 База знаний QA</h2>
             <p className="text-sm text-muted-foreground">Интерактивный справочник по теории тестирования.</p>
           </div>
           <button
-            type="button"
-            aria-label="Открыть режим обучения"
             onClick={() => setLearningMode(true)}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 sm:w-auto sm:justify-start"
+            className="flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-3 py-2 text-sm font-medium"
           >
-            <GraduationCap className="h-4 w-4 shrink-0" />
-            <span>Режим обучения</span>
+            <GraduationCap className="w-4 h-4" /> Режим обучения
           </button>
         </div>
         

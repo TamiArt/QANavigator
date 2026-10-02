@@ -226,3 +226,13 @@ test("Learning Mode remains directly reachable on mobile layouts", () => {
   assert.match(source, /onClick=\{\(\) => setLearningMode\(true\)\}/);
   assert.match(source, /if \(learningMode\)/);
 });
+
+
+test("Learning infographics use the illustrated QA poster visual language", () => {
+  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  assert.match(source, /Суть за 10 секунд/);
+  assert.match(source, /rounded-\[28px\]/);
+  assert.match(source, /border-2/);
+  assert.match(source, /bg-sky-50/);
+  assert.match(source, /shadow-\[2px_3px_0_rgba\(30,64,175,0\.07\)\]/);
+});

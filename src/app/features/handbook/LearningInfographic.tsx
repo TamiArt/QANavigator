@@ -137,7 +137,7 @@ function VisualDiagram({ visual }: { visual: LessonVisual }) {
       <div className="relative grid gap-2 py-3 sm:grid-cols-2">
         {visual.labels.map((label, index) => (
           <div key={label} className={`relative flex min-h-14 items-center gap-2 rounded-xl border p-3 ${styles.card} ${styles.badge}`}>
-            <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${styles.marker}`}>{index + 1}</span>
+            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold ${styles.marker}`}>{index + 1}</span>
             <span className="text-xs font-semibold text-foreground">{label}</span>
           </div>
         ))}
@@ -154,8 +154,8 @@ function VisualDiagram({ visual }: { visual: LessonVisual }) {
     <div className={`grid gap-2 py-3 ${gridClass}`}>
       {visual.labels.map((label, index) => (
         <React.Fragment key={label}>
-          <div className={`flex min-h-16 items-center gap-2 rounded-xl border p-3 ${styles.card} ${styles.badge}`}>
-            <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${styles.marker}`}>{index + 1}</span>
+          <div className={`flex min-h-20 items-center gap-2.5 rounded-[18px] border-2 p-3 shadow-[2px_3px_0_rgba(30,64,175,0.07)] ${styles.card} ${styles.badge}`}>
+            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold ${styles.marker}`}>{index + 1}</span>
             <div className="min-w-0">
               <Icon className="mb-1 h-4 w-4 text-primary" aria-hidden="true" />
               <span className="block break-words text-xs font-semibold leading-4 text-foreground">{label}</span>
@@ -177,27 +177,31 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
 
   return (
     <section
-      className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
+      className="overflow-hidden rounded-[28px] border-2 border-blue-100 bg-white shadow-[0_8px_30px_rgba(30,64,175,0.08)]"
       aria-label={`Инфографика урока: ${lesson.title}`}
     >
-      <div className={`border-b border-border px-4 py-3 sm:px-5 ${styles.card}`}>
+      <div className={`border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-5 sm:px-6 ${styles.card}`}>
         <div className="flex items-start gap-3">
-          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${styles.marker}`}>
-            <Icon className="h-5 w-5" aria-hidden="true" />
+          <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-blue-200 bg-white shadow-[2px_3px_0_rgba(30,64,175,0.12)] ${styles.marker}`}>
+            <Icon className="h-7 w-7" aria-hidden="true" />
           </div>
           <div className="min-w-0">
             <div className="mb-1 flex flex-wrap items-center gap-2">
-              <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-primary">Визуальная шпаргалка</span>
-              <span className="rounded-full border bg-background/70 px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">{KIND_LABELS[visual.kind]}</span>
+              <span className="rounded-full bg-blue-700 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white">Визуальная шпаргалка</span>
+              <span className="rounded-full border border-blue-200 bg-white/80 px-2.5 py-1 text-[10px] font-bold text-blue-800">{KIND_LABELS[visual.kind]}</span>
             </div>
-            <h4 className="text-sm font-bold leading-5 text-foreground">{lesson.title}</h4>
+            <h4 className="text-base font-extrabold leading-6 text-blue-950 sm:text-lg">{lesson.title}</h4>
           </div>
         </div>
       </div>
 
-      <div className="p-4 sm:p-5">
+      <div className="mb-[-1px] px-4 pt-3 sm:px-6">
+        <div className="inline-flex rounded-full bg-sky-100 px-3 py-1 text-[10px] font-extrabold text-blue-800">Суть за 10 секунд → смотри на связи</div>
+      </div>
+
+      <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-4 sm:p-6">
         <VisualDiagram visual={visual} />
-        <div className="mt-2 flex items-center justify-center gap-2 text-[11px] font-medium text-muted-foreground">
+        <div className="mt-4 flex items-center justify-center gap-2 text-[11px] font-bold text-blue-500">
           <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
           Смотри на связь между элементами
         </div>
@@ -208,26 +212,26 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
 
 function ModuleInfographic({ module }: { module: LearningModule }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm" aria-label={`Инфографика: ${module.title}`}>
-      <div className="border-b border-border bg-blue-50/70 px-4 py-4 sm:px-5">
+    <section className="overflow-hidden rounded-[28px] border-2 border-blue-100 bg-white shadow-[0_8px_30px_rgba(30,64,175,0.08)]" aria-label={`Инфографика: ${module.title}`}>
+      <div className="border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-5 sm:px-6">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
-            <BookOpen className="h-5 w-5" aria-hidden="true" />
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-blue-200 bg-white text-blue-700 shadow-[2px_3px_0_rgba(30,64,175,0.12)]">
+            <BookOpen className="h-7 w-7" aria-hidden="true" />
           </div>
           <div className="min-w-0">
-            <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-blue-700">Карта модуля</div>
-            <h3 className="mt-1 text-base font-bold leading-5 text-foreground">{module.title}</h3>
+            <div className="rounded-full bg-blue-700 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white">Карта модуля</div>
+            <h3 className="mt-1 text-lg font-extrabold leading-6 text-blue-950">{module.title}</h3>
           </div>
         </div>
       </div>
 
-      <div className="p-4 sm:p-5">
+      <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-4 sm:p-6">
         <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {module.lessons.map((lesson, index) => {
             const visual = getVisual(lesson);
             const styles = ACCENT_STYLES[visual.accent];
             return (
-              <li key={lesson.id} className={`flex min-w-0 items-start gap-2.5 rounded-xl border p-3 ${styles.card} ${styles.badge}`}>
+              <li key={lesson.id} className={`flex min-w-0 items-start gap-2.5 rounded-[18px] border-2 p-3 shadow-[2px_3px_0_rgba(30,64,175,0.06)] ${styles.card} ${styles.badge}`}>
                 <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${styles.marker}`}>
                   {String(index + 1).padStart(2, "0")}
                 </span>
