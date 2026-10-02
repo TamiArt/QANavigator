@@ -217,3 +217,12 @@ test("Learning Mode renders module and lesson infographics", () => {
   assert.match(source, /mode="module"/);
   assert.match(source, /mode="lesson"/);
 });
+
+
+test("Learning Mode remains directly reachable on mobile layouts", () => {
+  const source = fs.readFileSync("src/app/features/handbook/HandbookModule.tsx", "utf8");
+  assert.match(source, /aria-label="Открыть режим обучения"/);
+  assert.match(source, /className="[^"]*w-full[^"]*sm:w-auto/);
+  assert.match(source, /onClick=\{\(\) => setLearningMode\(true\)\}/);
+  assert.match(source, /if \(learningMode\)/);
+});
