@@ -218,6 +218,18 @@ test("Learning Mode renders module and lesson infographics", () => {
   assert.match(source, /mode="lesson"/);
 });
 
+test("Learning Mode provides direct module and lesson navigation", () => {
+  const source = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
+  assert.match(source, /aria-label="Навигация по модулям и темам"/);
+  assert.match(source, /role="tablist"/);
+  assert.match(source, /aria-selected=\{isActive\}/);
+  assert.match(source, /Перейти к теме/);
+  assert.match(source, /scrollIntoView\(\{ behavior: "smooth", block: "start" \}\)/);
+  assert.match(source, /learning-module-content/);
+  assert.match(source, /learning-lesson-\$\{activeLesson\.id\}/);
+});
+
+
 
 test("Learning Mode remains directly reachable on mobile layouts", () => {
   const source = fs.readFileSync("src/app/features/handbook/HandbookModule.tsx", "utf8");
