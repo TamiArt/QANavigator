@@ -833,26 +833,12 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
       className="overflow-hidden rounded-[28px] border-2 border-blue-100 bg-white shadow-[0_8px_30px_rgba(30,64,175,0.08)]"
       aria-label={`Инфографика урока: ${lesson.title}`}
     >
-      <div className="border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-4 sm:px-6">
-        <div className="flex items-center gap-3">
-          <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 border-blue-200 bg-white text-sm font-black shadow-[2px_3px_0_rgba(30,64,175,0.10)] ${styles.marker}`}>{lessonNumber}</div>
-          <div className="min-w-0 flex-1">
-            <div className="mb-1 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-blue-700 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] text-white">Инфографика</span>
-              <span className={`rounded-full border bg-white/80 px-2.5 py-1 text-[9px] font-bold text-blue-800 dark:text-black ${styles.badge}`}>{KIND_LABELS[visual.kind]}</span>
-            </div>
-            <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{lesson.title}</h4>
-          </div>
-          <PdfDownloadButton targetId={infographicId} />
-        </div>
+      <div className="flex items-center justify-between gap-3 border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-3 sm:px-5">
+        <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{lesson.title}</h4>
+        <PdfDownloadButton targetId={infographicId} />
       </div>
 
-      <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:p-5">
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <span className="rounded-full bg-sky-100 px-3 py-1 text-[10px] font-extrabold text-blue-800 dark:text-black">Ключевая схема</span>
-          <span className="text-[10px] font-semibold text-slate-400 dark:text-black">сначала структура → затем детали</span>
-        </div>
-        <VisualMotif visual={visual} />
+      <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:p-4">
         <VisualDiagram visual={visual} />
         {visual.callout && (
           <div className="mt-4 flex items-start gap-2.5 rounded-[18px] border-2 border-blue-100 bg-white/90 px-3.5 py-3 shadow-[1px_2px_0_rgba(30,64,175,0.05)]">
