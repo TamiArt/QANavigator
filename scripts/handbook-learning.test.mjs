@@ -356,3 +356,38 @@ test("Visual cheat sheets do not invent missing lesson source content", () => {
   assert.match(source, /m2-09[\s\S]*Урок содержит видеоматериал/);
   assert.match(source, /m2-12[\s\S]*Текстового конспекта для этого урока сейчас нет/);
 });
+
+
+test("m2-05 Sprint infographic follows the semantic poster contract", () => {
+  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  const asset = fs.readFileSync("public/infographics/m2-05-sprint-planning.svg", "utf8");
+  const lesson = fs.readFileSync("src/app/features/handbook/handbook-learning-module2.ts", "utf8");
+
+  assert.match(source, /lesson\.id === "m2-05"/);
+  assert.match(source, /m2-05-sprint-planning\.svg/);
+  assert.match(asset, /viewBox="0 0 1065 1476"/);
+  assert.match(asset, /id="title"/);
+  assert.match(asset, /id="desc"/);
+
+  for (const required of [
+    "Sprint Planning",
+    "Execution",
+    "Review / Demo",
+    "Retrospective",
+    "ЗАЧЕМ?",
+    "ЧТО?",
+    "КАК?",
+    "Acceptance Criteria",
+  ]) {
+    assert.ok(asset.includes(required), required);
+  }
+
+  for (const required of [
+    "фиксированный отрезок времени",
+    "работающий и протестированный инкремент",
+    "тестирование и автоматизацию",
+    "Acceptance Criteria",
+  ]) {
+    assert.ok(lesson.includes(required), required);
+  }
+});
