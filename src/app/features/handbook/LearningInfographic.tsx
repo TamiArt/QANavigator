@@ -699,7 +699,7 @@ function ModuleInfographic({ module }: { module: LearningModule }) {
                 <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${styles.marker}`}>
                   {String(index + 1).padStart(2, "0")}
                 </span>
-                <span className="min-w-0 pt-0.5 text-xs font-semibold leading-4 text-foreground">{lesson.title}</span>
+                <span className="min-w-0 pt-0.5 text-xs font-semibold leading-4 text-foreground dark:text-black">{lesson.title}</span>
               </li>
             );
           })}
