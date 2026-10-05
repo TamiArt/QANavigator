@@ -1488,7 +1488,7 @@ Next:
 
 ### 7.1.48 Infographic content-density and visual-memory hardening — 2026-10-05
 
-- rebuilt the Module 1 “Принципы тестирования” visual cheat sheet to explicitly represent all 7 testing principles in compact, exam-friendly cards;
+- rebuilt the Module 1 “Принципы тестирования” visual cheat sheet to explicitly represent all 7 testing principles in their canonical Russian names in compact, exam-friendly cards;
 - each principle now includes its practical memory cue: what the principle means and what decision it changes for a tester;
 - added semantic decorative motifs that visually reinforce the diagram type: flow, layers, cycle, comparison, checklist, network, timeline and pyramid;
 - corrected empty Module 2 video/placeholder lessons so their infographics do not invent source facts that are absent from the lesson text;
