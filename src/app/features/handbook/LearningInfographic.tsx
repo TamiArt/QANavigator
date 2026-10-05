@@ -88,12 +88,12 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
 };
 
 const ACCENT_STYLES: Record<Accent, { marker: string; card: string; badge: string }> = {
-  blue: { marker: "bg-blue-100 text-blue-700", card: "bg-blue-50/70", badge: "border-blue-200" },
-  lavender: { marker: "bg-violet-100 text-violet-700", card: "bg-violet-50/70", badge: "border-violet-200" },
-  mint: { marker: "bg-emerald-100 text-emerald-700", card: "bg-emerald-50/70", badge: "border-emerald-200" },
-  yellow: { marker: "bg-amber-100 text-amber-700", card: "bg-amber-50/70", badge: "border-amber-200" },
-  pink: { marker: "bg-pink-100 text-pink-700", card: "bg-pink-50/70", badge: "border-pink-200" },
-  orange: { marker: "bg-orange-100 text-orange-700", card: "bg-orange-50/70", badge: "border-orange-200" },
+  blue: { marker: "bg-blue-600 text-white", card: "bg-sky-50/90", badge: "border-sky-200" },
+  lavender: { marker: "bg-violet-600 text-white", card: "bg-violet-50/90", badge: "border-violet-200" },
+  mint: { marker: "bg-emerald-600 text-white", card: "bg-emerald-50/90", badge: "border-emerald-200" },
+  yellow: { marker: "bg-amber-500 text-white", card: "bg-amber-50/90", badge: "border-amber-200" },
+  pink: { marker: "bg-pink-600 text-white", card: "bg-pink-50/90", badge: "border-pink-200" },
+  orange: { marker: "bg-orange-600 text-white", card: "bg-orange-50/90", badge: "border-orange-200" },
 };
 
 const KIND_LABELS: Record<VisualKind, string> = {
@@ -154,11 +154,13 @@ function VisualDiagram({ visual }: { visual: LessonVisual }) {
     <div className={`grid gap-2 py-3 ${gridClass}`}>
       {visual.labels.map((label, index) => (
         <React.Fragment key={label}>
-          <div className={`flex min-h-20 items-center gap-2.5 rounded-[18px] border-2 p-3 shadow-[2px_3px_0_rgba(30,64,175,0.07)] ${styles.card} ${styles.badge}`}>
+          <div className={`flex min-h-20 items-center gap-2.5 rounded-[18px] border-2 p-3 shadow-[2px_3px_0_rgba(30,64,175,0.07)] ${styles.card} ${styles.badge} ${index % 2 === 0 ? "rotate-[-0.35deg]" : "rotate-[0.35deg]"}`}>
             <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold ${styles.marker}`}>{index + 1}</span>
             <div className="min-w-0">
-              <Icon className="mb-1 h-4 w-4 text-primary" aria-hidden="true" />
-              <span className="block break-words text-xs font-semibold leading-4 text-foreground">{label}</span>
+              <div className={`mb-1 flex h-8 w-8 items-center justify-center rounded-xl bg-white/80 ${styles.badge}`}>
+                <Icon className="h-4 w-4" aria-hidden="true" />
+              </div>
+              <span className={`block break-words text-xs font-bold leading-4 ${styles.marker.replace("bg-", "text-").replace(" text-white", "")}`}>{label}</span>
             </div>
           </div>
           {index < visual.labels.length - 1 && (
@@ -174,6 +176,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
   const visual = getVisual(lesson);
   const Icon = visual.icon;
   const styles = ACCENT_STYLES[visual.accent];
+  const lessonNumber = lesson.id.match(/-(\\d+)$/)?.[1] ?? "01";
 
   return (
     <section
@@ -181,16 +184,24 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
       aria-label={`Инфографика урока: ${lesson.title}`}
     >
       <div className={`border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-5 sm:px-6 ${styles.card}`}>
-        <div className="flex items-start gap-3">
-          <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-blue-200 bg-white shadow-[2px_3px_0_rgba(30,64,175,0.12)] ${styles.marker}`}>
-            <Icon className="h-7 w-7" aria-hidden="true" />
+        <div className="relative flex items-start gap-3 sm:gap-4">
+          <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-blue-200 bg-white text-3xl font-black shadow-[3px_4px_0_rgba(30,64,175,0.12)] ${styles.marker}`}>
+            {lessonNumber}
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="mb-1 flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-blue-700 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white">Визуальная шпаргалка</span>
               <span className="rounded-full border border-blue-200 bg-white/80 px-2.5 py-1 text-[10px] font-bold text-blue-800">{KIND_LABELS[visual.kind]}</span>
             </div>
             <h4 className="text-base font-extrabold leading-6 text-blue-950 sm:text-lg">{lesson.title}</h4>
+            <div className="mt-2 flex items-center gap-2">
+              <span className={`h-1.5 w-10 rounded-full ${styles.marker}`} />
+              <span className="h-1.5 w-2 rounded-full bg-blue-200" />
+              <span className="h-1.5 w-2 rounded-full bg-violet-200" />
+            </div>
+          </div>
+          <div className={`hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 bg-white shadow-[2px_3px_0_rgba(30,64,175,0.08)] sm:flex ${styles.badge}`}>
+            <Icon className={`h-6 w-6 ${styles.marker.replace("bg-", "text-").replace(" text-white", "")}`} aria-hidden="true" />
           </div>
         </div>
       </div>

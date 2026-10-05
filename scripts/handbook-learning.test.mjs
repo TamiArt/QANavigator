@@ -236,3 +236,14 @@ test("Learning infographics use the illustrated QA poster visual language", () =
   assert.match(source, /bg-sky-50/);
   assert.match(source, /shadow-\[2px_3px_0_rgba\(30,64,175,0\.07\)\]/);
 });
+
+
+test("Learning infographics keep the poster hierarchy and per-lesson identity", () => {
+  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  assert.match(source, /lessonNumber/);
+  assert.match(source, /text-3xl font-black/);
+  assert.match(source, /rotate-\[-0\.35deg\]/);
+  assert.match(source, /rotate-\[0\.35deg\]/);
+  assert.match(source, /bg-white\/80/);
+  assert.match(source, /h-12 w-12/);
+});
