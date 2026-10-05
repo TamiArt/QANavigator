@@ -1561,3 +1561,25 @@ Next:
 Next:
 - run focused handbook-learning tests and TypeScript/build verification;
 - inspect the complete 48-lesson visual language for any cards where the semantic illustration needs topic-specific refinement.
+
+
+### 7.1.53 Unified infographic presentation system — 2026-10-05
+
+Standardized the visual shell across all Learning Mode lesson and module infographics.
+
+Implemented:
+- every lesson infographic now uses the same header hierarchy: lesson number, `Инфографика` label, visual-model label, lesson title and the same compact save control;
+- removed the special-case header/body presentation previously used only by “7 принципов тестирования” so it follows the same layout contract as every other lesson;
+- standardized the infographic body spacing, “Ключевая схема” helper row, semantic motif, diagram area and takeaway treatment;
+- renamed the visible PDF action to **«Сохранить»** while preserving the client-side A4/multi-page PDF generation;
+- module overview infographics now use the same outer shell, header hierarchy, light grid background and **«Сохранить»** control;
+- module and lesson PDF captures exclude the save button through the existing `data-pdf-ignore` contract;
+- preserved all 48 lesson definitions, lesson source text, curriculum order and semantic SVG illustration system;
+- updated regression coverage for the unified header, module/lesson save controls and shared presentation contract.
+
+No educational content was changed.
+
+Next:
+- run focused `test:handbook-learning`, TypeScript and production build;
+- inspect mobile/desktop rendering for concrete spacing or overflow defects;
+- only then continue topic-specific illustration refinement.
