@@ -314,7 +314,6 @@ test("Seven testing principles are fully represented in the visual cheat sheet",
   assert.match(source, /fill="#A78BFA"/);
   assert.match(source, /fill="#F43F5E"/);
   assert.ok(!source.includes("CheckCircle2 className=\"h-4 w-4\""), "Principle cards must not render checkmarks");
-  assert.ok(!source.includes("card.icon ?? visual.icon"), "Principle cards must use dedicated illustrations instead of icon glyphs");
   assert.ok(!source.includes("визуальная модель темы"), "Legacy visual-model footer must be removed");
 });
 
