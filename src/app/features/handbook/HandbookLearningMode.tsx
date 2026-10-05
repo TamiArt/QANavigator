@@ -147,7 +147,9 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
         />
       </div>
 
-      <div id="learning-module-content" className="scroll-mt-24">\n        <LearningInfographic mode="module" module={module} />\n      </div>
+      <div id="learning-module-content" className="scroll-mt-24">
+        <LearningInfographic mode="module" module={module} />
+      </div>
 
       <div className="grid gap-2">
         {module.lessons.map((lesson, index) => {
@@ -172,7 +174,11 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
         })}
       </div>
 
-      <article\n        ref={lessonArticleRef}\n        id={`learning-lesson-${activeLesson.id}`}\n        className="bg-card border border-border rounded-xl p-5 scroll-mt-24"\n      >
+      <article
+        ref={lessonArticleRef}
+        id={`learning-lesson-${activeLesson.id}`}
+        className="bg-card border border-border rounded-xl p-5 scroll-mt-24"
+      >
         <div className="mb-4">
           <div className="text-xs text-muted-foreground mb-1">
             Урок {activeIndex + 1} из {module.lessons.length}
