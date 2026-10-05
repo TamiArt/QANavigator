@@ -246,7 +246,7 @@ test("Lesson infographics expose semantic diagram structure", () => {
   for (const kind of ["FlowDiagram", "TimelineDiagram", "ChecklistDiagram", "CompareDiagram", "NetworkDiagram", "DiagramLabelStrip"]) {
     assert.match(source, new RegExp(`function ${kind}`));
   }
-  assert.match(source, /Ключевые элементы темы/);
+  assert.match(source, /aria-label="Ключевая схема"/);
   assert.match(source, /function PdfDownloadButton/);
   assert.match(source, /html2canvas/);
   assert.match(source, /jsPDF/);
