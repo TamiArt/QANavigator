@@ -1625,3 +1625,19 @@ The dedicated poster contains:
 4. a step-by-step immersion process;
 5. expected results;
 6. practical tips.
+
+
+### 7.1.56 Scrum reference infographic visual fidelity — 2026-10-05
+
+Refined the dedicated **Module 2 → lesson 4/12 → Scrum** infographic to serve as the reusable visual reference requested by the user.
+
+Implemented:
+- rebuilt `public/infographics/m2-04-scrum-context.svg` as a responsive vector poster with the same 1065×1476 portrait composition and six numbered information blocks as the supplied reference;
+- preserved the reference's light paper background, rounded pastel cards, dark-blue typography, colored section markers, footer takeaway and dense A4-like information hierarchy;
+- added dedicated inline SVG illustrations for every major reference visual instead of generic placeholders: header team/laptop scene, Sprint screen, calendar, lightbulb, target, team, gear, document, chat, code/repository, stakeholder, search, brain, checklist, star and context checklist;
+- kept the Scrum content from the reference, including roles/context, information sources, immersion steps, results and practical advice;
+- kept the application-specific module label as **«Модуль 2. Погружение в контекст»** while retaining the reference title **«Погружение в контекст (Scrum)»**;
+- retained responsive rendering through the existing full-width SVG `<img>` container, so the poster scales without horizontal overflow on mobile;
+- extended regression coverage to require the dedicated illustration symbol set and the reference poster viewBox.
+
+This asset is intentionally kept as the visual style exemplar for future Learning Mode posters: **same composition language first, then topic-specific content and illustrations**.
