@@ -1,6 +1,6 @@
 import * as React from "react";
 import {
-  AlertTriangle, ArrowDown, ArrowRight, BookOpen, Boxes, Bug,
+  AlertTriangle, ArrowDown, ArrowRight, BookOpen, Boxes, Bug, Download,
   CheckCircle2, ClipboardCheck, Cloud, Code2, Database, FileText, GitBranch,
   Globe, Layers3, ListChecks, Network, PlayCircle, Route, Server, ShieldCheck,
   Target, TestTube2, Users, Workflow, Zap,
@@ -22,6 +22,7 @@ type Accent = "blue" | "lavender" | "mint" | "yellow" | "pink" | "orange";
 type VisualCard = {
   title: string;
   text: string;
+  icon?: React.ComponentType<{ className?: string }>;
 };
 
 type LessonVisual = {
@@ -58,13 +59,13 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "Testing", text: "Практическое исследование продукта для обнаружения проблем." },
   ], "QA — шире процесса тестирования; Testing — часть работы с качеством."),
   "m1-03": V("checklist", ["7 принципов", "Риск", "Раннее тестирование", "Контекст", "Качество"], ListChecks, "mint", [
-    { title: "1. Тестирование показывает наличие дефектов, но не их отсутствие", text: "Тесты обнаруживают наличие дефектов, но не доказывают, что дефектов нет. Даже «всё зелёное» ≠ доказательство идеального продукта." },
-    { title: "2. Исчерпывающее тестирование недостижимо", text: "Полный перебор входов и условий практически невозможен. Фокусируемся на рисках, приоритетах и техниках тест-дизайна." },
-    { title: "3. Раннее тестирование", text: "Начинаем тестовые активности как можно раньше: ранняя проверка снижает стоимость исправлений. Shift-Left." },
-    { title: "4. Скопление дефектов", text: "Небольшое число модулей часто содержит большую часть найденных дефектов. Эти зоны важны для риск-ориентированного тестирования." },
-    { title: "5. Парадокс пестицида", text: "Одинаковые тесты со временем перестают находить новые дефекты. Обновляй и разнообразь набор проверок." },
-    { title: "6. Тестирование зависит от контекста", text: "Нет универсального набора тестов: подход зависит от продукта, рисков, требований, среды и целей." },
-    { title: "7. Заблуждение об отсутствии дефектов", text: "Отсутствие найденных дефектов не означает, что продукт полезен или соответствует потребностям. Проверяем и отсутствие дефектов, и пригодность результата." },
+    { icon: AlertTriangle, title: "1. Тестирование показывает наличие дефектов, но не их отсутствие", text: "Тесты обнаруживают наличие дефектов, но не доказывают, что дефектов нет. Даже «всё зелёное» ≠ доказательство идеального продукта." },
+    { icon: Boxes, title: "2. Исчерпывающее тестирование недостижимо", text: "Полный перебор входов и условий практически невозможен. Фокусируемся на рисках, приоритетах и техниках тест-дизайна." },
+    { icon: ArrowDown, title: "3. Раннее тестирование", text: "Начинаем тестовые активности как можно раньше: ранняя проверка снижает стоимость исправлений. Shift-Left." },
+    { icon: Bug, title: "4. Скопление дефектов", text: "Небольшое число модулей часто содержит большую часть найденных дефектов. Эти зоны важны для риск-ориентированного тестирования." },
+    { icon: TestTube2, title: "5. Парадокс пестицида", text: "Одинаковые тесты со временем перестают находить новые дефекты. Обновляй и разнообразь набор проверок." },
+    { icon: Network, title: "6. Тестирование зависит от контекста", text: "Нет универсального набора тестов: подход зависит от продукта, рисков, требований, среды и целей." },
+    { icon: ShieldCheck, title: "7. Заблуждение об отсутствии дефектов", text: "Отсутствие найденных дефектов не означает, что продукт полезен или соответствует потребностям. Проверяем и отсутствие дефектов, и пригодность результата." },
   ], "7 принципов — это карта решений: что проверять, когда начинать, где искать риск и почему «без багов» ещё не означает «качественно»."),
   "m1-04": V("compare", ["Верификация", "Валидация", "Продукт"], CheckCircle2, "yellow", [
     { title: "Верификация", text: "Проверяем, правильно ли создаём продукт по заданным требованиям." },
@@ -393,9 +394,9 @@ function getVisual(lesson: LearningLesson): LessonVisual {
 
 function Card({ card, index, visual }: { card: VisualCard; index: number; visual: LessonVisual }) {
   const styles = ACCENT_STYLES[visual.accent];
-  const Icon = visual.icon;
+  const Icon = card.icon ?? visual.icon;
   return (
-    <div className={`flex min-h-[104px] flex-col rounded-[18px] border-2 p-3.5 shadow-[2px_3px_0_rgba(30,64,175,0.07)] ${styles.card} ${styles.badge} ${index % 2 === 0 ? "rotate-[-0.35deg]" : "rotate-[0.35deg]"}`}>
+    <div className={`flex min-h-[104px flex-col rounded-[18px] border-2 p-3.5 shadow-[2px_3px_0_rgba(30,64,175,0.07)] ${styles.card} ${styles.badge} ${index % 2 === 0 ? "rotate-[-0.35deg]" : "rotate-[0.35deg]"}`}>
       <div className="flex items-start gap-2.5">
         <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold ${styles.marker}`}>{index + 1}</span>
         <div className="min-w-0 flex-1">
@@ -474,10 +475,11 @@ function TimelineDiagram({ visual }: { visual: LessonVisual }) {
 
 function ChecklistDiagram({ visual }: { visual: LessonVisual }) {
   const styles = ACCENT_STYLES[visual.accent];
+  const isTestingPrinciples = visual.cards.length === 7 && visual.cards.every((card) => /^\\d\\. /.test(card.title));
   return (
     <div aria-label="Чек-лист ключевых проверок">
-      <DiagramLabelStrip visual={visual} />
-      <div className="space-y-2">
+      {!isTestingPrinciples && <DiagramLabelStrip visual={visual} />}
+      <div className={isTestingPrinciples ? "grid gap-2 sm:grid-cols-2" : "space-y-2"}>
         {visual.cards.map((card, index) => (
           <div key={card.title} className={`flex items-start gap-3 rounded-2xl border-2 bg-white p-3 ${styles.badge}`}>
             <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${styles.marker}`}>
