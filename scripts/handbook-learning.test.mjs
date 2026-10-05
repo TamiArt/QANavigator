@@ -220,6 +220,10 @@ test("Scrum lesson 4 uses the dedicated context infographic asset", () => {
   assert.match(asset, /Как проходит погружение/);
   assert.match(asset, /Результат погружения/);
   assert.match(asset, /Полезные советы/);
+  for (const symbol of ["lightbulb", "target", "team", "gear", "document", "chat", "code", "stakeholder", "search", "brain", "checklist", "star", "clipboard", "calendar", "sprint", "people-laptop"]) {
+    assert.match(asset, new RegExp(`<symbol id="${symbol}"`));
+  }
+  assert.match(asset, /viewBox="0 0 1065 1476"/);
 });
 
 test("Handbook exposes a reachable Learning Mode from the knowledge base", () => {
