@@ -1389,13 +1389,14 @@ Current facts:
 - Learning Mode is implemented;
 - all 48 lesson infographic definitions are present;
 - Learning Mode mobile entry-point regression coverage exists;
-- the current concrete failure is an accessibility-contract mismatch: the regression test requires `aria-label="Открыть режим обучения"`, while the Learning Mode button currently has no `aria-label`.
+- the concrete regression was an accessibility-contract mismatch: the test required `aria-label="Открыть режим обучения"` and the mobile trigger also needed the responsive width contract; both source-level issues are now fixed on this branch.
 
 Next immediate task:
-1. add the required accessible label to the Learning Mode button without changing lesson content or behavior;
-2. keep the Learning Mode trigger full-width on small screens and compact on larger screens;\n2. run the relevant Learning Mode regression tests;
-3. run the full verification gate;
-4. keep the roadmap synchronized with the result.
+1. add the required accessible label to the Learning Mode button without changing lesson content or behavior — DONE;
+2. keep the Learning Mode trigger full-width on small screens and compact on larger screens — DONE;
+3. run the relevant Learning Mode regression tests;
+4. run the full verification gate;
+5. keep the roadmap synchronized with the result.
 
 Next product/engineering milestone after this fix:
 - semantic review of all 48 lesson infographics so the visual model matches the concept being taught (for example, cycles as cycles, API as request/response, levels as a pyramid, comparisons as comparisons);
