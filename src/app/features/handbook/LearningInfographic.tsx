@@ -578,7 +578,7 @@ function ChecklistDiagram({ visual }: { visual: LessonVisual }) {
         {visual.cards.map((card, index) => (
           <div key={card.title} className={`grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2.5 rounded-2xl border-2 bg-white p-2.5 ${styles.badge}`}>
             <div className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${styles.marker}`}>
-              <PrincipleIllustration index={index} />
+              {isTestingPrinciples ? <PrincipleIllustration index={index} /> : <CardIllustration kind="checklist" index={index} />}
             </div>
             <div className="min-w-0">
               <div className="text-xs font-extrabold text-blue-950 dark:text-black">{card.title}</div>
