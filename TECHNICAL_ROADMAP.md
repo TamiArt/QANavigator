@@ -1603,3 +1603,25 @@ Updated lesson presentation:
 The visual language is shared; the **content/title is topic-specific**.
 
 The module overview remains a separate module-level map and keeps the module's own title.
+
+
+### 7.1.55 Dedicated Scrum context infographic for Module 2 lesson 4 — 2026-10-05
+
+Implemented a dedicated poster-style infographic for **Module 2. Погружение в контекст → lesson 4/12: Scrum**.
+
+Implemented:
+- added the dedicated asset `public/infographics/m2-04-scrum-context.svg`;
+- reproduced the supplied pastel educational poster structure as a single responsive vertical infographic;
+- kept the lesson-level title/header and PDF save control unchanged;
+- switched only `m2-04` to the dedicated poster asset; the other 47 lesson infographics keep the shared semantic SVG system;
+- preserved the existing Scrum lesson source content and curriculum order;
+- added regression coverage for the dedicated asset, its six information blocks and the `m2-04` rendering branch;
+- kept the asset self-contained and dependency-free so it works in the browser and inside the existing client-side PDF capture.
+
+The dedicated poster contains:
+1. what context immersion means;
+2. what must be learned about the product, team, processes and project context;
+3. main information sources;
+4. a step-by-step immersion process;
+5. expected results;
+6. practical tips.
