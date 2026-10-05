@@ -168,10 +168,10 @@
 <text x="870" y="313" class="small">• Роли и ответственность</text><text x="870" y="335" class="small">• Опыт и экспертиза</text><text x="870" y="357" class="small">• Коммуникации в команде</text>
 <rect x="529" y="391" width="250" height="118" rx="15" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
 <use href="#gear" x="543" y="408" width="55" height="55"/><text x="608" y="418" class="h2">Процессы</text>
-<text x="608" y="444" class="small">• Scrum-процессы</text><text x="608" y="466" class="small">• Церемонии (Daily, Sprint и др.)</text><text x="608" y="488" class="small">• Инструменты и правила</text>
+<text x="608" y="444" class="small">• Scrum-процессы</text><text x="608" y="464" class="small">• Церемонии (Daily,</text><text x="608" y="480" class="small">  Sprint и др.)</text><text x="608" y="501" class="small">• Инструменты и правила</text>
 <rect x="793" y="391" width="240" height="118" rx="15" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
 <use href="#document" x="806" y="406" width="50" height="60"/><text x="870" y="418" class="h2">Контекст проекта</text>
-<text x="870" y="444" class="small">• Текущая стадия</text><text x="870" y="466" class="small">• Ограничения (время, ресурсы)</text><text x="870" y="488" class="small">• Риски и зависимости</text>
+<text x="870" y="444" class="small">• Текущая стадия</text><text x="870" y="464" class="small">• Ограничения (время,</text><text x="870" y="480" class="small">  ресурсы)</text><text x="870" y="501" class="small">• Риски и зависимости</text>
 
 <!-- 3 -->
 <rect x="12" y="559" width="555" height="386" rx="20" fill="#fffaf0" stroke="#f0d48a" class="card" filter="url(#shadow)"/>
@@ -182,9 +182,9 @@
 <rect x="155" y="651" width="122" height="270" rx="14" fill="#fff" stroke="#ecd28e" stroke-width="2"/>
 <use href="#chat" x="185" y="671" width="62" height="62"/><text x="168" y="763" class="h2" font-size="15">Коммуникация</text><text x="177" y="783" class="h2" font-size="15">с командой</text><text x="165" y="814" class="small">• Встречи</text><text x="165" y="838" class="small">• Чаты</text><text x="165" y="862" class="small">• Ретроспективы</text>
 <rect x="285" y="651" width="122" height="270" rx="14" fill="#fff" stroke="#ecd28e" stroke-width="2"/>
-<use href="#code" x="316" y="675" width="62" height="62"/><text x="301" y="758" class="h2" font-size="13.5">Код и</text><text x="301" y="777" class="h2" font-size="13.5">репозиторий</text><text x="302" y="814" class="small">• Git</text><text x="302" y="838" class="small">• Code Review</text><text x="302" y="862" class="small">• История изменений</text>
+<use href="#code" x="316" y="675" width="62" height="62"/><text x="301" y="758" class="h2" font-size="13.5">Код и</text><text x="301" y="777" class="h2" font-size="13.5">репозиторий</text><text x="302" y="814" class="small">• Git</text><text x="302" y="838" class="small">• Code Review</text><text x="302" y="858" class="small">• История</text><text x="302" y="874" class="small">  изменений</text>
 <rect x="415" y="651" width="132" height="270" rx="14" fill="#fff" stroke="#ecd28e" stroke-width="2"/>
-<use href="#stakeholder" x="451" y="669" width="62" height="70"/><text x="427" y="763" class="h2" font-size="13.5">Стейкхолдеры</text><text x="427" y="814" class="small">• Владелец продукта</text><text x="427" y="838" class="small">• Заказчики</text><text x="427" y="862" class="small">• Пользователи</text>
+<use href="#stakeholder" x="451" y="669" width="62" height="70"/><text x="427" y="763" class="h2" font-size="13.5">Стейкхолдеры</text><text x="427" y="814" class="small">• Владелец</text><text x="427" y="830" class="small">  продукта</text><text x="427" y="852" class="small">• Заказчики</text><text x="427" y="876" class="small">• Пользователи</text>
 
 <!-- 4 -->
 <rect x="583" y="559" width="470" height="386" rx="20" fill="#eafcff" stroke="#79d9ee" class="card" filter="url(#shadow)"/>
