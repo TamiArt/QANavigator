@@ -473,6 +473,19 @@ function TimelineDiagram({ visual }: { visual: LessonVisual }) {
   );
 }
 
+function PrincipleIllustration({ index }: { index: number }) {
+  const illustrations = [
+    <svg viewBox="0 0 48 48" className="h-9 w-9" aria-hidden="true"><circle cx="24" cy="24" r="19" fill="#E0F2FE" /><circle cx="15" cy="16" r="3" fill="#34D399" /><circle cx="31" cy="15" r="3" fill="#A78BFA" /><circle cx="34" cy="31" r="3" fill="#FBBF24" /><path d="M18 31c3-5 7-7 12-7" fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" /><circle cx="29" cy="29" r="6.5" fill="#fff" stroke="#2563EB" strokeWidth="2.5" /><path d="m34 34 5 5" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" /><circle cx="29" cy="29" r="2.2" fill="#F43F5E" /></svg>,
+    <svg viewBox="0 0 48 48" className="h-9 w-9" aria-hidden="true"><rect x="5" y="8" width="38" height="31" rx="7" fill="#F5F3FF" /><path d="M11 15h26M11 23h26M11 31h26" stroke="#CBD5E1" strokeWidth="2" strokeLinecap="round" /><path d="M17 12v24M25 12v24M33 12v24" stroke="#CBD5E1" strokeWidth="2" /><circle cx="17" cy="15" r="3" fill="#60A5FA" /><circle cx="33" cy="23" r="3" fill="#F59E0B" /><circle cx="25" cy="31" r="3" fill="#34D399" /><path d="M37 11l5 5M42 11l-5 5" stroke="#F43F5E" strokeWidth="2.5" strokeLinecap="round" /></svg>,
+    <svg viewBox="0 0 48 48" className="h-9 w-9" aria-hidden="true"><path d="M8 37h32" stroke="#CBD5E1" strokeWidth="2.5" strokeLinecap="round" /><path d="M10 33V25h8v8M20 33V19h8v14M30 33V12h8v21" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2" /><path d="m13 22 7-5 6 2 10-8" fill="none" stroke="#F43F5E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /><path d="m33 10 3-1-1 3" fill="#F43F5E" /><circle cx="13" cy="22" r="2.5" fill="#34D399" /></svg>,
+    <svg viewBox="0 0 48 48" className="h-9 w-9" aria-hidden="true"><circle cx="24" cy="24" r="18" fill="#ECFDF5" /><circle cx="18" cy="17" r="4" fill="#60A5FA" /><circle cx="28" cy="18" r="5" fill="#A78BFA" /><circle cx="21" cy="28" r="5" fill="#FBBF24" /><circle cx="31" cy="29" r="4" fill="#F43F5E" /><circle cx="25" cy="24" r="3" fill="#2563EB" /><path d="M10 35c5-4 10-5 15-3s9 1 13-3" fill="none" stroke="#0F766E" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="2 3" /></svg>,
+    <svg viewBox="0 0 48 48" className="h-9 w-9" aria-hidden="true"><path d="M19 9h10l-2 7v9.5l7 12.5H14l7-12.5V16z" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2.2" strokeLinejoin="round" /><path d="M18 29h12l3 6H15z" fill="#C4B5FD" /><circle cx="21" cy="23" r="2.3" fill="#34D399" /><circle cx="27" cy="26" r="2.3" fill="#FBBF24" /><path d="M36 12l2 3 3 1-3 1-2 3-1-3-3-1 3-1z" fill="#F43F5E" /></svg>,
+    <svg viewBox="0 0 48 48" className="h-9 w-9" aria-hidden="true"><circle cx="24" cy="24" r="18" fill="#EFF6FF" /><circle cx="14" cy="18" r="5" fill="#60A5FA" /><circle cx="34" cy="18" r="5" fill="#A78BFA" /><circle cx="24" cy="33" r="5" fill="#34D399" /><path d="M18 20l5 9M30 20l-5 9M19 18h10" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" /><circle cx="24" cy="24" r="4" fill="#FBBF24" stroke="#fff" strokeWidth="2" /></svg>,
+    <svg viewBox="0 0 48 48" className="h-9 w-9" aria-hidden="true"><path d="M24 6l16 7v10c0 9-6.5 15-16 19-9.5-4-16-10-16-19V13z" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2.2" /><path d="M16 25l5 5 11-12" fill="none" stroke="#34D399" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" /><path d="M33 10l7 3-4 4" fill="#FBBF24" /><circle cx="12" cy="17" r="3" fill="#F43F5E" /></svg>,
+  ];
+  return illustrations[index] ?? illustrations[0];
+}
+
 function ChecklistDiagram({ visual }: { visual: LessonVisual }) {
   const styles = ACCENT_STYLES[visual.accent];
   const isTestingPrinciples = visual.cards.length === 7 && visual.cards.every((card) => /^\d\. /.test(card.title));
@@ -481,16 +494,13 @@ function ChecklistDiagram({ visual }: { visual: LessonVisual }) {
       {!isTestingPrinciples && <DiagramLabelStrip visual={visual} />}
       <div className={isTestingPrinciples ? "grid gap-2 sm:grid-cols-2" : "space-y-2"}>
         {visual.cards.map((card, index) => (
-          <div key={card.title} className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-2.5 rounded-2xl border-2 bg-white p-2.5 ${styles.badge}`}>
-            <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${styles.marker}`}>
-              <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-            </span>
+          <div key={card.title} className={`grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2.5 rounded-2xl border-2 bg-white p-2.5 ${styles.badge}`}>
+            <div className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${styles.marker}`}>
+              <PrincipleIllustration index={index} />
+            </div>
             <div className="min-w-0">
               <div className="text-xs font-extrabold text-blue-950 dark:text-black">{card.title}</div>
               <p className="mt-1 text-[10px] leading-[1.4] text-slate-700 dark:text-black">{card.text}</p>
-            </div>
-            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border bg-slate-50/70 ${styles.badge}`}>
-              {React.createElement(card.icon ?? visual.icon, { className: "h-6 w-6 text-blue-700 dark:text-black", "aria-hidden": true })}
             </div>
           </div>
         ))}
