@@ -197,10 +197,33 @@ test("Learning Mode has a semantic infographic contract for every lesson in Modu
   }
   assert.match(infographic, /type VisualKind/);
   assert.match(infographic, /accent: Accent/);
-  assert.match(infographic, /Карта модуля/);
-  assert.match(infographic, /Визуальная шпаргалка/);
+  assert.match(infographic, /Инфографика модуля/);
+  assert.match(infographic, /Инфографика/);
+  assert.match(infographic, /Сохранить/);
+  assert.match(infographic, /targetId=\{moduleId\}/);
+  assert.match(infographic, /targetId=\{infographicId\}/);
   assert.match(infographic, /KIND_LABELS/);
   assert.match(infographic, /aria-label=/);
+  assert.match(infographic, /isScrumContextInfographic/);
+  assert.match(infographic, /\/infographics\/m2-04-scrum-context\.svg/);
+});
+
+test("Scrum lesson 4 uses the dedicated context infographic asset", () => {
+  const infographic = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  const asset = fs.readFileSync("public/infographics/m2-04-scrum-context.svg", "utf8");
+  assert.match(infographic, /lesson\.id === "m2-04"/);
+  assert.match(infographic, /alt="Инфографика: Погружение в контекст \(Scrum\)"/);
+  assert.match(asset, /Погружение в контекст/);
+  assert.match(asset, /Что такое погружение/);
+  assert.match(asset, /Что нужно узнать/);
+  assert.match(asset, /Основные источники информации/);
+  assert.match(asset, /Как проходит погружение/);
+  assert.match(asset, /Результат погружения/);
+  assert.match(asset, /Полезные советы/);
+  for (const symbol of ["lightbulb", "target", "team", "gear", "document", "chat", "code", "stakeholder", "search", "brain", "checklist", "star", "clipboard", "calendar", "sprint", "people-laptop"]) {
+    assert.match(asset, new RegExp(`<symbol id="${symbol}"`));
+  }
+  assert.match(asset, /viewBox="0 0 1065 1476"/);
 });
 
 test("Handbook exposes a reachable Learning Mode from the knowledge base", () => {
@@ -218,6 +241,31 @@ test("Learning Mode renders module and lesson infographics", () => {
   assert.match(source, /mode="lesson"/);
 });
 
+test("Lesson infographics expose semantic diagram structure", () => {
+  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  for (const kind of ["FlowDiagram", "TimelineDiagram", "ChecklistDiagram", "CompareDiagram", "NetworkDiagram", "DiagramLabelStrip"]) {
+    assert.match(source, new RegExp(`function ${kind}`));
+  }
+  assert.match(source, /aria-label="Ключевая схема"/);
+  assert.match(source, /function PdfDownloadButton/);
+  assert.match(source, /html2canvas/);
+  assert.match(source, /jsPDF/);
+  assert.match(source, /Понятие/);
+  assert.match(source, /Что важно помнить/);
+});
+
+test("Learning Mode provides direct module and lesson navigation", () => {
+  const source = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
+  assert.match(source, /aria-label="Навигация по модулям и темам"/);
+  assert.match(source, /role="tablist"/);
+  assert.match(source, /aria-selected=\{isActive\}/);
+  assert.match(source, /Перейти к теме/);
+  assert.match(source, /scrollIntoView\(\{ behavior: "smooth", block: "start" \}\)/);
+  assert.match(source, /learning-module-content/);
+  assert.match(source, /learning-lesson-\$\{activeLesson\.id\}/);
+});
+
+
 
 test("Learning Mode remains directly reachable on mobile layouts", () => {
   const source = fs.readFileSync("src/app/features/handbook/HandbookModule.tsx", "utf8");
@@ -228,9 +276,24 @@ test("Learning Mode remains directly reachable on mobile layouts", () => {
 });
 
 
+test("Infographic text contrast contract covers semantic blocks", () => {
+  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  for (const className of [
+    "text-blue-950 dark:text-black",
+    "text-slate-700 dark:text-black",
+    "text-slate-600 dark:text-black",
+    "text-blue-900 dark:text-black",
+    "text-blue-800 dark:text-black",
+  ]) assert.ok(source.includes(className), className);
+});
+
 test("Learning infographics use the illustrated QA poster visual language", () => {
   const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
-  assert.match(source, /Суть за 10 секунд/);
+  assert.match(source, /Ключевая схема/);
+  assert.match(source, /Инфографика модуля/);
+  assert.match(source, /Сохранить/);
+  assert.match(source, /<h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">\{lesson.title\}<\/h4>/);
+  assert.match(source, /p-3 sm:p-4/);
   assert.match(source, /rounded-\[28px\]/);
   assert.match(source, /border-2/);
   assert.match(source, /bg-sky-50/);
@@ -240,10 +303,91 @@ test("Learning infographics use the illustrated QA poster visual language", () =
 
 test("Learning infographics keep the poster hierarchy and per-lesson identity", () => {
   const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
-  assert.match(source, /lessonNumber/);
-  assert.match(source, /text-3xl font-black/);
   assert.match(source, /rotate-\[-0\.35deg\]/);
   assert.match(source, /rotate-\[0\.35deg\]/);
   assert.match(source, /bg-white\/80/);
-  assert.match(source, /h-12 w-12/);
+});
+
+test("Seven testing principles are fully represented in the visual cheat sheet", () => {
+  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  const required = [
+    "1. Тестирование показывает наличие дефектов, но не их отсутствие",
+    "2. Исчерпывающее тестирование недостижимо",
+    "3. Раннее тестирование",
+    "4. Скопление дефектов",
+    "5. Парадокс пестицида",
+    "6. Тестирование зависит от контекста",
+    "7. Заблуждение об отсутствии дефектов",
+  ];
+  for (const principle of required) assert.ok(source.includes(principle), principle);
+  assert.match(source, /function VisualMotif/);
+  assert.match(source, /visual\.kind/);
+  assert.match(source, /7 принципов тестирования/);
+  assert.match(source, /data-pdf-ignore/);
+  assert.match(source, /pdf\.output\("blob"\)/);
+  assert.match(source, /link\.download = "qa-navigator-visual-cheatsheet\.pdf"/);
+  assert.match(source, /link\.click\(\)/);
+  assert.match(source, /URL\.createObjectURL\(blob\)/);
+  assert.match(source, /function PrincipleIllustration/);
+  assert.match(source, /function CardIllustration/);
+  assert.match(source, /CardIllustration kind=\{visual\.kind\}/);
+  assert.match(source, /kind === "flow" \|\| kind === "timeline"/);
+  assert.match(source, /kind === "layers"/);
+  assert.match(source, /kind === "compare"/);
+  assert.match(source, /kind === "network"/);
+  assert.match(source, /kind === "cycle"/);
+  assert.match(source, /kind === "pyramid"/);
+  assert.match(source, /kind="checklist"/);
+  assert.match(source, /fill="#DBEAFE"/);
+  assert.match(source, /stroke="#2563EB"/);
+  assert.match(source, /<svg viewBox="0 0 48 48"/);
+
+  assert.match(source, /fill="#34D399"/);
+  assert.match(source, /fill="#A78BFA"/);
+  assert.match(source, /fill="#F43F5E"/);
+  assert.ok(!source.includes("CheckCircle2 className=\"h-4 w-4\""), "Principle cards must not render checkmarks");
+  assert.ok(!source.includes("визуальная модель темы"), "Legacy visual-model footer must be removed");
+});
+
+
+test("Visual cheat sheets do not invent missing lesson source content", () => {
+  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  assert.match(source, /m2-08[\s\S]*Урок содержит видеоматериал/);
+  assert.match(source, /m2-09[\s\S]*Урок содержит видеоматериал/);
+  assert.match(source, /m2-12[\s\S]*Текстового конспекта для этого урока сейчас нет/);
+});
+
+
+test("m2-05 Sprint infographic follows the semantic poster contract", () => {
+  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  const asset = fs.readFileSync("public/infographics/m2-05-sprint-planning.svg", "utf8");
+  const lesson = fs.readFileSync("src/app/features/handbook/handbook-learning-module2.ts", "utf8");
+
+  assert.match(source, /lesson\.id === "m2-05"/);
+  assert.match(source, /m2-05-sprint-planning\.svg/);
+  assert.match(asset, /viewBox="0 0 1065 1476"/);
+  assert.match(asset, /id="title"/);
+  assert.match(asset, /id="desc"/);
+
+  for (const required of [
+    "Sprint Planning",
+    "Execution",
+    "Review / Demo",
+    "Retrospective",
+    "ЗАЧЕМ?",
+    "ЧТО?",
+    "КАК?",
+    "Acceptance Criteria",
+  ]) {
+    assert.ok(asset.includes(required), required);
+  }
+
+  for (const required of [
+    "фиксированный отрезок времени",
+    "работающий и протестированный инкремент",
+    "тестирование и автоматизацию",
+    "Acceptance Criteria",
+  ]) {
+    assert.ok(lesson.includes(required), required);
+  }
 });

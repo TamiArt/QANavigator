@@ -1,6 +1,6 @@
 import * as React from "react";
 import {
-  AlertTriangle, ArrowDown, ArrowRight, BookOpen, Boxes, Bug,
+  AlertTriangle, ArrowDown, ArrowRight, BookOpen, Boxes, Bug, Download,
   CheckCircle2, ClipboardCheck, Cloud, Code2, Database, FileText, GitBranch,
   Globe, Layers3, ListChecks, Network, PlayCircle, Route, Server, ShieldCheck,
   Target, TestTube2, Users, Workflow, Zap,
@@ -22,6 +22,7 @@ type Accent = "blue" | "lavender" | "mint" | "yellow" | "pink" | "orange";
 type VisualCard = {
   title: string;
   text: string;
+  icon?: React.ComponentType<{ className?: string }>;
 };
 
 type LessonVisual = {
@@ -57,12 +58,15 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "QC", text: "Контроль качества результата продукта." },
     { title: "Testing", text: "Практическое исследование продукта для обнаружения проблем." },
   ], "QA — шире процесса тестирования; Testing — часть работы с качеством."),
-  "m1-03": V("checklist", ["Принципы", "Риски", "Проверка"], ListChecks, "mint", [
-    { title: "Тестирование показывает наличие дефектов", text: "Оно не доказывает их полное отсутствие." },
-    { title: "Исчерпывающий тест невозможен", text: "Выбираем разумный объём проверок и техники тест-дизайна." },
-    { title: "Раннее тестирование", text: "Чем раньше обнаружена проблема, тем дешевле её исправлять." },
-    { title: "Дефекты группируются", text: "Небольшое число областей часто содержит много проблем." },
-  ], "Принципы помогают принимать решения, а не просто заучивать определения."),
+  "m1-03": V("checklist", ["7 принципов тестирования", "Риск", "Раннее тестирование", "Контекст", "Качество"], ListChecks, "mint", [
+    { icon: AlertTriangle, title: "1. Тестирование показывает наличие дефектов, но не их отсутствие", text: "Тесты обнаруживают наличие дефектов, но не доказывают, что дефектов нет. Даже «всё зелёное» ≠ доказательство идеального продукта." },
+    { icon: Boxes, title: "2. Исчерпывающее тестирование недостижимо", text: "Полный перебор входов и условий практически невозможен. Фокусируемся на рисках, приоритетах и техниках тест-дизайна." },
+    { icon: ArrowDown, title: "3. Раннее тестирование", text: "Начинаем тестовые активности как можно раньше: ранняя проверка снижает стоимость исправлений. Shift-Left." },
+    { icon: Bug, title: "4. Скопление дефектов", text: "Небольшое число модулей часто содержит большую часть найденных дефектов. Эти зоны важны для риск-ориентированного тестирования." },
+    { icon: TestTube2, title: "5. Парадокс пестицида", text: "Одинаковые тесты со временем перестают находить новые дефекты. Обновляй и разнообразь набор проверок." },
+    { icon: Network, title: "6. Тестирование зависит от контекста", text: "Нет универсального набора тестов: подход зависит от продукта, рисков, требований, среды и целей." },
+    { icon: ShieldCheck, title: "7. Заблуждение об отсутствии дефектов", text: "Отсутствие найденных дефектов не означает, что продукт полезен или соответствует потребностям. Проверяем и отсутствие дефектов, и пригодность результата." },
+  ], "7 принципов — это карта решений: что проверять, когда начинать, где искать риск и почему «без багов» ещё не означает «качественно»."),
   "m1-04": V("compare", ["Верификация", "Валидация", "Продукт"], CheckCircle2, "yellow", [
     { title: "Верификация", text: "Проверяем, правильно ли создаём продукт по заданным требованиям." },
     { title: "Валидация", text: "Проверяем, подходит ли созданный продукт пользователю и его задаче." },
@@ -151,17 +155,19 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "Что мешало?", text: "Проблемы процесса без поиска виноватых." },
     { title: "Что меняем?", text: "Конкретное улучшение на следующий цикл." },
   ], "Ретроспектива превращает опыт команды в действие."),
-  "m2-08": V("flow", ["Событие", "Обсуждение", "Результат"], PlayCircle, "lavender", [
-    { title: "Событие", text: "Командная встреча или мероприятие Scrum." },
-    { title: "Обсуждение", text: "Понимаем цель, результат и необходимые действия." },
-    { title: "Результат", text: "Фиксируем решение или следующий шаг." },
-  ], "Видео и мероприятия помогают увидеть Scrum не только как набор терминов."),
-  "m2-09": V("compare", ["Waterfall", "Agile", "Scrum", "Kanban"], BookOpen, "yellow", [
-    { title: "Подход", text: "Agile — семейство гибких подходов." },
-    { title: "Процесс", text: "Scrum задаёт роли, события и спринты." },
-    { title: "Поток", text: "Kanban управляет непрерывным потоком и WIP." },
-    { title: "Практика", text: "Выбор зависит от продукта, требований и контекста команды." },
-  ]),
+  "m2-08": V("flow", ["Видео", "Наблюдение", "Конспект", "Закрепление"], PlayCircle, "lavender", [
+    { title: "Видео", text: "Урок содержит видеоматериал, а не текстовый конспект." },
+    { title: "Наблюдение", text: "Смотри на роли, события, артефакты и реальный ход Scrum." },
+    { title: "Конспект", text: "После просмотра выпиши 3–5 ключевых идей своими словами." },
+    { title: "Закрепление", text: "Сверь новые наблюдения с текстовыми темами Scrum в этом модуле." },
+  ], "Для этого урока визуальная шпаргалка не придумывает содержание, которого нет в текстовом источнике."),
+
+  "m2-09": V("compare", ["Видео", "Waterfall", "Agile", "Scrum", "Kanban"], PlayCircle, "yellow", [
+    { title: "Видео", text: "Урок содержит видеоматериал, а не текстовый конспект." },
+    { title: "Смотри на различия", text: "Во время просмотра фиксируй: последовательность, гибкость, роли, поток работы и точки контроля." },
+    { title: "Свяжи с модулем", text: "Сопоставь услышанное с Waterfall, Agile, Scrum и Kanban из текстовых тем." },
+  ], "Инфографика показывает способ работы с видео, не подменяя отсутствующий текст выдуманными фактами."),
+
   "m2-10": V("flow", ["Backlog", "In Progress", "Done"], Route, "blue", [
     { title: "Backlog", text: "Задачи ожидают приоритизации и взятия в работу." },
     { title: "In Progress", text: "Команда выполняет ограниченное число задач." },
@@ -173,84 +179,105 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "Scrumban", text: "Гибрид Scrum и Kanban." },
     { title: "Kanplan", text: "Kanban-поток с регулярным управлением и приоритизацией бэклога." },
   ]),
-  "m2-12": V("compare", ["Стартап", "Продуктовая", "Аутсорсинг", "Enterprise"], Globe, "orange", [
-    { title: "Стартап", text: "Меньше уровней, быстрые изменения и широкий круг задач." },
-    { title: "Продуктовая", text: "Долгосрочное развитие собственного продукта." },
-    { title: "Аутсорсинг", text: "Работа под заказчика и его процесс." },
-    { title: "Enterprise", text: "Большие команды, сложные процессы и зависимости." },
-  ], "Тип компании влияет на процессы, роли, инструменты и контекст QA."),
+  "m2-12": V("network", ["Тип компании", "Контекст", "QA"], Globe, "orange", [
+    { title: "Источник", text: "Текстового конспекта для этого урока сейчас нет." },
+    { title: "Не выдумываем", text: "Инфографика не добавляет определения типов компаний, которых нет в источнике." },
+    { title: "Что закреплять", text: "Используй заголовок темы как точку входа, а содержание добавляй после появления исходного материала." },
+  ], "Визуальная шпаргалка должна отражать источник, а не заполнять пробелы предположениями."),
 
-  "m3-01": V("network", ["Frontend", "API", "Backend"], Network, "blue", [
-    { title: "Frontend", text: "Интерфейс и пользовательское взаимодействие." },
-    { title: "API", text: "Контракт обмена запросами и ответами между компонентами." },
-    { title: "Backend", text: "Серверная логика, данные и бизнес-правила." },
-  ], "QA смотрит не только на экран, но и на взаимодействие компонентов."),
-  "m3-02": V("layers", ["Dev", "Test", "Stage", "Production"], Server, "lavender", [
-    { title: "Dev", text: "Разработка и первичная проверка изменений." },
-    { title: "Test", text: "Выделенная среда для системного тестирования." },
-    { title: "Stage", text: "Среда, близкая к условиям релиза." },
-    { title: "Production", text: "Реальная среда с пользователями." },
-  ], "Окружение определяет контекст и риск проверки."),
-  "m3-03": V("flow", ["UI", "Логика", "API", "Данные", "Результат"], Globe, "mint", [
-    { title: "UI", text: "Действие пользователя запускает сценарий." },
-    { title: "Логика", text: "Frontend обрабатывает состояние и формирует запрос." },
-    { title: "API", text: "Запрос передаётся серверной части." },
-    { title: "Данные", text: "Backend работает с бизнес-логикой и хранилищем." },
-    { title: "Результат", text: "Ответ возвращается в интерфейс." },
-  ]),
-  "m3-04": V("checklist", ["Layout", "Навигация", "Формы", "Состояния", "Ошибки"], ClipboardCheck, "yellow", [
-    { title: "Layout", text: "Размеры, выравнивание, адаптивность и визуальная структура." },
-    { title: "Навигация", text: "Ссылки, меню, переходы, Back/Forward." },
-    { title: "Формы", text: "Ввод, валидация, обязательность и сообщения." },
-    { title: "Состояния", text: "Loading, Empty, Success, Error и disabled-состояния." },
-  ], "GUI проверяют как визуально, так и по поведению."),
-  "m3-05": V("layers", ["Структура", "Элементы", "Атрибуты"], Code2, "blue", [
-    { title: "HTML", text: "Структура страницы и семантические элементы." },
-    { title: "Elements", text: "DOM-дерево позволяет увидеть реальную структуру." },
-    { title: "Атрибуты", text: "id, class, href, aria-* и другие параметры влияют на поведение и доступность." },
-  ], "HTML — каркас интерфейса, который можно исследовать через DevTools."),
-  "m3-06": V("compare", ["Стили", "Сетка", "Адаптивность", "Состояния"], Boxes, "lavender", [
-    { title: "Стили", text: "Цвет, шрифт, размеры, границы и состояния элементов." },
-    { title: "Сетка", text: "Расположение элементов и их взаимное выравнивание." },
-    { title: "Адаптивность", text: "Интерфейс должен корректно работать на разных ширинах." },
-    { title: "Состояния", text: "Hover, focus, active, disabled и ошибки." },
-  ]),
-  "m3-07": V("network", ["Elements", "Console", "Network"], Globe, "orange", [
-    { title: "Elements", text: "DOM, CSS, атрибуты и фактическое состояние элементов." },
-    { title: "Console", text: "JavaScript-ошибки, предупреждения и диагностические сообщения." },
-    { title: "Network", text: "Запросы, методы, статусы, headers, payload и response." },
-    { title: "F12", text: "Быстрый вход в DevTools браузера." },
-  ], "DevTools — основной диагностический инструмент при тестировании web-интерфейса."),
+  "m3-01": V("flow", ["Клик", "Frontend", "API", "Backend", "Ответ", "UI"], Network, "blue", [
+    { title: "Frontend", text: "UI собирает ввод пользователя и показывает ответ сервера: кнопки, формы, меню." },
+    { title: "API", text: "Контракт обмена: Frontend отправляет запрос с данными, Backend возвращает ответ." },
+    { title: "Backend", text: "Обрабатывает данные, безопасность и бизнес-логику; работает с хранилищем." },
+    { title: "QA: где искать", text: "Нет запроса → Frontend; 500/Pending → Backend/инфраструктура; 200, но UI не обновился → Frontend; 400 → запрос/контракт." },
+  ], "Клик → Frontend → API → Backend → ответ → обновление UI. Network помогает быстро определить слой проблемы."),
 
-  "m4-01": V("layers", ["План", "Кейсы", "Чек-лист", "Отчёт"], FileText, "blue", [
-    { title: "План", text: "Что, как, когда и кем тестируем." },
-    { title: "Тест-кейс", text: "Подробная воспроизводимая проверка." },
-    { title: "Чек-лист", text: "Краткий список проверок." },
-    { title: "Отчёт", text: "Результаты и выводы тестирования." },
-  ], "Документация фиксирует цели, процесс и результаты тестирования."),
-  "m4-02": V("flow", ["Прозрачность", "Повторяемость", "Контроль"], ShieldCheck, "mint", [
-    { title: "Прозрачность", text: "Команда понимает, что и как проверяется." },
-    { title: "Повторяемость", text: "Другой QA может воспроизвести проверку." },
-    { title: "Контроль", text: "Можно отслеживать покрытие, результаты и риски." },
-  ]),
-  "m4-03": V("timeline", ["Цели", "Объём", "Подход", "Риски", "Критерии"], ClipboardCheck, "lavender", [
-    { title: "Цели", text: "Зачем выполняется тестирование." },
-    { title: "Объём", text: "Что входит и не входит в проверку." },
-    { title: "Риски", text: "Что может повлиять на качество или сроки." },
-    { title: "Критерии", text: "Условия начала и завершения тестирования." },
-  ], "Test Plan описывает организацию тестирования проекта."),
-  "m4-04": V("flow", ["Предусловия", "Шаги", "Ожидаемый результат", "Факт"], ListChecks, "yellow", [
-    { title: "Предусловия", text: "Что должно быть подготовлено до запуска проверки." },
-    { title: "Шаги", text: "Последовательность действий." },
-    { title: "Ожидаемый результат", text: "Что должно произойти." },
-    { title: "Факт", text: "Что произошло при выполнении." },
-  ], "Test Case делает проверку воспроизводимой и проверяемой."),
-  "m4-05": V("flow", ["Endpoint", "Request", "Server", "Response", "Status"], Network, "blue", [
-    { title: "Endpoint", text: "Адрес и ресурс, к которому обращаемся." },
-    { title: "Request", text: "HTTP-метод, параметры, headers и body." },
-    { title: "Response", text: "Статус, headers и тело ответа." },
-    { title: "Примеры", text: "POST /create → 201 Created; ошибки могут включать 401 и 409 Conflict." },
-  ], "API-кейс проверяет контракт обмена, а не только экран."),
+  "m3-02": V("layers", ["Dev", "QA/Stage", "Integration", "Preprod", "Prod"], Server, "lavender", [
+    { title: "Dev", text: "Разработка, сборка и первичная отладка." },
+    { title: "QA / Stage", text: "Основная проверка QA на выделенном стенде." },
+    { title: "Integration", text: "Проверяем взаимодействие сервисов и модулей." },
+    { title: "Preprod", text: "Финальная репетиция в окружении, максимально близком к Production." },
+    { title: "Production", text: "Рабочая система с реальными пользователями и данными." },
+    { title: "Правило QA", text: "Фиксируй стенд; учитывай различия конфигурации/данных; на Prod действуй особенно осторожно." },
+  ], "Dev → QA/Stage → Integration → Preprod → Prod. Окружение меняет риск и контекст проверки."),
+
+  "m3-03": V("compare", ["UI", "Логика", "UX", "Совместимость", "Figma"], Globe, "mint", [
+    { title: "Внешний вид", text: "UI-элементы, вёрстка, адаптивность, анимации." },
+    { title: "Логика", text: "Формы, валидация, навигация, роутинг и динамические элементы." },
+    { title: "Работоспособность", text: "Браузеры, скорость загрузки и доступность." },
+    { title: "Макет", text: "Сверяем Figma: шрифты, цвета, размеры, отступы и расположение." },
+  ], "Frontend проверяем не только «красиво ли», но и работает ли пользовательский сценарий."),
+
+  "m3-04": V("checklist", ["Элементы", "Состояния", "Визуал", "Функции", "Валидация", "Совместимость", "UX"], ClipboardCheck, "yellow", [
+    { title: "Элементы + состояния", text: "Поля, чекбоксы, radio, кнопки, иконки, ссылки; active/disabled, empty/filled, visible/hidden, hover/focus." },
+    { title: "Визуал", text: "Макет, единообразие, шрифты, отступы и тексты." },
+    { title: "Функции", text: "Кнопки, формы, переключатели и ожидаемое взаимодействие." },
+    { title: "Валидация", text: "Пустой ввод, спецсимволы, формат, длина, допустимые значения и понятные ошибки." },
+    { title: "Совместимость + UX", text: "Браузеры, ОС, разные экраны, загрузка, клавиатура и предупреждения о несохранённых данных." },
+    { title: "Регистрация", text: "Фокус работает; обязательные поля проверяются; повторная отправка не создаёт некорректные дубликаты/состояния." },
+  ], "GUI = визуал + функциональность + валидация + совместимость + UX."),
+
+  "m3-05": V("layers", ["HTML", "DOM", "Attributes", "DevTools"], Code2, "blue", [
+    { title: "HTML", text: "Каркас страницы: заголовки, текст, изображения, формы, кнопки. Браузер строит из него DOM." },
+    { title: "Input", text: "text, password, checkbox, radio, file, submit; HTML5 также email, tel, number, date, url, color, range." },
+    { title: "Button / Form", text: "button: submit/reset/button; form: action/method для отправки данных." },
+    { title: "Атрибуты", text: "required — обязательное поле; hidden — скрытое техническое значение." },
+    { title: "QA", text: "DevTools помогает проверить реальную структуру, атрибуты, семантику и поведение элемента." },
+  ], "HTML = структура. DOM = фактическое дерево. Атрибуты = свойства и поведение."),
+
+  "m3-06": V("layers", ["Внешний вид", "Подключение", "Responsive", "States", "Accessibility"], Boxes, "lavender", [
+    { title: "CSS", text: "Управляет цветами, размерами, отступами, шрифтами и расположением HTML-элементов." },
+    { title: "Подключение", text: "Внешний <link>, внутренний <style> или inline-атрибут style." },
+    { title: "UI-проверки", text: "Макет, шрифты, цвета, отступы, фон, изображения и отсутствие визуальных регрессий." },
+    { title: "Responsive", text: "Проверяем разные ширины, адаптивность и кросс-браузерность." },
+    { title: "States + доступность", text: "Hover, focus и другие состояния; читаемость и доступность; учитываем проблемы загрузки CSS." },
+  ], "CSS = внешний вид и расположение. QA проверяет его влияние на UI, адаптивность, доступность и регрессии."),
+
+  "m3-07": V("network", ["F12", "Elements", "Console", "Network", "HTTP", "Изоляция"], Globe, "orange", [
+    { title: "Открыть", text: "Windows: F12 / Ctrl+Shift+I. macOS: Cmd+Option+I." },
+    { title: "Elements", text: "HTML, DOM, CSS, стили и фактическое состояние элементов." },
+    { title: "Console", text: "JavaScript-ошибки и диагностические сообщения." },
+    { title: "Network", text: "Запросы, ответы, статусы, время и данные; 1xx info, 2xx success, 3xx redirect, 4xx client, 5xx server." },
+    { title: "Локализация", text: "Кнопка не реагирует → Network → Console → Elements (DOM/CSS/перекрытие/pointer-events) → другой браузер/инкогнито." },
+  ], "DevTools — основной диагностический инструмент: Network → Console → Elements → изоляция проблемы."),
+
+  "m4-01": V("layers", ["Стратегия", "План", "Кейс", "RTM", "Данные", "Баг", "Отчёт"], FileText, "blue", [
+    { title: "Что фиксирует", text: "Что и как тестировать, цели, критерии успеха, процесс, ответственность и условия завершения." },
+    { title: "Основные артефакты", text: "Test Strategy, Test Plan, Test Case, Test Scenario, RTM, Test Data, Bug Report, Test Report." },
+    { title: "Стратегия vs План", text: "Стратегия = общий подход «как тестируем вообще»; План = конкретно кто, что, когда, ресурсы." },
+    { title: "Польза", text: "Прозрачность, распределение ответственности, воспроизводимость и контроль критериев успеха." },
+  ], "Документация — карта тестирования: от общего подхода и плана до проверки, дефекта и итогового отчёта."),
+
+  "m4-02": V("flow", ["Что", "Как", "Кто", "Успех", "Когда закончить"], ShieldCheck, "mint", [
+    { title: "Что тестируем?", text: "Фиксируем объект проверки и границы." },
+    { title: "Как тестируем?", text: "Сохраняем договорённости о подходе и процессе." },
+    { title: "Кто отвечает?", text: "Ясно распределяем ответственность между участниками." },
+    { title: "Успех и завершение", text: "Фиксируем критичность дефектов, критерии завершения и условия окончания работ." },
+  ], "Документ превращает договорённости из переписки в воспроизводимый процесс."),
+
+  "m4-03": V("timeline", ["Объект", "Цель", "Стратегия", "Entry/Exit", "Процедуры", "Ресурсы", "Риски"], ClipboardCheck, "lavender", [
+    { title: "Объект + цель", text: "Что тестируем и зачем: например основные функции приложения и защита пользовательских данных." },
+    { title: "Стратегия", text: "Функциональные проверки, совместимость, безопасность и выбранный подход." },
+    { title: "Entry / Exit", text: "Entry: условия старта. Exit: условия завершения, например основные функции проверены и критических дефектов нет." },
+    { title: "Процедуры", text: "Какие сценарии выполняем: создание, редактирование, удаление и другие проверки." },
+    { title: "Ресурсы + среда", text: "Люди, устройства/ОС, симуляторы и тестовое окружение." },
+    { title: "Риски", text: "Что может сорвать качество/сроки и как риск снизить дополнительными проверками." },
+  ], "Test Plan отвечает: что, как, кто, где, когда начинаем и когда заканчиваем тестирование."),
+
+  "m4-04": V("flow", ["Паспорт", "Инструкция", "Результат"], ListChecks, "yellow", [
+    { title: "Паспорт", text: "ID, название, автор, Severity, Priority, тип, актуальность, ручной/авто, связи с задачами и требованиями." },
+    { title: "Инструкция", text: "Preconditions → Steps → описание действия → Expected Result." },
+    { title: "Результат", text: "Actual Result → Passed/Failed/Blocked/Skipped → Postconditions → Attachments → история изменений." },
+    { title: "Зачем", text: "Воспроизводимость, регресс, системное покрытие и меньше риска забыть важный шаг." },
+  ], "Хороший тест-кейс = паспорт + воспроизводимая инструкция + результат выполнения."),
+
+  "m4-05": V("flow", ["Method", "Endpoint", "Request", "Response", "Business"], Network, "blue", [
+    { title: "Что тестируем", text: "REST API, GraphQL, Kafka и другую серверную логику: данные, бизнес-правила, интеграции и ошибки." },
+    { title: "Method + endpoint", text: "Всегда фиксируем HTTP-метод и ресурс: GET /users, POST /users, PUT /users/123." },
+    { title: "Request → Response", text: "Описываем структуру запроса; проверяем ключевые поля, типы и ожидаемый HTTP-статус ответа." },
+    { title: "Business + ошибки", text: "Проверяем бизнес-логику и предсказуемую обработку ошибок; например 401/409." },
+  ], "API-кейс описывает контракт и бизнес-правила, а не только конкретные тестовые значения."),
+
   "m4-06": V("checklist", ["Пункт", "Результат", "Статус"], ListChecks, "mint", [
     { title: "Пункт", text: "Короткая формулировка проверки." },
     { title: "Результат", text: "Что получили при выполнении." },
@@ -267,35 +294,45 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "Evidence", text: "Скриншоты, видео, логи и другие доказательства." },
     { title: "Контекст", text: "Окружение, предусловия, Severity и Priority." },
   ], "Хороший Bug Report должен помочь разработчику быстро понять и воспроизвести проблему."),
-  "m4-09": V("timeline", ["Цели", "Объём", "Результаты", "Риски", "Вывод"], FileText, "lavender", [
-    { title: "Цели и объём", text: "Что хотели проверить и какие области покрыли." },
-    { title: "Результаты", text: "Что прошло, что не прошло и что заблокировано." },
-    { title: "Риски", text: "Какие ограничения или нерешённые проблемы остаются." },
-    { title: "Вывод", text: "Итоговая оценка и рекомендации." },
-  ], "Test Summary Report показывает итог тестирования после выполнения работ."),
-  "m4-10": V("compare", ["Ошибка", "Дефект", "Баг", "Severity", "Priority"], AlertTriangle, "pink", [
-    { title: "Ошибка", text: "Неправильное действие или решение человека." },
-    { title: "Дефект / Bug", text: "Проблема в продукте, приводящая к неправильному поведению." },
-    { title: "Severity", text: "Степень влияния дефекта." },
-    { title: "Priority", text: "Срочность исправления." },
-  ], "Главная граница: существующее поведение не соответствует требованиям → баг; новое поведение → доработка."),
+  "m4-09": V("timeline", ["Цели", "Методы", "Инструменты", "Среда", "Проверки", "Результаты"], FileText, "lavender", [
+    { title: "Шапка отчёта", text: "Проект, дата и ответственные." },
+    { title: "Цели", text: "Что подтверждаем: создание заказов, обновление цен, генерация отчётов." },
+    { title: "Методы + инструменты", text: "Функциональное, API, ручное; Postman, Jira, MySQL Workbench." },
+    { title: "Среда", text: "ОС и браузеры, на которых выполнялись проверки." },
+    { title: "Проверки", text: "Заказ → БД → поставщик → подтверждение; цены → БД → поставщик; отчёт → параметры → БД → генерация → экран." },
+    { title: "Результат", text: "Фиксируем ожидаемый/фактический результат и статус выполнения." },
+  ], "Test Summary Report собирает в одну картину цели, подход, окружение и фактический результат тестирования."),
+
+  "m4-10": V("compare", ["Error", "Defect/Bug", "Severity", "Priority"], AlertTriangle, "pink", [
+    { title: "Error", text: "Неправильное действие или решение человека: требования, дизайн, архитектура, код или тестирование." },
+    { title: "Defect / Bug", text: "Изъян в продукте, из-за которого система ведёт себя не так, как требуется или ожидается." },
+    { title: "Почему возникают", text: "Непонимание требований, архитектура/дизайн, код, пропущенные сценарии, внешняя среда, человеческий фактор." },
+    { title: "Severity vs Priority", text: "Severity = сила влияния на продукт. Priority = срочность исправления. Уровни и правила зависят от команды." },
+  ], "Error → Defect/Bug → наблюдаемое неверное поведение; Severity показывает влияние, Priority — срочность."),
+
   "m4-11": V("cycle", ["New", "Open", "Assigned", "In Progress", "Fixed", "Retest", "Closed"], Workflow, "blue", [
-    { title: "Создание", text: "New → Open → Assigned." },
-    { title: "Исправление", text: "In Progress → Fixed." },
-    { title: "Проверка", text: "Retest подтверждает исправление." },
-    { title: "Завершение", text: "Closed после успешной проверки; при проблеме дефект возвращается в работу." },
-  ], "Bug Life Cycle — это путь дефекта от обнаружения до закрытия."),
+    { title: "Основной путь", text: "New → Open → Assigned → In Progress → Fixed → Ready for Retest → Retesting → Closed." },
+    { title: "Если не исправлено", text: "Reopened возвращает дефект в работу после неуспешного ретеста или повторного воспроизведения." },
+    { title: "Альтернативные исходы", text: "Rejected — невалиден/ожидаемое поведение; Deferred — исправление позже; Duplicate — уже есть основной баг." },
+    { title: "Важно", text: "Набор статусов и переходов зависит от компании: этапы могут объединяться, пропускаться или называться иначе." },
+  ], "Bug Life Cycle отслеживает состояние и ответственность от регистрации до закрытия или альтернативного исхода."),
+
   "m4-12": V("compare", ["Bug", "Feature Request", "Acceptance"], GitBranch, "orange", [
-    { title: "Bug", text: "Существующее поведение не соответствует требованиям." },
-    { title: "Feature Request", text: "Предлагается новое или изменённое поведение." },
-    { title: "Acceptance", text: "Проверяем требования и критерии приёмки." },
-  ], "Ключевой вопрос: «Так должно было работать по требованиям?»"),
-  "m4-13": V("timeline", ["Воспроизвести", "Зафиксировать", "Изолировать", "Передать"], Route, "mint", [
-    { title: "1. Воспроизвести", text: "Проверить стабильность сценария." },
-    { title: "2. Зафиксировать", text: "Собрать шаги, фактический результат и evidence." },
-    { title: "3. Изолировать", text: "Понять, на каком участке возникает проблема." },
-    { title: "4. Передать", text: "Оформить данные так, чтобы команда могла действовать." },
-  ], "Локализация ищет не только симптом, но место и причину проблемы."),
+    { title: "Bug", text: "Непредвиденное поведение существующего функционала; цель — восстановить корректность по спецификации." },
+    { title: "Feature Request", text: "Новая функция, улучшение или изменение продукта; цель — расширить/улучшить возможности." },
+    { title: "Приоритет", text: "Bug — зависит от влияния дефекта; Feature Request — от целей продукта и потребностей пользователей." },
+    { title: "Правило", text: "Не соответствует согласованным требованиям → может быть баг. Нового поведения не было в спецификации → доработка." },
+  ], "Главный вопрос: «Так должно было работать по согласованным требованиям?»"),
+
+  "m4-13": V("flow", ["Заголовок", "Среда", "Шаги", "Ожидание", "Факт", "Evidence", "Severity/Priority"], Route, "mint", [
+    { title: "1. Заголовок", text: "Кратко и точно: что произошло и где." },
+    { title: "2. Окружение + предусловие", text: "ОС, браузер, устройство и версии; состояние, из которого стартуем." },
+    { title: "3. Воспроизведение", text: "Последовательность действий, достаточная для повторения проблемы." },
+    { title: "4. Expected vs Actual", text: "Что должно было произойти и что происходит фактически." },
+    { title: "5. Evidence", text: "Скриншоты, видео, логи и другие доказательства." },
+    { title: "6. Severity + Priority", text: "Насколько сильно влияет и насколько срочно исправлять." },
+  ], "Качественный баг-репорт позволяет быстро понять проблему и воспроизвести её."),
+
   "m4-14": V("compare", ["Pre-release", "Production", "Impact"], Cloud, "yellow", [
     { title: "Pre-release", text: "Баг найден до релиза; часто фиксируется в контексте текущей задачи." },
     { title: "Production", text: "Баг найден после релиза и может затрагивать реальных пользователей." },
@@ -355,187 +392,507 @@ function getVisual(lesson: LearningLesson): LessonVisual {
   ]);
 }
 
+function CardIllustration({ kind, index }: { kind: VisualKind; index: number }) {
+  const palettes = [
+    ["#DBEAFE", "#2563EB", "#34D399"],
+    ["#EDE9FE", "#7C3AED", "#FBBF24"],
+    ["#DCFCE7", "#059669", "#60A5FA"],
+    ["#FEF3C7", "#D97706", "#F43F5E"],
+    ["#FCE7F3", "#DB2777", "#60A5FA"],
+    ["#FFEDD5", "#EA580C", "#A78BFA"],
+  ];
+  const [soft, main, accent] = palettes[index % palettes.length];
+
+  if (kind === "flow" || kind === "timeline") {
+    const count = 3 + (index % 2);
+    return (
+      <svg viewBox="0 0 64 48" className="h-9 w-12" aria-hidden="true">
+        <path d="M8 24h48" stroke="#CBD5E1" strokeWidth="3" strokeLinecap="round" />
+        {Array.from({ length: count }).map((_, i) => {
+          const x = 10 + i * (44 / (count - 1));
+          return <g key={i}><circle cx={x} cy="24" r="6" fill={i === index % count ? accent : soft} stroke={main} strokeWidth="2" /><path d={i < count - 1 ? `M${x + 8} 21l5 3-5 3` : ""} fill="none" stroke={main} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></g>;
+        })}
+      </svg>
+    );
+  }
+
+  if (kind === "layers") {
+    return (
+      <svg viewBox="0 0 64 48" className="h-9 w-12" aria-hidden="true">
+        {[0,1,2,3].map((i) => <rect key={i} x={10 + i * 2} y={7 + i * 9} width={44 - i * 4} height="7" rx="3.5" fill={i === index % 4 ? accent : soft} stroke={main} strokeWidth="1.8" />)}
+      </svg>
+    );
+  }
+
+  if (kind === "compare") {
+    return (
+      <svg viewBox="0 0 64 48" className="h-9 w-12" aria-hidden="true">
+        <rect x="7" y="10" width="21" height="28" rx="6" fill={soft} stroke={main} strokeWidth="2" />
+        <rect x="36" y="10" width="21" height="28" rx="6" fill="#fff" stroke={main} strokeWidth="2" />
+        <path d="M13 18h9M13 25h6M42 18h9M42 25h9" stroke={main} strokeWidth="2.5" strokeLinecap="round" />
+        <circle cx="19" cy="33" r="3" fill={accent} /><circle cx="45" cy="33" r="3" fill={accent} />
+        <path d="M29 24h6" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (kind === "network") {
+    const nodes = [[13,13],[32,8],[51,16],[18,35],[40,39]];
+    return (
+      <svg viewBox="0 0 64 48" className="h-9 w-12" aria-hidden="true">
+        <path d="M13 13L32 8L51 16L40 39L18 35Z M13 13L18 35 M32 8L40 39" fill="none" stroke="#CBD5E1" strokeWidth="2" />
+        {nodes.map(([cx,cy], i) => <circle key={i} cx={cx} cy={cy} r={i === index % nodes.length ? 6 : 4.5} fill={i === index % nodes.length ? accent : soft} stroke={main} strokeWidth="2" />)}
+      </svg>
+    );
+  }
+
+  if (kind === "cycle") {
+    return (
+      <svg viewBox="0 0 64 48" className="h-9 w-12" aria-hidden="true">
+        <path d="M18 35c-8-7-8-18 0-24 8-6 20-6 28 1 6 6 6 16 0 22" fill="none" stroke={main} strokeWidth="3" strokeLinecap="round" />
+        <path d="m43 10 4 2-1 5" fill="none" stroke={accent} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="18" cy="35" r="5" fill={soft} stroke={main} strokeWidth="2" />
+        <circle cx="46" cy="34" r="5" fill={index % 2 ? accent : soft} stroke={main} strokeWidth="2" />
+      </svg>
+    );
+  }
+
+  if (kind === "pyramid") {
+    return (
+      <svg viewBox="0 0 64 48" className="h-9 w-12" aria-hidden="true">
+        <path d="M32 6L54 41H10Z" fill={soft} stroke={main} strokeWidth="2" strokeLinejoin="round" />
+        <path d="M19 32h26M24 24h16M28 16h8" stroke={main} strokeWidth="4" strokeLinecap="round" />
+        <circle cx={index % 2 ? 40 : 24} cy={index % 2 ? 24 : 32} r="3" fill={accent} />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 64 48" className="h-9 w-12" aria-hidden="true">
+      <rect x="9" y="8" width="46" height="32" rx="8" fill={soft} stroke={main} strokeWidth="2" />
+      {[0,1,2].map((i) => <g key={i}><circle cx={18 + i * 13} cy="19" r="4" fill={i === index % 3 ? accent : "#fff"} stroke={main} strokeWidth="2" /><path d={`M${14 + i * 13} 31h${9 + i}`} stroke={main} strokeWidth="2.5" strokeLinecap="round" /></g>)}
+    </svg>
+  );
+}
+
 function Card({ card, index, visual }: { card: VisualCard; index: number; visual: LessonVisual }) {
   const styles = ACCENT_STYLES[visual.accent];
-  const Icon = visual.icon;
   return (
-    <div className={`flex min-h-[104px] flex-col rounded-[18px] border-2 p-3.5 shadow-[2px_3px_0_rgba(30,64,175,0.07)] ${styles.card} ${styles.badge} ${index % 2 === 0 ? "rotate-[-0.3deg]" : "rotate-[0.3deg]"}`}>
+    <div className={`flex min-h-[104px] flex-col rounded-[18px] border-2 p-3.5 shadow-[2px_3px_0_rgba(30,64,175,0.07)] ${styles.card} ${styles.badge} ${index % 2 === 0 ? "rotate-[-0.35deg]" : "rotate-[0.35deg]"}`}>
       <div className="flex items-start gap-2.5">
         <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold ${styles.marker}`}>{index + 1}</span>
         <div className="min-w-0 flex-1">
           <div className="mb-1.5 flex items-center gap-2">
-            <span className={`flex h-7 w-7 items-center justify-center rounded-lg border bg-white/80 ${styles.badge}`}>
-              <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className={`flex h-10 w-12 shrink-0 items-center justify-center rounded-xl border bg-white/80 ${styles.badge}`}>
+              <CardIllustration kind={visual.kind} index={index} />
             </span>
-            <span className="text-xs font-extrabold text-blue-950">{card.title}</span>
+            <span className="text-xs font-extrabold text-blue-950 dark:text-black">{card.title}</span>
           </div>
-          <p className="text-[11px] leading-[1.45] text-slate-700">{card.text}</p>
+          <p className="text-[11px] leading-[1.45] text-slate-700 dark:text-black">{card.text}</p>
         </div>
       </div>
     </div>
   );
 }
 
-function VisualDiagram({ visual }: { visual: LessonVisual }) {
+function DiagramLabelStrip({ visual }: { visual: LessonVisual }) {
   const styles = ACCENT_STYLES[visual.accent];
+  return (
+    <div className="mb-3 flex flex-wrap items-center justify-center gap-1.5" aria-label="Ключевая схема">
+      {visual.labels.map((label, index) => (
+        <React.Fragment key={label}>
+          <span className={`rounded-full border-2 bg-white px-2.5 py-1 text-[10px] font-extrabold text-blue-950 dark:text-black ${styles.badge}`}>
+            {label}
+          </span>
+          {index < visual.labels.length - 1 && (
+            <ArrowRight className="h-3 w-3 text-blue-300" aria-hidden="true" />
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
 
-  if (visual.kind === "pyramid") {
-    return (
-      <div className="flex flex-col items-center gap-2 py-2" aria-label="Пирамида уровней">
+function FlowDiagram({ visual }: { visual: LessonVisual }) {
+  const styles = ACCENT_STYLES[visual.accent];
+  return (
+    <div aria-label="Последовательность процесса">
+      <DiagramLabelStrip visual={visual} />
+      <div className="grid gap-2 sm:grid-cols-3">
         {visual.cards.map((card, index) => (
-          <div
-            key={card.title}
-            className={`flex min-h-14 items-center gap-3 rounded-[18px] border-2 px-3 py-2 ${styles.card} ${styles.badge}`}
-            style={{ width: `${96 - index * 14}%` }}
-          >
-            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold ${styles.marker}`}>{index + 1}</span>
+          <React.Fragment key={card.title}>
+            <Card card={card} index={index} visual={visual} />
+            {index < visual.cards.length - 1 && (
+              <ArrowRight className="hidden self-center justify-self-center text-blue-300 sm:block" aria-hidden="true" />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+      <div className={`mt-3 rounded-xl border-2 border-dashed bg-white/80 px-3 py-2 text-center text-[10px] font-semibold text-blue-900 dark:text-black ${styles.badge}`}>
+        Последовательность показывает, как элементы связаны между собой.
+      </div>
+    </div>
+  );
+}
+
+function TimelineDiagram({ visual }: { visual: LessonVisual }) {
+  const styles = ACCENT_STYLES[visual.accent];
+  return (
+    <div aria-label="Временная последовательность">
+      <DiagramLabelStrip visual={visual} />
+      <div className="relative grid gap-3 md:grid-cols-2">
+        <div className="absolute left-5 top-5 bottom-5 hidden w-0.5 bg-blue-200 md:block" aria-hidden="true" />
+        {visual.cards.map((card, index) => (
+          <div key={card.title} className="relative flex gap-3">
+            <span className={`z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-black ${styles.marker}`}>
+              {index + 1}
+            </span>
+            <Card card={card} index={index} visual={visual} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PrincipleIllustration({ index }: { index: number }) {
+  const illustrations = [
+    <svg viewBox="0 0 48 48" className="h-9 w-9" aria-hidden="true"><circle cx="24" cy="24" r="19" fill="#E0F2FE" /><circle cx="15" cy="16" r="3" fill="#34D399" /><circle cx="31" cy="15" r="3" fill="#A78BFA" /><circle cx="34" cy="31" r="3" fill="#FBBF24" /><path d="M18 31c3-5 7-7 12-7" fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" /><circle cx="29" cy="29" r="6.5" fill="#fff" stroke="#2563EB" strokeWidth="2.5" /><path d="m34 34 5 5" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" /><circle cx="29" cy="29" r="2.2" fill="#F43F5E" /></svg>,
+    <svg viewBox="0 0 48 48" className="h-9 w-9" aria-hidden="true"><rect x="5" y="8" width="38" height="31" rx="7" fill="#F5F3FF" /><path d="M11 15h26M11 23h26M11 31h26" stroke="#CBD5E1" strokeWidth="2" strokeLinecap="round" /><path d="M17 12v24M25 12v24M33 12v24" stroke="#CBD5E1" strokeWidth="2" /><circle cx="17" cy="15" r="3" fill="#60A5FA" /><circle cx="33" cy="23" r="3" fill="#F59E0B" /><circle cx="25" cy="31" r="3" fill="#34D399" /><path d="M37 11l5 5M42 11l-5 5" stroke="#F43F5E" strokeWidth="2.5" strokeLinecap="round" /></svg>,
+    <svg viewBox="0 0 48 48" className="h-9 w-9" aria-hidden="true"><path d="M8 37h32" stroke="#CBD5E1" strokeWidth="2.5" strokeLinecap="round" /><path d="M10 33V25h8v8M20 33V19h8v14M30 33V12h8v21" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2" /><path d="m13 22 7-5 6 2 10-8" fill="none" stroke="#F43F5E" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /><path d="m33 10 3-1-1 3" fill="#F43F5E" /><circle cx="13" cy="22" r="2.5" fill="#34D399" /></svg>,
+    <svg viewBox="0 0 48 48" className="h-9 w-9" aria-hidden="true"><circle cx="24" cy="24" r="18" fill="#ECFDF5" /><circle cx="18" cy="17" r="4" fill="#60A5FA" /><circle cx="28" cy="18" r="5" fill="#A78BFA" /><circle cx="21" cy="28" r="5" fill="#FBBF24" /><circle cx="31" cy="29" r="4" fill="#F43F5E" /><circle cx="25" cy="24" r="3" fill="#2563EB" /><path d="M10 35c5-4 10-5 15-3s9 1 13-3" fill="none" stroke="#0F766E" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="2 3" /></svg>,
+    <svg viewBox="0 0 48 48" className="h-9 w-9" aria-hidden="true"><path d="M19 9h10l-2 7v9.5l7 12.5H14l7-12.5V16z" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2.2" strokeLinejoin="round" /><path d="M18 29h12l3 6H15z" fill="#C4B5FD" /><circle cx="21" cy="23" r="2.3" fill="#34D399" /><circle cx="27" cy="26" r="2.3" fill="#FBBF24" /><path d="M36 12l2 3 3 1-3 1-2 3-1-3-3-1 3-1z" fill="#F43F5E" /></svg>,
+    <svg viewBox="0 0 48 48" className="h-9 w-9" aria-hidden="true"><circle cx="24" cy="24" r="18" fill="#EFF6FF" /><circle cx="14" cy="18" r="5" fill="#60A5FA" /><circle cx="34" cy="18" r="5" fill="#A78BFA" /><circle cx="24" cy="33" r="5" fill="#34D399" /><path d="M18 20l5 9M30 20l-5 9M19 18h10" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" /><circle cx="24" cy="24" r="4" fill="#FBBF24" stroke="#fff" strokeWidth="2" /></svg>,
+    <svg viewBox="0 0 48 48" className="h-9 w-9" aria-hidden="true"><path d="M24 6l16 7v10c0 9-6.5 15-16 19-9.5-4-16-10-16-19V13z" fill="#DBEAFE" stroke="#2563EB" strokeWidth="2.2" /><path d="M16 25l5 5 11-12" fill="none" stroke="#34D399" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" /><path d="M33 10l7 3-4 4" fill="#FBBF24" /><circle cx="12" cy="17" r="3" fill="#F43F5E" /></svg>,
+  ];
+  return illustrations[index] ?? illustrations[0];
+}
+
+function ChecklistDiagram({ visual }: { visual: LessonVisual }) {
+  const styles = ACCENT_STYLES[visual.accent];
+  const isTestingPrinciples = visual.cards.length === 7 && visual.cards.every((card) => /^\d\. /.test(card.title));
+  return (
+    <div aria-label="Чек-лист ключевых проверок">
+      {!isTestingPrinciples && <DiagramLabelStrip visual={visual} />}
+      <div className={isTestingPrinciples ? "grid gap-2 sm:grid-cols-2" : "space-y-2"}>
+        {visual.cards.map((card, index) => (
+          <div key={card.title} className={`grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2.5 rounded-2xl border-2 bg-white p-2.5 ${styles.badge}`}>
+            <div className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${styles.marker}`}>
+              {isTestingPrinciples ? <PrincipleIllustration index={index} /> : <CardIllustration kind="checklist" index={index} />}
+            </div>
             <div className="min-w-0">
-              <div className="text-xs font-extrabold text-blue-950">{card.title}</div>
-              <div className="text-[10px] leading-4 text-slate-600">{card.text}</div>
+              <div className="text-xs font-extrabold text-blue-950 dark:text-black">{card.title}</div>
+              <p className="mt-1 text-[10px] leading-[1.4] text-slate-700 dark:text-black">{card.text}</p>
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function CompareDiagram({ visual }: { visual: LessonVisual }) {
+  const styles = ACCENT_STYLES[visual.accent];
+  return (
+    <div aria-label="Сравнительная таблица понятий">
+      <DiagramLabelStrip visual={visual} />
+      <div className="overflow-hidden rounded-2xl border-2 border-blue-100 bg-white">
+        <div className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] border-b-2 border-blue-100 bg-sky-50/60 px-3 py-2 text-[10px] font-extrabold uppercase tracking-wide text-blue-900 dark:text-black">
+          <span>Понятие</span>
+          <span>Что важно помнить</span>
+        </div>
+        {visual.cards.map((card, index) => (
+          <div key={card.title} className={`grid grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] gap-2 border-b border-blue-50 px-3 py-3 last:border-b-0 ${index % 2 ? "bg-violet-50/30" : "bg-white"}`}>
+            <div className="flex items-start gap-2">
+              <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-black ${styles.marker}`}>{index + 1}</span>
+              <span className="text-[11px] font-extrabold leading-4 text-blue-950 dark:text-black">{card.title}</span>
+            </div>
+            <p className="text-[11px] leading-[1.45] text-slate-700 dark:text-black">{card.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function NetworkDiagram({ visual }: { visual: LessonVisual }) {
+  const styles = ACCENT_STYLES[visual.accent];
+  return (
+    <div aria-label="Карта взаимосвязанных понятий">
+      <DiagramLabelStrip visual={visual} />
+      <div className="relative grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {visual.cards.map((card, index) => (
+          <div key={card.title} className="relative">
+            <Card card={card} index={index} visual={visual} />
+            {index < visual.cards.length - 1 && (
+              <span className={`absolute -right-1 top-1/2 hidden h-2 w-2 -translate-y-1/2 rounded-full border-2 bg-white lg:block ${styles.badge}`} aria-hidden="true" />
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 flex flex-wrap justify-center gap-1.5">
+        {visual.labels.slice(0, 6).map((label) => (
+          <span key={label} className="rounded-lg bg-slate-50 px-2 py-1 text-[9px] font-semibold text-slate-600 dark:text-black">{label}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function VisualMotif({ visual }: { visual: LessonVisual }) {
+  const styles = ACCENT_STYLES[visual.accent];
+  const symbols = {
+    flow: ["→", "→", "→"],
+    layers: ["▰", "▰", "▰"],
+    cycle: ["↻", "↻", "↻"],
+    compare: ["≠", "⇄", "≠"],
+    checklist: ["✓", "✓", "✓"],
+    network: ["●", "↔", "●"],
+    timeline: ["1", "2", "3"],
+    pyramid: ["▲", "◆", "■"],
+  }[visual.kind];
+  return (
+    <div className="mb-3 flex items-center justify-center gap-1.5" aria-hidden="true">
+      {symbols.map((symbol, index) => (
+        <React.Fragment key={index}>
+          <span className={`flex h-7 min-w-7 items-center justify-center rounded-full border-2 bg-white px-1 text-[10px] font-black ${styles.badge} text-blue-700 dark:text-black`}>
+            {symbol}
+          </span>
+          {index < symbols.length - 1 && (
+            <span className="text-[10px] font-black text-blue-300">•</span>
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
+function VisualDiagram({ visual }: { visual: LessonVisual }) {
+  if (visual.kind === "pyramid") {
+    const styles = ACCENT_STYLES[visual.accent];
+    return (
+      <div aria-label="Пирамида уровней">
+        <DiagramLabelStrip visual={visual} />
+        <div className="flex flex-col items-center gap-2 py-2">
+          {visual.cards.map((card, index) => (
+            <div
+              key={card.title}
+              className={`flex min-h-14 items-center gap-3 rounded-[18px] border-2 px-3 py-2 ${styles.card} ${styles.badge}`}
+              style={{ width: `${96 - index * 14}%` }}
+            >
+              <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold ${styles.marker}`}>{index + 1}</span>
+              <div className="min-w-0">
+                <div className="text-xs font-extrabold text-blue-950 dark:text-black">{card.title}</div>
+                <div className="text-[10px] leading-4 text-slate-600 dark:text-black">{card.text}</div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   if (visual.kind === "cycle") {
     return (
-      <div className="relative grid gap-2 sm:grid-cols-2 lg:grid-cols-3" aria-label="Циклическая схема">
-        {visual.cards.map((card, index) => (
-          <React.Fragment key={card.title}>
-            <Card card={card} index={index} visual={visual} />
-            {index < visual.cards.length - 1 && (
-              <ArrowRight className="hidden self-center justify-self-center text-blue-300 lg:block" aria-hidden="true" />
-            )}
-          </React.Fragment>
-        ))}
-        <div className="pointer-events-none absolute inset-x-10 bottom-[-6px] hidden border-b-2 border-dashed border-blue-200 lg:block" />
+      <div aria-label="Циклическая схема">
+        <DiagramLabelStrip visual={visual} />
+        <div className="relative grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {visual.cards.map((card, index) => (
+            <div key={card.title} className="relative">
+              <Card card={card} index={index} visual={visual} />
+              {index < visual.cards.length - 1 && (
+                <ArrowRight className="absolute -right-3 top-1/2 hidden -translate-y-1/2 text-blue-300 lg:block" aria-hidden="true" />
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="mx-auto mt-3 flex w-fit items-center gap-2 rounded-full border-2 border-dashed border-blue-200 bg-white px-3 py-1.5 text-[10px] font-bold text-blue-800 dark:text-black">
+          ↻ цикл повторяется
+        </div>
       </div>
     );
   }
 
-  if (visual.kind === "compare") {
-    return (
-      <div className="grid gap-3 sm:grid-cols-2" aria-label="Сравнительная схема">
-        {visual.cards.map((card, index) => <Card key={card.title} card={card} index={index} visual={visual} />)}
-      </div>
-    );
-  }
+  if (visual.kind === "flow") return <FlowDiagram visual={visual} />;
+  if (visual.kind === "timeline") return <TimelineDiagram visual={visual} />;
+  if (visual.kind === "checklist") return <ChecklistDiagram visual={visual} />;
+  if (visual.kind === "compare") return <CompareDiagram visual={visual} />;
+  if (visual.kind === "network") return <NetworkDiagram visual={visual} />;
 
   if (visual.kind === "layers") {
+    const styles = ACCENT_STYLES[visual.accent];
     return (
-      <div className="space-y-2.5" aria-label="Слои модели">
-        {visual.cards.map((card, index) => (
-          <div key={card.title} className={`flex items-start gap-3 rounded-[18px] border-2 p-3.5 ${styles.card} ${styles.badge}`}>
-            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold ${styles.marker}`}>{index + 1}</span>
-            <div className="min-w-0">
-              <div className="text-xs font-extrabold text-blue-950">{card.title}</div>
-              <div className="mt-1 text-[11px] leading-[1.45] text-slate-700">{card.text}</div>
+      <div aria-label="Слои модели">
+        <DiagramLabelStrip visual={visual} />
+        <div className="space-y-2.5">
+          {visual.cards.map((card, index) => (
+            <div key={card.title} className={`flex items-start gap-3 rounded-[18px] border-2 p-3.5 ${styles.card} ${styles.badge}`}>
+              <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold ${styles.marker}`}>{index + 1}</span>
+              <div className="min-w-0">
+                <div className="text-xs font-extrabold text-blue-950 dark:text-black">{card.title}</div>
+                <div className="mt-1 text-[11px] leading-[1.45] text-slate-700 dark:text-black">{card.text}</div>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     );
   }
 
-  const columns = visual.cards.length > 4 ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 sm:grid-cols-2";
   return (
-    <div className={`grid gap-3 ${columns}`} aria-label={KIND_LABELS[visual.kind]}>
-      {visual.cards.map((card, index) => <Card key={card.title} card={card} index={index} visual={visual} />)}
+    <div aria-label={KIND_LABELS[visual.kind]}>
+      <DiagramLabelStrip visual={visual} />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {visual.cards.map((card, index) => <Card key={card.title} card={card} index={index} visual={visual} />)}
+      </div>
     </div>
   );
 }
+function PdfDownloadButton({ targetId }: { targetId: string }) {
+  const [isGenerating, setIsGenerating] = React.useState(false);
 
+  const downloadPdf = async () => {
+    const target = document.getElementById(targetId);
+    if (!target || isGenerating) return;
+    setIsGenerating(true);
+    try {
+      const [{ jsPDF }, html2canvasModule] = await Promise.all([
+        import("jspdf"),
+        import("html2canvas"),
+      ]);
+      const canvas = await html2canvasModule.default(target, {
+        backgroundColor: "#ffffff",
+        scale: Math.min(2, window.devicePixelRatio || 1),
+        useCORS: true,
+        ignoreElements: (element) => element.hasAttribute("data-pdf-ignore"),
+      });
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imageWidth = pageWidth;
+      const imageHeight = (canvas.height * imageWidth) / canvas.width;
+      const image = canvas.toDataURL("image/png", 1);
+      if (imageHeight <= pageHeight) {
+        pdf.addImage(image, "PNG", 0, 0, imageWidth, imageHeight);
+      } else {
+        let sourceY = 0;
+        const pagePixelHeight = Math.floor((pageHeight / imageWidth) * canvas.width);
+        let pageIndex = 0;
+        while (sourceY < canvas.height) {
+          const sliceHeight = Math.min(pagePixelHeight, canvas.height - sourceY);
+          const pageCanvas = document.createElement("canvas");
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = sliceHeight;
+          pageCanvas.getContext("2d")?.drawImage(canvas, 0, sourceY, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
+          if (pageIndex > 0) pdf.addPage();
+          const sliceMmHeight = (sliceHeight * imageWidth) / canvas.width;
+          pdf.addImage(pageCanvas.toDataURL("image/png", 1), "PNG", 0, 0, imageWidth, sliceMmHeight);
+          sourceY += sliceHeight;
+          pageIndex += 1;
+        }
+      }
+      const blob = pdf.output("blob");
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = "qa-navigator-visual-cheatsheet.pdf";
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 0);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      data-pdf-ignore
+      onClick={downloadPdf}
+      disabled={isGenerating}
+      aria-label="Сохранить инфографику в PDF"
+      title="Сохранить инфографику в PDF"
+      className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-2.5 text-[10px] font-bold text-blue-800 shadow-sm transition hover:bg-blue-50 disabled:cursor-wait disabled:opacity-60"
+    >
+      <Download className="h-3.5 w-3.5" aria-hidden="true" />
+      <span>{isGenerating ? "Сохранение…" : "Сохранить"}</span>
+    </button>
+  );
+}
 function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
   const visual = getVisual(lesson);
-  const Icon = visual.icon;
-  const styles = ACCENT_STYLES[visual.accent];
-  const lessonNumber = lesson.id.match(/-(\d+)$/)?.[1] ?? "01";
+  const infographicId = `learning-infographic-${lesson.id}`;
+  const isScrumContextInfographic = lesson.id === "m2-04";
+  const isSprintPlanningInfographic = lesson.id === "m2-05";
 
   return (
     <section
+      id={infographicId}
       className="overflow-hidden rounded-[28px] border-2 border-blue-100 bg-white shadow-[0_8px_30px_rgba(30,64,175,0.08)]"
       aria-label={`Инфографика урока: ${lesson.title}`}
     >
-      <div className={`border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-5 sm:px-6 ${styles.card}`}>
-        <div className="relative flex items-start gap-3 sm:gap-4">
-          <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-blue-200 bg-white text-3xl font-black shadow-[3px_4px_0_rgba(30,64,175,0.12)] ${styles.marker}`}>
-            {lessonNumber}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="mb-1.5 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-blue-700 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white">Визуальная шпаргалка</span>
-              <span className={`rounded-full border bg-white/80 px-2.5 py-1 text-[10px] font-bold text-blue-800 ${styles.badge}`}>{KIND_LABELS[visual.kind]}</span>
-            </div>
-            <h4 className="text-base font-extrabold leading-6 text-blue-950 sm:text-lg">{lesson.title}</h4>
-            <div className="mt-2 flex items-center gap-2">
-              <span className={`h-1.5 w-10 rounded-full ${styles.marker}`} />
-              <span className="h-1.5 w-2 rounded-full bg-blue-200" />
-              <span className="h-1.5 w-2 rounded-full bg-violet-200" />
-            </div>
-          </div>
-          <div className={`hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 bg-white shadow-[2px_3px_0_rgba(30,64,175,0.08)] sm:flex ${styles.badge}`}>
-            <Icon className="h-6 w-6 text-blue-700" aria-hidden="true" />
-          </div>
-        </div>
+      <div className="flex items-center justify-between gap-3 border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-3 sm:px-5">
+        <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{lesson.title}</h4>
+        <PdfDownloadButton targetId={infographicId} />
       </div>
 
-      <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-4 sm:p-6">
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <span className="rounded-full bg-sky-100 px-3 py-1 text-[10px] font-extrabold text-blue-800">Суть за 10 секунд</span>
-          <span className="text-[10px] font-semibold text-slate-400">смотри на структуру →</span>
+      {isScrumContextInfographic || isSprintPlanningInfographic ? (
+        <div className="bg-white p-2 sm:p-4">
+          <img
+            src={isScrumContextInfographic
+              ? "/infographics/m2-04-scrum-context.svg"
+              : "/infographics/m2-05-sprint-planning.svg"}
+            alt="Инфографика: Погружение в контекст (Scrum)"
+            className="mx-auto block h-auto w-full max-w-[1065px]"
+          />
         </div>
-        <VisualDiagram visual={visual} />
-        {visual.callout && (
-          <div className="mt-4 flex items-start gap-2.5 rounded-[18px] border-2 border-blue-100 bg-white/90 px-3.5 py-3 shadow-[1px_2px_0_rgba(30,64,175,0.05)]">
-            <Zap className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" aria-hidden="true" />
-            <p className="text-[11px] font-semibold leading-[1.45] text-blue-950">{visual.callout}</p>
-          </div>
-        )}
-        <div className="mt-4 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-[0.08em] text-blue-400">
-          <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
-          визуальная модель темы
+      ) : (
+        <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:p-4">
+          <VisualDiagram visual={visual} />
+          {visual.callout && (
+            <div className="mt-4 flex items-start gap-2.5 rounded-[18px] border-2 border-blue-100 bg-white/90 px-3.5 py-3 shadow-[1px_2px_0_rgba(30,64,175,0.05)]">
+              <Zap className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" aria-hidden="true" />
+              <p className="text-[11px] font-semibold leading-[1.45] text-blue-950 dark:text-black">{visual.callout}</p>
+            </div>
+          )}
         </div>
-      </div>
+      )}
     </section>
   );
 }
-
 function ModuleInfographic({ module }: { module: LearningModule }) {
+  const moduleId = `learning-module-infographic-${module.id}`;
   return (
-    <section className="overflow-hidden rounded-[28px] border-2 border-blue-100 bg-white shadow-[0_8px_30px_rgba(30,64,175,0.08)]" aria-label={`Инфографика: ${module.title}`}>
-      <div className="border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-5 sm:px-6">
-        <div className="flex items-start gap-3">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-blue-200 bg-white text-blue-700 shadow-[2px_3px_0_rgba(30,64,175,0.12)]">
-            <BookOpen className="h-7 w-7" aria-hidden="true" />
+    <section id={moduleId} className="overflow-hidden rounded-[28px] border-2 border-blue-100 bg-white shadow-[0_8px_30px_rgba(30,64,175,0.08)]" aria-label={`Инфографика модуля: ${module.title}`}>
+      <div className="border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-4 sm:px-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 border-blue-200 bg-white text-blue-800 shadow-[2px_3px_0_rgba(30,64,175,0.10)]"><BookOpen className="h-5 w-5" aria-hidden="true" /></div>
+          <div className="min-w-0 flex-1">
+            <span className="mb-1 inline-flex rounded-full bg-blue-700 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] text-white">Инфографика модуля</span>
+            <h3 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{module.title}</h3>
           </div>
-          <div className="min-w-0">
-            <div className="rounded-full bg-blue-700 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white">Карта модуля</div>
-            <h3 className="mt-1 text-lg font-extrabold leading-6 text-blue-950">{module.title}</h3>
-          </div>
+          <PdfDownloadButton targetId={moduleId} />
         </div>
       </div>
-      <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-4 sm:p-6">
+      <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:p-5">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <span className="rounded-full bg-sky-100 px-3 py-1 text-[10px] font-extrabold text-blue-800 dark:text-black">Карта тем</span>
+          <span className="text-[10px] font-semibold text-slate-400 dark:text-black">темы → практика → закрепление</span>
+        </div>
         <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {module.lessons.map((lesson, index) => {
             const visual = getVisual(lesson);
             const styles = ACCENT_STYLES[visual.accent];
             return (
               <li key={lesson.id} className={`flex min-w-0 items-start gap-2.5 rounded-[18px] border-2 p-3 shadow-[2px_3px_0_rgba(30,64,175,0.06)] ${styles.card} ${styles.badge}`}>
-                <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${styles.marker}`}>
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <span className="min-w-0 pt-0.5 text-xs font-semibold leading-4 text-foreground">{lesson.title}</span>
+                <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${styles.marker}`}>{String(index + 1).padStart(2, "0")}</span>
+                <span className="min-w-0 pt-0.5 text-xs font-semibold leading-4 text-foreground dark:text-black">{lesson.title}</span>
               </li>
             );
           })}
         </ol>
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-xl border border-dashed border-border bg-muted/20 px-3 py-2 text-[11px] font-medium text-muted-foreground">
-          <span>01 Понять</span><ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-          <span>02 Применить</span><ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-          <span>03 Закрепить</span>
-        </div>
       </div>
     </section>
   );
@@ -546,7 +903,9 @@ export function LearningInfographic(
     | { mode: "lesson"; lesson: LearningLesson }
     | { mode: "module"; module: LearningModule },
 ) {
-  return props.mode === "module"
-    ? <ModuleInfographic module={props.module} />
-    : <LessonInfographic lesson={props.lesson} />;
+  if (props.mode === "lesson") {
+    return <LessonInfographic lesson={props.lesson} />;
+  }
+
+  return <ModuleInfographic module={props.module} />;
 }

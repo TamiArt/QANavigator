@@ -86,12 +86,12 @@ Completed:
 - PR #14 handbook hierarchy refactor merged into `main`.
 
 Current development branch:
-`fix/roadmap-learning-mode-accessibility`
+`feat/semantic-learning-infographics`
 
 Current active milestone:
-- synchronize roadmap with repository state;
-- fix the Learning Mode mobile accessibility regression;
-- then continue production hardening and semantic infographic refinement.
+- continue Learning Mode production hardening;
+- provide direct navigation from the module/lesson navigator to the selected learning content;
+- continue semantic infographic refinement without changing lesson source content.
 
 Verification baseline:
 - repository contains focused regression tests for architecture, storage, project context, handbook hierarchy and Learning Mode;
@@ -1426,3 +1426,314 @@ Next:
 - inspect the rendered Learning Mode posters for visual consistency at mobile and desktop widths;
 - fix only concrete visual/semantic defects found during verification;
 - then continue production hardening.
+
+
+### 7.1.44 Learning Mode direct navigation — 2026-10-05
+
+Implemented on `feat/semantic-learning-infographics`:
+
+- added a persistent in-page "Быстрая навигация" panel for Learning Mode;
+- module tabs switch directly between all four learning modules;
+- lesson number buttons switch directly to any lesson in the active module;
+- selecting a lesson smoothly scrolls the learner to the lesson content;
+- the active lesson and completed lessons have distinct navigation states;
+- navigation exposes semantic labels and ARIA tab/current-state information;
+- module content and lesson content receive stable IDs for direct in-page targeting;
+- added regression coverage for the navigation contract in `scripts/handbook-learning.test.mjs`;
+- existing lesson content, IDs and curriculum order remain unchanged.
+
+Next:
+- run focused Learning Mode tests and full verification;
+- inspect the semantic infographic rendering on mobile and desktop layouts;
+- continue production hardening based on concrete verification results.
+
+
+
+### 7.1.47 Dark-theme infographic text contrast — 2026-10-05
+
+- corrected text contrast inside Learning Mode infographic cards and semantic diagram blocks for dark theme;
+- retained the pastel card backgrounds and existing infographic structure;
+- dark-theme text now explicitly switches to black for block titles and explanatory text where the dark theme previously left low-contrast slate/blue text;
+- lesson source content and visual metadata were not changed.
+
+### 7.1.46 Poster card rotation contract — 2026-10-05
+
+- normalized infographic `Card` rotation from `±0.3deg` to the required `±0.35deg` poster hierarchy values;
+- preserved the existing card layout, content and visual semantics; this is a presentation-only correction;
+- implementation committed on `feat/semantic-learning-infographics`.
+
+### 7.1.45 Semantic infographic rendering — 2026-10-05
+
+Refined the Learning Mode infographic renderer so the declared visual model changes the actual information architecture instead of only changing a label:
+
+- flow topics now use explicit directional step structure;
+- timeline topics use an ordered vertical progression;
+- checklist topics use actionable check markers;
+- comparison topics use a compact two-column comparison table;
+- network topics use a relationship-oriented concept map;
+- cycle topics show directional progression plus an explicit repeat-cycle marker;
+- pyramid topics preserve hierarchical width and level order;
+- layer topics preserve stacked architectural hierarchy;
+- all visual models now expose the topic's declared key labels as a compact semantic legend;
+- the visual language remains a premium educational poster: white base, pastel accents, dark-blue typography, rounded modular cards, compact information density and flat-vector UI;
+- lesson source text and curriculum data are unchanged.
+
+This block specifically addresses the requirement that the infographic must explain the lesson's meaning visually rather than act as decorative cards.
+
+Next:
+- verify all Learning Mode tests and TypeScript/build checks;
+- inspect rendered posters for concrete overflow, density or semantic mismatches;
+- correct individual lesson visual metadata where the diagram does not faithfully represent the source lesson.
+
+
+### 7.1.48 Infographic content-density and visual-memory hardening — 2026-10-05
+
+- rebuilt the Module 1 “Принципы тестирования” visual cheat sheet to explicitly represent all 7 testing principles in their canonical Russian names in compact, exam-friendly cards;
+- each principle now includes its practical memory cue: what the principle means and what decision it changes for a tester;
+- added semantic decorative motifs that visually reinforce the diagram type: flow, layers, cycle, comparison, checklist, network, timeline and pyramid;
+- corrected empty Module 2 video/placeholder lessons so their infographics do not invent source facts that are absent from the lesson text;
+- strengthened dark-theme contrast for infographic and module-map text;
+- added regression coverage for all seven principles, decorative motif rendering, missing-source-content protection and dark-theme text contrast;
+- lesson source content, lesson IDs and curriculum order remain unchanged.
+
+Next:
+- continue the content-density audit across all 48 lesson infographics, comparing every card and label against its source lesson;
+- expand compact visual summaries where source concepts, examples, comparisons, metrics or decision rules are still missing;
+- keep each infographic presentation-only and optimized for memorization rather than reproducing the lesson verbatim.
+
+
+### 7.1.49 Cross-module infographic content audit — 2026-10-05
+
+- expanded compact visual summaries for Module 3 frontend lessons so the infographics retain the source's architecture flow, environment chain, GUI checks, HTML/CSS essentials and DevTools diagnostic algorithm;
+- expanded key Module 4 documentation/defect infographics with source-backed structure, criteria, fields, statuses, workflows and decision rules;
+- preserved examples and concrete terms where they materially improve memorization;
+- avoided inventing educational facts for lessons whose source content is empty;
+- retained the premium poster model: semantic diagram + compact cards + visual-memory motif + concise takeaway;
+- all lesson source text, IDs and curriculum order remain unchanged.
+
+Quality rule for the next audit:
+**source text → compressed facts → visual relationship → memory cue**. If a source concept is not represented by one of these layers, the infographic is not considered complete.
+
+### 7.1.50 Compact seven-principles infographic + PDF export — 2026-10-05
+
+- reduced the Module 1 “Принципы тестирования” infographic header to the single title **«7 принципов тестирования»** plus a compact PDF action;
+- removed the secondary topic/model labels from this cheat sheet so the seven principles start immediately after the title;
+- tightened the seven-principles layout into a compact two-column card grid on larger screens while preserving mobile stacking;
+- assigned a small principle-specific icon to every principle so the graphic cue matches its meaning instead of repeating one generic icon;
+- added client-side PDF export for lesson visual cheat sheets using html2canvas + jsPDF, with automatic A4 fitting and multi-page fallback;
+- PDF controls are excluded from the captured artwork;
+- removed the legacy **«визуальная модель темы»** footer;
+- added regression coverage for the compact header, per-principle icon contract and PDF export path.
+
+Validation target:
+- focused test:handbook-learning passes;
+- TypeScript and production build pass;
+- PDF export is browser-side and requires no paid API/service.
+
+Next:
+- verify the rendered seven-principles poster at mobile and desktop widths;
+- verify the generated PDF visually in-browser;
+- continue only with concrete defects found during verification.
+
+### 7.1.51 Semantic vector illustrations for seven testing principles — 2026-10-05
+
+- replaced the seven green check markers with dedicated semantic vector mini-illustrations in the same visual position;
+- removed the checkmark glyphs completely from the seven principle cards;
+- created seven different inline SVG compositions so each principle has its own visual metaphor: defect discovery, finite coverage, early detection, defect clustering, pesticide effect, contextual relationships and quality-vs-usefulness;
+- kept the illustrations compact, flat and multi-color to preserve the premium educational poster language without adding external image assets or paid services;
+- tightened each principle card to a two-zone composition: illustration + compressed explanation;
+- extended regression coverage to lock the dedicated SVG illustration contract and prevent the old checkmark/icon treatment from returning.
+
+Next:
+- run focused handbook-learning tests plus TypeScript/build verification;
+- inspect the rendered poster at mobile and desktop widths and adjust only evidence-based visual defects.
+
+
+### 7.1.52 Vector visual language extended to all infographic cards — 2026-10-05
+
+- replaced the generic Lucide glyph treatment in regular infographic cards with compact semantic SVG mini-illustrations;
+- illustrations now follow the declared diagram type: flow/timeline, layers, compare, network, cycle, pyramid and checklist each use a distinct visual grammar;
+- preserved compact card density while giving the illustration a dedicated visual zone beside the card title;
+- applied the same illustration treatment to non-principle checklist cards, removing generic checkmark-style decoration from the learning poster;
+- used inline multi-color flat SVG only, avoiding external image dependencies and keeping PDF export self-contained;
+- added regression coverage for the vector illustration component and every supported diagram-kind branch.
+
+Next:
+- run focused handbook-learning tests and TypeScript/build verification;
+- inspect the complete 48-lesson visual language for any cards where the semantic illustration needs topic-specific refinement.
+
+
+### 7.1.53 Unified infographic presentation system — 2026-10-05
+
+Standardized the visual shell across all Learning Mode lesson and module infographics.
+
+Implemented:
+- every lesson infographic now uses the same header hierarchy: lesson number, `Инфографика` label, visual-model label, lesson title and the same compact save control;
+- removed the special-case header/body presentation previously used only by “7 принципов тестирования” so it follows the same layout contract as every other lesson;
+- standardized the infographic body spacing, “Ключевая схема” helper row, semantic motif, diagram area and takeaway treatment;
+- renamed the visible PDF action to **«Сохранить»** while preserving the client-side A4/multi-page PDF generation;
+- module overview infographics now use the same outer shell, header hierarchy, light grid background and **«Сохранить»** control;
+- module and lesson PDF captures exclude the save button through the existing `data-pdf-ignore` contract;
+- preserved all 48 lesson definitions, lesson source text, curriculum order and semantic SVG illustration system;
+- updated regression coverage for the unified header, module/lesson save controls and shared presentation contract.
+
+No educational content was changed.
+
+Next:
+- run focused `test:handbook-learning`, TypeScript and production build;
+- inspect mobile/desktop rendering for concrete spacing or overflow defects;
+- only then continue topic-specific illustration refinement.
+
+
+### 7.1.54 Compact per-topic infographic layout restored — 2026-10-05
+
+Corrected the previous 7.1.53 presentation change.
+
+The requirement is **not** to give every lesson the same generic header content. Each infographic keeps its own topic title from `lesson.title`.
+
+Updated lesson presentation:
+- restored the compact header pattern used by **«7 принципов тестирования»**;
+- the header now contains the actual title of the current lesson and the same compact **«Сохранить»** action;
+- **«7 принципов тестирования»** remains a special topic title, exactly as requested;
+- all other lesson infographics now use the same compact header/body layout as the seven-principles cheat sheet;
+- removed the generic `Ключевая схема` / helper-row layer that had been introduced as a shared header treatment;
+- preserved each topic's own semantic diagram, cards, illustrations and source-backed content;
+- preserved PDF generation and save-button behavior.
+
+The visual language is shared; the **content/title is topic-specific**.
+
+The module overview remains a separate module-level map and keeps the module's own title.
+
+
+### 7.1.55 Dedicated Scrum context infographic for Module 2 lesson 4 — 2026-10-05
+
+Implemented a dedicated poster-style infographic for **Module 2. Погружение в контекст → lesson 4/12: Scrum**.
+
+Implemented:
+- added the dedicated asset `public/infographics/m2-04-scrum-context.svg`;
+- reproduced the supplied pastel educational poster structure as a single responsive vertical infographic;
+- kept the lesson-level title/header and PDF save control unchanged;
+- switched only `m2-04` to the dedicated poster asset; the other 47 lesson infographics keep the shared semantic SVG system;
+- preserved the existing Scrum lesson source content and curriculum order;
+- added regression coverage for the dedicated asset, its six information blocks and the `m2-04` rendering branch;
+- kept the asset self-contained and dependency-free so it works in the browser and inside the existing client-side PDF capture.
+
+The dedicated poster contains:
+1. what context immersion means;
+2. what must be learned about the product, team, processes and project context;
+3. main information sources;
+4. a step-by-step immersion process;
+5. expected results;
+6. practical tips.
+
+
+### 7.1.56 Scrum reference infographic visual fidelity — 2026-10-05
+
+Refined the dedicated **Module 2 → lesson 4/12 → Scrum** infographic to serve as the reusable visual reference requested by the user.
+
+Implemented:
+- rebuilt `public/infographics/m2-04-scrum-context.svg` as a responsive vector poster with the same 1065×1476 portrait composition and six numbered information blocks as the supplied reference;
+- preserved the reference's light paper background, rounded pastel cards, dark-blue typography, colored section markers, footer takeaway and dense A4-like information hierarchy;
+- added dedicated inline SVG illustrations for every major reference visual instead of generic placeholders: header team/laptop scene, Sprint screen, calendar, lightbulb, target, team, gear, document, chat, code/repository, stakeholder, search, brain, checklist, star and context checklist;
+- kept the Scrum content from the reference, including roles/context, information sources, immersion steps, results and practical advice;
+- kept the application-specific module label as **«Модуль 2. Погружение в контекст»** while retaining the reference title **«Погружение в контекст (Scrum)»**;
+- retained responsive rendering through the existing full-width SVG `<img>` container, so the poster scales without horizontal overflow on mobile;
+- extended regression coverage to require the dedicated illustration symbol set and the reference poster viewBox.
+
+This asset is intentionally kept as the visual style exemplar for future Learning Mode posters: **same composition language first, then topic-specific content and illustrations**.
+
+
+### 7.1.57 Infographic layout and readability standard — 2026-10-05
+
+Refined the Scrum reference infographic after a visual layout audit.
+
+Implemented:
+- reduced oversized header illustrations and balanced the header composition;
+- reduced icon sizes where they competed with text;
+- increased vertical room in the four-step process cards;
+- split long headings/text into semantic lines instead of shrinking the type excessively;
+- adjusted compact-card heading sizes only where the available width required it;
+- split the footer takeaway into two readable lines;
+- preserved the reference's composition, pastel section system and illustration set.
+
+Added the reusable design standard: docs/INFOGRAPHIC_DESIGN_PRINCIPLES.md.
+
+The standard is now the source of truth for future infographic work:
+**readability and meaning → composition → semantic illustrations → decorative details**.
+
+Every infographic must pass content, layout, typography, visual, responsive and PDF checks before its implementation block is considered complete.
+
+### 7.1.58 Dedicated Sprint planning infographic — 2026-10-05
+
+Implemented the next dedicated Learning Mode poster for **Module 2 → lesson 5/12: Спринт**.
+
+Implemented:
+- added `public/infographics/m2-05-sprint-planning.svg`;
+- used the approved Scrum poster as the visual master: same 1065×1476 portrait geometry, six numbered information blocks, pastel cards, dark-blue typography, semantic flat-vector illustrations and footer takeaway;
+- preserved the lesson source content and curriculum order;
+- represented the complete source lesson without inventing additional Scrum rules:
+  1. sprint definition and purpose;
+  2. four stages: Planning, Execution, Review/Demo, Retrospective;
+  3. the three Sprint Planning questions: Why / What / How;
+  4. QA responsibilities, including testing, automation and Acceptance Criteria;
+  5. practical planning outcome;
+  6. pre-start checklist;
+- added semantic illustrations for calendar/sprint, planning goal, task set, team, QA and outcome;
+- added regression coverage for the dedicated asset, poster viewBox, accessibility title/description, rendering branch and source-content facts.
+
+The infographic follows `docs/INFOGRAPHIC_DESIGN_PRINCIPLES.md`: **meaning and readability first, then composition, semantic illustrations and decoration**.
+
+
+### 7.1.59 Infographic contract fixes + roadmap operating rules — 2026-10-05
+
+Fixed:
+- `DiagramLabelStrip` now uses exact `aria-label="Ключевая схема"`;
+- Module 1 lesson `m1-03` visual metadata now uses the full label **«7 принципов тестирования»**;
+- regression test updated to require the exact accessibility contract.
+
+Current stage:
+- **7.1.x — semantic Learning Mode infographic hardening**;
+- dedicated posters exist for `m2-04` and `m2-05`;
+- remaining work is verification and evidence-based refinement, not a redesign of the whole infographic system.
+
+Development rules:
+- never change lesson source text, IDs or curriculum order for visual tasks;
+- infographic content must be derived only from the lesson source;
+- follow `docs/INFOGRAPHIC_DESIGN_PRINCIPLES.md`;
+- readability and semantic meaning have priority over decoration;
+- keep mobile, desktop and PDF behavior working;
+- add/update regression coverage for every contract change;
+- do not duplicate visual systems when the shared system already satisfies the lesson;
+- use a dedicated SVG poster only when the topic requires a distinct composition;
+- do not commit partial implementation blocks.
+
+Git conflict rule:
+- **always keep only the newest/new-version variant**;
+- never keep both variants;
+- never restore the old variant;
+- after resolving a conflict, verify the final file against the newest intended implementation and tests.
+
+Next steps:
+1. run `test:handbook-learning`;
+2. run TypeScript checks and production build;
+3. inspect mobile/desktop infographic rendering and PDF export;
+4. fix only concrete defects found by verification;
+5. continue topic-specific infographic refinement only after the current verification block is clean.
+
+
+### 7.1.60 Scrum infographic accessibility-test contract — 2026-10-05
+
+Fixed:
+- restored the literal `alt="Инфографика: Погружение в контекст (Scrum)"` in `LessonInfographic`;
+- removed the unnecessary ternary from the `alt` attribute for the dedicated poster branch;
+- preserved the existing `m2-04` and `m2-05` asset selection logic;
+- kept the strict regression test unchanged because it correctly protects the required source contract.
+
+Verification status:
+- code fix committed;
+- GitHub Actions result is pending; do not mark the test suite green until CI reports success.
+
+Next:
+1. verify the exact Scrum test;
+2. run the full Learning Mode test suite;
+3. continue TypeScript/build and visual PDF checks only after tests are clean.

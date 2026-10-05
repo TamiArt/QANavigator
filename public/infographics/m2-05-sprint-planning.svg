@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1065 1476" role="img" aria-labelledby="title desc">
+<title id="title">Спринт и планирование спринта</title>
+<desc id="desc">Учебная инфографика о четырёх этапах спринта, трёх вопросах Sprint Planning и роли QA.</desc>
+<defs>
+  <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff" /><stop offset="1" stop-color="#f8fbff"/></linearGradient>
+  <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#174da1" flood-opacity=".10"/></filter>
+  <style>
+    .title{font:800 42px Arial,sans-serif;fill:#173b73}.label{font:700 16px Arial,sans-serif;fill:#2456a6}
+    .h{font:800 21px Arial,sans-serif;fill:#173b73}.h2{font:800 15px Arial,sans-serif;fill:#173b73}
+    .body{font:500 16px Arial,sans-serif;fill:#334b68}.small{font:500 13px Arial,sans-serif;fill:#40566f}
+    .num{font:800 22px Arial,sans-serif;fill:#fff}.line{stroke:#174da1;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  </style>
+  <symbol id="calendar" viewBox="0 0 100 100"><rect x="10" y="18" width="80" height="70" rx="10" fill="#fff" stroke="#174da1" stroke-width="4"/><path d="M10 38h80M28 9v20M72 9v20" class="line" stroke-width="5"/><circle cx="29" cy="56" r="5" fill="#f5b85f"/><circle cx="50" cy="56" r="5" fill="#8f7be8"/><circle cx="71" cy="56" r="5" fill="#58bd96"/><circle cx="29" cy="74" r="5" fill="#75b9e8"/><circle cx="50" cy="74" r="5" fill="#ee91bd"/></symbol>
+  <symbol id="target" viewBox="0 0 100 100"><circle cx="50" cy="50" r="39" fill="#e9f4ff" stroke="#174da1" stroke-width="4"/><circle cx="50" cy="50" r="26" fill="#fff" stroke="#6b8ed0" stroke-width="4"/><circle cx="50" cy="50" r="13" fill="#f4bfd4" stroke="#174da1" stroke-width="4"/><circle cx="50" cy="50" r="5" fill="#174da1"/></symbol>
+  <symbol id="tasks" viewBox="0 0 100 100"><rect x="18" y="10" width="64" height="80" rx="7" fill="#fff" stroke="#174da1" stroke-width="4"/><path d="M32 34h8M50 34h18M32 51h8M50 51h18M32 68h8M50 68h18" class="line" stroke-width="4"/><path d="m30 33 4 4 7-9M30 50l4 4 7-9M30 67l4 4 7-9" stroke="#38b98c" stroke-width="4" fill="none"/></symbol>
+  <symbol id="team" viewBox="0 0 120 100"><circle cx="60" cy="26" r="15" fill="#efbd95" stroke="#174da1" stroke-width="3"/><path d="M35 82c3-25 13-38 25-38s22 13 25 38" fill="#7190d8" stroke="#174da1" stroke-width="3"/><circle cx="23" cy="37" r="11" fill="#f0c29c" stroke="#174da1" stroke-width="3"/><path d="M5 83c2-20 9-30 18-30s16 10 18 30" fill="#f2b35b" stroke="#174da1" stroke-width="3"/><circle cx="97" cy="37" r="11" fill="#edb88f" stroke="#174da1" stroke-width="3"/><path d="M79 83c2-20 9-30 18-30s16 10 18 30" fill="#d889c0" stroke="#174da1" stroke-width="3"/></symbol>
+  <symbol id="flow" viewBox="0 0 180 90"><rect x="5" y="22" width="45" height="40" rx="9" fill="#dcecff" stroke="#174da1" stroke-width="3"/><rect x="68" y="22" width="45" height="40" rx="9" fill="#f3eaff" stroke="#174da1" stroke-width="3"/><rect x="131" y="22" width="44" height="40" rx="9" fill="#e2f8ef" stroke="#174da1" stroke-width="3"/><path d="M50 42h18M113 42h18" class="line" stroke-width="5"/><path d="m62 34 9 8-9 8M125 34l9 8-9 8" class="line" stroke-width="4"/></symbol>
+  <symbol id="qa" viewBox="0 0 100 100"><path d="M50 8 83 22v24c0 22-13 37-33 46C30 83 17 68 17 46V22z" fill="#e6f8f1" stroke="#174da1" stroke-width="4"/><path d="m31 49 12 12 26-29" stroke="#38b98c" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</defs>
+<rect width="1065" height="1476" fill="url(#paper)"/>
+
+<rect x="22" y="18" width="270" height="40" rx="20" fill="#dceaff"/>
+<text x="40" y="45" class="label">Модуль 2. Погружение в контекст</text>
+<text x="24" y="105" class="title">Спринт и планирование</text>
+<text x="24" y="157" class="title">спринта</text>
+<use href="#calendar" x="760" y="34" width="92" height="92"/>
+<use href="#flow" x="846" y="50" width="180" height="90"/>
+<text x="590" y="76" class="small">Фиксированный цикл →</text><text x="590" y="98" class="small">работающий и протестированный</text><text x="590" y="120" class="small">инкремент</text>
+
+<rect x="12" y="187" width="480" height="350" rx="20" fill="#eaf8ff" stroke="#8adcf4" class="card" filter="url(#shadow)"/>
+<circle cx="55" cy="225" r="30" fill="#2553a8"/><text x="46" y="236" class="num">1</text>
+<text x="97" y="220" class="h">Что такое спринт</text><text x="97" y="247" class="h">и зачем он нужен</text>
+<use href="#calendar" x="30" y="285" width="92" height="92"/>
+<text x="143" y="296" class="body">Спринт — фиксированный</text><text x="143" y="322" class="body">отрезок времени, за который</text><text x="143" y="348" class="body">команда превращает выбранные</text><text x="143" y="374" class="body">задачи в работающий и</text><text x="143" y="400" class="body">протестированный инкремент.</text>
+<rect x="31" y="427" width="414" height="74" rx="16" fill="#fff" stroke="#8adcf4" stroke-width="2"/>
+<text x="51" y="452" class="h2">Ключевая идея</text><text x="51" y="476" class="small">Команда работает внутри ограниченного цикла</text><text x="51" y="494" class="small">и в конце показывает готовый результат.</text>
+
+<rect x="508" y="187" width="545" height="350" rx="20" fill="#f4f0ff" stroke="#cbb8f7" class="card" filter="url(#shadow)"/>
+<circle cx="550" cy="225" r="30" fill="#4b4f9f"/><text x="541" y="236" class="num">2</text>
+<text x="594" y="229" class="h">Четыре этапа спринта</text>
+<rect x="529" y="262" width="250" height="104" rx="15" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
+<use href="#target" x="541" y="277" width="54" height="54"/><text x="608" y="286" class="h2">1. Sprint Planning</text><text x="608" y="310" class="small">Цель, отбор задач,</text><text x="608" y="330" class="small">декомпозиция.</text>
+<rect x="793" y="262" width="240" height="104" rx="15" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
+<use href="#flow" x="803" y="279" width="62" height="48"/><text x="874" y="286" class="h2">2. Execution</text><text x="874" y="310" class="small">Разработка и тестирование</text><text x="874" y="330" class="small">+ Daily Standup.</text>
+<rect x="529" y="382" width="250" height="120" rx="15" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
+<use href="#team" x="542" y="397" width="54" height="48"/><text x="608" y="408" class="h2">3. Review / Demo</text><text x="608" y="432" class="small">Показ готового функционала</text><text x="608" y="452" class="small">Product Owner и</text><text x="608" y="472" class="small">стейкхолдерам.</text>
+<rect x="793" y="382" width="240" height="120" rx="15" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
+<use href="#qa" x="804" y="396" width="54" height="54"/><text x="874" y="408" class="h2">4. Retrospective</text><text x="874" y="432" class="small">Команда обсуждает процесс</text><text x="874" y="452" class="small">и ищет улучшения без</text><text x="874" y="472" class="small">поиска виноватых.</text>
+
+<rect x="12" y="559" width="555" height="386" rx="20" fill="#fffaf0" stroke="#f0d48a" class="card" filter="url(#shadow)"/>
+<circle cx="55" cy="597" r="30" fill="#3654a5"/><text x="46" y="608" class="num">3</text>
+<text x="97" y="600" class="h">Три вопроса Sprint Planning</text><text x="97" y="627" class="body">Планирование связывает ценность и работу.</text>
+<rect x="28" y="654" width="160" height="245" rx="15" fill="#fff" stroke="#ecd28e" stroke-width="2"/>
+<use href="#target" x="67" y="673" width="80" height="80"/><text x="62" y="784" class="h2">ЗАЧЕМ?</text><text x="47" y="811" class="small">Какая ценность</text><text x="47" y="832" class="small">и цель спринта?</text>
+<rect x="198" y="654" width="160" height="245" rx="15" fill="#fff" stroke="#ecd28e" stroke-width="2"/>
+<use href="#tasks" x="68" y="673" width="80" height="80"/><text x="248" y="784" class="h2">ЧТО?</text><text x="217" y="811" class="small">Какие задачи нужны</text><text x="217" y="832" class="small">для этой цели?</text>
+<rect x="368" y="654" width="160" height="245" rx="15" fill="#fff" stroke="#ecd28e" stroke-width="2"/>
+<use href="#team" x="407" y="677" width="82" height="68"/><text x="417" y="784" class="h2">КАК?</text><text x="387" y="811" class="small">Как команда будет</text><text x="387" y="832" class="small">выполнять и</text><text x="387" y="853" class="small">декомпозировать?</text>
+<rect x="28" y="867" width="500" height="48" rx="14" fill="#fff8dc" stroke="#ecd28e" stroke-width="2"/>
+<text x="47" y="896" class="small">Подзадачи желательно делать небольшими — примерно на один рабочий день или меньше.</text>
+
+<rect x="583" y="559" width="470" height="386" rx="20" fill="#eafcff" stroke="#79d9ee" class="card" filter="url(#shadow)"/>
+<circle cx="625" cy="597" r="30" fill="#287b87"/><text x="616" y="608" class="num">4</text>
+<text x="667" y="600" class="h">Что важно знать QA</text><text x="667" y="627" class="body">QA участвует в планировании не только</text><text x="667" y="648" class="body">как исполнитель тестов.</text>
+<rect x="603" y="674" width="428" height="72" rx="14" fill="#fff" stroke="#79d9ee" stroke-width="2"/>
+<use href="#qa" x="617" y="685" width="48" height="48"/><text x="680" y="696" class="h2">Оценить задачи со своей стороны</text><text x="680" y="720" class="small">Учитывать объём тестирования и автоматизации.</text>
+<rect x="603" y="756" width="428" height="72" rx="14" fill="#fff" stroke="#79d9ee" stroke-width="2"/>
+<use href="#tasks" x="617" y="768" width="48" height="48"/><text x="680" y="779" class="h2">Проверить Acceptance Criteria</text><text x="680" y="803" class="small">Задача должна быть понятной и тестируемой.</text>
+<rect x="603" y="838" width="428" height="76" rx="14" fill="#fff" stroke="#79d9ee" stroke-width="2"/>
+<use href="#target" x="617" y="850" width="48" height="48"/><text x="680" y="861" class="h2">Думать о качестве заранее</text><text x="680" y="885" class="small">Тестирование и автоматизация учитываются ещё при планировании.</text>
+
+<rect x="12" y="967" width="555" height="354" rx="20" fill="#eafbf4" stroke="#77d7bc" class="card" filter="url(#shadow)"/>
+<circle cx="55" cy="1005" r="30" fill="#15956e"/><text x="46" y="1016" class="num">5</text>
+<text x="97" y="1009" class="h">Как выглядит хороший результат</text>
+<use href="#tasks" x="42" y="1053" width="180" height="180"/>
+<rect x="251" y="1050" width="292" height="238" rx="17" fill="#fff" stroke="#77d7bc" stroke-width="2"/>
+<circle cx="276" cy="1080" r="11" fill="#38bd8c"/><path d="m270 1080 5 5 8-10" stroke="#fff" stroke-width="3" fill="none"/><text x="298" y="1078" class="small">Цель спринта понятна</text>
+<path d="M270 1111h248M270 1162h248M270 1213h248" stroke="#b8e5d6" stroke-width="2"/>
+<circle cx="276" cy="1130" r="11" fill="#38bd8c"/><path d="m270 1130 5 5 8-10" stroke="#fff" stroke-width="3" fill="none"/><text x="298" y="1128" class="small">Выбраны задачи, связанные с целью</text>
+<circle cx="276" cy="1181" r="11" fill="#38bd8c"/><path d="m270 1181 5 5 8-10" stroke="#fff" stroke-width="3" fill="none"/><text x="298" y="1179" class="small">Задачи декомпозированы</text>
+<circle cx="276" cy="1232" r="11" fill="#38bd8c"/><path d="m270 1232 5 5 8-10" stroke="#fff" stroke-width="3" fill="none"/><text x="298" y="1230" class="small">QA понимает, что и как проверять</text>
+
+<rect x="583" y="967" width="470" height="354" rx="20" fill="#f5f1ff" stroke="#c7b9f4" class="card" filter="url(#shadow)"/>
+<circle cx="625" cy="1005" r="30" fill="#4b4f9f"/><text x="616" y="1016" class="num">6</text>
+<text x="667" y="1009" class="h">Памятка перед стартом</text>
+<rect x="603" y="1050" width="428" height="60" rx="15" fill="#fff" stroke="#c7b9f4" stroke-width="2"/>
+<use href="#target" x="615" y="1056" width="48" height="48"/><text x="677" y="1075" class="h2">Цель спринта сформулирована</text><text x="677" y="1095" class="small">Команда понимает ценность результата.</text>
+<rect x="603" y="1122" width="428" height="60" rx="15" fill="#fff" stroke="#c7b9f4" stroke-width="2"/>
+<use href="#tasks" x="615" y="1128" width="48" height="48"/><text x="677" y="1147" class="h2">Задачи отобраны и декомпозированы</text><text x="677" y="1167" class="small">Объём реалистичен для цикла.</text>
+<rect x="603" y="1194" width="428" height="60" rx="15" fill="#fff" stroke="#c7b9f4" stroke-width="2"/>
+<use href="#qa" x="615" y="1200" width="48" height="48"/><text x="677" y="1219" class="h2">Acceptance Criteria проверены</text><text x="677" y="1239" class="small">Задачи можно качественно тестировать.</text>
+
+<rect x="16" y="1362" width="1033" height="78" rx="39" fill="#e9f8ff" stroke="#7cccf1" stroke-width="2"/>
+<use href="#target" x="75" y="1374" width="49" height="49"/>
+<text x="145" y="1398" class="h2" font-size="14.5">Хорошее планирование спринта связывает цель, задачи и способ</text>
+<text x="145" y="1419" class="h2" font-size="14.5">проверки результата — ещё до начала разработки.</text>
+</svg>
