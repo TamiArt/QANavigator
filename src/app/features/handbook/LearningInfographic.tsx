@@ -825,6 +825,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
   const visual = getVisual(lesson);
   const infographicId = `learning-infographic-${lesson.id}`;
   const isScrumContextInfographic = lesson.id === "m2-04";
+  const isSprintPlanningInfographic = lesson.id === "m2-05";
 
   return (
     <section
@@ -837,11 +838,15 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
         <PdfDownloadButton targetId={infographicId} />
       </div>
 
-      {isScrumContextInfographic ? (
+      {isScrumContextInfographic || isSprintPlanningInfographic ? (
         <div className="bg-white p-2 sm:p-4">
           <img
-            src="/infographics/m2-04-scrum-context.svg"
-            alt="Инфографика: Погружение в контекст (Scrum)"
+            src={isScrumContextInfographic
+              ? "/infographics/m2-04-scrum-context.svg"
+              : "/infographics/m2-05-sprint-planning.svg"}
+            alt={isScrumContextInfographic
+              ? "Инфографика: Погружение в контекст (Scrum)"
+              : "Инфографика: Спринт и планирование спринта"}
             className="mx-auto block h-auto w-full max-w-[1065px]"
           />
         </div>
