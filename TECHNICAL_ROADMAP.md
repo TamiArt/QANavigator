@@ -1500,3 +1500,16 @@ Next:
 - continue the content-density audit across all 48 lesson infographics, comparing every card and label against its source lesson;
 - expand compact visual summaries where source concepts, examples, comparisons, metrics or decision rules are still missing;
 - keep each infographic presentation-only and optimized for memorization rather than reproducing the lesson verbatim.
+
+
+### 7.1.49 Cross-module infographic content audit — 2026-10-05
+
+- expanded compact visual summaries for Module 3 frontend lessons so the infographics retain the source's architecture flow, environment chain, GUI checks, HTML/CSS essentials and DevTools diagnostic algorithm;
+- expanded key Module 4 documentation/defect infographics with source-backed structure, criteria, fields, statuses, workflows and decision rules;
+- preserved examples and concrete terms where they materially improve memorization;
+- avoided inventing educational facts for lessons whose source content is empty;
+- retained the premium poster model: semantic diagram + compact cards + visual-memory motif + concise takeaway;
+- all lesson source text, IDs and curriculum order remain unchanged.
+
+Quality rule for the next audit:
+**source text → compressed facts → visual relationship → memory cue**. If a source concept is not represented by one of these layers, the infographic is not considered complete.
