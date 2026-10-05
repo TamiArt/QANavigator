@@ -86,12 +86,12 @@ Completed:
 - PR #14 handbook hierarchy refactor merged into `main`.
 
 Current development branch:
-`fix/roadmap-learning-mode-accessibility`
+`feat/semantic-learning-infographics`
 
 Current active milestone:
-- synchronize roadmap with repository state;
-- fix the Learning Mode mobile accessibility regression;
-- then continue production hardening and semantic infographic refinement.
+- continue Learning Mode production hardening;
+- provide direct navigation from the module/lesson navigator to the selected learning content;
+- continue semantic infographic refinement without changing lesson source content.
 
 Verification baseline:
 - repository contains focused regression tests for architecture, storage, project context, handbook hierarchy and Learning Mode;
@@ -1426,3 +1426,24 @@ Next:
 - inspect the rendered Learning Mode posters for visual consistency at mobile and desktop widths;
 - fix only concrete visual/semantic defects found during verification;
 - then continue production hardening.
+
+
+### 7.1.44 Learning Mode direct navigation — 2026-10-05
+
+Implemented on `feat/semantic-learning-infographics`:
+
+- added a persistent in-page "Быстрая навигация" panel for Learning Mode;
+- module tabs switch directly between all four learning modules;
+- lesson number buttons switch directly to any lesson in the active module;
+- selecting a lesson smoothly scrolls the learner to the lesson content;
+- the active lesson and completed lessons have distinct navigation states;
+- navigation exposes semantic labels and ARIA tab/current-state information;
+- module content and lesson content receive stable IDs for direct in-page targeting;
+- added regression coverage for the navigation contract in `scripts/handbook-learning.test.mjs`;
+- existing lesson content, IDs and curriculum order remain unchanged.
+
+Next:
+- run focused Learning Mode tests and full verification;
+- inspect the navigation on mobile and desktop layouts;
+- continue production hardening based on concrete verification results.
+
