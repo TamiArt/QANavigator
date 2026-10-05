@@ -1449,6 +1449,12 @@ Next:
 
 
 
+### 7.1.46 Poster card rotation contract — 2026-10-05
+
+- normalized infographic `Card` rotation from `±0.3deg` to the required `±0.35deg` poster hierarchy values;
+- preserved the existing card layout, content and visual semantics; this is a presentation-only correction;
+- implementation committed on `feat/semantic-learning-infographics`.
+
 ### 7.1.45 Semantic infographic rendering — 2026-10-05
 
 Refined the Learning Mode infographic renderer so the declared visual model changes the actual information architecture instead of only changing a label:
