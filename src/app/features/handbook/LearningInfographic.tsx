@@ -823,8 +823,6 @@ function PdfDownloadButton({ targetId }: { targetId: string }) {
 }
 function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
   const visual = getVisual(lesson);
-  const styles = ACCENT_STYLES[visual.accent];
-  const lessonNumber = lesson.id.match(/-(\d+)$/)?.[1] ?? "01";
   const infographicId = `learning-infographic-${lesson.id}`;
 
   return (
