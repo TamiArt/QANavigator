@@ -225,6 +225,9 @@ test("Lesson infographics expose semantic diagram structure", () => {
   }
   assert.match(source, /Суть за 10 секунд/);
   assert.match(source, /Ключевые элементы темы/);
+  assert.match(source, /function PdfDownloadButton/);
+  assert.match(source, /html2canvas/);
+  assert.match(source, /jsPDF/);
   assert.match(source, /Понятие/);
   assert.match(source, /Что важно помнить/);
 });
@@ -296,6 +299,11 @@ test("Seven testing principles are fully represented in the visual cheat sheet",
   for (const principle of required) assert.ok(source.includes(principle), principle);
   assert.match(source, /function VisualMotif/);
   assert.match(source, /visual\.kind/);
+  assert.match(source, /7 принципов тестирования/);
+  assert.match(source, /data-pdf-ignore/);
+  assert.match(source, /card\.icon \?\? visual\.icon/);
+  assert.match(source, /isTestingPrinciples/);
+  assert.ok(!source.includes("визуальная модель темы"), "Legacy visual-model footer must be removed");
 });
 
 
