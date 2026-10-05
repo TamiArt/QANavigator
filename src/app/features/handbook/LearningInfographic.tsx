@@ -475,7 +475,7 @@ function TimelineDiagram({ visual }: { visual: LessonVisual }) {
 
 function ChecklistDiagram({ visual }: { visual: LessonVisual }) {
   const styles = ACCENT_STYLES[visual.accent];
-  const isTestingPrinciples = visual.cards.length === 7 && visual.cards.every((card) => /^\\d\\. /.test(card.title));
+  const isTestingPrinciples = visual.cards.length === 7 && visual.cards.every((card) => /^\d\. /.test(card.title));
   return (
     <div aria-label="Чек-лист ключевых проверок">
       {!isTestingPrinciples && <DiagramLabelStrip visual={visual} />}
