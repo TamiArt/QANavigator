@@ -1449,6 +1449,13 @@ Next:
 
 
 
+### 7.1.47 Dark-theme infographic text contrast — 2026-10-05
+
+- corrected text contrast inside Learning Mode infographic cards and semantic diagram blocks for dark theme;
+- retained the pastel card backgrounds and existing infographic structure;
+- dark-theme text now explicitly switches to black for block titles and explanatory text where the dark theme previously left low-contrast slate/blue text;
+- lesson source content and visual metadata were not changed.
+
 ### 7.1.46 Poster card rotation contract — 2026-10-05
 
 - normalized infographic `Card` rotation from `±0.3deg` to the required `±0.35deg` poster hierarchy values;
