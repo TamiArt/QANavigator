@@ -367,9 +367,9 @@ function Card({ card, index, visual }: { card: VisualCard; index: number; visual
             <span className={`flex h-7 w-7 items-center justify-center rounded-lg border bg-white/80 ${styles.badge}`}>
               <Icon className="h-3.5 w-3.5" aria-hidden="true" />
             </span>
-            <span className="text-xs font-extrabold text-blue-950">{card.title}</span>
+            <span className="text-xs font-extrabold text-blue-950 dark:text-black">{card.title}</span>
           </div>
-          <p className="text-[11px] leading-[1.45] text-slate-700">{card.text}</p>
+          <p className="text-[11px] leading-[1.45] text-slate-700 dark:text-black">{card.text}</p>
         </div>
       </div>
     </div>
@@ -382,7 +382,7 @@ function DiagramLabelStrip({ visual }: { visual: LessonVisual }) {
     <div className="mb-3 flex flex-wrap items-center justify-center gap-1.5" aria-label="Ключевые элементы темы">
       {visual.labels.map((label, index) => (
         <React.Fragment key={label}>
-          <span className={`rounded-full border-2 bg-white px-2.5 py-1 text-[10px] font-extrabold text-blue-950 ${styles.badge}`}>
+          <span className={`rounded-full border-2 bg-white px-2.5 py-1 text-[10px] font-extrabold text-blue-950 dark:text-black ${styles.badge}`}>
             {label}
           </span>
           {index < visual.labels.length - 1 && (
@@ -409,7 +409,7 @@ function FlowDiagram({ visual }: { visual: LessonVisual }) {
           </React.Fragment>
         ))}
       </div>
-      <div className={`mt-3 rounded-xl border-2 border-dashed bg-white/80 px-3 py-2 text-center text-[10px] font-semibold text-blue-900 ${styles.badge}`}>
+      <div className={`mt-3 rounded-xl border-2 border-dashed bg-white/80 px-3 py-2 text-center text-[10px] font-semibold text-blue-900 dark:text-black ${styles.badge}`}>
         Последовательность показывает, как элементы связаны между собой.
       </div>
     </div>
@@ -448,8 +448,8 @@ function ChecklistDiagram({ visual }: { visual: LessonVisual }) {
               <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
             </span>
             <div className="min-w-0">
-              <div className="text-xs font-extrabold text-blue-950">{card.title}</div>
-              <p className="mt-1 text-[11px] leading-[1.45] text-slate-700">{card.text}</p>
+              <div className="text-xs font-extrabold text-blue-950 dark:text-black">{card.title}</div>
+              <p className="mt-1 text-[11px] leading-[1.45] text-slate-700 dark:text-black">{card.text}</p>
             </div>
           </div>
         ))}
@@ -464,7 +464,7 @@ function CompareDiagram({ visual }: { visual: LessonVisual }) {
     <div aria-label="Сравнительная таблица понятий">
       <DiagramLabelStrip visual={visual} />
       <div className="overflow-hidden rounded-2xl border-2 border-blue-100 bg-white">
-        <div className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] border-b-2 border-blue-100 bg-sky-50/60 px-3 py-2 text-[10px] font-extrabold uppercase tracking-wide text-blue-900">
+        <div className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] border-b-2 border-blue-100 bg-sky-50/60 px-3 py-2 text-[10px] font-extrabold uppercase tracking-wide text-blue-900 dark:text-black">
           <span>Понятие</span>
           <span>Что важно помнить</span>
         </div>
@@ -472,9 +472,9 @@ function CompareDiagram({ visual }: { visual: LessonVisual }) {
           <div key={card.title} className={`grid grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] gap-2 border-b border-blue-50 px-3 py-3 last:border-b-0 ${index % 2 ? "bg-violet-50/30" : "bg-white"}`}>
             <div className="flex items-start gap-2">
               <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-black ${styles.marker}`}>{index + 1}</span>
-              <span className="text-[11px] font-extrabold leading-4 text-blue-950">{card.title}</span>
+              <span className="text-[11px] font-extrabold leading-4 text-blue-950 dark:text-black">{card.title}</span>
             </div>
-            <p className="text-[11px] leading-[1.45] text-slate-700">{card.text}</p>
+            <p className="text-[11px] leading-[1.45] text-slate-700 dark:text-black">{card.text}</p>
           </div>
         ))}
       </div>
@@ -499,7 +499,7 @@ function NetworkDiagram({ visual }: { visual: LessonVisual }) {
       </div>
       <div className="mt-3 flex flex-wrap justify-center gap-1.5">
         {visual.labels.slice(0, 6).map((label) => (
-          <span key={label} className="rounded-lg bg-slate-50 px-2 py-1 text-[9px] font-semibold text-slate-600">{label}</span>
+          <span key={label} className="rounded-lg bg-slate-50 px-2 py-1 text-[9px] font-semibold text-slate-600 dark:text-black">{label}</span>
         ))}
       </div>
     </div>
@@ -521,8 +521,8 @@ function VisualDiagram({ visual }: { visual: LessonVisual }) {
             >
               <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold ${styles.marker}`}>{index + 1}</span>
               <div className="min-w-0">
-                <div className="text-xs font-extrabold text-blue-950">{card.title}</div>
-                <div className="text-[10px] leading-4 text-slate-600">{card.text}</div>
+                <div className="text-xs font-extrabold text-blue-950 dark:text-black">{card.title}</div>
+                <div className="text-[10px] leading-4 text-slate-600 dark:text-black">{card.text}</div>
               </div>
             </div>
           ))}
@@ -545,7 +545,7 @@ function VisualDiagram({ visual }: { visual: LessonVisual }) {
             </div>
           ))}
         </div>
-        <div className="mx-auto mt-3 flex w-fit items-center gap-2 rounded-full border-2 border-dashed border-blue-200 bg-white px-3 py-1.5 text-[10px] font-bold text-blue-800">
+        <div className="mx-auto mt-3 flex w-fit items-center gap-2 rounded-full border-2 border-dashed border-blue-200 bg-white px-3 py-1.5 text-[10px] font-bold text-blue-800 dark:text-black">
           ↻ цикл повторяется
         </div>
       </div>
@@ -568,8 +568,8 @@ function VisualDiagram({ visual }: { visual: LessonVisual }) {
             <div key={card.title} className={`flex items-start gap-3 rounded-[18px] border-2 p-3.5 ${styles.card} ${styles.badge}`}>
               <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold ${styles.marker}`}>{index + 1}</span>
               <div className="min-w-0">
-                <div className="text-xs font-extrabold text-blue-950">{card.title}</div>
-                <div className="mt-1 text-[11px] leading-[1.45] text-slate-700">{card.text}</div>
+                <div className="text-xs font-extrabold text-blue-950 dark:text-black">{card.title}</div>
+                <div className="mt-1 text-[11px] leading-[1.45] text-slate-700 dark:text-black">{card.text}</div>
               </div>
             </div>
           ))}
@@ -606,9 +606,9 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
           <div className="min-w-0 flex-1">
             <div className="mb-1.5 flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-blue-700 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white">Визуальная шпаргалка</span>
-              <span className={`rounded-full border bg-white/80 px-2.5 py-1 text-[10px] font-bold text-blue-800 ${styles.badge}`}>{KIND_LABELS[visual.kind]}</span>
+              <span className={`rounded-full border bg-white/80 px-2.5 py-1 text-[10px] font-bold text-blue-800 dark:text-black ${styles.badge}`}>{KIND_LABELS[visual.kind]}</span>
             </div>
-            <h4 className="text-base font-extrabold leading-6 text-blue-950 sm:text-lg">{lesson.title}</h4>
+            <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{lesson.title}</h4>
             <div className="mt-2 flex items-center gap-2">
               <span className={`h-1.5 w-10 rounded-full ${styles.marker}`} />
               <span className="h-1.5 w-2 rounded-full bg-blue-200" />
@@ -623,14 +623,14 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
 
       <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-4 sm:p-6">
         <div className="mb-3 flex items-center justify-between gap-2">
-          <span className="rounded-full bg-sky-100 px-3 py-1 text-[10px] font-extrabold text-blue-800">Суть за 10 секунд</span>
-          <span className="text-[10px] font-semibold text-slate-400">смотри на структуру →</span>
+          <span className="rounded-full bg-sky-100 px-3 py-1 text-[10px] font-extrabold text-blue-800 dark:text-black">Суть за 10 секунд</span>
+          <span className="text-[10px] font-semibold text-slate-400 dark:text-black">смотри на структуру →</span>
         </div>
         <VisualDiagram visual={visual} />
         {visual.callout && (
           <div className="mt-4 flex items-start gap-2.5 rounded-[18px] border-2 border-blue-100 bg-white/90 px-3.5 py-3 shadow-[1px_2px_0_rgba(30,64,175,0.05)]">
             <Zap className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" aria-hidden="true" />
-            <p className="text-[11px] font-semibold leading-[1.45] text-blue-950">{visual.callout}</p>
+            <p className="text-[11px] font-semibold leading-[1.45] text-blue-950 dark:text-black">{visual.callout}</p>
           </div>
         )}
         <div className="mt-4 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-[0.08em] text-blue-400">
@@ -652,7 +652,7 @@ function ModuleInfographic({ module }: { module: LearningModule }) {
           </div>
           <div className="min-w-0">
             <div className="rounded-full bg-blue-700 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white">Карта модуля</div>
-            <h3 className="mt-1 text-lg font-extrabold leading-6 text-blue-950">{module.title}</h3>
+            <h3 className="mt-1 text-lg font-extrabold leading-6 text-blue-950 dark:text-black">{module.title}</h3>
           </div>
         </div>
       </div>
