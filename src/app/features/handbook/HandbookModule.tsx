@@ -51,7 +51,7 @@ export function HandbookModule() {
             type="button"
             aria-label="Открыть режим обучения"
             onClick={() => setLearningMode(true)}
-            className="flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-3 py-2 text-sm font-medium"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground px-3 py-2 text-sm font-medium sm:w-auto"
           >
             <GraduationCap className="w-4 h-4" /> Режим обучения
           </button>
