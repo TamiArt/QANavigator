@@ -1,6 +1,6 @@
 import * as React from "react";
 import {
-  AlertTriangle, ArrowDown, ArrowLeftRight, ArrowRight, BookOpen, Boxes, Bug,
+  AlertTriangle, ArrowDown, ArrowRight, BookOpen, Boxes, Bug,
   CheckCircle2, ClipboardCheck, Cloud, Code2, Database, FileText, GitBranch,
   Globe, Layers3, ListChecks, Network, PlayCircle, Route, Server, ShieldCheck,
   Target, TestTube2, Users, Workflow, Zap,
