@@ -392,17 +392,99 @@ function getVisual(lesson: LearningLesson): LessonVisual {
   ]);
 }
 
+function CardIllustration({ kind, index }: { kind: VisualKind; index: number }) {
+  const palettes = [
+    ["#DBEAFE", "#2563EB", "#34D399"],
+    ["#EDE9FE", "#7C3AED", "#FBBF24"],
+    ["#DCFCE7", "#059669", "#60A5FA"],
+    ["#FEF3C7", "#D97706", "#F43F5E"],
+    ["#FCE7F3", "#DB2777", "#60A5FA"],
+    ["#FFEDD5", "#EA580C", "#A78BFA"],
+  ];
+  const [soft, main, accent] = palettes[index % palettes.length];
+
+  if (kind === "flow" || kind === "timeline") {
+    const count = 3 + (index % 2);
+    return (
+      <svg viewBox="0 0 64 48" className="h-9 w-12" aria-hidden="true">
+        <path d="M8 24h48" stroke="#CBD5E1" strokeWidth="3" strokeLinecap="round" />
+        {Array.from({ length: count }).map((_, i) => {
+          const x = 10 + i * (44 / (count - 1));
+          return <g key={i}><circle cx={x} cy="24" r="6" fill={i === index % count ? accent : soft} stroke={main} strokeWidth="2" /><path d={i < count - 1 ? `M${x + 8} 21l5 3-5 3` : ""} fill="none" stroke={main} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></g>;
+        })}
+      </svg>
+    );
+  }
+
+  if (kind === "layers") {
+    return (
+      <svg viewBox="0 0 64 48" className="h-9 w-12" aria-hidden="true">
+        {[0,1,2,3].map((i) => <rect key={i} x={10 + i * 2} y={7 + i * 9} width={44 - i * 4} height="7" rx="3.5" fill={i === index % 4 ? accent : soft} stroke={main} strokeWidth="1.8" />)}
+      </svg>
+    );
+  }
+
+  if (kind === "compare") {
+    return (
+      <svg viewBox="0 0 64 48" className="h-9 w-12" aria-hidden="true">
+        <rect x="7" y="10" width="21" height="28" rx="6" fill={soft} stroke={main} strokeWidth="2" />
+        <rect x="36" y="10" width="21" height="28" rx="6" fill="#fff" stroke={main} strokeWidth="2" />
+        <path d="M13 18h9M13 25h6M42 18h9M42 25h9" stroke={main} strokeWidth="2.5" strokeLinecap="round" />
+        <circle cx="19" cy="33" r="3" fill={accent} /><circle cx="45" cy="33" r="3" fill={accent} />
+        <path d="M29 24h6" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (kind === "network") {
+    const nodes = [[13,13],[32,8],[51,16],[18,35],[40,39]];
+    return (
+      <svg viewBox="0 0 64 48" className="h-9 w-12" aria-hidden="true">
+        <path d="M13 13L32 8L51 16L40 39L18 35Z M13 13L18 35 M32 8L40 39" fill="none" stroke="#CBD5E1" strokeWidth="2" />
+        {nodes.map(([cx,cy], i) => <circle key={i} cx={cx} cy={cy} r={i === index % nodes.length ? 6 : 4.5} fill={i === index % nodes.length ? accent : soft} stroke={main} strokeWidth="2" />)}
+      </svg>
+    );
+  }
+
+  if (kind === "cycle") {
+    return (
+      <svg viewBox="0 0 64 48" className="h-9 w-12" aria-hidden="true">
+        <path d="M18 35c-8-7-8-18 0-24 8-6 20-6 28 1 6 6 6 16 0 22" fill="none" stroke={main} strokeWidth="3" strokeLinecap="round" />
+        <path d="m43 10 4 2-1 5" fill="none" stroke={accent} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="18" cy="35" r="5" fill={soft} stroke={main} strokeWidth="2" />
+        <circle cx="46" cy="34" r="5" fill={index % 2 ? accent : soft} stroke={main} strokeWidth="2" />
+      </svg>
+    );
+  }
+
+  if (kind === "pyramid") {
+    return (
+      <svg viewBox="0 0 64 48" className="h-9 w-12" aria-hidden="true">
+        <path d="M32 6L54 41H10Z" fill={soft} stroke={main} strokeWidth="2" strokeLinejoin="round" />
+        <path d="M19 32h26M24 24h16M28 16h8" stroke={main} strokeWidth="4" strokeLinecap="round" />
+        <circle cx={index % 2 ? 40 : 24} cy={index % 2 ? 24 : 32} r="3" fill={accent} />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 64 48" className="h-9 w-12" aria-hidden="true">
+      <rect x="9" y="8" width="46" height="32" rx="8" fill={soft} stroke={main} strokeWidth="2" />
+      {[0,1,2].map((i) => <g key={i}><circle cx={18 + i * 13} cy="19" r="4" fill={i === index % 3 ? accent : "#fff"} stroke={main} strokeWidth="2" /><path d={`M${14 + i * 13} 31h${9 + i}`} stroke={main} strokeWidth="2.5" strokeLinecap="round" /></g>)}
+    </svg>
+  );
+}
+
 function Card({ card, index, visual }: { card: VisualCard; index: number; visual: LessonVisual }) {
   const styles = ACCENT_STYLES[visual.accent];
-  const Icon = card.icon ?? visual.icon;
   return (
-    <div className={`flex min-h-[104px flex-col rounded-[18px] border-2 p-3.5 shadow-[2px_3px_0_rgba(30,64,175,0.07)] ${styles.card} ${styles.badge} ${index % 2 === 0 ? "rotate-[-0.35deg]" : "rotate-[0.35deg]"}`}>
+    <div className={`flex min-h-[104px] flex-col rounded-[18px] border-2 p-3.5 shadow-[2px_3px_0_rgba(30,64,175,0.07)] ${styles.card} ${styles.badge} ${index % 2 === 0 ? "rotate-[-0.35deg]" : "rotate-[0.35deg]"}`}>
       <div className="flex items-start gap-2.5">
         <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold ${styles.marker}`}>{index + 1}</span>
         <div className="min-w-0 flex-1">
           <div className="mb-1.5 flex items-center gap-2">
-            <span className={`flex h-7 w-7 items-center justify-center rounded-lg border bg-white/80 ${styles.badge}`}>
-              <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className={`flex h-10 w-12 shrink-0 items-center justify-center rounded-xl border bg-white/80 ${styles.badge}`}>
+              <CardIllustration kind={visual.kind} index={index} />
             </span>
             <span className="text-xs font-extrabold text-blue-950 dark:text-black">{card.title}</span>
           </div>
