@@ -287,3 +287,10 @@ test("Seven testing principles are fully represented in the visual cheat sheet",
   assert.match(source, /visual\.kind/);
 });
 
+
+test("Visual cheat sheets do not invent missing lesson source content", () => {
+  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  assert.match(source, /m2-08[\s\S]*Урок содержит видеоматериал/);
+  assert.match(source, /m2-09[\s\S]*Урок содержит видеоматериал/);
+  assert.match(source, /m2-12[\s\S]*Текстового конспекта для этого урока сейчас нет/);
+});
