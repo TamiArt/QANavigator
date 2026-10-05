@@ -1662,3 +1662,23 @@ The standard is now the source of truth for future infographic work:
 **readability and meaning → composition → semantic illustrations → decorative details**.
 
 Every infographic must pass content, layout, typography, visual, responsive and PDF checks before its implementation block is considered complete.
+
+### 7.1.58 Dedicated Sprint planning infographic — 2026-10-05
+
+Implemented the next dedicated Learning Mode poster for **Module 2 → lesson 5/12: Спринт**.
+
+Implemented:
+- added `public/infographics/m2-05-sprint-planning.svg`;
+- used the approved Scrum poster as the visual master: same 1065×1476 portrait geometry, six numbered information blocks, pastel cards, dark-blue typography, semantic flat-vector illustrations and footer takeaway;
+- preserved the lesson source content and curriculum order;
+- represented the complete source lesson without inventing additional Scrum rules:
+  1. sprint definition and purpose;
+  2. four stages: Planning, Execution, Review/Demo, Retrospective;
+  3. the three Sprint Planning questions: Why / What / How;
+  4. QA responsibilities, including testing, automation and Acceptance Criteria;
+  5. practical planning outcome;
+  6. pre-start checklist;
+- added semantic illustrations for calendar/sprint, planning goal, task set, team, QA and outcome;
+- added regression coverage for the dedicated asset, poster viewBox, accessibility title/description, rendering branch and source-content facts.
+
+The infographic follows `docs/INFOGRAPHIC_DESIGN_PRINCIPLES.md`: **meaning and readability first, then composition, semantic illustrations and decoration**.
