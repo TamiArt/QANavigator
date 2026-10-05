@@ -270,3 +270,20 @@ test("Learning infographics keep the poster hierarchy and per-lesson identity", 
   assert.match(source, /bg-white\/80/);
   assert.match(source, /h-12 w-12/);
 });
+
+test("Seven testing principles are fully represented in the visual cheat sheet", () => {
+  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  const required = [
+    "1. Дефекты можно показать, но не исключить",
+    "2. Всё протестировать нельзя",
+    "3. Раньше = дешевле",
+    "4. Дефекты собираются в кластеры",
+    "5. Парадокс пестицида",
+    "6. Тестирование зависит от контекста",
+    "7. Ошибок не нашли ≠ продукт безошибочен",
+  ];
+  for (const principle of required) assert.ok(source.includes(principle), principle);
+  assert.match(source, /function VisualMotif/);
+  assert.match(source, /visual\.kind/);
+});
+
