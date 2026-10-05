@@ -138,10 +138,10 @@
 <text x="575" y="114" class="small" font-size="17">к успешной</text>
 <text x="575" y="137" class="small" font-size="17">работе команды!</text>
 <path d="M572 150q65 8 124-12" stroke="#174da1" stroke-width="3" fill="none"/>
-<use href="#people-laptop" x="705" y="22" width="190" height="110"/>
-<use href="#sprint" x="795" y="10" width="125" height="74"/>
-<use href="#calendar" x="947" y="38" width="76" height="76"/>
-<text x="958" y="70" class="h2" font-size="15">1–4</text><text x="956" y="89" class="h2" font-size="12.5">недели</text>
+<use href="#people-laptop" x="690" y="38" width="165" height="96"/>
+<use href="#sprint" x="820" y="16" width="108" height="64"/>
+<use href="#calendar" x="950" y="42" width="70" height="70"/>
+<text x="961" y="72" class="h2" font-size="14">1–4</text><text x="959" y="89" class="h2" font-size="12">недели</text>
 
 <!-- 1 -->
 <rect x="12" y="187" width="480" height="350" rx="20" fill="#eaf8ff" stroke="#8adcf4" class="card" filter="url(#shadow)"/>
