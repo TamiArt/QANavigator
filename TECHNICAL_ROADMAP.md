@@ -1444,6 +1444,30 @@ Implemented on `feat/semantic-learning-infographics`:
 
 Next:
 - run focused Learning Mode tests and full verification;
-- inspect the navigation on mobile and desktop layouts;
+- inspect the semantic infographic rendering on mobile and desktop layouts;
 - continue production hardening based on concrete verification results.
 
+
+
+### 7.1.45 Semantic infographic rendering — 2026-10-05
+
+Refined the Learning Mode infographic renderer so the declared visual model changes the actual information architecture instead of only changing a label:
+
+- flow topics now use explicit directional step structure;
+- timeline topics use an ordered vertical progression;
+- checklist topics use actionable check markers;
+- comparison topics use a compact two-column comparison table;
+- network topics use a relationship-oriented concept map;
+- cycle topics show directional progression plus an explicit repeat-cycle marker;
+- pyramid topics preserve hierarchical width and level order;
+- layer topics preserve stacked architectural hierarchy;
+- all visual models now expose the topic's declared key labels as a compact semantic legend;
+- the visual language remains a premium educational poster: white base, pastel accents, dark-blue typography, rounded modular cards, compact information density and flat-vector UI;
+- lesson source text and curriculum data are unchanged.
+
+This block specifically addresses the requirement that the infographic must explain the lesson's meaning visually rather than act as decorative cards.
+
+Next:
+- verify all Learning Mode tests and TypeScript/build checks;
+- inspect rendered posters for concrete overflow, density or semantic mismatches;
+- correct individual lesson visual metadata where the diagram does not faithfully represent the source lesson.
