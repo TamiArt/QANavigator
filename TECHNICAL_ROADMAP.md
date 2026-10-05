@@ -1513,3 +1513,24 @@ Next:
 
 Quality rule for the next audit:
 **source text → compressed facts → visual relationship → memory cue**. If a source concept is not represented by one of these layers, the infographic is not considered complete.
+
+### 7.1.50 Compact seven-principles infographic + PDF export — 2026-10-05
+
+- reduced the Module 1 “Принципы тестирования” infographic header to the single title **«7 принципов тестирования»** plus a compact PDF action;
+- removed the secondary topic/model labels from this cheat sheet so the seven principles start immediately after the title;
+- tightened the seven-principles layout into a compact two-column card grid on larger screens while preserving mobile stacking;
+- assigned a small principle-specific icon to every principle so the graphic cue matches its meaning instead of repeating one generic icon;
+- added client-side PDF export for lesson visual cheat sheets using html2canvas + jsPDF, with automatic A4 fitting and multi-page fallback;
+- PDF controls are excluded from the captured artwork;
+- removed the legacy **«визуальная модель темы»** footer;
+- added regression coverage for the compact header, per-principle icon contract and PDF export path.
+
+Validation target:
+- focused test:handbook-learning passes;
+- TypeScript and production build pass;
+- PDF export is browser-side and requires no paid API/service.
+
+Next:
+- verify the rendered seven-principles poster at mobile and desktop widths;
+- verify the generated PDF visually in-browser;
+- continue only with concrete defects found during verification.
