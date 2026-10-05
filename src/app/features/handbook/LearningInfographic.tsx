@@ -696,7 +696,16 @@ function PdfDownloadButton({ targetId }: { targetId: string }) {
           pageIndex += 1;
         }
       }
-      pdf.save("qa-navigator-visual-cheatsheet.pdf");
+      const blob = pdf.output("blob");
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = "qa-navigator-visual-cheatsheet.pdf";
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 0);
     } finally {
       setIsGenerating(false);
     }
