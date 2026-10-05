@@ -48,6 +48,8 @@ export function HandbookModule() {
             <p className="text-sm text-muted-foreground">Интерактивный справочник по теории тестирования.</p>
           </div>
           <button
+            type="button"
+            aria-label="Открыть режим обучения"
             onClick={() => setLearningMode(true)}
             className="flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-3 py-2 text-sm font-medium"
           >
