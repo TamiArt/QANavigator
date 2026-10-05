@@ -197,8 +197,11 @@ test("Learning Mode has a semantic infographic contract for every lesson in Modu
   }
   assert.match(infographic, /type VisualKind/);
   assert.match(infographic, /accent: Accent/);
-  assert.match(infographic, /Карта модуля/);
-  assert.match(infographic, /Визуальная шпаргалка/);
+  assert.match(infographic, /Инфографика модуля/);
+  assert.match(infographic, /Инфографика/);
+  assert.match(infographic, /Сохранить/);
+  assert.match(infographic, /targetId=\{moduleId\}/);
+  assert.match(infographic, /targetId=\{infographicId\}/);
   assert.match(infographic, /KIND_LABELS/);
   assert.match(infographic, /aria-label=/);
 });
@@ -223,7 +226,7 @@ test("Lesson infographics expose semantic diagram structure", () => {
   for (const kind of ["FlowDiagram", "TimelineDiagram", "ChecklistDiagram", "CompareDiagram", "NetworkDiagram", "DiagramLabelStrip"]) {
     assert.match(source, new RegExp(`function ${kind}`));
   }
-  assert.match(source, /Суть за 10 секунд/);
+  assert.match(source, /Ключевая схема/);
   assert.match(source, /Ключевые элементы темы/);
   assert.match(source, /function PdfDownloadButton/);
   assert.match(source, /html2canvas/);
@@ -267,7 +270,9 @@ test("Infographic text contrast contract covers semantic blocks", () => {
 
 test("Learning infographics use the illustrated QA poster visual language", () => {
   const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
-  assert.match(source, /Суть за 10 секунд/);
+  assert.match(source, /Ключевая схема/);
+  assert.match(source, /Инфографика модуля/);
+  assert.match(source, /Сохранить/);
   assert.match(source, /rounded-\[28px\]/);
   assert.match(source, /border-2/);
   assert.match(source, /bg-sky-50/);
@@ -278,11 +283,10 @@ test("Learning infographics use the illustrated QA poster visual language", () =
 test("Learning infographics keep the poster hierarchy and per-lesson identity", () => {
   const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
   assert.match(source, /lessonNumber/);
-  assert.match(source, /text-3xl font-black/);
   assert.match(source, /rotate-\[-0\.35deg\]/);
   assert.match(source, /rotate-\[0\.35deg\]/);
   assert.match(source, /bg-white\/80/);
-  assert.match(source, /h-12 w-12/);
+  assert.match(source, /h-11 w-11/);
 });
 
 test("Seven testing principles are fully represented in the visual cheat sheet", () => {
