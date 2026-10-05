@@ -1484,3 +1484,19 @@ Next:
 - verify all Learning Mode tests and TypeScript/build checks;
 - inspect rendered posters for concrete overflow, density or semantic mismatches;
 - correct individual lesson visual metadata where the diagram does not faithfully represent the source lesson.
+
+
+### 7.1.48 Infographic content-density and visual-memory hardening — 2026-10-05
+
+- rebuilt the Module 1 “Принципы тестирования” visual cheat sheet to explicitly represent all 7 testing principles in compact, exam-friendly cards;
+- each principle now includes its practical memory cue: what the principle means and what decision it changes for a tester;
+- added semantic decorative motifs that visually reinforce the diagram type: flow, layers, cycle, comparison, checklist, network, timeline and pyramid;
+- corrected empty Module 2 video/placeholder lessons so their infographics do not invent source facts that are absent from the lesson text;
+- strengthened dark-theme contrast for infographic and module-map text;
+- added regression coverage for all seven principles, decorative motif rendering, missing-source-content protection and dark-theme text contrast;
+- lesson source content, lesson IDs and curriculum order remain unchanged.
+
+Next:
+- continue the content-density audit across all 48 lesson infographics, comparing every card and label against its source lesson;
+- expand compact visual summaries where source concepts, examples, comparisons, metrics or decision rules are still missing;
+- keep each infographic presentation-only and optimized for memorization rather than reproducing the lesson verbatim.
