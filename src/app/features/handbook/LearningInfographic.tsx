@@ -880,3 +880,18 @@ function ModuleInfographic({ module }: { module: LearningModule }) {
           })}
         </ol>
       </div>
+    </section>
+  );
+}
+
+export function LearningInfographic(
+  props:
+    | { mode: "lesson"; lesson: LearningLesson }
+    | { mode: "module"; module: LearningModule },
+) {
+  if (props.mode === "lesson") {
+    return <LessonInfographic lesson={props.lesson} />;
+  }
+
+  return <ModuleInfographic module={props.module} />;
+}
