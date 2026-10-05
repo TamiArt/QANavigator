@@ -57,12 +57,15 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "QC", text: "Контроль качества результата продукта." },
     { title: "Testing", text: "Практическое исследование продукта для обнаружения проблем." },
   ], "QA — шире процесса тестирования; Testing — часть работы с качеством."),
-  "m1-03": V("checklist", ["Принципы", "Риски", "Проверка"], ListChecks, "mint", [
-    { title: "Тестирование показывает наличие дефектов", text: "Оно не доказывает их полное отсутствие." },
-    { title: "Исчерпывающий тест невозможен", text: "Выбираем разумный объём проверок и техники тест-дизайна." },
-    { title: "Раннее тестирование", text: "Чем раньше обнаружена проблема, тем дешевле её исправлять." },
-    { title: "Дефекты группируются", text: "Небольшое число областей часто содержит много проблем." },
-  ], "Принципы помогают принимать решения, а не просто заучивать определения."),
+  "m1-03": V("checklist", ["7 принципов", "Риск", "Раннее тестирование", "Контекст", "Качество"], ListChecks, "mint", [
+    { title: "1. Дефекты можно показать, но не исключить", text: "Тесты обнаруживают наличие дефектов, но не доказывают, что дефектов нет. Даже «всё зелёное» ≠ доказательство идеального продукта." },
+    { title: "2. Всё протестировать нельзя", text: "Полный перебор входов и условий практически невозможен. Фокусируемся на рисках, приоритетах и техниках тест-дизайна." },
+    { title: "3. Раньше = дешевле", text: "Начинаем тестовые активности как можно раньше: ранняя проверка снижает стоимость исправлений. Shift-Left." },
+    { title: "4. Дефекты собираются в кластеры", text: "Небольшое число модулей часто содержит большую часть найденных дефектов. Эти зоны важны для риск-ориентированного тестирования." },
+    { title: "5. Парадокс пестицида", text: "Одинаковые тесты со временем перестают находить новые дефекты. Обновляй и разнообразь набор проверок." },
+    { title: "6. Тестирование зависит от контекста", text: "Нет универсального набора тестов: подход зависит от продукта, рисков, требований, среды и целей." },
+    { title: "7. Ошибок не нашли ≠ продукт безошибочен", text: "Отсутствие найденных дефектов не означает, что продукт полезен или соответствует потребностям. Проверяем и отсутствие дефектов, и пригодность результата." },
+  ], "7 принципов — это карта решений: что проверять, когда начинать, где искать риск и почему «без багов» ещё не означает «качественно»."),
   "m1-04": V("compare", ["Верификация", "Валидация", "Продукт"], CheckCircle2, "yellow", [
     { title: "Верификация", text: "Проверяем, правильно ли создаём продукт по заданным требованиям." },
     { title: "Валидация", text: "Проверяем, подходит ли созданный продукт пользователю и его задаче." },
@@ -506,6 +509,34 @@ function NetworkDiagram({ visual }: { visual: LessonVisual }) {
   );
 }
 
+function VisualMotif({ visual }: { visual: LessonVisual }) {
+  const styles = ACCENT_STYLES[visual.accent];
+  const symbols = {
+    flow: ["→", "→", "→"],
+    layers: ["▰", "▰", "▰"],
+    cycle: ["↻", "↻", "↻"],
+    compare: ["≠", "⇄", "≠"],
+    checklist: ["✓", "✓", "✓"],
+    network: ["●", "↔", "●"],
+    timeline: ["1", "2", "3"],
+    pyramid: ["▲", "◆", "■"],
+  }[visual.kind];
+  return (
+    <div className="mb-3 flex items-center justify-center gap-1.5" aria-hidden="true">
+      {symbols.map((symbol, index) => (
+        <React.Fragment key={index}>
+          <span className={`flex h-7 min-w-7 items-center justify-center rounded-full border-2 bg-white px-1 text-[10px] font-black ${styles.badge} text-blue-700 dark:text-black`}>
+            {symbol}
+          </span>
+          {index < symbols.length - 1 && (
+            <span className="text-[10px] font-black text-blue-300">•</span>
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
 function VisualDiagram({ visual }: { visual: LessonVisual }) {
   if (visual.kind === "pyramid") {
     const styles = ACCENT_STYLES[visual.accent];
@@ -624,6 +655,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
       <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-4 sm:p-6">
         <div className="mb-3 flex items-center justify-between gap-2">
           <span className="rounded-full bg-sky-100 px-3 py-1 text-[10px] font-extrabold text-blue-800 dark:text-black">Суть за 10 секунд</span>
+        <VisualMotif visual={visual} />
           <span className="text-[10px] font-semibold text-slate-400 dark:text-black">смотри на структуру →</span>
         </div>
         <VisualDiagram visual={visual} />
