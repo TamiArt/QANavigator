@@ -1719,3 +1719,21 @@ Next steps:
 3. inspect mobile/desktop infographic rendering and PDF export;
 4. fix only concrete defects found by verification;
 5. continue topic-specific infographic refinement only after the current verification block is clean.
+
+
+### 7.1.60 Scrum infographic accessibility-test contract — 2026-10-05
+
+Fixed:
+- restored the literal `alt="Инфографика: Погружение в контекст (Scrum)"` in `LessonInfographic`;
+- removed the unnecessary ternary from the `alt` attribute for the dedicated poster branch;
+- preserved the existing `m2-04` and `m2-05` asset selection logic;
+- kept the strict regression test unchanged because it correctly protects the required source contract.
+
+Verification status:
+- code fix committed;
+- GitHub Actions result is pending; do not mark the test suite green until CI reports success.
+
+Next:
+1. verify the exact Scrum test;
+2. run the full Learning Mode test suite;
+3. continue TypeScript/build and visual PDF checks only after tests are clean.
