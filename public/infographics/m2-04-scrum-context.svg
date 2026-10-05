@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1065 1476" role="img" aria-labelledby="title desc">
+<title id="title">Погружение в контекст — Scrum</title>
+<desc id="desc">Учебная инфографика по Scrum в стиле пастельного образовательного плаката.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f8fcff"/><stop offset="1" stop-color="#fffaff"/></linearGradient>
+  <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#2449a8" flood-opacity=".10"/></filter>
+  <style>
+    .title{font:800 46px Arial,sans-serif;fill:#0c2d68}.subtitle{font:700 22px Arial,sans-serif;fill:#194a9b}
+    .h{font:800 23px Arial,sans-serif;fill:#123b83}.body{font:600 14px Arial,sans-serif;fill:#214b88}
+    .small{font:600 12px Arial,sans-serif;fill:#315a91}.num{font:800 28px Arial,sans-serif;fill:#fff}
+    .card{stroke-width:2}.bullet{font:700 13px Arial,sans-serif;fill:#315a91}
+  </style>
+</defs>
+<rect width="1065" height="1476" fill="url(#bg)"/>
+<rect x="24" y="20" width="190" height="38" rx="19" fill="#dceaff"/>
+<text x="45" y="46" class="subtitle" font-size="18">Модуль 1. Scrum</text>
+<text x="24" y="106" class="title">Погружение в контекст</text>
+<text x="24" y="157" class="title">(Scrum)</text>
+<g transform="translate(735 35)">
+ <rect x="0" y="18" width="180" height="105" rx="12" fill="#dfeaff" stroke="#204ba5" stroke-width="4"/>
+ <rect x="14" y="31" width="152" height="72" rx="8" fill="#fff" stroke="#7fa5e8" stroke-width="2"/>
+ <text x="67" y="73" class="h" font-size="20">SPRINT</text>
+ <path d="M52 90h80" stroke="#54b989" stroke-width="8" stroke-linecap="round"/>
+ <circle cx="150" cy="50" r="8" fill="#f5bf63"/>
+</g>
+<rect x="932" y="42" width="90" height="85" rx="14" fill="#fff" stroke="#315bb0" stroke-width="3"/>
+<text x="949" y="72" class="h" font-size="16">1–4</text><text x="947" y="96" class="h" font-size="14">недели</text>
+<text x="590" y="135" class="subtitle" font-size="17">Понимание контекста — ключ к успешной работе команды!</text>
+
+<!-- 1 -->
+<rect x="18" y="185" width="480" height="330" rx="22" fill="#eaf8ff" stroke="#86d8f4" class="card" filter="url(#shadow)"/>
+<circle cx="57" cy="222" r="29" fill="#2452a9"/><text x="48" y="232" class="num">1</text>
+<text x="98" y="218" class="h">Что такое погружение</text><text x="98" y="246" class="h">в контекст</text>
+<g transform="translate(48 290)"><circle cx="0" cy="0" r="28" fill="#ffd86b" stroke="#234fa4" stroke-width="4"/><path d="M-10 13q10 12 20 0M-8 25h16" stroke="#234fa4" stroke-width="4" fill="none"/><path d="M0 -40v-16M-34 -27l-12 -10M34 -27l12 -10" stroke="#234fa4" stroke-width="3"/></g>
+<text x="98" y="294" class="body">Погружение в контекст — это процесс</text><text x="98" y="319" class="body">изучения всех аспектов проекта, команды</text><text x="98" y="344" class="body">и рабочей среды, чтобы понимать цели,</text><text x="98" y="369" class="body">задачи, ограничения и особенности</text><text x="98" y="394" class="body">продукта. Это помогает быстрее</text><text x="98" y="419" class="body">включиться в работу и принимать</text><text x="98" y="444" class="body">правильные решения.</text>
+
+<!-- 2 -->
+<rect x="515" y="185" width="532" height="330" rx="22" fill="#f4f0ff" stroke="#cbb8f7" class="card" filter="url(#shadow)"/>
+<circle cx="555" cy="222" r="29" fill="#4b4f9f"/><text x="546" y="232" class="num">2</text>
+<text x="595" y="226" class="h">Что нужно узнать</text>
+<g>
+<rect x="535" y="260" width="235" height="108" rx="16" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
+<text x="565" y="289" class="h">Цели и продукт</text><text x="550" y="315" class="bullet">• Бизнес-цели компании</text><text x="550" y="337" class="bullet">• Ценность продукта</text><text x="550" y="359" class="bullet">• Целевая аудитория</text>
+<rect x="785" y="260" width="235" height="108" rx="16" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
+<text x="815" y="289" class="h">Команда</text><text x="800" y="315" class="bullet">• Роли и ответственность</text><text x="800" y="337" class="bullet">• Опыт и экспертиза</text><text x="800" y="359" class="bullet">• Коммуникации</text>
+<rect x="535" y="382" width="235" height="108" rx="16" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
+<text x="565" y="411" class="h">Процессы</text><text x="550" y="437" class="bullet">• Scrum-процессы</text><text x="550" y="459" class="bullet">• Церемонии и правила</text><text x="550" y="481" class="bullet">• Инструменты</text>
+<rect x="785" y="382" width="235" height="108" rx="16" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
+<text x="815" y="411" class="h">Контекст проекта</text><text x="800" y="437" class="bullet">• Текущая стадия</text><text x="800" y="459" class="bullet">• Ограничения</text><text x="800" y="481" class="bullet">• Риски и зависимости</text>
+</g>
+
+<!-- 3 -->
+<rect x="18" y="535" width="548" height="380" rx="22" fill="#fffaf0" stroke="#f1d48a" class="card" filter="url(#shadow)"/>
+<circle cx="57" cy="572" r="29" fill="#3654a5"/><text x="48" y="582" class="num">3</text>
+<text x="98" y="575" class="h">Основные источники информации</text><text x="98" y="602" class="subtitle" font-size="17">(Инструменты работы)</text>
+<g>
+<rect x="38" y="630" width="116" height="250" rx="15" fill="#fff" stroke="#ecd28e" stroke-width="2"/><text x="51" y="680" class="h" font-size="16">Документация</text><text x="50" y="710" class="bullet">• PRD, User Stories</text><text x="50" y="734" class="bullet">• Тех. документация</text><text x="50" y="758" class="bullet">• Доп. материалы</text>
+<rect x="166" y="630" width="116" height="250" rx="15" fill="#fff" stroke="#ecd28e" stroke-width="2"/><text x="179" y="680" class="h" font-size="16">Коммуникация</text><text x="178" y="710" class="bullet">• Встречи</text><text x="178" y="734" class="bullet">• Чаты</text><text x="178" y="758" class="bullet">• Ретроспективы</text>
+<rect x="294" y="630" width="116" height="250" rx="15" fill="#fff" stroke="#ecd28e" stroke-width="2"/><text x="307" y="680" class="h" font-size="16">Код и репозиторий</text><text x="306" y="710" class="bullet">• Git</text><text x="306" y="734" class="bullet">• Code Review</text><text x="306" y="758" class="bullet">• История изменений</text>
+<rect x="422" y="630" width="124" height="250" rx="15" fill="#fff" stroke="#ecd28e" stroke-width="2"/><text x="435" y="680" class="h" font-size="16">Стейкхолдеры</text><text x="434" y="710" class="bullet">• Владелец продукта</text><text x="434" y="734" class="bullet">• Заказчики</text><text x="434" y="758" class="bullet">• Пользователи</text>
+</g>
+
+<!-- 4 -->
+<rect x="584" y="535" width="463" height="380" rx="22" fill="#eafcff" stroke="#79d9ee" class="card" filter="url(#shadow)"/>
+<circle cx="623" cy="572" r="29" fill="#287b87"/><text x="614" y="582" class="num">4</text>
+<text x="664" y="575" class="h">Как проходит погружение</text><text x="664" y="602" class="subtitle" font-size="17">(Пошаговый процесс)</text>
+<g>
+<rect x="605" y="625" width="421" height="60" rx="14" fill="#fff" stroke="#79d9ee" stroke-width="2"/><circle cx="635" cy="655" r="20" fill="#31b8df"/><text x="629" y="663" class="num" font-size="17">1</text><text x="674" y="651" class="h" font-size="16">Изучение документации</text><text x="674" y="671" class="small">Внимательно разбираем материалы и задаём вопросы.</text>
+<rect x="605" y="696" width="421" height="60" rx="14" fill="#fff" stroke="#79d9ee" stroke-width="2"/><circle cx="635" cy="726" r="20" fill="#31b8df"/><text x="629" y="734" class="num" font-size="17">2</text><text x="674" y="722" class="h" font-size="16">Общение с командой</text><text x="674" y="742" class="small">Проводим встречи и уточняем детали.</text>
+<rect x="605" y="767" width="421" height="60" rx="14" fill="#fff" stroke="#79d9ee" stroke-width="2"/><circle cx="635" cy="797" r="20" fill="#31b8df"/><text x="629" y="805" class="num" font-size="17">3</text><text x="674" y="793" class="h" font-size="16">Анализ кода и репозитория</text><text x="674" y="813" class="small">Смотрим структуру проекта и историю изменений.</text>
+<rect x="605" y="838" width="421" height="60" rx="14" fill="#fff" stroke="#79d9ee" stroke-width="2"/><circle cx="635" cy="868" r="20" fill="#31b8df"/><text x="629" y="876" class="num" font-size="17">4</text><text x="674" y="864" class="h" font-size="16">Взаимодействие со стейкхолдерами</text><text x="674" y="884" class="small">Получаем дополнительный контекст и обратную связь.</text>
+</g>
+
+<!-- 5 -->
+<rect x="18" y="935" width="548" height="355" rx="22" fill="#eafbf4" stroke="#77d7bc" class="card" filter="url(#shadow)"/>
+<circle cx="57" cy="972" r="29" fill="#15956e"/><text x="48" y="982" class="num">5</text>
+<text x="98" y="975" class="h">Результат погружения</text>
+<rect x="38" y="1020" width="210" height="235" rx="18" fill="#fff" stroke="#77d7bc" stroke-width="2"/>
+<text x="58" y="1070" class="title" font-size="27">CONTEXT</text><circle cx="190" cy="1170" r="31" fill="#36bd8b"/><text x="178" y="1180" class="num">✓</text>
+<g><rect x="270" y="1020" width="276" height="235" rx="18" fill="#fff" stroke="#77d7bc" stroke-width="2"/>
+<text x="290" y="1055" class="h" font-size="16">✓ Чёткое понимание целей</text><text x="290" y="1078" class="small">и приоритетов</text>
+<text x="290" y="1120" class="h" font-size="16">✓ Уверенность в задачах</text><text x="290" y="1143" class="small">и ожидаемых результатах</text>
+<text x="290" y="1185" class="h" font-size="16">✓ Эффективная коммуникация</text><text x="290" y="1208" class="small">с командой</text>
+<text x="290" y="1250" class="h" font-size="16">✓ Быстрая адаптация</text><text x="290" y="1273" class="small">к изменениям</text></g>
+
+<!-- 6 -->
+<rect x="584" y="935" width="463" height="355" rx="22" fill="#f5f1ff" stroke="#c7b9f4" class="card" filter="url(#shadow)"/>
+<circle cx="623" cy="972" r="29" fill="#4b4f9f"/><text x="614" y="982" class="num">6</text>
+<text x="664" y="975" class="h">Полезные советы</text>
+<g>
+<rect x="605" y="1015" width="200" height="110" rx="15" fill="#fff" stroke="#c7b9f4" stroke-width="2"/><text x="620" y="1045" class="h" font-size="16">Будь любопытным</text><text x="620" y="1070" class="small">Задавай вопросы,</text><text x="620" y="1090" class="small">не бойся уточнять.</text>
+<rect x="825" y="1015" width="200" height="110" rx="15" fill="#fff" stroke="#c7b9f4" stroke-width="2"/><text x="840" y="1045" class="h" font-size="16">Фиксируй информацию</text><text x="840" y="1070" class="small">Делай заметки, используй</text><text x="840" y="1090" class="small">шаблоны и чек-листы.</text>
+<rect x="605" y="1140" width="200" height="110" rx="15" fill="#fff" stroke="#c7b9f4" stroke-width="2"/><text x="620" y="1170" class="h" font-size="16">Наблюдай</text><text x="620" y="1195" class="small">Смотри на процессы,</text><text x="620" y="1215" class="small">взаимодействие и привычки.</text>
+<rect x="825" y="1140" width="200" height="110" rx="15" fill="#fff" stroke="#c7b9f4" stroke-width="2"/><text x="840" y="1170" class="h" font-size="16">Думай как продукт</text><text x="840" y="1195" class="small">Понимай не только задачи,</text><text x="840" y="1215" class="small">но и ценность результата.</text>
+</g>
+
+<rect x="25" y="1320" width="1015" height="78" rx="38" fill="#e9f8ff" stroke="#7cccf1" stroke-width="2"/>
+<text x="70" y="1367" class="h" font-size="17">Хорошее погружение в контекст — не просто подготовка, а основа для эффективной работы.</text>
+</svg>
