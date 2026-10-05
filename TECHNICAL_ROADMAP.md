@@ -55,7 +55,9 @@ The previous ~4000-line App component has been split into feature modules.
 
 ## 3. Current stage
 
-**Stage: Production architecture refactor — IN PROGRESS**
+**Stage: Architecture refactor completed → production hardening and Learning Mode stabilization**
+
+The main architecture refactor and handbook hierarchy milestone have been merged into `main`.
 
 Completed:
 - monolithic App split into modules;
@@ -71,19 +73,30 @@ Completed:
 - module-size check added;
 - GitHub Actions verification workflow added;
 - `APP_OVERVIEW.md` added;
-- `main` was not modified.
+- Test Design algorithms decomposed into reusable pure logic;
+- Documentation decomposition milestone completed;
+- storage version boundary and backup/import validation implemented;
+- project context foundation implemented;
+- handbook hierarchy and consolidation implemented;
+- Learning Mode implemented;
+- Learning Mode mobile entry point implemented;
+- 48 lesson infographics implemented with reusable visual definitions;
+- infographic semantic/presentation regression coverage added;
+- `tt2` testing-types content/template boundary fixed;
+- PR #14 handbook hierarchy refactor merged into `main`.
 
-Current branch:
-`refactor/handbook-hierarchy`
+Current development branch:
+`fix/roadmap-learning-mode-accessibility`
 
-Current PR:
-#12 — handbook hierarchy and test-design decomposition.
+Current active milestone:
+- synchronize roadmap with repository state;
+- fix the Learning Mode mobile accessibility regression;
+- then continue production hardening and semantic infographic refinement.
 
 Verification baseline:
-- GitHub Actions `verify` passed for the latest CI cycle after the DocTab/plugin-react fixes;
-- Vercel may independently report a build-rate-limit failure; this is external to the repository verification pipeline.
-
----
+- repository contains focused regression tests for architecture, storage, project context, handbook hierarchy and Learning Mode;
+- Vercel deployment status is independent infrastructure evidence and must not be treated as a substitute for repository verification;
+- GitHub Actions results must be checked for the current head before declaring a milestone complete.
 
 ## 4. Mandatory development rules
 
@@ -163,7 +176,7 @@ AI logic belongs in the core/AI layer, not inside unrelated feature components.
 ## 7. Development roadmap
 
 ### Phase 1 — Architecture refactor
-**Status: IN PROGRESS**
+**Status: COMPLETED**
 
 Tasks:
 1. Verify TypeScript.
@@ -174,7 +187,7 @@ Tasks:
 6. Merge only after verification is green.
 
 ### Phase 2 — Test Design decomposition
-**Status: NEXT**
+**Status: COMPLETED**
 
 Split `TestDesignModule.tsx` into:
 - pure test-design algorithms;
@@ -187,7 +200,7 @@ Split `TestDesignModule.tsx` into:
 Algorithms must not depend on React.
 
 ### Phase 3 — Documentation decomposition
-**Status: PLANNED**
+**Status: COMPLETED**
 
 Split large documentation logic into:
 - document data/model;
@@ -196,7 +209,7 @@ Split large documentation logic into:
 - export logic.
 
 ### Phase 4 — Storage layer
-**Status: IN PROGRESS**
+**Status: FOUNDATION COMPLETED / MIGRATIONS DEFERRED**
 
 Implemented:
 - versioned persistence boundary in `src/app/core/storage.ts`;
@@ -216,7 +229,7 @@ Next:
 - validate persisted structured data at read boundaries where concrete contracts exist.
 
 ### Phase 5 — Validation and tests
-**Status: IN PROGRESS**
+**Status: IN PROGRESS — hardening**
 
 Add:
 - unit tests for pure algorithms;
@@ -247,7 +260,7 @@ Tasks:
 - preserve existing visual language unless redesign is explicitly requested.
 
 ### Phase 7 — Production hardening
-**Status: PLANNED**
+**Status: NEXT MAJOR STAGE**
 
 Before production release:
 - all CI checks green;
@@ -262,7 +275,9 @@ Before production release:
 
 ## 7.1 Handbook hierarchy refactor
 
-**Status: IN PROGRESS**
+**Status: COMPLETED**
+
+The hierarchy refactor was merged into `main` in PR #14. The following subsections are historical implementation records; new work must be documented in a new dated subsection.
 
 The QA Knowledge Base is being reorganized into a learning hierarchy without deleting or shortening existing educational content.
 
@@ -1359,3 +1374,31 @@ Fix:
 - added a regression test that protects the `tt2` template-string boundary.
 
 No lesson content or classification structure was changed.
+
+
+### 7.1.42 Roadmap synchronization and Learning Mode mobile accessibility — 2026-10-05
+
+Repository state synchronized with the actual merged state after PR #14.
+
+Current facts:
+- handbook hierarchy refactor is completed and merged into `main`;
+- Test Design decomposition is completed;
+- Documentation decomposition milestone is completed;
+- storage version boundary and backup/import contracts are implemented;
+- Project Context foundation is implemented;
+- Learning Mode is implemented;
+- all 48 lesson infographic definitions are present;
+- Learning Mode mobile entry-point regression coverage exists;
+- the current concrete failure is an accessibility-contract mismatch: the regression test requires `aria-label="Открыть режим обучения"`, while the Learning Mode button currently has no `aria-label`.
+
+Next immediate task:
+1. add the required accessible label to the Learning Mode button without changing lesson content or behavior;
+2. run the relevant Learning Mode regression tests;
+3. run the full verification gate;
+4. keep the roadmap synchronized with the result.
+
+Next product/engineering milestone after this fix:
+- semantic review of all 48 lesson infographics so the visual model matches the concept being taught (for example, cycles as cycles, API as request/response, levels as a pyramid, comparisons as comparisons);
+- then continue production hardening: accessibility, responsive behavior, validation, performance and critical-flow regression coverage.
+
+No lesson educational text is to be changed as part of the accessibility fix.
