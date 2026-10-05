@@ -1547,3 +1547,17 @@ Next:
 Next:
 - run focused handbook-learning tests plus TypeScript/build verification;
 - inspect the rendered poster at mobile and desktop widths and adjust only evidence-based visual defects.
+
+
+### 7.1.52 Vector visual language extended to all infographic cards — 2026-10-05
+
+- replaced the generic Lucide glyph treatment in regular infographic cards with compact semantic SVG mini-illustrations;
+- illustrations now follow the declared diagram type: flow/timeline, layers, compare, network, cycle, pyramid and checklist each use a distinct visual grammar;
+- preserved compact card density while giving the illustration a dedicated visual zone beside the card title;
+- applied the same illustration treatment to non-principle checklist cards, removing generic checkmark-style decoration from the learning poster;
+- used inline multi-color flat SVG only, avoiding external image dependencies and keeping PDF export self-contained;
+- added regression coverage for the vector illustration component and every supported diagram-kind branch.
+
+Next:
+- run focused handbook-learning tests and TypeScript/build verification;
+- inspect the complete 48-lesson visual language for any cards where the semantic illustration needs topic-specific refinement.
