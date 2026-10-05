@@ -1,99 +1,233 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1065 1476" role="img" aria-labelledby="title desc">
-<title id="title">Погружение в контекст — Scrum</title>
-<desc id="desc">Учебная инфографика по Scrum в стиле пастельного образовательного плаката.</desc>
+<title id="title">Погружение в контекст (Scrum)</title>
+<desc id="desc">Адаптивная учебная инфографика в стиле предоставленного референса: шесть пронумерованных блоков, иллюстрации команды, Sprint, календаря, лампочки, цели, команды, шестерёнки, документации, коммуникации, кода, стейкхолдера, поиска, мозга, чек-листа и звезды.</desc>
 <defs>
-  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f8fcff"/><stop offset="1" stop-color="#fffaff"/></linearGradient>
-  <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#2449a8" flood-opacity=".10"/></filter>
+  <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f7fcff"/><stop offset="1" stop-color="#fffaff"/></linearGradient>
+  <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#173f8f" flood-opacity=".08"/></filter>
   <style>
-    .title{font:800 46px Arial,sans-serif;fill:#0c2d68}.subtitle{font:700 22px Arial,sans-serif;fill:#194a9b}
-    .h{font:800 23px Arial,sans-serif;fill:#123b83}.body{font:600 14px Arial,sans-serif;fill:#214b88}
-    .small{font:600 12px Arial,sans-serif;fill:#315a91}.num{font:800 28px Arial,sans-serif;fill:#fff}
-    .card{stroke-width:2}.bullet{font:700 13px Arial,sans-serif;fill:#315a91}
+    .title{font:800 47px Arial,sans-serif;fill:#082d6c}.h{font:800 22px Arial,sans-serif;fill:#103c82}
+    .h2{font:800 18px Arial,sans-serif;fill:#123f86}.body{font:600 15px Arial,sans-serif;fill:#244c88}
+    .small{font:600 12.5px Arial,sans-serif;fill:#315a91}.num{font:800 29px Arial,sans-serif;fill:#fff}
+    .label{font:800 16px Arial,sans-serif;fill:#123d83}.card{stroke-width:2}
+    .line{stroke:#174da1;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;fill:none}
   </style>
+
+  <!-- Reference-style vector icon library -->
+  <symbol id="lightbulb" viewBox="0 0 90 110">
+    <path d="M45 8c-20 0-34 16-34 35 0 13 6 22 16 30 5 4 7 8 8 14h20c1-6 3-10 8-14 10-8 16-17 16-30C79 24 65 8 45 8z" fill="#ffd65c" stroke="#164aa0" stroke-width="4"/>
+    <path d="M34 89h22M35 98h20" class="line" stroke-width="5"/>
+    <path d="M45 2V0M14 17 5 9M76 17l9-8M4 48H0M86 48h4" class="line" stroke-width="3"/>
+    <path d="M34 53c7-4 10-9 11-16 1 7 4 12 11 16" class="line"/>
+  </symbol>
+
+  <symbol id="target" viewBox="0 0 90 90">
+    <circle cx="42" cy="44" r="27" fill="#fff" stroke="#174da1" stroke-width="4"/>
+    <circle cx="42" cy="44" r="15" fill="#dcecff" stroke="#174da1" stroke-width="4"/>
+    <circle cx="42" cy="44" r="5" fill="#174da1"/>
+    <path d="M48 50 78 20M67 20h11v11" class="line"/>
+  </symbol>
+
+  <symbol id="team" viewBox="0 0 100 90">
+    <circle cx="50" cy="26" r="13" fill="#f3c39c" stroke="#174da1" stroke-width="3"/>
+    <circle cx="23" cy="34" r="10" fill="#f0b68f" stroke="#174da1" stroke-width="3"/>
+    <circle cx="77" cy="34" r="10" fill="#e8ad86" stroke="#174da1" stroke-width="3"/>
+    <path d="M28 67c3-17 14-26 22-26s19 9 22 26" fill="#4f64ba" stroke="#174da1" stroke-width="3"/>
+    <path d="M4 69c2-14 10-21 19-21 7 0 13 4 17 12M96 69c-2-14-10-21-19-21-7 0-13 4-17 12" fill="#6a83d4" stroke="#174da1" stroke-width="3"/>
+    <circle cx="46" cy="25" r="2.5" fill="#174da1"/><circle cx="54" cy="25" r="2.5" fill="#174da1"/>
+  </symbol>
+
+  <symbol id="gear" viewBox="0 0 90 90">
+    <path d="M38 7h14l3 10a29 29 0 0 1 8 5l10-3 7 12-8 7a29 29 0 0 1 0 10l8 7-7 12-10-3a29 29 0 0 1-8 5l-3 10H38l-3-10a29 29 0 0 1-8-5l-10 3-7-12 8-7a29 29 0 0 1 0-10l-8-7 7-12 10 3a29 29 0 0 1 8-5z" fill="#8eb0ff" stroke="#174da1" stroke-width="4"/>
+    <circle cx="45" cy="43" r="13" fill="#fff" stroke="#174da1" stroke-width="4"/>
+  </symbol>
+
+  <symbol id="document" viewBox="0 0 90 100">
+    <path d="M18 8h40l15 15v69H18z" fill="#fff" stroke="#174da1" stroke-width="4"/>
+    <path d="M58 8v17h15M30 40h31M30 54h31M30 68h22" class="line" stroke-width="4"/>
+    <path d="M25 40h0M25 54h0M25 68h0" stroke="#8b75df" stroke-width="7" stroke-linecap="round"/>
+  </symbol>
+
+  <symbol id="chat" viewBox="0 0 100 90">
+    <path d="M10 12h55c10 0 18 8 18 18v24c0 10-8 18-18 18H38L20 84l4-12H10c-5 0-8-4-8-9V30c0-10 8-18 18-18z" fill="#fff" stroke="#174da1" stroke-width="4"/>
+    <path d="M28 43h4M44 43h4M60 43h4" stroke="#174da1" stroke-width="7" stroke-linecap="round"/>
+    <path d="M70 60c7 0 14 5 17 12l-9-3" fill="#f6b7d8" stroke="#174da1" stroke-width="3"/>
+  </symbol>
+
+  <symbol id="code" viewBox="0 0 100 90">
+    <rect x="9" y="12" width="72" height="56" rx="6" fill="#eaf4ff" stroke="#174da1" stroke-width="4"/>
+    <path d="M28 39 20 46l8 7M62 39l8 7-8 7M48 33l-7 27" class="line" stroke-width="4"/>
+    <path d="M25 76h48" class="line" stroke-width="6"/>
+  </symbol>
+
+  <symbol id="stakeholder" viewBox="0 0 100 95">
+    <circle cx="50" cy="27" r="13" fill="#f2bf98" stroke="#174da1" stroke-width="3"/>
+    <path d="M27 77c2-21 13-32 23-32s21 11 23 32" fill="#dbe7ff" stroke="#174da1" stroke-width="3"/>
+    <path d="M73 53l7 6 8-2-3 8 5 7-9-1-6 7-2-9-8-4 8-3z" fill="#ffd65c" stroke="#174da1" stroke-width="3"/>
+  </symbol>
+
+  <symbol id="search" viewBox="0 0 90 90">
+    <circle cx="39" cy="37" r="24" fill="#eaf8ff" stroke="#174da1" stroke-width="5"/>
+    <path d="m57 55 22 22" class="line" stroke-width="8"/>
+    <circle cx="39" cy="37" r="14" fill="#fff"/>
+  </symbol>
+
+  <symbol id="brain" viewBox="0 0 90 90">
+    <path d="M44 18c-8-10-22-5-22 7-9 0-14 11-8 18-8 7-2 20 8 20 1 12 17 14 22 4 6 10 22 8 22-4 10 0 16-13 8-20 6-7 1-18-8-18 0-12-14-17-22-7z" fill="#f2d8ff" stroke="#174da1" stroke-width="4"/>
+    <path d="M44 19v49M29 28c8 3 8 11 3 15M59 28c-8 3-8 11-3 15M28 52c8-1 10 5 8 11M60 52c-8-1-10 5-8 11" class="line" stroke-width="3"/>
+  </symbol>
+
+  <symbol id="checklist" viewBox="0 0 90 100">
+    <rect x="18" y="10" width="54" height="78" rx="5" fill="#fff" stroke="#174da1" stroke-width="4"/>
+    <path d="M30 31h8M48 31h12M30 47h8M48 47h12M30 63h8M48 63h12" class="line" stroke-width="4"/>
+    <path d="m30 30 3 3 6-7M30 46l3 3 6-7M30 62l3 3 6-7" stroke="#51b98a" stroke-width="4" fill="none"/>
+  </symbol>
+
+  <symbol id="star" viewBox="0 0 90 90">
+    <path d="m45 7 10 24 26 2-20 17 6 26-22-14-22 14 6-26L9 33l26-2z" fill="#8cb4ff" stroke="#174da1" stroke-width="4"/>
+  </symbol>
+
+  <symbol id="clipboard" viewBox="0 0 120 120">
+    <rect x="25" y="17" width="70" height="91" rx="7" fill="#fff" stroke="#174da1" stroke-width="4" transform="rotate(-8 60 62)"/>
+    <rect x="46" y="10" width="28" height="12" rx="6" fill="#d9e7ff" stroke="#174da1" stroke-width="4" transform="rotate(-8 60 62)"/>
+    <path d="M40 44h35M40 59h35M40 74h25" class="line" stroke-width="4" transform="rotate(-8 60 62)"/>
+    <circle cx="80" cy="86" r="21" fill="#38bd8c" stroke="#174da1" stroke-width="4"/>
+    <path d="m70 86 7 7 13-16" stroke="#fff" stroke-width="5" fill="none"/>
+  </symbol>
+
+  <symbol id="calendar" viewBox="0 0 90 90">
+    <rect x="10" y="17" width="70" height="62" rx="8" fill="#fff" stroke="#174da1" stroke-width="4"/>
+    <path d="M10 35h70M25 8v18M65 8v18" class="line"/>
+    <path d="M25 49h0M45 49h0M65 49h0M25 64h0M45 64h0M65 64h0" stroke="#174da1" stroke-width="7" stroke-linecap="round"/>
+  </symbol>
+
+  <symbol id="sprint" viewBox="0 0 220 130">
+    <rect x="12" y="20" width="178" height="98" rx="10" fill="#dcecff" stroke="#174da1" stroke-width="4"/>
+    <rect x="27" y="34" width="148" height="67" rx="6" fill="#fff" stroke="#8eafe6" stroke-width="2"/>
+    <rect x="39" y="45" width="22" height="18" rx="2" fill="#f8ca63"/><rect x="67" y="45" width="22" height="18" rx="2" fill="#ef7f73"/>
+    <rect x="39" y="70" width="22" height="18" rx="2" fill="#f4b9d9"/><rect x="67" y="70" width="22" height="18" rx="2" fill="#69c9a0"/>
+    <path d="M116 47a28 28 0 1 0 17 31" fill="none" stroke="#4964d5" stroke-width="10"/>
+    <path d="m139 77-11-2 5-11" fill="#4964d5"/>
+    <text x="105" y="73" class="h2" font-size="19">SPRINT</text>
+    <rect x="188" y="31" width="23" height="47" rx="4" fill="#61b990" stroke="#174da1" stroke-width="3"/>
+  </symbol>
+
+  <symbol id="people-laptop" viewBox="0 0 310 180">
+    <rect x="111" y="71" width="104" height="68" rx="8" fill="#dcecff" stroke="#174da1" stroke-width="4"/>
+    <rect x="121" y="82" width="84" height="49" rx="4" fill="#fff"/>
+    <path d="M95 143h140l-12 12H107z" fill="#b7d0f6" stroke="#174da1" stroke-width="4"/>
+    <circle cx="73" cy="54" r="22" fill="#f0bd96" stroke="#174da1" stroke-width="3"/>
+    <path d="M40 127c4-41 18-60 36-60 18 0 31 20 35 60" fill="#2e62ad" stroke="#174da1" stroke-width="3"/>
+    <circle cx="160" cy="57" r="20" fill="#eeb994" stroke="#174da1" stroke-width="3"/>
+    <path d="M131 127c4-39 15-56 29-56 17 0 28 18 31 56" fill="#d88cc1" stroke="#174da1" stroke-width="3"/>
+    <circle cx="249" cy="62" r="20" fill="#f2bf98" stroke="#174da1" stroke-width="3"/>
+    <path d="M221 128c4-38 15-55 29-55 17 0 29 18 32 55" fill="#f1b449" stroke="#174da1" stroke-width="3"/>
+    <circle cx="204" cy="42" r="19" fill="#eab48c" stroke="#174da1" stroke-width="3"/>
+    <path d="M177 126c3-36 14-54 27-54 16 0 27 18 30 54" fill="#4054a0" stroke="#174da1" stroke-width="3"/>
+  </symbol>
 </defs>
-<rect width="1065" height="1476" fill="url(#bg)"/>
-<rect x="24" y="20" width="190" height="38" rx="19" fill="#dceaff"/>
-<text x="45" y="46" class="subtitle" font-size="18">Модуль 2. Погружение в контекст</text>
-<text x="24" y="106" class="title">Погружение в контекст</text>
+
+<rect width="1065" height="1476" fill="url(#paper)"/>
+
+<!-- Header -->
+<rect x="22" y="18" width="258" height="40" rx="20" fill="#dceaff"/>
+<text x="40" y="45" class="label">Модуль 2. Погружение в контекст</text>
+<text x="24" y="105" class="title">Погружение в контекст</text>
 <text x="24" y="157" class="title">(Scrum)</text>
-<g transform="translate(735 35)">
- <rect x="0" y="18" width="180" height="105" rx="12" fill="#dfeaff" stroke="#204ba5" stroke-width="4"/>
- <rect x="14" y="31" width="152" height="72" rx="8" fill="#fff" stroke="#7fa5e8" stroke-width="2"/>
- <text x="67" y="73" class="h" font-size="20">SPRINT</text>
- <path d="M52 90h80" stroke="#54b989" stroke-width="8" stroke-linecap="round"/>
- <circle cx="150" cy="50" r="8" fill="#f5bf63"/>
-</g>
-<rect x="932" y="42" width="90" height="85" rx="14" fill="#fff" stroke="#315bb0" stroke-width="3"/>
-<text x="949" y="72" class="h" font-size="16">1–4</text><text x="947" y="96" class="h" font-size="14">недели</text>
-<text x="590" y="135" class="subtitle" font-size="17">Понимание контекста — ключ к успешной работе команды!</text>
+<text x="585" y="68" class="small" font-size="17">Понимание</text>
+<text x="575" y="91" class="small" font-size="17">контекста — ключ</text>
+<text x="575" y="114" class="small" font-size="17">к успешной</text>
+<text x="575" y="137" class="small" font-size="17">работе команды!</text>
+<path d="M572 150q65 8 124-12" stroke="#174da1" stroke-width="3" fill="none"/>
+<use href="#people-laptop" x="685" y="4" width="285" height="165"/>
+<use href="#calendar" x="958" y="30" width="82" height="82"/>
+<text x="975" y="66" class="h2" font-size="17">1–4</text><text x="972" y="88" class="h2" font-size="14">недели</text>
+<use href="#sprint" x="720" y="16" width="165" height="98"/>
 
 <!-- 1 -->
-<rect x="18" y="185" width="480" height="330" rx="22" fill="#eaf8ff" stroke="#86d8f4" class="card" filter="url(#shadow)"/>
-<circle cx="57" cy="222" r="29" fill="#2452a9"/><text x="48" y="232" class="num">1</text>
-<text x="98" y="218" class="h">Что такое погружение</text><text x="98" y="246" class="h">в контекст</text>
-<g transform="translate(48 290)"><circle cx="0" cy="0" r="28" fill="#ffd86b" stroke="#234fa4" stroke-width="4"/><path d="M-10 13q10 12 20 0M-8 25h16" stroke="#234fa4" stroke-width="4" fill="none"/><path d="M0 -40v-16M-34 -27l-12 -10M34 -27l12 -10" stroke="#234fa4" stroke-width="3"/></g>
-<text x="98" y="294" class="body">Погружение в контекст — это процесс</text><text x="98" y="319" class="body">изучения всех аспектов проекта, команды</text><text x="98" y="344" class="body">и рабочей среды, чтобы понимать цели,</text><text x="98" y="369" class="body">задачи, ограничения и особенности</text><text x="98" y="394" class="body">продукта. Это помогает быстрее</text><text x="98" y="419" class="body">включиться в работу и принимать</text><text x="98" y="444" class="body">правильные решения.</text>
+<rect x="12" y="187" width="480" height="350" rx="20" fill="#eaf8ff" stroke="#8adcf4" class="card" filter="url(#shadow)"/>
+<circle cx="55" cy="225" r="30" fill="#2553a8"/><text x="46" y="236" class="num">1</text>
+<text x="97" y="220" class="h">Что такое погружение</text><text x="97" y="247" class="h">в контекст</text>
+<use href="#lightbulb" x="31" y="288" width="75" height="92"/>
+<text x="129" y="294" class="body">Погружение в контекст — это процесс</text>
+<text x="129" y="321" class="body">изучения всех аспектов проекта, команды</text>
+<text x="129" y="348" class="body">и рабочей среды, чтобы понимать цели,</text>
+<text x="129" y="375" class="body">задачи, ограничения и особенности</text>
+<text x="129" y="402" class="body">продукта. Это помогает быстрее</text>
+<text x="129" y="429" class="body">включиться в работу и принимать</text>
+<text x="129" y="456" class="body">правильные решения.</text>
 
 <!-- 2 -->
-<rect x="515" y="185" width="532" height="330" rx="22" fill="#f4f0ff" stroke="#cbb8f7" class="card" filter="url(#shadow)"/>
-<circle cx="555" cy="222" r="29" fill="#4b4f9f"/><text x="546" y="232" class="num">2</text>
-<text x="595" y="226" class="h">Что нужно узнать</text>
-<g>
-<rect x="535" y="260" width="235" height="108" rx="16" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
-<text x="565" y="289" class="h">Цели и продукт</text><text x="550" y="315" class="bullet">• Бизнес-цели компании</text><text x="550" y="337" class="bullet">• Ценность продукта</text><text x="550" y="359" class="bullet">• Целевая аудитория</text>
-<rect x="785" y="260" width="235" height="108" rx="16" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
-<text x="815" y="289" class="h">Команда</text><text x="800" y="315" class="bullet">• Роли и ответственность</text><text x="800" y="337" class="bullet">• Опыт и экспертиза</text><text x="800" y="359" class="bullet">• Коммуникации</text>
-<rect x="535" y="382" width="235" height="108" rx="16" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
-<text x="565" y="411" class="h">Процессы</text><text x="550" y="437" class="bullet">• Scrum-процессы</text><text x="550" y="459" class="bullet">• Церемонии и правила</text><text x="550" y="481" class="bullet">• Инструменты</text>
-<rect x="785" y="382" width="235" height="108" rx="16" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
-<text x="815" y="411" class="h">Контекст проекта</text><text x="800" y="437" class="bullet">• Текущая стадия</text><text x="800" y="459" class="bullet">• Ограничения</text><text x="800" y="481" class="bullet">• Риски и зависимости</text>
-</g>
+<rect x="508" y="187" width="545" height="350" rx="20" fill="#f4f0ff" stroke="#cbb8f7" class="card" filter="url(#shadow)"/>
+<circle cx="550" cy="225" r="30" fill="#4b4f9f"/><text x="541" y="236" class="num">2</text>
+<text x="594" y="229" class="h">Что нужно узнать</text>
+<rect x="529" y="260" width="250" height="118" rx="15" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
+<use href="#target" x="543" y="277" width="55" height="55"/><text x="608" y="287" class="h2">Цели и продукт</text>
+<text x="608" y="313" class="small">• Бизнес-цели компании</text><text x="608" y="335" class="small">• Ценность продукта</text><text x="608" y="357" class="small">• Целевая аудитория</text>
+<rect x="793" y="260" width="240" height="118" rx="15" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
+<use href="#team" x="803" y="277" width="55" height="55"/><text x="870" y="287" class="h2">Команда</text>
+<text x="870" y="313" class="small">• Роли и ответственность</text><text x="870" y="335" class="small">• Опыт и экспертиза</text><text x="870" y="357" class="small">• Коммуникации в команде</text>
+<rect x="529" y="391" width="250" height="118" rx="15" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
+<use href="#gear" x="543" y="408" width="55" height="55"/><text x="608" y="418" class="h2">Процессы</text>
+<text x="608" y="444" class="small">• Scrum-процессы</text><text x="608" y="466" class="small">• Церемонии (Daily, Sprint и др.)</text><text x="608" y="488" class="small">• Инструменты и правила</text>
+<rect x="793" y="391" width="240" height="118" rx="15" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
+<use href="#document" x="806" y="406" width="50" height="60"/><text x="870" y="418" class="h2">Контекст проекта</text>
+<text x="870" y="444" class="small">• Текущая стадия</text><text x="870" y="466" class="small">• Ограничения (время, ресурсы)</text><text x="870" y="488" class="small">• Риски и зависимости</text>
 
 <!-- 3 -->
-<rect x="18" y="535" width="548" height="380" rx="22" fill="#fffaf0" stroke="#f1d48a" class="card" filter="url(#shadow)"/>
-<circle cx="57" cy="572" r="29" fill="#3654a5"/><text x="48" y="582" class="num">3</text>
-<text x="98" y="575" class="h">Основные источники информации</text><text x="98" y="602" class="subtitle" font-size="17">(Инструменты работы)</text>
-<g>
-<rect x="38" y="630" width="116" height="250" rx="15" fill="#fff" stroke="#ecd28e" stroke-width="2"/><text x="51" y="680" class="h" font-size="16">Документация</text><text x="50" y="710" class="bullet">• PRD, User Stories</text><text x="50" y="734" class="bullet">• Тех. документация</text><text x="50" y="758" class="bullet">• Доп. материалы</text>
-<rect x="166" y="630" width="116" height="250" rx="15" fill="#fff" stroke="#ecd28e" stroke-width="2"/><text x="179" y="680" class="h" font-size="16">Коммуникация</text><text x="178" y="710" class="bullet">• Встречи</text><text x="178" y="734" class="bullet">• Чаты</text><text x="178" y="758" class="bullet">• Ретроспективы</text>
-<rect x="294" y="630" width="116" height="250" rx="15" fill="#fff" stroke="#ecd28e" stroke-width="2"/><text x="307" y="680" class="h" font-size="16">Код и репозиторий</text><text x="306" y="710" class="bullet">• Git</text><text x="306" y="734" class="bullet">• Code Review</text><text x="306" y="758" class="bullet">• История изменений</text>
-<rect x="422" y="630" width="124" height="250" rx="15" fill="#fff" stroke="#ecd28e" stroke-width="2"/><text x="435" y="680" class="h" font-size="16">Стейкхолдеры</text><text x="434" y="710" class="bullet">• Владелец продукта</text><text x="434" y="734" class="bullet">• Заказчики</text><text x="434" y="758" class="bullet">• Пользователи</text>
-</g>
+<rect x="12" y="559" width="555" height="386" rx="20" fill="#fffaf0" stroke="#f0d48a" class="card" filter="url(#shadow)"/>
+<circle cx="55" cy="597" r="30" fill="#3654a5"/><text x="46" y="608" class="num">3</text>
+<text x="97" y="600" class="h">Основные источники информации</text><text x="97" y="627" class="body">(Инструменты работы)</text>
+<rect x="25" y="651" width="122" height="270" rx="14" fill="#fff" stroke="#ecd28e" stroke-width="2"/>
+<use href="#document" x="58" y="668" width="58" height="70"/><text x="39" y="763" class="h2" font-size="15">Документация</text><text x="35" y="794" class="small">• PRD, User Stories</text><text x="35" y="817" class="small">• Техническая</text><text x="43" y="836" class="small">  документация</text><text x="35" y="863" class="small">• Доп. материалы</text>
+<rect x="155" y="651" width="122" height="270" rx="14" fill="#fff" stroke="#ecd28e" stroke-width="2"/>
+<use href="#chat" x="185" y="671" width="62" height="62"/><text x="168" y="763" class="h2" font-size="15">Коммуникация</text><text x="177" y="783" class="h2" font-size="15">с командой</text><text x="165" y="814" class="small">• Встречи</text><text x="165" y="838" class="small">• Чаты</text><text x="165" y="862" class="small">• Ретроспективы</text>
+<rect x="285" y="651" width="122" height="270" rx="14" fill="#fff" stroke="#ecd28e" stroke-width="2"/>
+<use href="#code" x="316" y="675" width="62" height="62"/><text x="301" y="763" class="h2" font-size="15">Код и репозиторий</text><text x="302" y="814" class="small">• Git</text><text x="302" y="838" class="small">• Code Review</text><text x="302" y="862" class="small">• История изменений</text>
+<rect x="415" y="651" width="132" height="270" rx="14" fill="#fff" stroke="#ecd28e" stroke-width="2"/>
+<use href="#stakeholder" x="451" y="669" width="62" height="70"/><text x="427" y="763" class="h2" font-size="15">Стейкхолдеры</text><text x="427" y="814" class="small">• Владелец продукта</text><text x="427" y="838" class="small">• Заказчики</text><text x="427" y="862" class="small">• Пользователи</text>
 
 <!-- 4 -->
-<rect x="584" y="535" width="463" height="380" rx="22" fill="#eafcff" stroke="#79d9ee" class="card" filter="url(#shadow)"/>
-<circle cx="623" cy="572" r="29" fill="#287b87"/><text x="614" y="582" class="num">4</text>
-<text x="664" y="575" class="h">Как проходит погружение</text><text x="664" y="602" class="subtitle" font-size="17">(Пошаговый процесс)</text>
-<g>
-<rect x="605" y="625" width="421" height="60" rx="14" fill="#fff" stroke="#79d9ee" stroke-width="2"/><circle cx="635" cy="655" r="20" fill="#31b8df"/><text x="629" y="663" class="num" font-size="17">1</text><text x="674" y="651" class="h" font-size="16">Изучение документации</text><text x="674" y="671" class="small">Внимательно разбираем материалы и задаём вопросы.</text>
-<rect x="605" y="696" width="421" height="60" rx="14" fill="#fff" stroke="#79d9ee" stroke-width="2"/><circle cx="635" cy="726" r="20" fill="#31b8df"/><text x="629" y="734" class="num" font-size="17">2</text><text x="674" y="722" class="h" font-size="16">Общение с командой</text><text x="674" y="742" class="small">Проводим встречи и уточняем детали.</text>
-<rect x="605" y="767" width="421" height="60" rx="14" fill="#fff" stroke="#79d9ee" stroke-width="2"/><circle cx="635" cy="797" r="20" fill="#31b8df"/><text x="629" y="805" class="num" font-size="17">3</text><text x="674" y="793" class="h" font-size="16">Анализ кода и репозитория</text><text x="674" y="813" class="small">Смотрим структуру проекта и историю изменений.</text>
-<rect x="605" y="838" width="421" height="60" rx="14" fill="#fff" stroke="#79d9ee" stroke-width="2"/><circle cx="635" cy="868" r="20" fill="#31b8df"/><text x="629" y="876" class="num" font-size="17">4</text><text x="674" y="864" class="h" font-size="16">Взаимодействие со стейкхолдерами</text><text x="674" y="884" class="small">Получаем дополнительный контекст и обратную связь.</text>
-</g>
+<rect x="583" y="559" width="470" height="386" rx="20" fill="#eafcff" stroke="#79d9ee" class="card" filter="url(#shadow)"/>
+<circle cx="625" cy="597" r="30" fill="#287b87"/><text x="616" y="608" class="num">4</text>
+<text x="667" y="600" class="h">Как проходит погружение</text><text x="667" y="627" class="body">(Пошаговый процесс)</text>
+<rect x="603" y="651" width="428" height="62" rx="14" fill="#fff" stroke="#79d9ee" stroke-width="2"/>
+<circle cx="633" cy="682" r="21" fill="#35bce3"/><text x="627" y="690" class="num" font-size="18">1</text><use href="#search" x="657" y="657" width="52" height="52"/><text x="718" y="676" class="h2" font-size="15">Изучение документации</text><text x="718" y="697" class="small">Внимательно разбираем доступные материалы</text><text x="718" y="711" class="small">и задаём вопросы.</text>
+<rect x="603" y="723" width="428" height="62" rx="14" fill="#fff" stroke="#79d9ee" stroke-width="2"/>
+<circle cx="633" cy="754" r="21" fill="#35bce3"/><text x="627" y="762" class="num" font-size="18">2</text><use href="#chat" x="657" y="733" width="52" height="52"/><text x="718" y="748" class="h2" font-size="15">Общение с командой</text><text x="718" y="769" class="small">Проводим встречи и уточняем детали,</text><text x="718" y="783" class="small">если что-то непонятно.</text>
+<rect x="603" y="795" width="428" height="62" rx="14" fill="#fff" stroke="#79d9ee" stroke-width="2"/>
+<circle cx="633" cy="826" r="21" fill="#35bce3"/><text x="627" y="834" class="num" font-size="18">3</text><use href="#code" x="657" y="805" width="52" height="52"/><text x="718" y="820" class="h2" font-size="15">Анализ кода и репозитория</text><text x="718" y="841" class="small">Смотрим структуру проекта и историю изменений.</text>
+<rect x="603" y="867" width="428" height="62" rx="14" fill="#fff" stroke="#79d9ee" stroke-width="2"/>
+<circle cx="633" cy="898" r="21" fill="#35bce3"/><text x="627" y="906" class="num" font-size="18">4</text><use href="#team" x="657" y="876" width="52" height="48"/><text x="718" y="892" class="h2" font-size="15">Взаимодействие со стейкхолдерами</text><text x="718" y="913" class="small">Получаем дополнительный контекст и обратную связь.</text>
 
 <!-- 5 -->
-<rect x="18" y="935" width="548" height="355" rx="22" fill="#eafbf4" stroke="#77d7bc" class="card" filter="url(#shadow)"/>
-<circle cx="57" cy="972" r="29" fill="#15956e"/><text x="48" y="982" class="num">5</text>
-<text x="98" y="975" class="h">Результат погружения</text>
-<rect x="38" y="1020" width="210" height="235" rx="18" fill="#fff" stroke="#77d7bc" stroke-width="2"/>
-<text x="58" y="1070" class="title" font-size="27">CONTEXT</text><circle cx="190" cy="1170" r="31" fill="#36bd8b"/><text x="178" y="1180" class="num">✓</text>
-<g><rect x="270" y="1020" width="276" height="235" rx="18" fill="#fff" stroke="#77d7bc" stroke-width="2"/>
-<text x="290" y="1055" class="h" font-size="16">✓ Чёткое понимание целей</text><text x="290" y="1078" class="small">и приоритетов</text>
-<text x="290" y="1120" class="h" font-size="16">✓ Уверенность в задачах</text><text x="290" y="1143" class="small">и ожидаемых результатах</text>
-<text x="290" y="1185" class="h" font-size="16">✓ Эффективная коммуникация</text><text x="290" y="1208" class="small">с командой</text>
-<text x="290" y="1250" class="h" font-size="16">✓ Быстрая адаптация</text><text x="290" y="1273" class="small">к изменениям</text></g>
+<rect x="12" y="967" width="555" height="354" rx="20" fill="#eafbf4" stroke="#77d7bc" class="card" filter="url(#shadow)"/>
+<circle cx="55" cy="1005" r="30" fill="#15956e"/><text x="46" y="1016" class="num">5</text>
+<text x="97" y="1009" class="h">Результат погружения</text>
+<use href="#clipboard" x="36" y="1050" width="215" height="215"/>
+<rect x="264" y="1050" width="279" height="238" rx="17" fill="#fff" stroke="#77d7bc" stroke-width="2"/>
+<circle cx="288" cy="1081" r="11" fill="#38bd8c"/><path d="m282 1081 5 5 8-10" stroke="#fff" stroke-width="3" fill="none"/>
+<text x="310" y="1078" class="small">Чёткое понимание целей</text><text x="310" y="1096" class="small">и приоритетов</text>
+<path d="M282 1113h236M282 1164h236M282 1215h236" stroke="#b8e5d6" stroke-width="2"/>
+<circle cx="288" cy="1132" r="11" fill="#38bd8c"/><path d="m282 1132 5 5 8-10" stroke="#fff" stroke-width="3" fill="none"/><text x="310" y="1129" class="small">Уверенность в задачах</text><text x="310" y="1147" class="small">и ожидаемых результатах</text>
+<circle cx="288" cy="1183" r="11" fill="#38bd8c"/><path d="m282 1183 5 5 8-10" stroke="#fff" stroke-width="3" fill="none"/><text x="310" y="1180" class="small">Эффективная коммуникация</text><text x="310" y="1198" class="small">с командой</text>
+<circle cx="288" cy="1234" r="11" fill="#38bd8c"/><path d="m282 1234 5 5 8-10" stroke="#fff" stroke-width="3" fill="none"/><text x="310" y="1231" class="small">Быстрая адаптация</text><text x="310" y="1249" class="small">к изменениям</text>
 
 <!-- 6 -->
-<rect x="584" y="935" width="463" height="355" rx="22" fill="#f5f1ff" stroke="#c7b9f4" class="card" filter="url(#shadow)"/>
-<circle cx="623" cy="972" r="29" fill="#4b4f9f"/><text x="614" y="982" class="num">6</text>
-<text x="664" y="975" class="h">Полезные советы</text>
-<g>
-<rect x="605" y="1015" width="200" height="110" rx="15" fill="#fff" stroke="#c7b9f4" stroke-width="2"/><text x="620" y="1045" class="h" font-size="16">Будь любопытным</text><text x="620" y="1070" class="small">Задавай вопросы,</text><text x="620" y="1090" class="small">не бойся уточнять.</text>
-<rect x="825" y="1015" width="200" height="110" rx="15" fill="#fff" stroke="#c7b9f4" stroke-width="2"/><text x="840" y="1045" class="h" font-size="16">Фиксируй информацию</text><text x="840" y="1070" class="small">Делай заметки, используй</text><text x="840" y="1090" class="small">шаблоны и чек-листы.</text>
-<rect x="605" y="1140" width="200" height="110" rx="15" fill="#fff" stroke="#c7b9f4" stroke-width="2"/><text x="620" y="1170" class="h" font-size="16">Наблюдай</text><text x="620" y="1195" class="small">Смотри на процессы,</text><text x="620" y="1215" class="small">взаимодействие и привычки.</text>
-<rect x="825" y="1140" width="200" height="110" rx="15" fill="#fff" stroke="#c7b9f4" stroke-width="2"/><text x="840" y="1170" class="h" font-size="16">Думай как продукт</text><text x="840" y="1195" class="small">Понимай не только задачи,</text><text x="840" y="1215" class="small">но и ценность результата.</text>
-</g>
+<rect x="583" y="967" width="470" height="354" rx="20" fill="#f5f1ff" stroke="#c7b9f4" class="card" filter="url(#shadow)"/>
+<circle cx="625" cy="1005" r="30" fill="#4b4f9f"/><text x="616" y="1016" class="num">6</text>
+<text x="667" y="1009" class="h">Полезные советы</text>
+<rect x="603" y="1050" width="208" height="108" rx="15" fill="#fff" stroke="#c7b9f4" stroke-width="2"/>
+<use href="#brain" x="614" y="1062" width="54" height="54"/><text x="675" y="1080" class="h2" font-size="15">Будь любопытным</text><text x="675" y="1102" class="small">Задавай вопросы,</text><text x="675" y="1120" class="small">не бойся уточнять.</text>
+<rect x="823" y="1050" width="208" height="108" rx="15" fill="#fff" stroke="#c7b9f4" stroke-width="2"/>
+<use href="#checklist" x="836" y="1062" width="49" height="55"/><text x="892" y="1080" class="h2" font-size="15">Фиксируй информацию</text><text x="892" y="1102" class="small">Делай заметки, используй</text><text x="892" y="1120" class="small">шаблоны и чек-листы.</text>
+<rect x="603" y="1172" width="208" height="108" rx="15" fill="#fff" stroke="#c7b9f4" stroke-width="2"/>
+<use href="#team" x="614" y="1184" width="54" height="54"/><text x="675" y="1202" class="h2" font-size="15">Наблюдай</text><text x="675" y="1224" class="small">Смотри на процессы,</text><text x="675" y="1242" class="small">взаимодействие и привычки</text><text x="675" y="1260" class="small">команды.</text>
+<rect x="823" y="1172" width="208" height="108" rx="15" fill="#fff" stroke="#c7b9f4" stroke-width="2"/>
+<use href="#star" x="838" y="1186" width="49" height="49"/><text x="892" y="1202" class="h2" font-size="15">Думай как продукт</text><text x="892" y="1224" class="small">Старайся понимать</text><text x="892" y="1242" class="small">не только задачи,</text><text x="892" y="1260" class="small">но и ценность результата.</text>
 
-<rect x="25" y="1320" width="1015" height="78" rx="38" fill="#e9f8ff" stroke="#7cccf1" stroke-width="2"/>
-<text x="70" y="1367" class="h" font-size="17">Хорошее погружение в контекст — не просто подготовка, а основа для эффективной работы.</text>
+<!-- Footer -->
+<rect x="16" y="1362" width="1033" height="78" rx="39" fill="#e9f8ff" stroke="#7cccf1" stroke-width="2"/>
+<use href="#target" x="75" y="1374" width="49" height="49"/>
+<text x="145" y="1409" class="h2" font-size="17">Хорошее погружение в контекст — это не просто подготовка, а основа для эффективной работы!</text>
+<path d="M1005 1391l12-10M1010 1403l18 0M1006 1414l11 9" stroke="#174da1" stroke-width="3" fill="none"/>
 </svg>
