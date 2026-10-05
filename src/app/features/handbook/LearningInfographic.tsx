@@ -823,10 +823,8 @@ function PdfDownloadButton({ targetId }: { targetId: string }) {
 }
 function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
   const visual = getVisual(lesson);
-  const Icon = visual.icon;
   const styles = ACCENT_STYLES[visual.accent];
   const lessonNumber = lesson.id.match(/-(\d+)$/)?.[1] ?? "01";
-  const isTestingPrinciples = lesson.id === "m1-03";
   const infographicId = `learning-infographic-${lesson.id}`;
 
   return (
@@ -898,16 +896,3 @@ function ModuleInfographic({ module }: { module: LearningModule }) {
           })}
         </ol>
       </div>
-    </section>
-  );
-}
-
-export function LearningInfographic(
-  props:
-    | { mode: "lesson"; lesson: LearningLesson }
-    | { mode: "module"; module: LearningModule },
-) {
-  return props.mode === "module"
-    ? <ModuleInfographic module={props.module} />
-    : <LessonInfographic lesson={props.lesson} />;
-}
