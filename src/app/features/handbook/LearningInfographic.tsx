@@ -812,12 +812,12 @@ function PdfDownloadButton({ targetId }: { targetId: string }) {
       data-pdf-ignore
       onClick={downloadPdf}
       disabled={isGenerating}
-      aria-label="Скачать визуальную шпаргалку в PDF"
-      title="Скачать PDF"
+      aria-label="Сохранить инфографику в PDF"
+      title="Сохранить инфографику в PDF"
       className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-2.5 text-[10px] font-bold text-blue-800 shadow-sm transition hover:bg-blue-50 disabled:cursor-wait disabled:opacity-60"
     >
       <Download className="h-3.5 w-3.5" aria-hidden="true" />
-      <span>{isGenerating ? "PDF…" : "PDF"}</span>
+      <span>{isGenerating ? "Сохранение…" : "Сохранить"}</span>
     </button>
   );
 }
@@ -835,46 +835,28 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
       className="overflow-hidden rounded-[28px] border-2 border-blue-100 bg-white shadow-[0_8px_30px_rgba(30,64,175,0.08)]"
       aria-label={`Инфографика урока: ${lesson.title}`}
     >
-      {isTestingPrinciples ? (
-        <div className="flex items-center justify-between gap-3 border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-3 sm:px-5">
-          <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">7 принципов тестирования</h4>
+      <div className="border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-4 sm:px-6">
+        <div className="flex items-center gap-3">
+          <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 border-blue-200 bg-white text-sm font-black shadow-[2px_3px_0_rgba(30,64,175,0.10)] ${styles.marker}`}>{lessonNumber}</div>
+          <div className="min-w-0 flex-1">
+            <div className="mb-1 flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-blue-700 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] text-white">Инфографика</span>
+              <span className={`rounded-full border bg-white/80 px-2.5 py-1 text-[9px] font-bold text-blue-800 dark:text-black ${styles.badge}`}>{KIND_LABELS[visual.kind]}</span>
+            </div>
+            <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{lesson.title}</h4>
+          </div>
           <PdfDownloadButton targetId={infographicId} />
         </div>
-      ) : (
-        <div className={`border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-5 sm:px-6 ${styles.card}`}>
-          <div className="relative flex items-start gap-3 sm:gap-4">
-            <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-blue-200 bg-white text-3xl font-black shadow-[3px_4px_0_rgba(30,64,175,0.12)] ${styles.marker}`}>
-              {lessonNumber}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="mb-1.5 flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-blue-700 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white">Визуальная шпаргалка</span>
-                <span className={`rounded-full border bg-white/80 px-2.5 py-1 text-[10px] font-bold text-blue-800 dark:text-black ${styles.badge}`}>{KIND_LABELS[visual.kind]}</span>
-              </div>
-              <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{lesson.title}</h4>
-              <div className="mt-2 flex items-center gap-2">
-                <span className={`h-1.5 w-10 rounded-full ${styles.marker}`} />
-                <span className="h-1.5 w-2 rounded-full bg-blue-200" />
-                <span className="h-1.5 w-2 rounded-full bg-violet-200" />
-              </div>
-            </div>
-            <div className={`hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 bg-white shadow-[2px_3px_0_rgba(30,64,175,0.08)] sm:flex ${styles.badge}`}>
-              <Icon className="h-6 w-6 text-blue-700" aria-hidden="true" />
-            </div>
-          </div>
-        </div>
-      )}
+      </div>
 
-      <div className={`bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] ${isTestingPrinciples ? "p-3 sm:p-4" : "p-4 sm:p-6"}`}>
-        {!isTestingPrinciples && (
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <span className="rounded-full bg-sky-100 px-3 py-1 text-[10px] font-extrabold text-blue-800 dark:text-black">Суть за 10 секунд</span>
-            <span className="text-[10px] font-semibold text-slate-400 dark:text-black">смотри на структуру →</span>
-          </div>
-        )}
-        {!isTestingPrinciples && <VisualMotif visual={visual} />}
+      <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:p-5">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <span className="rounded-full bg-sky-100 px-3 py-1 text-[10px] font-extrabold text-blue-800 dark:text-black">Ключевая схема</span>
+          <span className="text-[10px] font-semibold text-slate-400 dark:text-black">сначала структура → затем детали</span>
+        </div>
+        <VisualMotif visual={visual} />
         <VisualDiagram visual={visual} />
-        {visual.callout && !isTestingPrinciples && (
+        {visual.callout && (
           <div className="mt-4 flex items-start gap-2.5 rounded-[18px] border-2 border-blue-100 bg-white/90 px-3.5 py-3 shadow-[1px_2px_0_rgba(30,64,175,0.05)]">
             <Zap className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" aria-hidden="true" />
             <p className="text-[11px] font-semibold leading-[1.45] text-blue-950 dark:text-black">{visual.callout}</p>
@@ -885,39 +867,36 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
   );
 }
 function ModuleInfographic({ module }: { module: LearningModule }) {
+  const moduleId = `learning-module-infographic-${module.id}`;
   return (
-    <section className="overflow-hidden rounded-[28px] border-2 border-blue-100 bg-white shadow-[0_8px_30px_rgba(30,64,175,0.08)]" aria-label={`Инфографика: ${module.title}`}>
-      <div className="border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-5 sm:px-6">
-        <div className="flex items-start gap-3">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-blue-200 bg-white text-blue-700 shadow-[2px_3px_0_rgba(30,64,175,0.12)]">
-            <BookOpen className="h-7 w-7" aria-hidden="true" />
+    <section id={moduleId} className="overflow-hidden rounded-[28px] border-2 border-blue-100 bg-white shadow-[0_8px_30px_rgba(30,64,175,0.08)]" aria-label={`Инфографика модуля: ${module.title}`}>
+      <div className="border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-4 sm:px-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 border-blue-200 bg-white text-blue-800 shadow-[2px_3px_0_rgba(30,64,175,0.10)]"><BookOpen className="h-5 w-5" aria-hidden="true" /></div>
+          <div className="min-w-0 flex-1">
+            <span className="mb-1 inline-flex rounded-full bg-blue-700 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] text-white">Инфографика модуля</span>
+            <h3 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{module.title}</h3>
           </div>
-          <div className="min-w-0">
-            <div className="rounded-full bg-blue-700 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white">Карта модуля</div>
-            <h3 className="mt-1 text-lg font-extrabold leading-6 text-blue-950 dark:text-black">{module.title}</h3>
-          </div>
+          <PdfDownloadButton targetId={moduleId} />
         </div>
       </div>
-      <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-4 sm:p-6">
+      <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:p-5">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <span className="rounded-full bg-sky-100 px-3 py-1 text-[10px] font-extrabold text-blue-800 dark:text-black">Карта тем</span>
+          <span className="text-[10px] font-semibold text-slate-400 dark:text-black">темы → практика → закрепление</span>
+        </div>
         <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {module.lessons.map((lesson, index) => {
             const visual = getVisual(lesson);
             const styles = ACCENT_STYLES[visual.accent];
             return (
               <li key={lesson.id} className={`flex min-w-0 items-start gap-2.5 rounded-[18px] border-2 p-3 shadow-[2px_3px_0_rgba(30,64,175,0.06)] ${styles.card} ${styles.badge}`}>
-                <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${styles.marker}`}>
-                  {String(index + 1).padStart(2, "0")}
-                </span>
+                <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${styles.marker}`}>{String(index + 1).padStart(2, "0")}</span>
                 <span className="min-w-0 pt-0.5 text-xs font-semibold leading-4 text-foreground dark:text-black">{lesson.title}</span>
               </li>
             );
           })}
         </ol>
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-xl border border-dashed border-border bg-muted/20 px-3 py-2 text-[11px] font-medium text-muted-foreground">
-          <span>01 Понять</span><ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-          <span>02 Применить</span><ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-          <span>03 Закрепить</span>
-        </div>
       </div>
     </section>
   );
