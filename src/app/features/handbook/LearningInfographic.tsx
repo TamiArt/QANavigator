@@ -58,7 +58,7 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "QC", text: "Контроль качества результата продукта." },
     { title: "Testing", text: "Практическое исследование продукта для обнаружения проблем." },
   ], "QA — шире процесса тестирования; Testing — часть работы с качеством."),
-  "m1-03": V("checklist", ["7 принципов", "Риск", "Раннее тестирование", "Контекст", "Качество"], ListChecks, "mint", [
+  "m1-03": V("checklist", ["7 принципов тестирования", "Риск", "Раннее тестирование", "Контекст", "Качество"], ListChecks, "mint", [
     { icon: AlertTriangle, title: "1. Тестирование показывает наличие дефектов, но не их отсутствие", text: "Тесты обнаруживают наличие дефектов, но не доказывают, что дефектов нет. Даже «всё зелёное» ≠ доказательство идеального продукта." },
     { icon: Boxes, title: "2. Исчерпывающее тестирование недостижимо", text: "Полный перебор входов и условий практически невозможен. Фокусируемся на рисках, приоритетах и техниках тест-дизайна." },
     { icon: ArrowDown, title: "3. Раннее тестирование", text: "Начинаем тестовые активности как можно раньше: ранняя проверка снижает стоимость исправлений. Shift-Left." },
@@ -498,7 +498,7 @@ function Card({ card, index, visual }: { card: VisualCard; index: number; visual
 function DiagramLabelStrip({ visual }: { visual: LessonVisual }) {
   const styles = ACCENT_STYLES[visual.accent];
   return (
-    <div className="mb-3 flex flex-wrap items-center justify-center gap-1.5" aria-label="Ключевые элементы темы">
+    <div className="mb-3 flex flex-wrap items-center justify-center gap-1.5" aria-label="Ключевая схема">
       {visual.labels.map((label, index) => (
         <React.Fragment key={label}>
           <span className={`rounded-full border-2 bg-white px-2.5 py-1 text-[10px] font-extrabold text-blue-950 dark:text-black ${styles.badge}`}>
