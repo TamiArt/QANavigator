@@ -301,6 +301,10 @@ test("Seven testing principles are fully represented in the visual cheat sheet",
   assert.match(source, /visual\.kind/);
   assert.match(source, /7 принципов тестирования/);
   assert.match(source, /data-pdf-ignore/);
+  assert.match(source, /pdf\.output\("blob"\)/);
+  assert.match(source, /link\.download = "qa-navigator-visual-cheatsheet\.pdf"/);
+  assert.match(source, /link\.click\(\)/);
+  assert.match(source, /URL\.createObjectURL\(blob\)/);
   assert.match(source, /card\.icon \?\? visual\.icon/);
   assert.match(source, /isTestingPrinciples/);
   assert.ok(!source.includes("визуальная модель темы"), "Legacy visual-model footer must be removed");
