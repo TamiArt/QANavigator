@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ArrowLeft, Check, ChevronLeft, ChevronRight, GraduationCap } from "lucide-react";
+import { ArrowLeft, Check, ChevronLeft, ChevronRight, GraduationCap, List, PanelTop } from "lucide-react";
 import { MarkdownView } from "../../components/shared";
 import { useLocalStorage } from "../../hooks/use-local-storage";
 import { STORAGE_KEYS } from "../../core/constants";
@@ -21,6 +21,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
   );
   const [moduleIndex, setModuleIndex] = React.useState(0);
   const [activeIndex, setActiveIndex] = React.useState(0);
+  const lessonArticleRef = React.useRef<HTMLElement | null>(null);
 
   const module = HANDBOOK_LEARNING_MODULES[moduleIndex] ?? HANDBOOK_LEARNING_MODULES[0];
   const completed = new Set(progress.completedLessonIds);
@@ -28,9 +29,21 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
   const completedCount = module.lessons.filter((lesson) => completed.has(lesson.id)).length;
   const progressPercent = Math.round((completedCount / module.lessons.length) * 100);
 
+  const scrollToLesson = () => {
+    requestAnimationFrame(() => {
+      lessonArticleRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
   const selectModule = (index: number) => {
     setModuleIndex(index);
     setActiveIndex(0);
+    scrollToLesson();
+  };
+
+  const selectLesson = (index: number) => {
+    setActiveIndex(index);
+    scrollToLesson();
   };
 
   const markCompleted = () => {
@@ -67,24 +80,65 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
         </p>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-2">
-        {HANDBOOK_LEARNING_MODULES.map((item, index) => {
-          const isActive = index === moduleIndex;
-          const itemCompleted = item.lessons.filter((lesson) => completed.has(lesson.id)).length;
-          return (
-            <button
-              key={item.id}
-              onClick={() => selectModule(index)}
-              className={isActive ? "rounded-xl border border-primary bg-primary/10 px-4 py-3 text-left" : "rounded-xl border border-border px-4 py-3 text-left hover:bg-muted/30"}
-            >
-              <div className="text-sm font-semibold text-foreground">{item.title}</div>
-              <div className="text-xs text-muted-foreground mt-1">
-                {itemCompleted}/{item.lessons.length} тем изучено
-              </div>
-            </button>
-          );
-        })}
-      </div>
+      <nav
+        aria-label="Навигация по модулям и темам"
+        className="sticky top-2 z-20 rounded-2xl border border-border bg-card/95 p-3 shadow-sm backdrop-blur"
+      >
+        <div className="flex items-center gap-2 mb-3">
+          <PanelTop className="w-4 h-4 text-primary" />
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Быстрая навигация</span>
+        </div>
+
+        <div className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Модули">
+          {HANDBOOK_LEARNING_MODULES.map((item, index) => {
+            const isActive = index === moduleIndex;
+            const itemCompleted = item.lessons.filter((lesson) => completed.has(lesson.id)).length;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                aria-controls="learning-module-content"
+                onClick={() => selectModule(index)}
+                className={isActive
+                  ? "min-w-max rounded-lg border border-primary bg-primary/10 px-3 py-2 text-left text-xs font-semibold text-primary"
+                  : "min-w-max rounded-lg border border-border px-3 py-2 text-left text-xs text-muted-foreground hover:bg-muted/30"}
+              >
+                <span className="block">{item.title.replace(/^Модуль \d+\. /, "Модуль ")}</span>
+                <span className="mt-0.5 block text-[10px] opacity-80">{itemCompleted}/{item.lessons.length} изучено</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-3 flex items-center gap-2 border-t border-border pt-3">
+          <List className="w-4 h-4 shrink-0 text-muted-foreground" />
+          <div className="flex min-w-0 gap-1.5 overflow-x-auto pb-1">
+            {module.lessons.map((lesson, index) => {
+              const isActive = index === activeIndex;
+              const isCompleted = completed.has(lesson.id);
+              return (
+                <button
+                  key={lesson.id}
+                  type="button"
+                  aria-label={`Перейти к теме ${index + 1}: ${lesson.title}`}
+                  aria-current={isActive ? "step" : undefined}
+                  onClick={() => selectLesson(index)}
+                  className={isActive
+                    ? "flex min-w-8 h-8 shrink-0 items-center justify-center rounded-full bg-primary px-2 text-xs font-semibold text-primary-foreground"
+                    : isCompleted
+                      ? "flex min-w-8 h-8 shrink-0 items-center justify-center rounded-full border border-primary/40 bg-primary/10 px-2 text-xs font-semibold text-primary"
+                      : "flex min-w-8 h-8 shrink-0 items-center justify-center rounded-full border border-border bg-muted/50 px-2 text-xs font-semibold text-muted-foreground hover:border-primary/50 hover:text-foreground"}
+                  title={lesson.title}
+                >
+                  {index + 1}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </nav>
 
       <div className="h-2 rounded-full bg-muted overflow-hidden">
         <div
@@ -93,7 +147,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
         />
       </div>
 
-      <LearningInfographic mode="module" module={module} />
+      <div id="learning-module-content" className="scroll-mt-24">\n        <LearningInfographic mode="module" module={module} />\n      </div>
 
       <div className="grid gap-2">
         {module.lessons.map((lesson, index) => {
@@ -102,7 +156,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
           return (
             <button
               key={lesson.id}
-              onClick={() => setActiveIndex(index)}
+              onClick={() => selectLesson(index)}
               className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors ${
                 isActive ? "border-primary bg-primary/10" : "border-border hover:bg-muted/30"
               }`}
@@ -118,7 +172,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
         })}
       </div>
 
-      <article className="bg-card border border-border rounded-xl p-5">
+      <article\n        ref={lessonArticleRef}\n        id={`learning-lesson-${activeLesson.id}`}\n        className="bg-card border border-border rounded-xl p-5 scroll-mt-24"\n      >
         <div className="mb-4">
           <div className="text-xs text-muted-foreground mb-1">
             Урок {activeIndex + 1} из {module.lessons.length}
@@ -132,7 +186,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
 
         <div className="flex flex-wrap justify-between gap-2 pt-5 mt-5 border-t border-border">
           <button
-            onClick={() => setActiveIndex((index) => Math.max(index - 1, 0))}
+            onClick={() => selectLesson(Math.max(activeIndex - 1, 0))}
             disabled={activeIndex === 0}
             className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs disabled:opacity-40"
           >
@@ -148,7 +202,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
           </button>
 
           <button
-            onClick={goNext}
+            onClick={() => { goNext(); scrollToLesson(); }}
             disabled={activeIndex === module.lessons.length - 1}
             className="flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-2 text-xs disabled:opacity-40"
           >
