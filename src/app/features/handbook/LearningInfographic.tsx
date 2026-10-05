@@ -154,17 +154,19 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "Что мешало?", text: "Проблемы процесса без поиска виноватых." },
     { title: "Что меняем?", text: "Конкретное улучшение на следующий цикл." },
   ], "Ретроспектива превращает опыт команды в действие."),
-  "m2-08": V("flow", ["Событие", "Обсуждение", "Результат"], PlayCircle, "lavender", [
-    { title: "Событие", text: "Командная встреча или мероприятие Scrum." },
-    { title: "Обсуждение", text: "Понимаем цель, результат и необходимые действия." },
-    { title: "Результат", text: "Фиксируем решение или следующий шаг." },
-  ], "Видео и мероприятия помогают увидеть Scrum не только как набор терминов."),
-  "m2-09": V("compare", ["Waterfall", "Agile", "Scrum", "Kanban"], BookOpen, "yellow", [
-    { title: "Подход", text: "Agile — семейство гибких подходов." },
-    { title: "Процесс", text: "Scrum задаёт роли, события и спринты." },
-    { title: "Поток", text: "Kanban управляет непрерывным потоком и WIP." },
-    { title: "Практика", text: "Выбор зависит от продукта, требований и контекста команды." },
-  ]),
+  "m2-08": V("flow", ["Видео", "Наблюдение", "Конспект", "Закрепление"], PlayCircle, "lavender", [
+    { title: "Видео", text: "Урок содержит видеоматериал, а не текстовый конспект." },
+    { title: "Наблюдение", text: "Смотри на роли, события, артефакты и реальный ход Scrum." },
+    { title: "Конспект", text: "После просмотра выпиши 3–5 ключевых идей своими словами." },
+    { title: "Закрепление", text: "Сверь новые наблюдения с текстовыми темами Scrum в этом модуле." },
+  ], "Для этого урока визуальная шпаргалка не придумывает содержание, которого нет в текстовом источнике."),
+
+  "m2-09": V("compare", ["Видео", "Waterfall", "Agile", "Scrum", "Kanban"], PlayCircle, "yellow", [
+    { title: "Видео", text: "Урок содержит видеоматериал, а не текстовый конспект." },
+    { title: "Смотри на различия", text: "Во время просмотра фиксируй: последовательность, гибкость, роли, поток работы и точки контроля." },
+    { title: "Свяжи с модулем", text: "Сопоставь услышанное с Waterfall, Agile, Scrum и Kanban из текстовых тем." },
+  ], "Инфографика показывает способ работы с видео, не подменяя отсутствующий текст выдуманными фактами."),
+
   "m2-10": V("flow", ["Backlog", "In Progress", "Done"], Route, "blue", [
     { title: "Backlog", text: "Задачи ожидают приоритизации и взятия в работу." },
     { title: "In Progress", text: "Команда выполняет ограниченное число задач." },
@@ -176,12 +178,11 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "Scrumban", text: "Гибрид Scrum и Kanban." },
     { title: "Kanplan", text: "Kanban-поток с регулярным управлением и приоритизацией бэклога." },
   ]),
-  "m2-12": V("compare", ["Стартап", "Продуктовая", "Аутсорсинг", "Enterprise"], Globe, "orange", [
-    { title: "Стартап", text: "Меньше уровней, быстрые изменения и широкий круг задач." },
-    { title: "Продуктовая", text: "Долгосрочное развитие собственного продукта." },
-    { title: "Аутсорсинг", text: "Работа под заказчика и его процесс." },
-    { title: "Enterprise", text: "Большие команды, сложные процессы и зависимости." },
-  ], "Тип компании влияет на процессы, роли, инструменты и контекст QA."),
+  "m2-12": V("network", ["Тип компании", "Контекст", "QA"], Globe, "orange", [
+    { title: "Источник", text: "Текстового конспекта для этого урока сейчас нет." },
+    { title: "Не выдумываем", text: "Инфографика не добавляет определения типов компаний, которых нет в источнике." },
+    { title: "Что закреплять", text: "Используй заголовок темы как точку входа, а содержание добавляй после появления исходного материала." },
+  ], "Визуальная шпаргалка должна отражать источник, а не заполнять пробелы предположениями."),
 
   "m3-01": V("network", ["Frontend", "API", "Backend"], Network, "blue", [
     { title: "Frontend", text: "Интерфейс и пользовательское взаимодействие." },
@@ -655,9 +656,9 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
       <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-4 sm:p-6">
         <div className="mb-3 flex items-center justify-between gap-2">
           <span className="rounded-full bg-sky-100 px-3 py-1 text-[10px] font-extrabold text-blue-800 dark:text-black">Суть за 10 секунд</span>
-        <VisualMotif visual={visual} />
           <span className="text-[10px] font-semibold text-slate-400 dark:text-black">смотри на структуру →</span>
         </div>
+        <VisualMotif visual={visual} />
         <VisualDiagram visual={visual} />
         {visual.callout && (
           <div className="mt-4 flex items-start gap-2.5 rounded-[18px] border-2 border-blue-100 bg-white/90 px-3.5 py-3 shadow-[1px_2px_0_rgba(30,64,175,0.05)]">
