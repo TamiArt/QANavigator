@@ -1393,7 +1393,7 @@ Current facts:
 
 Next immediate task:
 1. add the required accessible label to the Learning Mode button without changing lesson content or behavior;
-2. run the relevant Learning Mode regression tests;
+2. keep the Learning Mode trigger full-width on small screens and compact on larger screens;\n2. run the relevant Learning Mode regression tests;
 3. run the full verification gate;
 4. keep the roadmap synchronized with the result.
 
