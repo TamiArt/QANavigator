@@ -481,13 +481,16 @@ function ChecklistDiagram({ visual }: { visual: LessonVisual }) {
       {!isTestingPrinciples && <DiagramLabelStrip visual={visual} />}
       <div className={isTestingPrinciples ? "grid gap-2 sm:grid-cols-2" : "space-y-2"}>
         {visual.cards.map((card, index) => (
-          <div key={card.title} className={`flex items-start gap-3 rounded-2xl border-2 bg-white p-3 ${styles.badge}`}>
+          <div key={card.title} className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-2.5 rounded-2xl border-2 bg-white p-2.5 ${styles.badge}`}>
             <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${styles.marker}`}>
               <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
             </span>
             <div className="min-w-0">
               <div className="text-xs font-extrabold text-blue-950 dark:text-black">{card.title}</div>
-              <p className="mt-1 text-[11px] leading-[1.45] text-slate-700 dark:text-black">{card.text}</p>
+              <p className="mt-1 text-[10px] leading-[1.4] text-slate-700 dark:text-black">{card.text}</p>
+            </div>
+            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border bg-slate-50/70 ${styles.badge}`}>
+              {React.createElement(card.icon ?? visual.icon, { className: "h-6 w-6 text-blue-700 dark:text-black", "aria-hidden": true })}
             </div>
           </div>
         ))}
