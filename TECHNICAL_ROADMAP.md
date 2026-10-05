@@ -1641,3 +1641,24 @@ Implemented:
 - extended regression coverage to require the dedicated illustration symbol set and the reference poster viewBox.
 
 This asset is intentionally kept as the visual style exemplar for future Learning Mode posters: **same composition language first, then topic-specific content and illustrations**.
+
+
+### 7.1.57 Infographic layout and readability standard — 2026-10-05
+
+Refined the Scrum reference infographic after a visual layout audit.
+
+Implemented:
+- reduced oversized header illustrations and balanced the header composition;
+- reduced icon sizes where they competed with text;
+- increased vertical room in the four-step process cards;
+- split long headings/text into semantic lines instead of shrinking the type excessively;
+- adjusted compact-card heading sizes only where the available width required it;
+- split the footer takeaway into two readable lines;
+- preserved the reference's composition, pastel section system and illustration set.
+
+Added the reusable design standard: docs/INFOGRAPHIC_DESIGN_PRINCIPLES.md.
+
+The standard is now the source of truth for future infographic work:
+**readability and meaning → composition → semantic illustrations → decorative details**.
+
+Every infographic must pass content, layout, typography, visual, responsive and PDF checks before its implementation block is considered complete.
