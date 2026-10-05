@@ -218,6 +218,17 @@ test("Learning Mode renders module and lesson infographics", () => {
   assert.match(source, /mode="lesson"/);
 });
 
+test("Lesson infographics expose semantic diagram structure", () => {
+  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  for (const kind of ["FlowDiagram", "TimelineDiagram", "ChecklistDiagram", "CompareDiagram", "NetworkDiagram", "DiagramLabelStrip"]) {
+    assert.match(source, new RegExp(`function ${kind}`));
+  }
+  assert.match(source, /Суть за 10 секунд/);
+  assert.match(source, /Ключевые элементы темы/);
+  assert.match(source, /Понятие/);
+  assert.match(source, /Что важно помнить/);
+});
+
 test("Learning Mode provides direct module and lesson navigation", () => {
   const source = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
   assert.match(source, /aria-label="Навигация по модулям и темам"/);
