@@ -204,6 +204,22 @@ test("Learning Mode has a semantic infographic contract for every lesson in Modu
   assert.match(infographic, /targetId=\{infographicId\}/);
   assert.match(infographic, /KIND_LABELS/);
   assert.match(infographic, /aria-label=/);
+  assert.match(infographic, /isScrumContextInfographic/);
+  assert.match(infographic, /\/infographics\/m2-04-scrum-context\.svg/);
+});
+
+test("Scrum lesson 4 uses the dedicated context infographic asset", () => {
+  const infographic = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  const asset = fs.readFileSync("public/infographics/m2-04-scrum-context.svg", "utf8");
+  assert.match(infographic, /lesson\.id === "m2-04"/);
+  assert.match(infographic, /alt="Инфографика: Погружение в контекст \(Scrum\)"/);
+  assert.match(asset, /Погружение в контекст/);
+  assert.match(asset, /Что такое погружение/);
+  assert.match(asset, /Что нужно узнать/);
+  assert.match(asset, /Основные источники информации/);
+  assert.match(asset, /Как проходит погружение/);
+  assert.match(asset, /Результат погружения/);
+  assert.match(asset, /Полезные советы/);
 });
 
 test("Handbook exposes a reachable Learning Mode from the knowledge base", () => {
