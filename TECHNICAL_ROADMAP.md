@@ -1534,3 +1534,16 @@ Next:
 - verify the rendered seven-principles poster at mobile and desktop widths;
 - verify the generated PDF visually in-browser;
 - continue only with concrete defects found during verification.
+
+### 7.1.51 Semantic vector illustrations for seven testing principles — 2026-10-05
+
+- replaced the seven green check markers with dedicated semantic vector mini-illustrations in the same visual position;
+- removed the checkmark glyphs completely from the seven principle cards;
+- created seven different inline SVG compositions so each principle has its own visual metaphor: defect discovery, finite coverage, early detection, defect clustering, pesticide effect, contextual relationships and quality-vs-usefulness;
+- kept the illustrations compact, flat and multi-color to preserve the premium educational poster language without adding external image assets or paid services;
+- tightened each principle card to a two-zone composition: illustration + compressed explanation;
+- extended regression coverage to lock the dedicated SVG illustration contract and prevent the old checkmark/icon treatment from returning.
+
+Next:
+- run focused handbook-learning tests plus TypeScript/build verification;
+- inspect the rendered poster at mobile and desktop widths and adjust only evidence-based visual defects.
