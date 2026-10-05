@@ -1403,3 +1403,26 @@ Next product/engineering milestone after this fix:
 - then continue production hardening: accessibility, responsive behavior, validation, performance and critical-flow regression coverage.
 
 No lesson educational text is to be changed as part of the accessibility fix.
+
+### 7.1.43 Semantic lesson infographic upgrade — 2026-10-05
+
+Upgraded the Learning Mode lesson infographic layer from a generic label/card presentation to a topic-specific educational poster model.
+
+Implemented:
+- kept all 48 lesson IDs, titles, source content and curriculum order unchanged;
+- expanded every lesson visual definition with structured explanatory cards and a topic-specific takeaway;
+- mapped the visual model to the concept: flows for processes, cycles for iterative work, pyramids for levels, comparisons for distinctions, layers for architecture, networks for relationships and checklists for repeatable checks;
+- added concise explanatory Russian text inside the infographic so the visual itself teaches the core concept instead of only decorating the lesson;
+- preserved the project visual contract from 7.1.37: light background, flat vector language, pastel accents, rounded cards, navy headings, blue numbered markers, restrained shadows and no 3D/glassmorphism/dark backgrounds;
+- improved mobile wrapping and desktop card hierarchy;
+- kept the infographic presentation-only and asset-free.
+
+Validation target:
+- 48/48 lesson definitions must remain present;
+- focused Learning Mode regression must pass;
+- full verify must pass before this milestone is considered complete.
+
+Next:
+- inspect the rendered Learning Mode posters for visual consistency at mobile and desktop widths;
+- fix only concrete visual/semantic defects found during verification;
+- then continue production hardening.
