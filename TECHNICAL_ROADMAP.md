@@ -1583,3 +1583,23 @@ Next:
 - run focused `test:handbook-learning`, TypeScript and production build;
 - inspect mobile/desktop rendering for concrete spacing or overflow defects;
 - only then continue topic-specific illustration refinement.
+
+
+### 7.1.54 Compact per-topic infographic layout restored — 2026-10-05
+
+Corrected the previous 7.1.53 presentation change.
+
+The requirement is **not** to give every lesson the same generic header content. Each infographic keeps its own topic title from `lesson.title`.
+
+Updated lesson presentation:
+- restored the compact header pattern used by **«7 принципов тестирования»**;
+- the header now contains the actual title of the current lesson and the same compact **«Сохранить»** action;
+- **«7 принципов тестирования»** remains a special topic title, exactly as requested;
+- all other lesson infographics now use the same compact header/body layout as the seven-principles cheat sheet;
+- removed the generic `Ключевая схема` / helper-row layer that had been introduced as a shared header treatment;
+- preserved each topic's own semantic diagram, cards, illustrations and source-backed content;
+- preserved PDF generation and save-button behavior.
+
+The visual language is shared; the **content/title is topic-specific**.
+
+The module overview remains a separate module-level map and keeps the module's own title.
