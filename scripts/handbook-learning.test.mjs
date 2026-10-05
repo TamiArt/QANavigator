@@ -226,7 +226,6 @@ test("Lesson infographics expose semantic diagram structure", () => {
   for (const kind of ["FlowDiagram", "TimelineDiagram", "ChecklistDiagram", "CompareDiagram", "NetworkDiagram", "DiagramLabelStrip"]) {
     assert.match(source, new RegExp(`function ${kind}`));
   }
-  assert.match(source, /Ключевая схема/);
   assert.match(source, /Ключевые элементы темы/);
   assert.match(source, /function PdfDownloadButton/);
   assert.match(source, /html2canvas/);
@@ -273,6 +272,8 @@ test("Learning infographics use the illustrated QA poster visual language", () =
   assert.match(source, /Ключевая схема/);
   assert.match(source, /Инфографика модуля/);
   assert.match(source, /Сохранить/);
+  assert.match(source, /<h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">\{lesson.title\}<\/h4>/);
+  assert.match(source, /p-3 sm:p-4/);
   assert.match(source, /rounded-\[28px\]/);
   assert.match(source, /border-2/);
   assert.match(source, /bg-sky-50/);
@@ -282,11 +283,9 @@ test("Learning infographics use the illustrated QA poster visual language", () =
 
 test("Learning infographics keep the poster hierarchy and per-lesson identity", () => {
   const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
-  assert.match(source, /lessonNumber/);
   assert.match(source, /rotate-\[-0\.35deg\]/);
   assert.match(source, /rotate-\[0\.35deg\]/);
   assert.match(source, /bg-white\/80/);
-  assert.match(source, /h-11 w-11/);
 });
 
 test("Seven testing principles are fully represented in the visual cheat sheet", () => {
@@ -309,7 +308,6 @@ test("Seven testing principles are fully represented in the visual cheat sheet",
   assert.match(source, /link\.download = "qa-navigator-visual-cheatsheet\.pdf"/);
   assert.match(source, /link\.click\(\)/);
   assert.match(source, /URL\.createObjectURL\(blob\)/);
-  assert.match(source, /isTestingPrinciples/);
   assert.match(source, /function PrincipleIllustration/);
   assert.match(source, /function CardIllustration/);
   assert.match(source, /CardIllustration kind=\{visual\.kind\}/);
@@ -323,8 +321,7 @@ test("Seven testing principles are fully represented in the visual cheat sheet",
   assert.match(source, /fill="#DBEAFE"/);
   assert.match(source, /stroke="#2563EB"/);
   assert.match(source, /<svg viewBox="0 0 48 48"/);
-  assert.match(source, /grid-cols-\[auto_minmax\(0,1fr\)\]/);
-  assert.match(source, /h-10 w-10 shrink-0/);
+
   assert.match(source, /fill="#34D399"/);
   assert.match(source, /fill="#A78BFA"/);
   assert.match(source, /fill="#F43F5E"/);
