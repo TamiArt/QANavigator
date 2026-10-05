@@ -307,6 +307,17 @@ test("Seven testing principles are fully represented in the visual cheat sheet",
   assert.match(source, /URL\.createObjectURL\(blob\)/);
   assert.match(source, /isTestingPrinciples/);
   assert.match(source, /function PrincipleIllustration/);
+  assert.match(source, /function CardIllustration/);
+  assert.match(source, /CardIllustration kind=\{visual\.kind\}/);
+  assert.match(source, /kind === "flow" \|\| kind === "timeline"/);
+  assert.match(source, /kind === "layers"/);
+  assert.match(source, /kind === "compare"/);
+  assert.match(source, /kind === "network"/);
+  assert.match(source, /kind === "cycle"/);
+  assert.match(source, /kind === "pyramid"/);
+  assert.match(source, /kind="checklist"/);
+  assert.match(source, /fill="#DBEAFE"/);
+  assert.match(source, /stroke="#2563EB"/);
   assert.match(source, /<svg viewBox="0 0 48 48"/);
   assert.match(source, /grid-cols-\[auto_minmax\(0,1fr\)\]/);
   assert.match(source, /h-10 w-10 shrink-0/);
