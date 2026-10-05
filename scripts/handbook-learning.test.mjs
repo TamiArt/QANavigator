@@ -251,6 +251,17 @@ test("Learning Mode remains directly reachable on mobile layouts", () => {
 });
 
 
+test("Infographic text contrast contract covers semantic blocks", () => {
+  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  for (const className of [
+    "text-blue-950 dark:text-black",
+    "text-slate-700 dark:text-black",
+    "text-slate-600 dark:text-black",
+    "text-blue-900 dark:text-black",
+    "text-blue-800 dark:text-black",
+  ]) assert.ok(source.includes(className), className);
+});
+
 test("Learning infographics use the illustrated QA poster visual language", () => {
   const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
   assert.match(source, /Суть за 10 секунд/);
