@@ -1682,3 +1682,40 @@ Implemented:
 - added regression coverage for the dedicated asset, poster viewBox, accessibility title/description, rendering branch and source-content facts.
 
 The infographic follows `docs/INFOGRAPHIC_DESIGN_PRINCIPLES.md`: **meaning and readability first, then composition, semantic illustrations and decoration**.
+
+
+### 7.1.59 Infographic contract fixes + roadmap operating rules — 2026-10-05
+
+Fixed:
+- `DiagramLabelStrip` now uses exact `aria-label="Ключевая схема"`;
+- Module 1 lesson `m1-03` visual metadata now uses the full label **«7 принципов тестирования»**;
+- regression test updated to require the exact accessibility contract.
+
+Current stage:
+- **7.1.x — semantic Learning Mode infographic hardening**;
+- dedicated posters exist for `m2-04` and `m2-05`;
+- remaining work is verification and evidence-based refinement, not a redesign of the whole infographic system.
+
+Development rules:
+- never change lesson source text, IDs or curriculum order for visual tasks;
+- infographic content must be derived only from the lesson source;
+- follow `docs/INFOGRAPHIC_DESIGN_PRINCIPLES.md`;
+- readability and semantic meaning have priority over decoration;
+- keep mobile, desktop and PDF behavior working;
+- add/update regression coverage for every contract change;
+- do not duplicate visual systems when the shared system already satisfies the lesson;
+- use a dedicated SVG poster only when the topic requires a distinct composition;
+- do not commit partial implementation blocks.
+
+Git conflict rule:
+- **always keep only the newest/new-version variant**;
+- never keep both variants;
+- never restore the old variant;
+- after resolving a conflict, verify the final file against the newest intended implementation and tests.
+
+Next steps:
+1. run `test:handbook-learning`;
+2. run TypeScript checks and production build;
+3. inspect mobile/desktop infographic rendering and PDF export;
+4. fix only concrete defects found by verification;
+5. continue topic-specific infographic refinement only after the current verification block is clean.
