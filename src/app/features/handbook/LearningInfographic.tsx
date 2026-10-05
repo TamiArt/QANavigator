@@ -651,62 +651,133 @@ function VisualDiagram({ visual }: { visual: LessonVisual }) {
     </div>
   );
 }
+function PdfDownloadButton({ targetId }: { targetId: string }) {
+  const [isGenerating, setIsGenerating] = React.useState(false);
+
+  const downloadPdf = async () => {
+    const target = document.getElementById(targetId);
+    if (!target || isGenerating) return;
+    setIsGenerating(true);
+    try {
+      const [{ jsPDF }, html2canvasModule] = await Promise.all([
+        import("jspdf"),
+        import("html2canvas"),
+      ]);
+      const canvas = await html2canvasModule.default(target, {
+        backgroundColor: "#ffffff",
+        scale: Math.min(2, window.devicePixelRatio || 1),
+        useCORS: true,
+        ignoreElements: (element) => element.hasAttribute("data-pdf-ignore"),
+      });
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imageWidth = pageWidth;
+      const imageHeight = (canvas.height * imageWidth) / canvas.width;
+      const image = canvas.toDataURL("image/png", 1);
+      if (imageHeight <= pageHeight) {
+        pdf.addImage(image, "PNG", 0, 0, imageWidth, imageHeight);
+      } else {
+        let sourceY = 0;
+        const pagePixelHeight = Math.floor((pageHeight / imageWidth) * canvas.width);
+        let pageIndex = 0;
+        while (sourceY < canvas.height) {
+          const sliceHeight = Math.min(pagePixelHeight, canvas.height - sourceY);
+          const pageCanvas = document.createElement("canvas");
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = sliceHeight;
+          pageCanvas.getContext("2d")?.drawImage(canvas, 0, sourceY, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
+          if (pageIndex > 0) pdf.addPage();
+          const sliceMmHeight = (sliceHeight * imageWidth) / canvas.width;
+          pdf.addImage(pageCanvas.toDataURL("image/png", 1), "PNG", 0, 0, imageWidth, sliceMmHeight);
+          sourceY += sliceHeight;
+          pageIndex += 1;
+        }
+      }
+      pdf.save("qa-navigator-visual-cheatsheet.pdf");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      data-pdf-ignore
+      onClick={downloadPdf}
+      disabled={isGenerating}
+      aria-label="Скачать визуальную шпаргалку в PDF"
+      title="Скачать PDF"
+      className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-2.5 text-[10px] font-bold text-blue-800 shadow-sm transition hover:bg-blue-50 disabled:cursor-wait disabled:opacity-60"
+    >
+      <Download className="h-3.5 w-3.5" aria-hidden="true" />
+      <span>{isGenerating ? "PDF…" : "PDF"}</span>
+    </button>
+  );
+}
 function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
   const visual = getVisual(lesson);
   const Icon = visual.icon;
   const styles = ACCENT_STYLES[visual.accent];
   const lessonNumber = lesson.id.match(/-(\d+)$/)?.[1] ?? "01";
+  const isTestingPrinciples = lesson.id === "m1-03";
+  const infographicId = `learning-infographic-${lesson.id}`;
 
   return (
     <section
+      id={infographicId}
       className="overflow-hidden rounded-[28px] border-2 border-blue-100 bg-white shadow-[0_8px_30px_rgba(30,64,175,0.08)]"
       aria-label={`Инфографика урока: ${lesson.title}`}
     >
-      <div className={`border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-5 sm:px-6 ${styles.card}`}>
-        <div className="relative flex items-start gap-3 sm:gap-4">
-          <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-blue-200 bg-white text-3xl font-black shadow-[3px_4px_0_rgba(30,64,175,0.12)] ${styles.marker}`}>
-            {lessonNumber}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="mb-1.5 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-blue-700 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white">Визуальная шпаргалка</span>
-              <span className={`rounded-full border bg-white/80 px-2.5 py-1 text-[10px] font-bold text-blue-800 dark:text-black ${styles.badge}`}>{KIND_LABELS[visual.kind]}</span>
+      {isTestingPrinciples ? (
+        <div className="flex items-center justify-between gap-3 border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-3 sm:px-5">
+          <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">7 принципов тестирования</h4>
+          <PdfDownloadButton targetId={infographicId} />
+        </div>
+      ) : (
+        <div className={`border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-5 sm:px-6 ${styles.card}`}>
+          <div className="relative flex items-start gap-3 sm:gap-4">
+            <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-blue-200 bg-white text-3xl font-black shadow-[3px_4px_0_rgba(30,64,175,0.12)] ${styles.marker}`}>
+              {lessonNumber}
             </div>
-            <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{lesson.title}</h4>
-            <div className="mt-2 flex items-center gap-2">
-              <span className={`h-1.5 w-10 rounded-full ${styles.marker}`} />
-              <span className="h-1.5 w-2 rounded-full bg-blue-200" />
-              <span className="h-1.5 w-2 rounded-full bg-violet-200" />
+            <div className="min-w-0 flex-1">
+              <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-blue-700 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white">Визуальная шпаргалка</span>
+                <span className={`rounded-full border bg-white/80 px-2.5 py-1 text-[10px] font-bold text-blue-800 dark:text-black ${styles.badge}`}>{KIND_LABELS[visual.kind]}</span>
+              </div>
+              <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{lesson.title}</h4>
+              <div className="mt-2 flex items-center gap-2">
+                <span className={`h-1.5 w-10 rounded-full ${styles.marker}`} />
+                <span className="h-1.5 w-2 rounded-full bg-blue-200" />
+                <span className="h-1.5 w-2 rounded-full bg-violet-200" />
+              </div>
             </div>
-          </div>
-          <div className={`hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 bg-white shadow-[2px_3px_0_rgba(30,64,175,0.08)] sm:flex ${styles.badge}`}>
-            <Icon className="h-6 w-6 text-blue-700" aria-hidden="true" />
+            <div className={`hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 bg-white shadow-[2px_3px_0_rgba(30,64,175,0.08)] sm:flex ${styles.badge}`}>
+              <Icon className="h-6 w-6 text-blue-700" aria-hidden="true" />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-4 sm:p-6">
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <span className="rounded-full bg-sky-100 px-3 py-1 text-[10px] font-extrabold text-blue-800 dark:text-black">Суть за 10 секунд</span>
-          <span className="text-[10px] font-semibold text-slate-400 dark:text-black">смотри на структуру →</span>
-        </div>
-        <VisualMotif visual={visual} />
+      <div className={`bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] ${isTestingPrinciples ? "p-3 sm:p-4" : "p-4 sm:p-6"}`}>
+        {!isTestingPrinciples && (
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <span className="rounded-full bg-sky-100 px-3 py-1 text-[10px] font-extrabold text-blue-800 dark:text-black">Суть за 10 секунд</span>
+            <span className="text-[10px] font-semibold text-slate-400 dark:text-black">смотри на структуру →</span>
+          </div>
+        )}
+        {!isTestingPrinciples && <VisualMotif visual={visual} />}
         <VisualDiagram visual={visual} />
-        {visual.callout && (
+        {visual.callout && !isTestingPrinciples && (
           <div className="mt-4 flex items-start gap-2.5 rounded-[18px] border-2 border-blue-100 bg-white/90 px-3.5 py-3 shadow-[1px_2px_0_rgba(30,64,175,0.05)]">
             <Zap className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" aria-hidden="true" />
             <p className="text-[11px] font-semibold leading-[1.45] text-blue-950 dark:text-black">{visual.callout}</p>
           </div>
         )}
-        <div className="mt-4 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-[0.08em] text-blue-400">
-          <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
-          визуальная модель темы
-        </div>
       </div>
     </section>
   );
 }
-
 function ModuleInfographic({ module }: { module: LearningModule }) {
   return (
     <section className="overflow-hidden rounded-[28px] border-2 border-blue-100 bg-white shadow-[0_8px_30px_rgba(30,64,175,0.08)]" aria-label={`Инфографика: ${module.title}`}>
