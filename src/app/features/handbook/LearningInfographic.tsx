@@ -853,9 +853,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
               src={isScrumContextInfographic
                 ? "/infographics/m2-04-scrum-context.svg"
                 : "/infographics/m2-05-sprint-planning.svg"}
-              alt={isScrumContextInfographic
-                ? "Инфографика: Погружение в контекст (Scrum)"
-                : "Инфографика: Sprint Planning"}
+              alt="Инфографика: Погружение в контекст (Scrum)"
               width={1065}
               height={1476}
               decoding="async"
