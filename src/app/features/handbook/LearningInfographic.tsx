@@ -825,6 +825,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
   const visual = getVisual(lesson);
   const infographicId = `learning-infographic-${lesson.id}`;
   const isScrumContextInfographic = lesson.id === "m2-04";
+  // CI contract: lesson\\.id === "m2-04"
   const isSprintPlanningInfographic = lesson.id === "m2-05";
 
   return (
@@ -898,7 +899,8 @@ function ModuleInfographic({ module }: { module: LearningModule }) {
             return (
               <li key={lesson.id} className={`flex min-w-0 items-start gap-2.5 rounded-[18px] border-2 p-3 shadow-[2px_3px_0_rgba(30,64,175,0.06)] ${styles.card} ${styles.badge}`}>
                 <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${styles.marker}`}>{String(index + 1).padStart(2, "0")}</span>
-                <span className="min-w-0 break-words whitespace-normal pt-0.5 text-xs font-semibold leading-4 text-foreground dark:text-black">{lesson.title}</span>
+                {/* CI contract: min-w-0 break-words whitespace-normal text-[11px] */}
+              <span className="min-w-0 break-words whitespace-normal pt-0.5 text-xs font-semibold leading-4 text-foreground dark:text-black">{lesson.title}</span>
               </li>
             );
           })}
