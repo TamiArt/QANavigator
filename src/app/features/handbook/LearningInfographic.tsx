@@ -478,7 +478,7 @@ function CardIllustration({ kind, index }: { kind: VisualKind; index: number }) 
 function Card({ card, index, visual }: { card: VisualCard; index: number; visual: LessonVisual }) {
   const styles = ACCENT_STYLES[visual.accent];
   return (
-    <div className={`flex min-h-[104px] flex-col rounded-[18px] border-2 p-3.5 shadow-[2px_3px_0_rgba(30,64,175,0.07)] ${styles.card} ${styles.badge} ${index % 2 === 0 ? "rotate-[-0.35deg]" : "rotate-[0.35deg]"}`}>
+    <div className={`flex min-w-0 min-h-[104px] flex-col overflow-hidden rounded-[18px] border-2 p-3.5 shadow-[2px_3px_0_rgba(30,64,175,0.07)] ${styles.card} ${styles.badge} ${index % 2 === 0 ? "rotate-[-0.35deg]" : "rotate-[0.35deg]"}`}>
       <div className="flex items-start gap-2.5">
         <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold ${styles.marker}`}>{index + 1}</span>
         <div className="min-w-0 flex-1">
@@ -488,7 +488,7 @@ function Card({ card, index, visual }: { card: VisualCard; index: number; visual
             </span>
             <span className="text-xs font-extrabold text-blue-950 dark:text-black">{card.title}</span>
           </div>
-          <p className="text-[11px] leading-[1.45] text-slate-700 dark:text-black">{card.text}</p>
+          <p className="min-w-0 break-words whitespace-normal text-[11px] leading-[1.45] text-slate-700 dark:text-black">{card.text}</p>
         </div>
       </div>
     </div>
@@ -501,7 +501,7 @@ function DiagramLabelStrip({ visual }: { visual: LessonVisual }) {
     <div className="mb-3 flex flex-wrap items-center justify-center gap-1.5" aria-label="Ключевая схема">
       {visual.labels.map((label, index) => (
         <React.Fragment key={label}>
-          <span className={`rounded-full border-2 bg-white px-2.5 py-1 text-[10px] font-extrabold text-blue-950 dark:text-black ${styles.badge}`}>
+          <span className={`min-w-0 max-w-full break-words whitespace-normal rounded-full border-2 bg-white px-2.5 py-1 text-center text-[10px] font-extrabold text-blue-950 dark:text-black ${styles.badge}`}>
             {label}
           </span>
           {index < visual.labels.length - 1 && (
@@ -581,8 +581,8 @@ function ChecklistDiagram({ visual }: { visual: LessonVisual }) {
               {isTestingPrinciples ? <PrincipleIllustration index={index} /> : <CardIllustration kind="checklist" index={index} />}
             </div>
             <div className="min-w-0">
-              <div className="text-xs font-extrabold text-blue-950 dark:text-black">{card.title}</div>
-              <p className="mt-1 text-[10px] leading-[1.4] text-slate-700 dark:text-black">{card.text}</p>
+              <div className="min-w-0 break-words whitespace-normal text-xs font-extrabold text-blue-950 dark:text-black">{card.title}</div>
+              <p className="mt-1 min-w-0 break-words whitespace-normal text-[10px] leading-[1.4] text-slate-700 dark:text-black">{card.text}</p>
             </div>
           </div>
         ))}
@@ -605,7 +605,7 @@ function CompareDiagram({ visual }: { visual: LessonVisual }) {
           <div key={card.title} className={`grid grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] gap-2 border-b border-blue-50 px-3 py-3 last:border-b-0 ${index % 2 ? "bg-violet-50/30" : "bg-white"}`}>
             <div className="flex items-start gap-2">
               <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-black ${styles.marker}`}>{index + 1}</span>
-              <span className="text-[11px] font-extrabold leading-4 text-blue-950 dark:text-black">{card.title}</span>
+              <span className="min-w-0 break-words whitespace-normal text-[11px] font-extrabold leading-4 text-blue-950 dark:text-black">{card.title}</span>
             </div>
             <p className="text-[11px] leading-[1.45] text-slate-700 dark:text-black">{card.text}</p>
           </div>
@@ -632,7 +632,7 @@ function NetworkDiagram({ visual }: { visual: LessonVisual }) {
       </div>
       <div className="mt-3 flex flex-wrap justify-center gap-1.5">
         {visual.labels.slice(0, 6).map((label) => (
-          <span key={label} className="rounded-lg bg-slate-50 px-2 py-1 text-[9px] font-semibold text-slate-600 dark:text-black">{label}</span>
+          <span key={label} className="min-w-0 max-w-full break-words whitespace-normal rounded-lg bg-slate-50 px-2 py-1 text-center text-[9px] font-semibold text-slate-600 dark:text-black">{label}</span>
         ))}
       </div>
     </div>
@@ -677,13 +677,13 @@ function VisualDiagram({ visual }: { visual: LessonVisual }) {
           {visual.cards.map((card, index) => (
             <div
               key={card.title}
-              className={`flex min-h-14 items-center gap-3 rounded-[18px] border-2 px-3 py-2 ${styles.card} ${styles.badge}`}
+              className={`flex min-w-0 min-h-14 items-center gap-3 overflow-hidden rounded-[18px] border-2 px-3 py-2 ${styles.card} ${styles.badge}`}
               style={{ width: `${96 - index * 14}%` }}
             >
               <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold ${styles.marker}`}>{index + 1}</span>
               <div className="min-w-0">
                 <div className="text-xs font-extrabold text-blue-950 dark:text-black">{card.title}</div>
-                <div className="text-[10px] leading-4 text-slate-600 dark:text-black">{card.text}</div>
+                <div className="min-w-0 break-words whitespace-normal text-[10px] leading-4 text-slate-600 dark:text-black">{card.text}</div>
               </div>
             </div>
           ))}
@@ -864,7 +864,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
           {visual.callout && (
             <div className="mt-4 flex items-start gap-2.5 rounded-[18px] border-2 border-blue-100 bg-white/90 px-3.5 py-3 shadow-[1px_2px_0_rgba(30,64,175,0.05)]">
               <Zap className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" aria-hidden="true" />
-              <p className="text-[11px] font-semibold leading-[1.45] text-blue-950 dark:text-black">{visual.callout}</p>
+              <p className="min-w-0 break-words whitespace-normal text-[11px] font-semibold leading-[1.45] text-blue-950 dark:text-black">{visual.callout}</p>
             </div>
           )}
         </div>
@@ -898,7 +898,7 @@ function ModuleInfographic({ module }: { module: LearningModule }) {
             return (
               <li key={lesson.id} className={`flex min-w-0 items-start gap-2.5 rounded-[18px] border-2 p-3 shadow-[2px_3px_0_rgba(30,64,175,0.06)] ${styles.card} ${styles.badge}`}>
                 <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${styles.marker}`}>{String(index + 1).padStart(2, "0")}</span>
-                <span className="min-w-0 pt-0.5 text-xs font-semibold leading-4 text-foreground dark:text-black">{lesson.title}</span>
+                <span className="min-w-0 break-words whitespace-normal pt-0.5 text-xs font-semibold leading-4 text-foreground dark:text-black">{lesson.title}</span>
               </li>
             );
           })}
