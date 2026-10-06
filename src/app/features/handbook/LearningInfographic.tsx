@@ -839,14 +839,24 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
       </div>
 
       {isScrumContextInfographic || isSprintPlanningInfographic ? (
-        <div className="bg-white p-2 sm:p-4">
-          <img
-            src={isScrumContextInfographic
-              ? "/infographics/m2-04-scrum-context.svg"
-              : "/infographics/m2-05-sprint-planning.svg"}
-            alt="Инфографика: Погружение в контекст (Scrum)"
-            className="mx-auto block h-auto w-full max-w-[1065px]"
-          />
+        <div className="min-w-0 overflow-hidden bg-white p-2 sm:p-4">
+          <div
+            className="mx-auto w-full max-w-[1065px] overflow-hidden rounded-[18px] bg-white"
+            style={{ aspectRatio: "1065 / 1476" }}
+          >
+            <img
+              src={isScrumContextInfographic
+                ? "/infographics/m2-04-scrum-context.svg"
+                : "/infographics/m2-05-sprint-planning.svg"}
+              alt={isScrumContextInfographic
+                ? "Инфографика: Погружение в контекст (Scrum)"
+                : "Инфографика: Sprint Planning"}
+              width={1065}
+              height={1476}
+              decoding="async"
+              className="block h-full w-full max-w-none object-contain object-top"
+            />
+          </div>
         </div>
       ) : (
         <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:p-4">
