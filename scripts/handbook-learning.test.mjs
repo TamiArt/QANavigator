@@ -230,6 +230,36 @@ test("Scrum lesson 4 uses the dedicated context infographic asset", () => {
   assert.match(asset, /viewBox="0 0 1065 1476"/);\n  assert.match(asset, /preserveAspectRatio="xMidYMin meet"/);
 });
 
+
+test("Infographic text stays inside its allocated semantic blocks", () => {
+  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  const scrum = fs.readFileSync("public/infographics/m2-04-scrum-context.svg", "utf8");
+  const sprint = fs.readFileSync("public/infographics/m2-05-sprint-planning.svg", "utf8");
+
+  assert.match(source, /min-w-0 break-words whitespace-normal text-xs font-extrabold/);
+  assert.match(source, /min-w-0 break-words whitespace-normal text-\[11px\]/);
+  assert.match(source, /overflow-hidden rounded-\[18px\]/);
+  assert.match(source, /max-w-full break-words whitespace-normal/);
+
+  assert.match(scrum, /• Церемонии \(Daily,/);
+  assert.match(scrum, /  Sprint и др\.\)<\/text>/);
+  assert.match(scrum, /• Ограничения \(время,/<\/text>/);
+  assert.match(scrum, /  ресурсы\)<\/text>/);
+  assert.match(scrum, /Получаем дополнительный контекст и<\/text>/);
+  assert.match(scrum, /обратную связь\.<\/text>/);
+  assert.match(scrum, /<text x="892" y="1078" class="h2" font-size="13.5">Фиксируй<\/text>/);
+  assert.match(scrum, /<text x="892" y="1095" class="h2" font-size="13.5">информацию<\/text>/);
+
+  assert.match(sprint, /Разработка и<\/text><text x="874" y="328" class="small">тестирование<\/text>/);
+  assert.match(sprint, /Тестирование и автоматизация учитываются<\/text>/);
+  assert.match(sprint, /ещё при планировании\.<\/text>/);
+  assert.match(sprint, /Выбраны задачи, связанные<\/text><text x="298" y="1146" class="small">с целью<\/text>/);
+  assert.match(sprint, /QA понимает, что и как<\/text><text x="298" y="1248" class="small">проверять<\/text>/);
+  assert.ok(!scrum.includes("• Церемонии (Daily, Sprint и др.)"), "Scrum ceremony line must remain wrapped");
+  assert.ok(!sprint.includes("Разработка и тестирование</text>"), "Sprint execution text must remain wrapped");
+});
+
+
 test("Handbook exposes a reachable Learning Mode from the knowledge base", () => {
   const source = fs.readFileSync("src/app/features/handbook/HandbookModule.tsx", "utf8");
   assert.match(source, /HandbookLearningMode/);
