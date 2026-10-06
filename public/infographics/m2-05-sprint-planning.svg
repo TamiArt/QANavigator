@@ -41,7 +41,7 @@
 <rect x="529" y="262" width="250" height="104" rx="15" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
 <use href="#target" x="541" y="277" width="54" height="54"/><text x="608" y="286" class="h2">1. Sprint Planning</text><text x="608" y="310" class="small">Цель, отбор задач,</text><text x="608" y="330" class="small">декомпозиция.</text>
 <rect x="793" y="262" width="240" height="104" rx="15" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
-<use href="#flow" x="803" y="279" width="62" height="48"/><text x="874" y="286" class="h2">2. Execution</text><text x="874" y="310" class="small">Разработка и тестирование</text><text x="874" y="330" class="small">+ Daily Standup.</text>
+<use href="#flow" x="803" y="279" width="62" height="48"/><text x="874" y="286" class="h2">2. Execution</text><text x="874" y="309" class="small">Разработка и</text><text x="874" y="328" class="small">тестирование</text><text x="874" y="347" class="small">+ Daily Standup.</text>
 <rect x="529" y="382" width="250" height="120" rx="15" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
 <use href="#team" x="542" y="397" width="54" height="48"/><text x="608" y="408" class="h2">3. Review / Demo</text><text x="608" y="432" class="small">Показ готового функционала</text><text x="608" y="452" class="small">Product Owner и</text><text x="608" y="472" class="small">стейкхолдерам.</text>
 <rect x="793" y="382" width="240" height="120" rx="15" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
@@ -67,7 +67,7 @@
 <rect x="603" y="756" width="428" height="72" rx="14" fill="#fff" stroke="#79d9ee" stroke-width="2"/>
 <use href="#tasks" x="617" y="768" width="48" height="48"/><text x="680" y="779" class="h2">Проверить Acceptance Criteria</text><text x="680" y="803" class="small">Задача должна быть понятной и тестируемой.</text>
 <rect x="603" y="838" width="428" height="76" rx="14" fill="#fff" stroke="#79d9ee" stroke-width="2"/>
-<use href="#target" x="617" y="850" width="48" height="48"/><text x="680" y="861" class="h2">Думать о качестве заранее</text><text x="680" y="885" class="small">Тестирование и автоматизация учитываются ещё при планировании.</text>
+<use href="#target" x="617" y="850" width="48" height="48"/><text x="680" y="861" class="h2">Думать о качестве заранее</text><text x="680" y="883" class="small">Тестирование и автоматизация учитываются</text><text x="680" y="901" class="small">ещё при планировании.</text>
 
 <rect x="12" y="967" width="555" height="354" rx="20" fill="#eafbf4" stroke="#77d7bc" class="card" filter="url(#shadow)"/>
 <circle cx="55" cy="1005" r="30" fill="#15956e"/><text x="46" y="1016" class="num">5</text>
@@ -76,9 +76,9 @@
 <rect x="251" y="1050" width="292" height="238" rx="17" fill="#fff" stroke="#77d7bc" stroke-width="2"/>
 <circle cx="276" cy="1080" r="11" fill="#38bd8c"/><path d="m270 1080 5 5 8-10" stroke="#fff" stroke-width="3" fill="none"/><text x="298" y="1078" class="small">Цель спринта понятна</text>
 <path d="M270 1111h248M270 1162h248M270 1213h248" stroke="#b8e5d6" stroke-width="2"/>
-<circle cx="276" cy="1130" r="11" fill="#38bd8c"/><path d="m270 1130 5 5 8-10" stroke="#fff" stroke-width="3" fill="none"/><text x="298" y="1128" class="small">Выбраны задачи, связанные с целью</text>
+<circle cx="276" cy="1130" r="11" fill="#38bd8c"/><path d="m270 1130 5 5 8-10" stroke="#fff" stroke-width="3" fill="none"/><text x="298" y="1128" class="small">Выбраны задачи, связанные</text><text x="298" y="1146" class="small">с целью</text>
 <circle cx="276" cy="1181" r="11" fill="#38bd8c"/><path d="m270 1181 5 5 8-10" stroke="#fff" stroke-width="3" fill="none"/><text x="298" y="1179" class="small">Задачи декомпозированы</text>
-<circle cx="276" cy="1232" r="11" fill="#38bd8c"/><path d="m270 1232 5 5 8-10" stroke="#fff" stroke-width="3" fill="none"/><text x="298" y="1230" class="small">QA понимает, что и как проверять</text>
+<circle cx="276" cy="1232" r="11" fill="#38bd8c"/><path d="m270 1232 5 5 8-10" stroke="#fff" stroke-width="3" fill="none"/><text x="298" y="1230" class="small">QA понимает, что и как</text><text x="298" y="1248" class="small">проверять</text>
 
 <rect x="583" y="967" width="470" height="354" rx="20" fill="#f5f1ff" stroke="#c7b9f4" class="card" filter="url(#shadow)"/>
 <circle cx="625" cy="1005" r="30" fill="#4b4f9f"/><text x="616" y="1016" class="num">6</text>
