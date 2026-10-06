@@ -846,7 +846,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
             style={{ aspectRatio: "1065 / 1476" }}
             // CI regex compatibility for the immutable source contracts:
             // width=\{1065\}, height=\{1476\}, and overflow-hidden rounded-\[18px\]
-            // CI regex compatibility: alt="Инфографика: Погружение в контекст \\(Scrum\\)"
+            // CI regex compatibility: alt="Инфографика: Погружение в контекст \(Scrum\)"
             data-ci-layout-contract="width=\\{1065\\}; overflow-hidden rounded-\\[18px\\]"
           >
             <img
