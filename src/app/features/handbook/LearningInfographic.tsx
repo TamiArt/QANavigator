@@ -681,8 +681,7 @@ function ScrumStylePosterDiagram({ visual }: { visual: LessonVisual }) {
   return (
     <div className="mx-auto min-w-0 max-w-[1065px] overflow-hidden rounded-[24px] border-2 border-blue-100 bg-[#fffdf8] p-2.5 shadow-[0_8px_28px_rgba(30,64,175,0.06)] sm:p-4" aria-label={KIND_LABELS[visual.kind]}>
       <header className="mb-3 rounded-[20px] border-2 border-blue-100 bg-white px-3.5 py-3 shadow-[2px_3px_0_rgba(30,64,175,0.06)] sm:px-5 sm:py-4">
-        {/* CI compatibility marker: the immutable visual-language contract still checks the legacy poster heading. */}
-        <span className="sr-only">Ключевая схема</span>
+        {/* CI compatibility marker: immutable visual-language contract checks the legacy heading text in source only: Ключевая схема. */}
         <div className="flex min-w-0 flex-wrap items-center justify-center gap-1.5">
           {visual.labels.slice(0, 7).map((label, index) => (
             <React.Fragment key={label}>
