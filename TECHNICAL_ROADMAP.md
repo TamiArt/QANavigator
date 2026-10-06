@@ -86,7 +86,7 @@ Completed:
 - PR #14 handbook hierarchy refactor merged into `main`.
 
 Current development branch:
-`feat/semantic-learning-infographics`
+`fix/m2-04-infographic-text-layout`
 
 Current active milestone:
 - continue Learning Mode production hardening;
@@ -1737,3 +1737,29 @@ Next:
 1. verify the exact Scrum test;
 2. run the full Learning Mode test suite;
 3. continue TypeScript/build and visual PDF checks only after tests are clean.
+
+
+### 7.1.61 Scrum context infographic card-text layout fix — 2026-10-05
+
+Continued the Learning Mode infographic hardening in the new branch `fix/m2-04-infographic-text-layout`.
+
+Fixed only the **text/icon placement inside the existing Scrum poster cards** for Module 2 → lesson 4/12.
+
+Implemented:
+- kept the existing 1065×1476 composition, colors, cards, illustrations, section order and visual design unchanged;
+- wrapped only long labels that exceeded the horizontal space allocated beside their icons;
+- adjusted the vertical baselines of affected lines so every text group stays inside its parent rectangle;
+- corrected the compact source cards for **Процессы**, **Контекст проекта**, **Стейкхолдеры** and **Код и репозиторий**;
+- did not change educational wording; only line breaks and text positions were changed;
+- added regression coverage so the long labels remain wrapped and the previous single-line overflow cannot silently return.
+
+Verification status:
+- source and regression-test changes committed on the dedicated branch;
+- CI must be checked before declaring the layout block complete;
+- no lesson content, infographic design or curriculum data was changed.
+
+Next:
+1. run `test:handbook-learning`;
+2. run TypeScript and production build checks;
+3. inspect the rendered m2-04 poster at desktop/mobile widths and PDF capture;
+4. fix only concrete remaining overflow defects.
