@@ -1769,3 +1769,25 @@ Implemented:
 
 Layout rule:
 **Text must wrap inside the block allocated to it. Never solve overflow by letting text cross a card boundary, and never hide overflow without first providing enough wrapping space.**
+
+### 7.1.62 Scrum lesson 4 study-sheet rebuild — 2026-10-06
+
+Rebuilt the dedicated Module 2, Lesson 4 Scrum infographic around the actual lesson essence supplied for the study sheet.
+
+Content structure:
+1. Scrum essence: Agile framework, 1–4 week Sprint, working Increment.
+2. Three roles: Product Owner, Scrum Master, Developers / Cross-functional Team.
+3. Three artifacts: Product Backlog, Sprint Backlog, Increment.
+4. Sprint as the container plus Sprint Planning, Daily Scrum, Sprint Review / Demo and Sprint Retrospective.
+5. Scrum pros and cons for exam recall.
+6. 5+ concepts: DoR vs DoD, Story Points, Fibonacci sequence, Grooming / Refinement.
+
+Layout:
+- replaced the previous unrelated “context immersion” content;
+- retained the approved 1065×1476 poster composition and responsive behavior;
+- reserved dedicated bounded cards for every content group;
+- manually wrapped dense lines instead of allowing text to cross card boundaries;
+- kept visual cues semantic: Sprint, target, team, documentation, checklist, calendar and communication.
+
+Quality rule:
+**For a study-sheet infographic, every block must answer a concrete exam/learning question and every text line must remain inside its allocated visual block.**
