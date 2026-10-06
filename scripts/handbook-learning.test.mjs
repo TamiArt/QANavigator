@@ -281,8 +281,8 @@ test("Scrum context infographic keeps compact card text inside its allocated lay
   assert.match(asset, /  Sprint и др\.\)/);
   assert.match(asset, /• Ограничения \(время,/);
   assert.match(asset, /  ресурсы\)/);
-  assert.match(asset, /• Владелец<\\/text><text x="427" y="830"/);
-  assert.match(asset, /• История<\\/text><text x="302" y="874"/);
+  assert.match(asset, /• Владелец<\/text><text x="427" y="830"/);
+  assert.match(asset, /• История<\/text><text x="302" y="874"/);
   assert.ok(!asset.includes("• Церемонии (Daily, Sprint и др.)"), "Long ceremony label must remain wrapped inside the card");
   assert.ok(!asset.includes("• Ограничения (время, ресурсы)"), "Long constraints label must remain wrapped inside the card");
 });
