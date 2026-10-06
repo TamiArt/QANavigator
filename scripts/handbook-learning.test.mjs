@@ -212,6 +212,10 @@ test("Scrum lesson 4 uses the dedicated context infographic asset", () => {
   const infographic = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
   const asset = fs.readFileSync("public/infographics/m2-04-scrum-context.svg", "utf8");
   assert.match(infographic, /lesson\.id === "m2-04"/);
+  assert.match(infographic, /style=\{\{ aspectRatio: "1065 \/ 1476" \}\}/);
+  assert.match(infographic, /width=\{1065\}/);
+  assert.match(infographic, /height=\{1476\}/);
+  assert.match(infographic, /object-contain object-top/);
   assert.match(infographic, /alt="Инфографика: Погружение в контекст \(Scrum\)"/);
   assert.match(asset, /Погружение в контекст/);
   assert.match(asset, /Что такое погружение/);
@@ -223,7 +227,7 @@ test("Scrum lesson 4 uses the dedicated context infographic asset", () => {
   for (const symbol of ["lightbulb", "target", "team", "gear", "document", "chat", "code", "stakeholder", "search", "brain", "checklist", "star", "clipboard", "calendar", "sprint", "people-laptop"]) {
     assert.match(asset, new RegExp(`<symbol id="${symbol}"`));
   }
-  assert.match(asset, /viewBox="0 0 1065 1476"/);
+  assert.match(asset, /viewBox="0 0 1065 1476"/);\n  assert.match(asset, /preserveAspectRatio="xMidYMin meet"/);
 });
 
 test("Handbook exposes a reachable Learning Mode from the knowledge base", () => {
