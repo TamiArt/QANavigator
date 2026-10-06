@@ -1753,3 +1753,19 @@ Implemented:
 - added regression checks for the responsive wrapper, intrinsic dimensions and SVG aspect-ratio behavior.
 
 Responsive rule: **the poster scales as one coherent 1065×1476 composition; it must never stretch, crop, overflow horizontally or reflow internal reference elements unpredictably.**
+
+
+### 7.1.61 Infographic text containment hardening — 2026-10-06
+
+Fixed a concrete readability/layout defect: infographic text could visually extend beyond the block allocated to it.
+
+Implemented:
+- added `min-w-0`, `break-words` and explicit normal whitespace handling to shared Learning Mode semantic cards, comparison cells, layer/pyramid content, labels, callouts and module lesson titles;
+- constrained card containers with `overflow-hidden` only after enabling wrapping, so overflow is not used as a substitute for layout;
+- manually reflowed long text lines in the dedicated Scrum poster (`m2-04`) so every line remains inside its assigned card;
+- manually reflowed long text lines in the dedicated Sprint poster (`m2-05`) using the same rule;
+- preserved font hierarchy and poster composition; no educational content was removed or rewritten;
+- added regression assertions that protect the text-fit contract and prevent known long lines from returning as single overflowing strings.
+
+Layout rule:
+**Text must wrap inside the block allocated to it. Never solve overflow by letting text cross a card boundary, and never hide overflow without first providing enough wrapping space.**
