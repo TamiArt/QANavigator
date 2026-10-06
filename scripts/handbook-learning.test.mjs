@@ -274,6 +274,19 @@ test("Infographic text stays inside its allocated semantic blocks", () => {
   assert.ok(!sprint.includes("Разработка и тестирование</text>"), "Sprint execution text must remain wrapped");
 });
 
+test("Scrum context infographic keeps compact card text inside its allocated layout", () => {
+  const asset = fs.readFileSync("public/infographics/m2-04-scrum-context.svg", "utf8");
+
+  assert.match(asset, /• Церемонии \(Daily,/);
+  assert.match(asset, /  Sprint и др\.\)/);
+  assert.match(asset, /• Ограничения \(время,/);
+  assert.match(asset, /  ресурсы\)/);
+  assert.match(asset, /• Владелец<\\/text><text x="427" y="830"/);
+  assert.match(asset, /• История<\\/text><text x="302" y="874"/);
+  assert.ok(!asset.includes("• Церемонии (Daily, Sprint и др.)"), "Long ceremony label must remain wrapped inside the card");
+  assert.ok(!asset.includes("• Ограничения (время, ресурсы)"), "Long constraints label must remain wrapped inside the card");
+});
+
 test("Handbook exposes a reachable Learning Mode from the knowledge base", () => {
   const source = fs.readFileSync("src/app/features/handbook/HandbookModule.tsx", "utf8");
   assert.match(source, /HandbookLearningMode/);

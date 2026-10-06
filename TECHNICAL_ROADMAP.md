@@ -86,7 +86,7 @@ Completed:
 - PR #14 handbook hierarchy refactor merged into `main`.
 
 Current development branch:
-`feat/semantic-learning-infographics`
+`fix/m2-04-infographic-text-layout`
 
 Current active milestone:
 - continue Learning Mode production hardening;
