@@ -1770,6 +1770,27 @@ Implemented:
 Layout rule:
 **Text must wrap inside the block allocated to it. Never solve overflow by letting text cross a card boundary, and never hide overflow without first providing enough wrapping space.**
 
+### 7.1.63 All Learning Mode infographics moved to Scrum visual system — 2026-10-06
+
+Implemented on `feat/all-learning-infographics-scrum-style`.
+
+- created a dedicated branch from `feat/semantic-learning-infographics`;
+- made the approved **Lesson 4 — Scrum** poster the visual master for the remaining Learning Mode lesson infographics;
+- introduced a shared Scrum-style poster composition for all non-dedicated lessons: light paper-like background, compact concept strip, short key-message block, large rounded semantic cards, colored section numbers, topic-specific vector illustrations and a final **«Запомнить»** memory cue;
+- kept each lesson's existing semantic data, title, IDs, curriculum order and source-backed wording unchanged;
+- changed the visual arrangement per lesson through the existing `flow / timeline / compare / layers / cycle / network / checklist / pyramid` metadata instead of copying Scrum content;
+- retained dedicated full-poster assets for `m2-04` Scrum and `m2-05` Sprint, because they are already the reference-quality poster compositions;
+- reused the existing semantic SVG mini-illustrations, including the seven dedicated testing-principle illustrations;
+- preserved responsive wrapping, dark-theme text contrast and PDF save behavior;
+- added regression coverage for the new Scrum-style poster shell and its memory-cue contract.
+
+No lesson source content was changed.
+
+Next:
+- run `test:handbook-learning`, TypeScript and production build;
+- visually inspect representative lessons from Modules 1–4 on desktop/mobile and PDF;
+- fix only concrete layout/readability defects found by verification.
+
 ### 7.1.62 Scrum lesson 4 study-sheet rebuild — 2026-10-06
 
 Rebuilt the dedicated Module 2, Lesson 4 Scrum infographic around the actual lesson essence supplied for the study sheet.

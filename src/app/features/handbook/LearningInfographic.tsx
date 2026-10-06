@@ -667,86 +667,70 @@ function VisualMotif({ visual }: { visual: LessonVisual }) {
   );
 }
 
-function VisualDiagram({ visual }: { visual: LessonVisual }) {
-  if (visual.kind === "pyramid") {
-    const styles = ACCENT_STYLES[visual.accent];
-    return (
-      <div aria-label="Пирамида уровней">
-        <DiagramLabelStrip visual={visual} />
-        <div className="flex flex-col items-center gap-2 py-2">
-          {visual.cards.map((card, index) => (
-            <div
-              key={card.title}
-              className={`flex min-w-0 min-h-14 items-center gap-3 overflow-hidden rounded-[18px] border-2 px-3 py-2 ${styles.card} ${styles.badge}`}
-              style={{ width: `${96 - index * 14}%` }}
-            >
-              <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold ${styles.marker}`}>{index + 1}</span>
-              <div className="min-w-0">
-                <div className="text-xs font-extrabold text-blue-950 dark:text-black">{card.title}</div>
-                <div className="min-w-0 break-words whitespace-normal text-[10px] leading-4 text-slate-600 dark:text-black">{card.text}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (visual.kind === "cycle") {
-    return (
-      <div aria-label="Циклическая схема">
-        <DiagramLabelStrip visual={visual} />
-        <div className="relative grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {visual.cards.map((card, index) => (
-            <div key={card.title} className="relative">
-              <Card card={card} index={index} visual={visual} />
-              {index < visual.cards.length - 1 && (
-                <ArrowRight className="absolute -right-3 top-1/2 hidden -translate-y-1/2 text-blue-300 lg:block" aria-hidden="true" />
-              )}
-            </div>
-          ))}
-        </div>
-        <div className="mx-auto mt-3 flex w-fit items-center gap-2 rounded-full border-2 border-dashed border-blue-200 bg-white px-3 py-1.5 text-[10px] font-bold text-blue-800 dark:text-black">
-          ↻ цикл повторяется
-        </div>
-      </div>
-    );
-  }
-
-  if (visual.kind === "flow") return <FlowDiagram visual={visual} />;
-  if (visual.kind === "timeline") return <TimelineDiagram visual={visual} />;
-  if (visual.kind === "checklist") return <ChecklistDiagram visual={visual} />;
-  if (visual.kind === "compare") return <CompareDiagram visual={visual} />;
-  if (visual.kind === "network") return <NetworkDiagram visual={visual} />;
-
-  if (visual.kind === "layers") {
-    const styles = ACCENT_STYLES[visual.accent];
-    return (
-      <div aria-label="Слои модели">
-        <DiagramLabelStrip visual={visual} />
-        <div className="space-y-2.5">
-          {visual.cards.map((card, index) => (
-            <div key={card.title} className={`flex items-start gap-3 rounded-[18px] border-2 p-3.5 ${styles.card} ${styles.badge}`}>
-              <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold ${styles.marker}`}>{index + 1}</span>
-              <div className="min-w-0">
-                <div className="text-xs font-extrabold text-blue-950 dark:text-black">{card.title}</div>
-                <div className="mt-1 text-[11px] leading-[1.45] text-slate-700 dark:text-black">{card.text}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+function ScrumStylePosterDiagram({ visual }: { visual: LessonVisual }) {
+  const isTestingPrinciples = visual.cards.length === 7 && visual.cards.every((card) => /^\d\. /.test(card.title));
+  const palette: Accent[] = ["blue", "lavender", "mint", "yellow", "pink", "orange"];
+  const mainIdea = visual.callout ?? visual.cards[0]?.text ?? "Ключевая идея урока.";
 
   return (
-    <div aria-label={KIND_LABELS[visual.kind]}>
-      <DiagramLabelStrip visual={visual} />
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {visual.cards.map((card, index) => <Card key={card.title} card={card} index={index} visual={visual} />)}
+    <div className="min-w-0 rounded-[24px] bg-[#fffdf8] p-2.5 sm:p-4" aria-label={KIND_LABELS[visual.kind]}>
+      <div className="mb-3 rounded-[20px] border-2 border-blue-100 bg-white px-3.5 py-3 shadow-[2px_3px_0_rgba(30,64,175,0.06)] sm:px-4">
+        <div className="mb-2 flex min-w-0 items-center justify-center gap-1.5 overflow-hidden">
+          {visual.labels.slice(0, 6).map((label, index) => (
+            <React.Fragment key={label}>
+              <span className="min-w-0 max-w-[28%] truncate rounded-full border-2 border-sky-200 bg-sky-50 px-2 py-1 text-center text-[9px] font-extrabold text-blue-900 dark:text-black sm:max-w-none sm:text-[10px]">{label}</span>
+              {index < Math.min(visual.labels.length, 6) - 1 && <ArrowRight className="h-3 w-3 shrink-0 text-blue-300" aria-hidden="true" />}
+            </React.Fragment>
+          ))}
+        </div>
+        <div className="mx-auto max-w-3xl rounded-[16px] border-2 border-dashed border-blue-200 bg-sky-50/55 px-3 py-2.5 text-center">
+          <p className="min-w-0 break-words whitespace-normal text-[11px] font-bold leading-[1.45] text-blue-950 dark:text-black sm:text-xs">{mainIdea}</p>
+        </div>
+      </div>
+
+      <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+        {visual.cards.map((card, index) => {
+          const accent = palette[index % palette.length];
+          const styles = ACCENT_STYLES[accent];
+          const cardClass = [
+            "min-w-0 overflow-hidden rounded-[20px] border-2 bg-white p-3.5 shadow-[2px_3px_0_rgba(30,64,175,0.07)]",
+            styles.badge,
+            index % 2 === 0 ? "rotate-[-0.3deg]" : "rotate-[0.3deg]",
+          ].join(" ");
+          return (
+            <article key={card.title} className={cardClass}>
+              <div className="flex min-w-0 items-start gap-3">
+                <span className={"flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[11px] font-black " + styles.marker}>{index + 1}</span>
+                <div className="min-w-0 flex-1">
+                  <div className="mb-2 flex min-w-0 items-center gap-2">
+                    <span className={"flex h-11 w-14 shrink-0 items-center justify-center rounded-xl border-2 bg-white " + styles.badge}>
+                      {isTestingPrinciples ? <PrincipleIllustration index={index} /> : <CardIllustration kind={visual.kind} index={index} />}
+                    </span>
+                    <h5 className="min-w-0 break-words whitespace-normal text-[12px] font-extrabold leading-4 text-blue-950 dark:text-black">{card.title}</h5>
+                  </div>
+                  <p className="min-w-0 break-words whitespace-normal text-[11px] leading-[1.5] text-slate-700 dark:text-black">{card.text}</p>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      <div className="mt-3 rounded-[20px] border-2 border-blue-100 bg-white px-3.5 py-3 shadow-[1px_2px_0_rgba(30,64,175,0.05)]">
+        <div className="flex min-w-0 items-start gap-2.5">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-blue-200 bg-sky-50 text-blue-700"><Zap className="h-4 w-4" aria-hidden="true" /></div>
+          <div className="min-w-0">
+            <div className="mb-1 text-[9px] font-extrabold uppercase tracking-[0.14em] text-blue-500">Запомнить</div>
+            <p className="min-w-0 break-words whitespace-normal text-[11px] font-bold leading-[1.5] text-blue-950 dark:text-black">{mainIdea}</p>
+          </div>
+        </div>
       </div>
     </div>
   );
+}
+
+function VisualDiagram({ visual }: { visual: LessonVisual }) {
+  return <ScrumStylePosterDiagram visual={visual} />;
 }
 function PdfDownloadButton({ targetId }: { targetId: string }) {
   const [isGenerating, setIsGenerating] = React.useState(false);
