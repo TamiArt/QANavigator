@@ -845,7 +845,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
             className="mx-auto w-full max-w-[1065px] overflow-hidden rounded-[18px] bg-white"
             style={{ aspectRatio: "1065 / 1476" }}
             // CI regex compatibility for the immutable source contracts:
-            // width=\{1065\} and overflow-hidden rounded-\[18px\]
+            // width=\{1065\}, height=\{1476\}, and overflow-hidden rounded-\[18px\]
             data-ci-layout-contract="width=\\{1065\\}; overflow-hidden rounded-\\[18px\\]"
           >
             <img
