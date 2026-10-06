@@ -168,10 +168,10 @@
 <text x="870" y="313" class="small">• Роли и ответственность</text><text x="870" y="335" class="small">• Опыт и экспертиза</text><text x="870" y="357" class="small">• Коммуникации в команде</text>
 <rect x="529" y="391" width="250" height="118" rx="15" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
 <use href="#gear" x="543" y="408" width="55" height="55"/><text x="608" y="418" class="h2">Процессы</text>
-<text x="608" y="444" class="small">• Scrum-процессы</text><text x="608" y="466" class="small">• Церемонии (Daily, Sprint и др.)</text><text x="608" y="488" class="small">• Инструменты и правила</text>
+<text x="608" y="444" class="small">• Scrum-процессы</text><text x="608" y="463" class="small">• Церемонии (Daily,</text><text x="608" y="482" class="small">  Sprint и др.)</text><text x="608" y="501" class="small">• Инструменты и правила</text>
 <rect x="793" y="391" width="240" height="118" rx="15" fill="#fff" stroke="#cbb8f7" stroke-width="2"/>
 <use href="#document" x="806" y="406" width="50" height="60"/><text x="870" y="418" class="h2">Контекст проекта</text>
-<text x="870" y="444" class="small">• Текущая стадия</text><text x="870" y="466" class="small">• Ограничения (время, ресурсы)</text><text x="870" y="488" class="small">• Риски и зависимости</text>
+<text x="870" y="444" class="small">• Текущая стадия</text><text x="870" y="463" class="small">• Ограничения (время,</text><text x="870" y="482" class="small">  ресурсы)</text><text x="870" y="501" class="small">• Риски и зависимости</text>
 
 <!-- 3 -->
 <rect x="12" y="559" width="555" height="386" rx="20" fill="#fffaf0" stroke="#f0d48a" class="card" filter="url(#shadow)"/>
@@ -197,7 +197,7 @@
 <rect x="603" y="795" width="428" height="68" rx="14" fill="#fff" stroke="#79d9ee" stroke-width="2"/>
 <circle cx="633" cy="829" r="21" fill="#35bce3"/><text x="627" y="837" class="num" font-size="18">3</text><use href="#code" x="657" y="808" width="48" height="48"/><text x="718" y="820" class="h2" font-size="15">Анализ кода и репозитория</text><text x="718" y="841" class="small">Смотрим структуру проекта и историю</text><text x="718" y="855" class="small">изменений.</text>
 <rect x="603" y="867" width="428" height="68" rx="14" fill="#fff" stroke="#79d9ee" stroke-width="2"/>
-<circle cx="633" cy="901" r="21" fill="#35bce3"/><text x="627" y="909" class="num" font-size="18">4</text><use href="#team" x="657" y="879" width="48" height="44"/><text x="718" y="892" class="h2" font-size="14">Взаимодействие со стейкхолдерами</text><text x="718" y="913" class="small">Получаем дополнительный контекст и обратную</text><text x="718" y="927" class="small">связь.</text>
+<circle cx="633" cy="901" r="21" fill="#35bce3"/><text x="627" y="909" class="num" font-size="18">4</text><use href="#team" x="657" y="879" width="48" height="44"/><text x="718" y="892" class="h2" font-size="14">Взаимодействие со стейкхолдерами</text><text x="718" y="913" class="small">Получаем дополнительный контекст и</text><text x="718" y="927" class="small">обратную связь.</text>
 
 <!-- 5 -->
 <rect x="12" y="967" width="555" height="354" rx="20" fill="#eafbf4" stroke="#77d7bc" class="card" filter="url(#shadow)"/>
@@ -219,7 +219,7 @@
 <rect x="603" y="1050" width="208" height="108" rx="15" fill="#fff" stroke="#c7b9f4" stroke-width="2"/>
 <use href="#brain" x="614" y="1062" width="54" height="54"/><text x="675" y="1080" class="h2" font-size="13.5">Будь любопытным</text><text x="675" y="1102" class="small">Задавай вопросы,</text><text x="675" y="1120" class="small">не бойся уточнять.</text>
 <rect x="823" y="1050" width="208" height="108" rx="15" fill="#fff" stroke="#c7b9f4" stroke-width="2"/>
-<use href="#checklist" x="836" y="1062" width="49" height="55"/><text x="892" y="1080" class="h2" font-size="13.5">Фиксируй информацию</text><text x="892" y="1102" class="small">Делай заметки, используй</text><text x="892" y="1120" class="small">шаблоны и чек-листы.</text>
+<use href="#checklist" x="836" y="1062" width="49" height="55"/><text x="892" y="1078" class="h2" font-size="13.5">Фиксируй</text><text x="892" y="1095" class="h2" font-size="13.5">информацию</text><text x="892" y="1118" class="small">Делай заметки, используй</text><text x="892" y="1136" class="small">шаблоны и чек-листы.</text>
 <rect x="603" y="1172" width="208" height="108" rx="15" fill="#fff" stroke="#c7b9f4" stroke-width="2"/>
 <use href="#team" x="614" y="1184" width="54" height="54"/><text x="675" y="1202" class="h2" font-size="13.5">Наблюдай</text><text x="675" y="1224" class="small">Смотри на процессы,</text><text x="675" y="1242" class="small">взаимодействие и привычки</text><text x="675" y="1260" class="small">команды.</text>
 <rect x="823" y="1172" width="208" height="108" rx="15" fill="#fff" stroke="#c7b9f4" stroke-width="2"/>
