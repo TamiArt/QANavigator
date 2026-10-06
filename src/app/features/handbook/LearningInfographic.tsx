@@ -667,48 +667,85 @@ function VisualMotif({ visual }: { visual: LessonVisual }) {
   );
 }
 
-function ScrumStylePosterDiagram({ visual }: { visual: LessonVisual }) {
-  const isTestingPrinciples = visual.cards.length === 7 && visual.cards.every((card) => /^\d\. /.test(card.title));
+function ScrumStylePosterDiagram({ visual, lessonTitle }: { visual: LessonVisual; lessonTitle: string }) {
+  const isTestingPrinciples = visual.cards.length === 7 && visual.cards.every((card) => /^\\d\\. /.test(card.title));
   const palette: Accent[] = ["blue", "lavender", "mint", "yellow", "pink", "orange"];
   const mainIdea = visual.callout ?? visual.cards[0]?.text ?? "Ключевая идея урока.";
+  const cardLayout = visual.cards.length === 3
+    ? "grid-cols-1 lg:grid-cols-2"
+    : visual.cards.length >= 7
+      ? "grid-cols-1 lg:grid-cols-2"
+      : "grid-cols-1 sm:grid-cols-2";
+  const heroCard = visual.cards.length === 3 ? "lg:col-span-2" : "";
 
   return (
-    <div className="min-w-0 rounded-[24px] bg-[#fffdf8] p-2.5 sm:p-4" aria-label={KIND_LABELS[visual.kind]}>
-      <div className="mb-3 rounded-[20px] border-2 border-blue-100 bg-white px-3.5 py-3 shadow-[2px_3px_0_rgba(30,64,175,0.06)] sm:px-4">
-        <div className="mb-2 flex min-w-0 items-center justify-center gap-1.5 overflow-hidden">
-          {visual.labels.slice(0, 6).map((label, index) => (
+    <div className="mx-auto min-w-0 max-w-[1065px] overflow-hidden rounded-[24px] border-2 border-blue-100 bg-[#fffdf8] p-2.5 shadow-[0_8px_28px_rgba(30,64,175,0.06)] sm:p-4" aria-label={KIND_LABELS[visual.kind]}>
+      <header className="mb-3 rounded-[20px] border-2 border-blue-100 bg-white px-3.5 py-3 shadow-[2px_3px_0_rgba(30,64,175,0.06)] sm:px-5 sm:py-4">
+        <div className="flex min-w-0 items-start justify-between gap-3">
+          <div className="min-w-0">
+            <span className="inline-flex rounded-full bg-blue-100 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] text-blue-800 dark:text-black">
+              Learning cheat sheet
+            </span>
+            <h5 className="mt-2 min-w-0 break-words whitespace-normal text-lg font-extrabold leading-6 text-blue-950 dark:text-black sm:text-xl">
+              {lessonTitle}
+            </h5>
+          </div>
+          <div className="hidden shrink-0 rounded-2xl border-2 border-sky-200 bg-sky-50 px-3 py-2 text-center sm:block">
+            <div className="text-[9px] font-extrabold uppercase tracking-[0.12em] text-blue-500">QA Navigator</div>
+            <div className="mt-1 text-[10px] font-bold text-blue-900 dark:text-black">ключевые идеи → практика</div>
+          </div>
+        </div>
+
+        <div className="mt-3 flex min-w-0 flex-wrap items-center justify-center gap-1.5">
+          {visual.labels.slice(0, 7).map((label, index) => (
             <React.Fragment key={label}>
-              <span className="min-w-0 max-w-[28%] truncate rounded-full border-2 border-sky-200 bg-sky-50 px-2 py-1 text-center text-[9px] font-extrabold text-blue-900 dark:text-black sm:max-w-none sm:text-[10px]">{label}</span>
-              {index < Math.min(visual.labels.length, 6) - 1 && <ArrowRight className="h-3 w-3 shrink-0 text-blue-300" aria-hidden="true" />}
+              <span className="min-w-0 max-w-full break-words whitespace-normal rounded-full border-2 border-sky-200 bg-sky-50 px-2.5 py-1 text-center text-[9px] font-extrabold text-blue-900 dark:text-black sm:text-[10px]">
+                {label}
+              </span>
+              {index < Math.min(visual.labels.length, 7) - 1 && (
+                <ArrowRight className="h-3 w-3 shrink-0 text-blue-300" aria-hidden="true" />
+              )}
             </React.Fragment>
           ))}
         </div>
-        <div className="mx-auto max-w-3xl rounded-[16px] border-2 border-dashed border-blue-200 bg-sky-50/55 px-3 py-2.5 text-center">
-          <p className="min-w-0 break-words whitespace-normal text-[11px] font-bold leading-[1.45] text-blue-950 dark:text-black sm:text-xs">{mainIdea}</p>
-        </div>
-      </div>
 
-      <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+        <div className="mt-3 mx-auto max-w-4xl rounded-[16px] border-2 border-dashed border-blue-200 bg-sky-50/55 px-3 py-2.5 text-center">
+          <p className="min-w-0 break-words whitespace-normal text-[11px] font-bold leading-[1.45] text-blue-950 dark:text-black sm:text-xs">
+            {mainIdea}
+          </p>
+        </div>
+      </header>
+
+      <div className={`grid min-w-0 gap-3 ${cardLayout}`}>
         {visual.cards.map((card, index) => {
           const accent = palette[index % palette.length];
           const styles = ACCENT_STYLES[accent];
           const cardClass = [
-            "min-w-0 overflow-hidden rounded-[20px] border-2 bg-white p-3.5 shadow-[2px_3px_0_rgba(30,64,175,0.07)]",
+            "min-w-0 overflow-hidden rounded-[20px] border-2 p-3.5 shadow-[2px_3px_0_rgba(30,64,175,0.07)] sm:p-4",
+            styles.card,
             styles.badge,
-            index % 2 === 0 ? "rotate-[-0.3deg]" : "rotate-[0.3deg]",
+            index % 2 === 0 ? "rotate-[-0.35deg]" : "rotate-[0.35deg]",
+            index === 0 ? heroCard : "",
           ].join(" ");
+
           return (
             <article key={card.title} className={cardClass}>
               <div className="flex min-w-0 items-start gap-3">
-                <span className={"flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[11px] font-black " + styles.marker}>{index + 1}</span>
+                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[11px] font-black ${styles.marker}`}>
+                  {index + 1}
+                </span>
                 <div className="min-w-0 flex-1">
-                  <div className="mb-2 flex min-w-0 items-center gap-2">
-                    <span className={"flex h-11 w-14 shrink-0 items-center justify-center rounded-xl border-2 bg-white " + styles.badge}>
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <span className={`flex h-11 w-14 shrink-0 items-center justify-center rounded-xl border-2 bg-white/80 ${styles.badge}`}>
                       {isTestingPrinciples ? <PrincipleIllustration index={index} /> : <CardIllustration kind={visual.kind} index={index} />}
                     </span>
-                    <h5 className="min-w-0 break-words whitespace-normal text-[12px] font-extrabold leading-4 text-blue-950 dark:text-black">{card.title}</h5>
+                    <h6 className="min-w-0 break-words whitespace-normal text-[12px] font-extrabold leading-4 text-blue-950 dark:text-black sm:text-[13px]">
+                      {card.title}
+                    </h6>
                   </div>
-                  <p className="min-w-0 break-words whitespace-normal text-[11px] leading-[1.5] text-slate-700 dark:text-black">{card.text}</p>
+                  <p className="mt-2 min-w-0 break-words whitespace-normal text-[11px] leading-[1.5] text-slate-700 dark:text-black sm:text-[12px]">
+                    {card.text}
+                  </p>
                 </div>
               </div>
             </article>
@@ -716,15 +753,19 @@ function ScrumStylePosterDiagram({ visual }: { visual: LessonVisual }) {
         })}
       </div>
 
-      <div className="mt-3 rounded-[20px] border-2 border-blue-100 bg-white px-3.5 py-3 shadow-[1px_2px_0_rgba(30,64,175,0.05)]">
+      <footer className="mt-3 rounded-[20px] border-2 border-blue-100 bg-white px-3.5 py-3 shadow-[1px_2px_0_rgba(30,64,175,0.05)] sm:px-4">
         <div className="flex min-w-0 items-start gap-2.5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-blue-200 bg-sky-50 text-blue-700"><Zap className="h-4 w-4" aria-hidden="true" /></div>
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-blue-200 bg-sky-50 text-blue-700">
+            <Zap className="h-4 w-4" aria-hidden="true" />
+          </div>
           <div className="min-w-0">
             <div className="mb-1 text-[9px] font-extrabold uppercase tracking-[0.14em] text-blue-500">Запомнить</div>
-            <p className="min-w-0 break-words whitespace-normal text-[11px] font-bold leading-[1.5] text-blue-950 dark:text-black">{mainIdea}</p>
+            <p className="min-w-0 break-words whitespace-normal text-[11px] font-bold leading-[1.5] text-blue-950 dark:text-black sm:text-xs">
+              {mainIdea}
+            </p>
           </div>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }
@@ -847,7 +888,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
         </div>
       ) : (
         <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:p-4">
-          <VisualDiagram visual={visual} />
+          <VisualDiagram visual={visual} lessonTitle={lesson.title} />
           {visual.callout && (
             <div className="mt-4 flex items-start gap-2.5 rounded-[18px] border-2 border-blue-100 bg-white/90 px-3.5 py-3 shadow-[1px_2px_0_rgba(30,64,175,0.05)]">
               <Zap className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" aria-hidden="true" />
