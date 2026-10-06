@@ -1737,3 +1737,19 @@ Next:
 1. verify the exact Scrum test;
 2. run the full Learning Mode test suite;
 3. continue TypeScript/build and visual PDF checks only after tests are clean.
+
+
+### 7.1.58 Responsive Scrum poster layout — 2026-10-06
+
+Hardened the dedicated **Module 2 → lesson 4/12 → Scrum** infographic for different screen sizes.
+
+Implemented:
+- added an explicit responsive aspect-ratio box (`1065 / 1476`) around the poster so the browser reserves the correct height at every width and avoids layout shifts;
+- constrained the poster to `max-width: 1065px` while allowing it to shrink fluidly to the available mobile width;
+- used `object-contain` + top alignment so the full poster remains visible without cropping or distortion;
+- added intrinsic `width`/`height` metadata to the image for stable layout calculation;
+- set SVG `preserveAspectRatio="xMidYMin meet"` so the artwork keeps its proportions when the viewport changes;
+- kept the reference composition intact rather than introducing breakpoint-specific distortions;
+- added regression checks for the responsive wrapper, intrinsic dimensions and SVG aspect-ratio behavior.
+
+Responsive rule: **the poster scales as one coherent 1065×1476 composition; it must never stretch, crop, overflow horizontally or reflow internal reference elements unpredictably.**
