@@ -667,7 +667,7 @@ function VisualMotif({ visual }: { visual: LessonVisual }) {
   );
 }
 
-function ScrumStylePosterDiagram({ visual, lessonTitle }: { visual: LessonVisual; lessonTitle: string }) {
+function ScrumStylePosterDiagram({ visual }: { visual: LessonVisual }) {
   const isTestingPrinciples = visual.cards.length === 7 && visual.cards.every((card) => /^\\d\\. /.test(card.title));
   const palette: Accent[] = ["blue", "lavender", "mint", "yellow", "pink", "orange"];
   const mainIdea = visual.callout ?? visual.cards[0]?.text ?? "Ключевая идея урока.";
@@ -687,7 +687,7 @@ function ScrumStylePosterDiagram({ visual, lessonTitle }: { visual: LessonVisual
               Learning cheat sheet
             </span>
             <h5 className="mt-2 min-w-0 break-words whitespace-normal text-lg font-extrabold leading-6 text-blue-950 dark:text-black sm:text-xl">
-              {lessonTitle}
+              Ключевая схема
             </h5>
           </div>
           <div className="hidden shrink-0 rounded-2xl border-2 border-sky-200 bg-sky-50 px-3 py-2 text-center sm:block">
@@ -888,7 +888,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
         </div>
       ) : (
         <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:p-4">
-          <VisualDiagram visual={visual} lessonTitle={lesson.title} />
+          <VisualDiagram visual={visual} />
           {visual.callout && (
             <div className="mt-4 flex items-start gap-2.5 rounded-[18px] border-2 border-blue-100 bg-white/90 px-3.5 py-3 shadow-[1px_2px_0_rgba(30,64,175,0.05)]">
               <Zap className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" aria-hidden="true" />
