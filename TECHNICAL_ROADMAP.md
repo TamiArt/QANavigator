@@ -1812,3 +1812,23 @@ Layout:
 
 Quality rule:
 **For a study-sheet infographic, every block must answer a concrete exam/learning question and every text line must remain inside its allocated visual block.**
+
+
+### 7.1.64 Branch synchronization and clean verification baseline — 2026-10-06
+
+Synchronized feat/all-learning-infographics-scrum-style with the latest verified Learning Mode / infographic implementation from feat/semantic-learning-infographics.
+
+Current baseline:
+- branch head: 92d342cbab15983e11fd90bed7385f55535a3ef1;
+- latest source verification baseline: full npm run verify passed on the synchronized source before merge;
+- Learning Mode regression suite: 22/22;
+- total verification tests in npm run verify: 62/62;
+- TypeScript and production build passed on the synchronized source;
+- no lesson source text, IDs or curriculum order were changed by the synchronization;
+- scripts/handbook-learning.test.mjs remains immutable.
+
+Next development block:
+1. audit representative Module 1–4 Scrum-style infographics for concrete layout/readability defects;
+2. check desktop/mobile/PDF behavior;
+3. fix only confirmed defects without changing lesson content or the approved visual system;
+4. run the full verification block before committing the completed stage.
