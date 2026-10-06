@@ -875,12 +875,6 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
       ) : (
         <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:p-4">
           <VisualDiagram visual={visual} />
-          {visual.callout && (
-            <div className="mt-4 flex items-start gap-2.5 rounded-[18px] border-2 border-blue-100 bg-white/90 px-3.5 py-3 shadow-[1px_2px_0_rgba(30,64,175,0.05)]">
-              <Zap className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" aria-hidden="true" />
-              <p className="min-w-0 break-words whitespace-normal text-[11px] font-semibold leading-[1.45] text-blue-950 dark:text-black">{visual.callout}</p>
-            </div>
-          )}
         </div>
       )}
     </section>
