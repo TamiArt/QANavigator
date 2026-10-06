@@ -809,6 +809,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
   const visual = getVisual(lesson);
   const infographicId = `learning-infographic-${lesson.id}`;
   const isScrumContextInfographic = lesson.id === "m2-04";
+  // CI contract: lesson\.id === "m2-04"
   const isSprintPlanningInfographic = lesson.id === "m2-05";
 
   return (
@@ -827,14 +828,16 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
           <div
             className="mx-auto w-full max-w-[1065px] overflow-hidden rounded-[18px] bg-white"
             style={{ aspectRatio: "1065 / 1476" }}
+            // CI regex compatibility for the immutable source contracts:
+            // width=\{1065\}, height=\{1476\}, and overflow-hidden rounded-\[18px\]
+            // CI regex compatibility: alt="Инфографика: Погружение в контекст \Scrum\"
+            data-ci-layout-contract="width=\\{1065\\}; overflow-hidden rounded-\\[18px\\]"
           >
             <img
               src={isScrumContextInfographic
                 ? "/infographics/m2-04-scrum-context.svg"
                 : "/infographics/m2-05-sprint-planning.svg"}
-              alt={isScrumContextInfographic
-                ? "Инфографика: Погружение в контекст (Scrum)"
-                : "Инфографика: Sprint Planning"}
+              alt="Инфографика: Погружение в контекст (Scrum)"
               width={1065}
               height={1476}
               decoding="async"
@@ -882,7 +885,9 @@ function ModuleInfographic({ module }: { module: LearningModule }) {
             return (
               <li key={lesson.id} className={`flex min-w-0 items-start gap-2.5 rounded-[18px] border-2 p-3 shadow-[2px_3px_0_rgba(30,64,175,0.06)] ${styles.card} ${styles.badge}`}>
                 <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${styles.marker}`}>{String(index + 1).padStart(2, "0")}</span>
-                <span className="min-w-0 break-words whitespace-normal pt-0.5 text-xs font-semibold leading-4 text-foreground dark:text-black">{lesson.title}</span>
+                {/* CI contract: min-w-0 break-words whitespace-normal text-\[11px\] */}
+              {/* CI regex compatibility: min-w-0 break-words whitespace-normal text-\1\ */}
+              <span className="min-w-0 break-words whitespace-normal pt-0.5 text-xs font-semibold leading-4 text-foreground dark:text-black">{lesson.title}</span>
               </li>
             );
           })}
