@@ -208,22 +208,70 @@ test("Learning Mode has a semantic infographic contract for every lesson in Modu
   assert.match(infographic, /\/infographics\/m2-04-scrum-context\.svg/);
 });
 
-test("Scrum lesson 4 uses the dedicated context infographic asset", () => {
+test("Scrum lesson 4 uses the dedicated Scrum study sheet", () => {
   const infographic = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
   const asset = fs.readFileSync("public/infographics/m2-04-scrum-context.svg", "utf8");
-  assert.match(infographic, /lesson\.id === "m2-04"/);
-  assert.match(infographic, /alt="Инфографика: Погружение в контекст \(Scrum\)"/);
-  assert.match(asset, /Погружение в контекст/);
-  assert.match(asset, /Что такое погружение/);
-  assert.match(asset, /Что нужно узнать/);
-  assert.match(asset, /Основные источники информации/);
-  assert.match(asset, /Как проходит погружение/);
-  assert.match(asset, /Результат погружения/);
-  assert.match(asset, /Полезные советы/);
-  for (const symbol of ["lightbulb", "target", "team", "gear", "document", "chat", "code", "stakeholder", "search", "brain", "checklist", "star", "clipboard", "calendar", "sprint", "people-laptop"]) {
-    assert.match(asset, new RegExp(`<symbol id="${symbol}"`));
+
+  assert.match(infographic, /lesson\\.id === "m2-04"/);
+  assert.ok(infographic.includes('style={{ aspectRatio: "1065 / 1476" }}'));
+  assert.match(infographic, /width=\\{1065\\}/);
+  assert.match(infographic, /height=\\{1476\\}/);
+  assert.match(infographic, /object-contain object-top/);
+  assert.match(infographic, /alt="Инфографика: Погружение в контекст \\(Scrum\\)"/);
+
+  for (const required of [
+    "Фреймворк Scrum",
+    "Больше ценности каждый спринт!",
+    "1. Главная суть",
+    "2. Три обязательные роли",
+    "3. Главные артефакты",
+    "4. Sprint и ключевые события",
+    "5. Плюсы и минусы",
+    "6. 5+ · что важно знать",
+    "Product Owner",
+    "Scrum Master",
+    "Developers / Cross-functional Team",
+    "Product Backlog",
+    "Sprint Backlog",
+    "Increment",
+    "Sprint Planning",
+    "Daily Scrum",
+    "Sprint Review / Demo",
+    "Sprint Retrospective",
+    "DoR vs DoD",
+    "Story Points",
+    "Grooming / Refinement",
+    "Фибоначчи",
+  ]) {
+    assert.ok(asset.includes(required), required);
   }
+
   assert.match(asset, /viewBox="0 0 1065 1476"/);
+  assert.match(asset, /preserveAspectRatio="xMidYMin meet"/);
+  assert.match(asset, /id="sprint"/);
+  assert.match(asset, /id="team"/);
+  assert.match(asset, /id="document"/);
+  assert.match(asset, /id="checklist"/);
+  assert.match(asset, /id="calendar"/);
+});
+
+test("Infographic text stays inside its allocated semantic blocks", () => {
+  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  const scrum = fs.readFileSync("public/infographics/m2-04-scrum-context.svg", "utf8");
+  const sprint = fs.readFileSync("public/infographics/m2-05-sprint-planning.svg", "utf8");
+
+  assert.match(source, /min-w-0 break-words whitespace-normal text-xs font-extrabold/);
+  assert.match(source, /min-w-0 break-words whitespace-normal text-\\[11px\\]/);
+  assert.match(source, /overflow-hidden rounded-\\[18px\\]/);
+  assert.match(source, /max-w-full break-words whitespace-normal/);
+
+  for (const svg of [scrum, sprint]) {
+    assert.match(svg, /viewBox="0 0 1065 1476"/);
+    assert.match(svg, /preserveAspectRatio="xMidYMin meet"/);
+  }
+
+  assert.ok(!scrum.includes("текстового блока, который выходит за границу"), "Scrum must not contain overflow workaround copy");
+  assert.ok(!sprint.includes("Разработка и тестирование</text>"), "Sprint execution text must remain wrapped");
 });
 
 test("Scrum context infographic keeps compact card text inside its allocated layout", () => {
@@ -233,8 +281,8 @@ test("Scrum context infographic keeps compact card text inside its allocated lay
   assert.match(asset, /  Sprint и др\.\)/);
   assert.match(asset, /• Ограничения \(время,/);
   assert.match(asset, /  ресурсы\)/);
-  assert.match(asset, /• Владелец<\\/text><text x="427" y="830"/);
-  assert.match(asset, /• История<\\/text><text x="302" y="874"/);
+  assert.match(asset, /• Владелец<\/text><text x="427" y="830"/);
+  assert.match(asset, /• История<\/text><text x="302" y="874"/);
   assert.ok(!asset.includes("• Церемонии (Daily, Sprint и др.)"), "Long ceremony label must remain wrapped inside the card");
   assert.ok(!asset.includes("• Ограничения (время, ресурсы)"), "Long constraints label must remain wrapped inside the card");
 });

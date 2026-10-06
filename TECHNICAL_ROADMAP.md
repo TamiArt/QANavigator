@@ -1739,27 +1739,55 @@ Next:
 3. continue TypeScript/build and visual PDF checks only after tests are clean.
 
 
-### 7.1.61 Scrum context infographic card-text layout fix — 2026-10-05
+### 7.1.58 Responsive Scrum poster layout — 2026-10-06
 
-Continued the Learning Mode infographic hardening in the new branch `fix/m2-04-infographic-text-layout`.
-
-Fixed only the **text/icon placement inside the existing Scrum poster cards** for Module 2 → lesson 4/12.
+Hardened the dedicated **Module 2 → lesson 4/12 → Scrum** infographic for different screen sizes.
 
 Implemented:
-- kept the existing 1065×1476 composition, colors, cards, illustrations, section order and visual design unchanged;
-- wrapped only long labels that exceeded the horizontal space allocated beside their icons;
-- adjusted the vertical baselines of affected lines so every text group stays inside its parent rectangle;
-- corrected the compact source cards for **Процессы**, **Контекст проекта**, **Стейкхолдеры** and **Код и репозиторий**;
-- did not change educational wording; only line breaks and text positions were changed;
-- added regression coverage so the long labels remain wrapped and the previous single-line overflow cannot silently return.
+- added an explicit responsive aspect-ratio box (`1065 / 1476`) around the poster so the browser reserves the correct height at every width and avoids layout shifts;
+- constrained the poster to `max-width: 1065px` while allowing it to shrink fluidly to the available mobile width;
+- used `object-contain` + top alignment so the full poster remains visible without cropping or distortion;
+- added intrinsic `width`/`height` metadata to the image for stable layout calculation;
+- set SVG `preserveAspectRatio="xMidYMin meet"` so the artwork keeps its proportions when the viewport changes;
+- kept the reference composition intact rather than introducing breakpoint-specific distortions;
+- added regression checks for the responsive wrapper, intrinsic dimensions and SVG aspect-ratio behavior.
 
-Verification status:
-- source and regression-test changes committed on the dedicated branch;
-- CI must be checked before declaring the layout block complete;
-- no lesson content, infographic design or curriculum data was changed.
+Responsive rule: **the poster scales as one coherent 1065×1476 composition; it must never stretch, crop, overflow horizontally or reflow internal reference elements unpredictably.**
 
-Next:
-1. run `test:handbook-learning`;
-2. run TypeScript and production build checks;
-3. inspect the rendered m2-04 poster at desktop/mobile widths and PDF capture;
-4. fix only concrete remaining overflow defects.
+
+### 7.1.61 Infographic text containment hardening — 2026-10-06
+
+Fixed a concrete readability/layout defect: infographic text could visually extend beyond the block allocated to it.
+
+Implemented:
+- added `min-w-0`, `break-words` and explicit normal whitespace handling to shared Learning Mode semantic cards, comparison cells, layer/pyramid content, labels, callouts and module lesson titles;
+- constrained card containers with `overflow-hidden` only after enabling wrapping, so overflow is not used as a substitute for layout;
+- manually reflowed long text lines in the dedicated Scrum poster (`m2-04`) so every line remains inside its assigned card;
+- manually reflowed long text lines in the dedicated Sprint poster (`m2-05`) using the same rule;
+- preserved font hierarchy and poster composition; no educational content was removed or rewritten;
+- added regression assertions that protect the text-fit contract and prevent known long lines from returning as single overflowing strings.
+
+Layout rule:
+**Text must wrap inside the block allocated to it. Never solve overflow by letting text cross a card boundary, and never hide overflow without first providing enough wrapping space.**
+
+### 7.1.62 Scrum lesson 4 study-sheet rebuild — 2026-10-06
+
+Rebuilt the dedicated Module 2, Lesson 4 Scrum infographic around the actual lesson essence supplied for the study sheet.
+
+Content structure:
+1. Scrum essence: Agile framework, 1–4 week Sprint, working Increment.
+2. Three roles: Product Owner, Scrum Master, Developers / Cross-functional Team.
+3. Three artifacts: Product Backlog, Sprint Backlog, Increment.
+4. Sprint as the container plus Sprint Planning, Daily Scrum, Sprint Review / Demo and Sprint Retrospective.
+5. Scrum pros and cons for exam recall.
+6. 5+ concepts: DoR vs DoD, Story Points, Fibonacci sequence, Grooming / Refinement.
+
+Layout:
+- replaced the previous unrelated “context immersion” content;
+- retained the approved 1065×1476 poster composition and responsive behavior;
+- reserved dedicated bounded cards for every content group;
+- manually wrapped dense lines instead of allowing text to cross card boundaries;
+- kept visual cues semantic: Sprint, target, team, documentation, checklist, calendar and communication.
+
+Quality rule:
+**For a study-sheet infographic, every block must answer a concrete exam/learning question and every text line must remain inside its allocated visual block.**
