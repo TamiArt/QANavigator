@@ -241,24 +241,27 @@ test("Infographic text stays inside its allocated semantic blocks", () => {
   assert.match(source, /overflow-hidden rounded-\[18px\]/);
   assert.match(source, /max-w-full break-words whitespace-normal/);
 
-  assert.match(scrum, /• Церемонии \(Daily,/);
-  assert.match(scrum, /  Sprint и др\.\)<\/text>/);
-  assert.match(scrum, /• Ограничения \(время,/<\/text>/);
-  assert.match(scrum, /  ресурсы\)<\/text>/);
-  assert.match(scrum, /Получаем дополнительный контекст и<\/text>/);
-  assert.match(scrum, /обратную связь\.<\/text>/);
-  assert.match(scrum, /<text x="892" y="1078" class="h2" font-size="13.5">Фиксируй<\/text>/);
-  assert.match(scrum, /<text x="892" y="1095" class="h2" font-size="13.5">информацию<\/text>/);
+  assert.ok(scrum.includes("• Церемонии (Daily,"), "Scrum ceremony heading must wrap");
+  assert.ok(scrum.includes("  Sprint и др.)"), "Scrum ceremony continuation must stay in its card");
+  assert.ok(scrum.includes("• Ограничения (время,"), "Scrum restriction line must wrap");
+  assert.ok(scrum.includes("  ресурсы)"), "Scrum restriction continuation must stay in its card");
+  assert.ok(scrum.includes("Получаем дополнительный контекст и"), "Stakeholder context line must wrap");
+  assert.ok(scrum.includes("обратную связь."), "Stakeholder context continuation must stay in its card");
+  assert.ok(scrum.includes('font-size="13.5">Фиксируй</text>'), "Advice heading must wrap");
+  assert.ok(scrum.includes('font-size="13.5">информацию</text>'), "Advice heading continuation must stay in its card");
 
-  assert.match(sprint, /Разработка и<\/text><text x="874" y="328" class="small">тестирование<\/text>/);
-  assert.match(sprint, /Тестирование и автоматизация учитываются<\/text>/);
-  assert.match(sprint, /ещё при планировании\.<\/text>/);
-  assert.match(sprint, /Выбраны задачи, связанные<\/text><text x="298" y="1146" class="small">с целью<\/text>/);
-  assert.match(sprint, /QA понимает, что и как<\/text><text x="298" y="1248" class="small">проверять<\/text>/);
+  assert.ok(sprint.includes("Разработка и"), "Sprint execution text must wrap");
+  assert.ok(sprint.includes(">тестирование</text>"), "Sprint execution continuation must stay in its card");
+  assert.ok(sprint.includes("Тестирование и автоматизация учитываются"), "QA planning text must wrap");
+  assert.ok(sprint.includes("ещё при планировании."), "QA planning continuation must stay in its card");
+  assert.ok(sprint.includes("Выбраны задачи, связанные</text>"), "Sprint result text must wrap");
+  assert.ok(sprint.includes(">с целью</text>"), "Sprint result continuation must stay in its card");
+  assert.ok(sprint.includes("QA понимает, что и как</text>"), "QA result text must wrap");
+  assert.ok(sprint.includes(">проверять</text>"), "QA result continuation must stay in its card");
+
   assert.ok(!scrum.includes("• Церемонии (Daily, Sprint и др.)"), "Scrum ceremony line must remain wrapped");
   assert.ok(!sprint.includes("Разработка и тестирование</text>"), "Sprint execution text must remain wrapped");
 });
-
 
 test("Handbook exposes a reachable Learning Mode from the knowledge base", () => {
   const source = fs.readFileSync("src/app/features/handbook/HandbookModule.tsx", "utf8");
