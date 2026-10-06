@@ -213,7 +213,7 @@ test("Scrum lesson 4 uses the dedicated Scrum study sheet", () => {
   const asset = fs.readFileSync("public/infographics/m2-04-scrum-context.svg", "utf8");
 
   assert.match(infographic, /lesson\\.id === "m2-04"/);
-  assert.match(infographic, /style=\\{\\{ aspectRatio: "1065 \\/ 1476" \\}\\}/);
+  assert.ok(infographic.includes('style={{ aspectRatio: "1065 / 1476" }}'));
   assert.match(infographic, /width=\\{1065\\}/);
   assert.match(infographic, /height=\\{1476\\}/);
   assert.match(infographic, /object-contain object-top/);
