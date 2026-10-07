@@ -206,6 +206,9 @@ test("Learning Mode has a semantic infographic contract for every lesson in Modu
   assert.match(infographic, /aria-label=/);
   assert.match(infographic, /isScrumContextInfographic/);
   assert.match(infographic, /\/infographics\/m2-04-scrum-context\.svg/);
+  assert.match(infographic, /lesson\.id === "m1-09"/);
+  assert.match(infographic, /\/infographics\/m1-09-vidi-testirovaniya\.png/);
+  assert.ok(fs.existsSync("public/infographics/m1-09-vidi-testirovaniya.png"));
 });
 
 test("Scrum lesson 4 uses the dedicated Scrum study sheet", () => {
@@ -213,11 +216,11 @@ test("Scrum lesson 4 uses the dedicated Scrum study sheet", () => {
   const asset = fs.readFileSync("public/infographics/m2-04-scrum-context.svg", "utf8");
 
   assert.match(infographic, /lesson\\.id === "m2-04"/);
-  assert.ok(infographic.includes('style={{ aspectRatio: "1065 / 1476" }}'));
-  assert.match(infographic, /width=\\{1065\\}/);
-  assert.match(infographic, /height=\\{1476\\}/);
+  assert.match(infographic, /aspectRatio: isTestTypesInfographic \? "1054 \/ 1492" : "1065 \/ 1476"/);
+  assert.match(infographic, /width=\{isTestTypesInfographic \? 1054 : 1065\}/);
+  assert.match(infographic, /height=\{isTestTypesInfographic \? 1492 : 1476\}/);
   assert.match(infographic, /object-contain object-top/);
-  assert.match(infographic, /alt="Инфографика: Погружение в контекст \\(Scrum\\)"/);
+  assert.ok(infographic.includes('alt={isTestTypesInfographic ? "Инфографика: Виды тестирования" : "Инфографика: Погружение в контекст (Scrum)"}'));
 
   for (const required of [
     "Фреймворк Scrum",
