@@ -21,7 +21,7 @@ export interface LearningModule {
 export const HANDBOOK_LEARNING_MODULES: readonly LearningModule[] = [
   {
     id: "module-1-testing-theory",
-    title: "Модуль 1. Теория тестирования",
+    title: "Модуль 1 — Теория тестирования",
     lessons: [
       { id: "m1-01", title: "Что такое тестирование?", topicIds: ["fundamentals-testing"] },
       { id: "m1-02", title: "Термины: QA, QC, Testing", topicIds: ["f1"] },
@@ -38,17 +38,17 @@ export const HANDBOOK_LEARNING_MODULES: readonly LearningModule[] = [
   },
   {
     id: "module-2-project-context",
-    title: "Модуль 2. Погружение в контекст",
+    title: "Модуль 2 — Погружение в контекст",
     lessons: HANDBOOK_LEARNING_MODULE_2_LESSONS,
   },
   {
     id: "module-3-frontend",
-    title: "Модуль 3. Тестирование фронтенда",
+    title: "Модуль 3 — Тестирование фронтенда",
     lessons: HANDBOOK_LEARNING_MODULE_3_LESSONS,
   },
   {
     id: "module-4-test-documentation",
-    title: "Модуль 4. Тестовая документация",
+    title: "Модуль 4 — Тестовая документация",
     lessons: HANDBOOK_LEARNING_MODULE_4_LESSONS,
   },
 ];
