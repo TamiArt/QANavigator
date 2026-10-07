@@ -839,6 +839,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
   const isScrumContextInfographic = lesson.id === "m2-04";
   // CI contract: lesson\.id === "m2-04"
   const isSprintPlanningInfographic = lesson.id === "m2-05";
+  const isTestDocumentationInfographic = lesson.id === "m4-01";
 
   return (
     <section
@@ -851,11 +852,11 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
         <PdfDownloadButton targetId={infographicId} />
       </div>
 
-      {isTestTypesInfographic || isScrumContextInfographic || isSprintPlanningInfographic ? (
+      {isTestTypesInfographic || isScrumContextInfographic || isSprintPlanningInfographic || isTestDocumentationInfographic ? (
         <div className="min-w-0 overflow-hidden bg-white p-2 sm:p-4">
           <div
             className="mx-auto w-full max-w-[1065px] overflow-hidden rounded-[18px] bg-white"
-            style={{ aspectRatio: isTestTypesInfographic ? "1054 / 1492" : "1065 / 1476" }}
+            style={{ aspectRatio: isTestTypesInfographic || isTestDocumentationInfographic ? "1054 / 1492" : "1065 / 1476" }}
             // CI regex compatibility for the immutable source contracts:
             // width=\{1065\}, height=\{1476\}, and overflow-hidden rounded-\[18px\]
             // CI regex compatibility: alt="Инфографика: Погружение в контекст \Scrum\"
@@ -864,12 +865,14 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
             <img
               src={isTestTypesInfographic
                 ? "/infographics/m1-09-vidi-testirovaniya.png"
-                : isScrumContextInfographic
+                : isTestDocumentationInfographic
+                  ? "/infographics/m4-01-test documentation.png"
+                  : isScrumContextInfographic
                   ? "/infographics/m2-04-scrum-context.svg"
                   : "/infographics/m2-05-sprint-planning.svg"}
-              alt={isTestTypesInfographic ? "Инфографика: Виды тестирования" : "Инфографика: Погружение в контекст (Scrum)"}
-              width={isTestTypesInfographic ? 1054 : 1065}
-              height={isTestTypesInfographic ? 1492 : 1476}
+              alt={isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : "Инфографика: Погружение в контекст (Scrum)"}
+              width={isTestTypesInfographic || isTestDocumentationInfographic ? 1054 : 1065}
+              height={isTestTypesInfographic || isTestDocumentationInfographic ? 1492 : 1476}
               decoding="async"
               className="block h-full w-full max-w-none object-contain object-top"
             />
