@@ -1059,4 +1059,5 @@ export const CURRICULUM_ORDER = [
   "crowdtesting",
   "game1",
   "game2",
+  "it-glossary",
 ];
