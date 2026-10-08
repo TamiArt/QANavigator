@@ -82,11 +82,12 @@ Completed:
 - Learning Mode mobile entry point implemented;
 - 48 lesson infographics implemented with reusable visual definitions;
 - infographic semantic/presentation regression coverage added;
+- IT terminology glossary added to the Knowledge Base and exposed as a dedicated Learning Mode module; regression coverage added.
 - `tt2` testing-types content/template boundary fixed;
 - PR #14 handbook hierarchy refactor merged into `main`.
 
 Current development branch:
-`fix/m2-04-infographic-text-layout`
+`fix/module4-lesson1-png`
 
 Current active milestone:
 - continue Learning Mode production hardening;
