@@ -211,16 +211,32 @@ test("Learning Mode has a semantic infographic contract for every lesson in Modu
   assert.ok(fs.existsSync("public/infographics/m1-09-vidi-testirovaniya.png"));
 });
 
+test("Module 4 lessons 2–4 use their dedicated PNG infographics", () => {
+  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  const assets = [
+    ["m4-02", "m4-02-vajnost.png", "isTestPlanInfographic"],
+    ["m4-03", "m4-03-testplan.png", "isTestPlanDetailsInfographic"],
+    ["m4-04", "m4-04-teskeys.png", "isTestCasesInfographic"],
+  ];
+
+  for (const [lessonId, filename, flag] of assets) {
+    assert.match(source, new RegExp('lesson\\.id === "' + lessonId + '"'));
+    assert.ok(source.includes(flag), "Missing dedicated selector for " + lessonId);
+    assert.ok(source.includes('/infographics/' + filename), "Missing asset path for " + lessonId);
+    assert.ok(fs.existsSync("public/infographics/" + filename), "Missing PNG asset " + filename);
+  }
+});
+
 test("Scrum lesson 4 uses the dedicated Scrum study sheet", () => {
   const infographic = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
   const asset = fs.readFileSync("public/infographics/m2-04-scrum-context.svg", "utf8");
 
   assert.match(infographic, /lesson\\.id === "m2-04"/);
-  assert.match(infographic, /aspectRatio: isTestTypesInfographic \? "1054 \/ 1492" : "1065 \/ 1476"/);
-  assert.match(infographic, /width=\{isTestTypesInfographic \? 1054 : 1065\}/);
-  assert.match(infographic, /height=\{isTestTypesInfographic \? 1492 : 1476\}/);
+  assert.match(infographic, /aspectRatio: isTestTypesInfographic \|\| isTestDocumentationInfographic \|\| isTestPlanInfographic \|\| isTestPlanDetailsInfographic \|\| isTestCasesInfographic \? "1054 \/ 1492" : "1065 \/ 1476"/);
+  assert.match(infographic, /width=\{isTestTypesInfographic \|\| isTestDocumentationInfographic \|\| isTestPlanInfographic \|\| isTestPlanDetailsInfographic \|\| isTestCasesInfographic \? 1054 : 1065\}/);
+  assert.match(infographic, /height=\{isTestTypesInfographic \|\| isTestDocumentationInfographic \|\| isTestPlanInfographic \|\| isTestPlanDetailsInfographic \|\| isTestCasesInfographic \? 1492 : 1476\}/);
   assert.match(infographic, /object-contain object-top/);
-  assert.ok(infographic.includes('alt={isTestTypesInfographic ? "Инфографика: Виды тестирования" : "Инфографика: Погружение в контекст (Scrum)"}'));
+  assert.ok(infographic.includes('alt={isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"}'));
 
   for (const required of [
     "Фреймворк Scrum",
