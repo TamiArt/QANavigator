@@ -840,6 +840,9 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
   // CI contract: lesson\.id === "m2-04"
   const isSprintPlanningInfographic = lesson.id === "m2-05";
   const isTestDocumentationInfographic = lesson.id === "m4-01";
+  const isTestPlanInfographic = lesson.id === "m4-02";
+  const isTestPlanDetailsInfographic = lesson.id === "m4-03";
+  const isTestCasesInfographic = lesson.id === "m4-04";
 
   return (
     <section
@@ -852,11 +855,11 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
         <PdfDownloadButton targetId={infographicId} />
       </div>
 
-      {isTestTypesInfographic || isScrumContextInfographic || isSprintPlanningInfographic || isTestDocumentationInfographic ? (
+      {isTestTypesInfographic || isScrumContextInfographic || isSprintPlanningInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? (
         <div className="min-w-0 overflow-hidden bg-white p-2 sm:p-4">
           <div
             className="mx-auto w-full max-w-[1065px] overflow-hidden rounded-[18px] bg-white"
-            style={{ aspectRatio: isTestTypesInfographic || isTestDocumentationInfographic ? "1054 / 1492" : "1065 / 1476" }}
+            style={{ aspectRatio: isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? "1054 / 1492" : "1065 / 1476" }}
             // CI regex compatibility for the immutable source contracts:
             // width=\{1065\}, height=\{1476\}, and overflow-hidden rounded-\[18px\]
             // CI regex compatibility: alt="Инфографика: Погружение в контекст \Scrum\"
@@ -867,12 +870,18 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
                 ? "/infographics/m1-09-vidi-testirovaniya.png"
                 : isTestDocumentationInfographic
                   ? "/infographics/m4-01-test documentation.png"
-                  : isScrumContextInfographic
-                  ? "/infographics/m2-04-scrum-context.svg"
-                  : "/infographics/m2-05-sprint-planning.svg"}
-              alt={isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : "Инфографика: Погружение в контекст (Scrum)"}
-              width={isTestTypesInfographic || isTestDocumentationInfographic ? 1054 : 1065}
-              height={isTestTypesInfographic || isTestDocumentationInfographic ? 1492 : 1476}
+                  : isTestPlanInfographic
+                    ? "/infographics/m4-02-vajnost.png"
+                    : isTestPlanDetailsInfographic
+                      ? "/infographics/m4-03-testplan.png"
+                      : isTestCasesInfographic
+                        ? "/infographics/m4-04-teskeys.png"
+                        : isScrumContextInfographic
+                          ? "/infographics/m2-04-scrum-context.svg"
+                          : "/infographics/m2-05-sprint-planning.svg"}
+              alt={isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"}
+              width={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1054 : 1065}
+              height={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1492 : 1476}
               decoding="async"
               className="block h-full w-full max-w-none object-contain object-top"
             />
