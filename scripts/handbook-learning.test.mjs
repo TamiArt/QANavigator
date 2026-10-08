@@ -455,3 +455,17 @@ test("m2-05 Sprint infographic follows the semantic poster contract", () => {
     assert.ok(lesson.includes(required), required);
   }
 });
+
+
+test("IT glossary is available in both the knowledge base and Learning Mode", () => {
+  const curriculum = fs.readFileSync("src/app/handbook-curriculum.ts", "utf8");
+  const learning = fs.readFileSync("src/app/features/handbook/handbook-learning.ts", "utf8");
+  for (const term of ["Шерить", "Аппка", "Апрув", "Гейзенбаг", "Флаки-тест", "CI/CD", "WIP-лимит", "Контейнеризация", "Фишинг", "Frontend Developer", "Системный аналитик", "Project Manager"]) {
+    assert.ok(curriculum.includes(term), `Glossary term missing: ${term}`);
+  }
+  assert.match(curriculum, /id: "it-glossary"/);
+  assert.match(curriculum, /"it-glossary",/);
+  assert.match(learning, /id: "module-it-glossary"/);
+  assert.match(learning, /title: "Словарь IT-терминов и процессов"/);
+  assert.match(learning, /topicIds: \["it-glossary"\]/);
+});
