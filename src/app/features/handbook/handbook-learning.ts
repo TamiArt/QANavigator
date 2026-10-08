@@ -3,6 +3,7 @@ import { HANDBOOK_LEARNING_MODULE_2_LESSONS } from "./handbook-learning-module2"
 import { HANDBOOK_LEARNING_MODULE_3_LESSONS } from "./handbook-learning-module3";
 import { HANDBOOK_LEARNING_MODULE_4_LESSONS } from "./handbook-learning-module4";
 
+
 export interface LearningLesson {
   id: string;
   title: string;
@@ -45,6 +46,13 @@ export const HANDBOOK_LEARNING_MODULES: readonly LearningModule[] = [
     id: "module-3-frontend",
     title: "Модуль 3 — Тестирование фронтенда",
     lessons: HANDBOOK_LEARNING_MODULE_3_LESSONS,
+  },
+  {
+    id: "module-it-glossary",
+    title: "Словарь IT-терминов и процессов",
+    lessons: [
+      { id: "it-glossary-01", title: "Основные IT-термины и жаргон", topicIds: ["it-glossary"] },
+    ],
   },
   {
     id: "module-4-test-documentation",
