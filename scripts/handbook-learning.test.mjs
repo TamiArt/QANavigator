@@ -203,6 +203,7 @@ test("Learning Mode has a semantic infographic contract for every lesson in Modu
     .concat(Array.from({ length: 12 }, (_, i) => "m4-" + String(i + 1).padStart(2, "0")))
     .concat(Array.from({ length: 5 }, (_, i) => "m4-" + String(i + 14).padStart(2, "0")));
   assert.equal(expectedIds.length, 47);
+  assert.ok(!infographic.includes('"m4-13": V('), "Removed lesson 13 must not retain an infographic definition");
   for (const id of expectedIds) {
     assert.ok(infographic.includes('"' + id + '": V('), "Missing semantic infographic definition for " + id);
   }
