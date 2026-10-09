@@ -19,6 +19,7 @@ function loadModel(relativePath) {
 const tabs = loadModel("src/app/features/documentation/documentation-model.ts");
 const rtm = loadModel("src/app/features/documentation/rtm-model.ts");
 const documents = loadModel("src/app/features/documentation/document-markdown.ts");
+const documentFormat = loadModel("src/app/features/documentation/document-format.ts");
 
 const requirements = [
   { id: "1", reqId: "REQ-001", title: "Login", priority: "high" },
@@ -33,7 +34,7 @@ const links = new Set(["REQ-001:TC-001", "REQ-002:TC-002"]);
 test("documentation tabs expose the complete stable tab contract", () => {
   assert.deepEqual(
     JSON.parse(JSON.stringify(tabs.DOCUMENT_TAB_IDS)),
-    ["checklist", "testcase", "testplan", "bugreport", "testreport", "rtm"],
+    ["checklist", "testcase", "testplan", "bugreport", "testreport", "teststrategy", "testdata", "rtm"],
   );
   assert.equal(tabs.DOCUMENT_TABS.length, tabs.DOCUMENT_TAB_IDS.length);
   assert.equal(new Set(tabs.DOCUMENT_TAB_IDS).size, tabs.DOCUMENT_TAB_IDS.length);
@@ -114,4 +115,23 @@ test("test case Markdown keeps multiline steps and document metadata", () => {
   assert.match(markdown, /\*\*Статус:\*\* Approved \| \*\*Автор:\*\* QA \| \*\*Дата:\*\* 2026-09-28/);
   assert.match(markdown, /1\. Открыть \/login\n2\. Ввести пароль/);
   assert.match(markdown, /## Фактический результат\nDashboard открыт/);
+});
+
+test("plain document export removes Markdown formatting markers", () => {
+  assert.equal(documentFormat.toPlainDocumentText("# Заголовок\n\n**Название:** Тест\n- Первая проверка\n## Результат *"), "Заголовок\n\nНазвание: Тест\nПервая проверка\nРезультат");
+  assert.doesNotMatch(documentFormat.toPlainDocumentText("# Заголовок\n**Название:** Тест"), /[#*]/);
+});
+
+test("document date inputs and defaults use DD.MM.YYYY", () => {
+  assert.equal(documentFormat.formatDate(new Date(2026, 9, 9)), "09.10.2026");
+  assert.equal(documentFormat.formatDateInput("09102026"), "09.10.2026");
+  assert.equal(documentFormat.formatDateInput("09.10.2026"), "09.10.2026");
+});
+
+test("Word-compatible document export contains clean text and HTML escaping", () => {
+  const html = documentFormat.toWordDocumentHtml("# Strategy\n**Product:** QA Navigator\nValue < 5");
+  assert.match(html, /<h1>Strategy<\/h1>/);
+  assert.match(html, /Product: QA Navigator/);
+  assert.match(html, /Value &lt; 5/);
+  assert.doesNotMatch(html, /\*\*|##/);
 });

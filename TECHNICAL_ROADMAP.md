@@ -1834,3 +1834,14 @@ Next development block:
 2. check desktop/mobile/PDF behavior;
 3. fix only confirmed defects without changing lesson content or the approved visual system;
 4. run the full verification block before committing the completed stage.
+
+### 7.1.3 Documentation usability and export — 2026-10-09
+
+Implemented on `fix/module4-lesson1-png`:
+- added Word-compatible `.doc` and clean plain-text `.txt` export to documentation templates, including AI checklist output and RTM;
+- added editable Test Strategy and Test Data documents;
+- changed documentation date fields and default values to DD.MM.YYYY;
+- made multiline documentation inputs grow with entered content instead of using an internal scroll area;
+- added regression tests for text cleanup, Word-compatible export, date formatting and the new documentation tabs.
+
+Verification must still be run against the updated branch head before this milestone is considered complete.

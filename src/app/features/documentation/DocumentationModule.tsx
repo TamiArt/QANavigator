@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState, useRef } from "react";
-import { CheckSquare, Bug, Zap, BarChart2, Check, Download, AlertTriangle, X, Plus, RefreshCw, FileText, Brain, CheckCircle, AlertCircle, Play, Upload, GraduationCap, Clipboard, Layers } from "lucide-react";
+import { CheckSquare, Bug, Zap, BarChart2, Check, Download, AlertTriangle, X, Plus, RefreshCw, FileText, Brain, CheckCircle, AlertCircle, Play, Upload, GraduationCap, Clipboard, Layers, ShieldCheck, Database } from "lucide-react";
 import { useApp } from "../../core/app-context";
 import { CopyButton, Badge, EmptyState } from "../../components/shared";
 import { PRESETS } from "../../core/constants";
@@ -12,7 +12,9 @@ import { buildRTMCsv, calculateRTMCoverage } from "./rtm-model";
 import type { RTMRequirement, RTMTestCase } from "./rtm-model";
 import { HANDBOOK } from "../../handbook-data";
 import { downloadTextFile } from "../../lib/download";
-import { DocField, DocSelect, ExportCard, FieldLabel } from "./documentation-fields";
+import { DocField, DocSelect, DocDateField, ExportCard, FieldLabel } from "./documentation-fields";
+import { formatDate, downloadPlainText, downloadWordDocument } from "./document-format";
+import { TestStrategyDocSection, TestDataDocSection } from "./additional-documents";
 
 // ─── Checklist (AI + Manual) ──────────────────────────
 interface ChecklistDocItem { id: string; text: string; category: "positive" | "negative" | "boundary" | "nonfunctional"; priority: "P1" | "P2" | "P3" }
@@ -82,7 +84,7 @@ function ChecklistDocSection() {
     : "";
 
   // ── Manual mode state ────────────────────────────────
-  const today = new Date().toISOString().slice(0, 10);
+  const today = formatDate(new Date());
   const [manTitle, setManTitle] = useState("");
   const [manFeature, setManFeature] = useState("");
   const [manEnv, setManEnv] = useState("");
@@ -155,7 +157,7 @@ function ChecklistDocSection() {
 
           <div className="grid grid-cols-1 xl:grid-cols-5 gap-5">
             <div className="xl:col-span-2 space-y-3">
-              <textarea value={featureDesc} onChange={e => setFeatureDesc(e.target.value)} placeholder={"Опишите функциональность для тестирования...\n\nПример: Форма авторизации с полями Email и Пароль. Email обязателен, пароль минимум 8 символов. После 5 неверных попыток аккаунт блокируется на 30 минут."} className="w-full h-36 bg-input-background border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:ring-2 focus:ring-primary focus:outline-none resize-none" />
+              <textarea value={featureDesc} onChange={e => { setFeatureDesc(e.target.value); e.currentTarget.style.height = "auto"; e.currentTarget.style.height = e.currentTarget.scrollHeight + "px"; }} onInput={e => { e.currentTarget.style.height = "auto"; e.currentTarget.style.height = e.currentTarget.scrollHeight + "px"; }} placeholder={"Опишите функциональность для тестирования...\n\nПример: Форма авторизации с полями Email и Пароль. Email обязателен, пароль минимум 8 символов. После 5 неверных попыток аккаунт блокируется на 30 минут."} className="w-full min-h-36 h-auto overflow-hidden bg-input-background border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:ring-2 focus:ring-primary focus:outline-none resize-none" />
               <button onClick={generateChecklist} disabled={loading || !featureDesc.trim()} className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-2.5 rounded-xl font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50">
                 {loading ? <><RefreshCw className="w-4 h-4 animate-spin" /> Генерирую...</> : <><Zap className="w-4 h-4" /> Сгенерировать чек-лист</>}
               </button>
@@ -168,9 +170,11 @@ function ChecklistDocSection() {
                 <div className="flex items-center gap-2 pt-1 flex-wrap">
                   <CopyButton text={checklists.map(c => "[" + catLabel[c.category] + "] " + c.text).join("\n")} label="Скопировать" />
                   {aiMarkdown && (
-                    <button onClick={() => downloadTextFile(aiMarkdown, "checklist.md", "text/markdown;charset=utf-8")} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-muted text-muted-foreground border border-border hover:text-foreground transition-colors">
-                      <Download className="w-3.5 h-3.5" /> .md
-                    </button>
+                    <>
+                      <button onClick={() => downloadTextFile(aiMarkdown, "checklist.md", "text/markdown;charset=utf-8")} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-muted text-muted-foreground border border-border hover:text-foreground transition-colors"><Download className="w-3.5 h-3.5" /> .md</button>
+                      <button onClick={() => downloadPlainText(aiMarkdown, "checklist.txt")} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-muted text-muted-foreground border border-border hover:text-foreground transition-colors">.txt</button>
+                      <button onClick={() => downloadWordDocument(aiMarkdown, "checklist.doc")} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-muted text-muted-foreground border border-border hover:text-foreground transition-colors">.doc</button>
+                    </>
                   )}
                   <button onClick={() => setActiveModule("test-execution")} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:opacity-80 transition-opacity">
                     <Play className="w-3.5 h-3.5" /> Запустить выполнение
@@ -239,8 +243,7 @@ function ChecklistDocSection() {
             <DocField label="Тестовое окружение" required value={manEnv} onChange={setManEnv} placeholder="Chrome 124, Windows 11, Staging" />
             <DocField label="Тестировщик" required value={manTester} onChange={setManTester} placeholder="Иванов Иван" />
             <div>
-              <FieldLabel label="Дата составления" required />
-              <input type="date" value={manDate} onChange={e => setManDate(e.target.value)} className="w-full bg-input-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary focus:outline-none" />
+              <DocDateField label="Дата составления" value={manDate} onChange={setManDate} required />
             </div>
           </div>
 
@@ -278,7 +281,7 @@ function ChecklistDocSection() {
 // ─── Test Case Template ───────────────────────────────
 // ─── Test Case Template ───────────────────────────────
 function TestCaseDocSection() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = formatDate(new Date());
   const [tcId, setTcId] = useState("TC-001");
   const [title, setTitle] = useState("");
   const [module, setModule] = useState("");
@@ -311,8 +314,7 @@ function TestCaseDocSection() {
           <DocSelect label="Серьёзность" required value={severity} onChange={setSeverity} options={[{value:"critical",label:"Critical"},{value:"high",label:"High"},{value:"medium",label:"Medium"},{value:"low",label:"Low"}]} />
           <DocSelect label="Статус" value={status} onChange={setStatus} options={[{value:"Draft",label:"Draft"},{value:"Ready",label:"Ready"},{value:"Approved",label:"Approved"},{value:"Obsolete",label:"Obsolete"}]} />
           <div>
-            <FieldLabel label="Дата создания" required />
-            <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full bg-input-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary focus:outline-none" />
+            <DocDateField label="Дата создания" value={date} onChange={setDate} required />
           </div>
         </div>
         <DocField label="Автор" required value={author} onChange={setAuthor} placeholder="Иванов Иван" />
@@ -334,7 +336,7 @@ function TestCaseDocSection() {
 
 // ─── Test Plan Template ───────────────────────────────
 function TestPlanDocSection() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = formatDate(new Date());
   const [uploadedContent, setUploadedContent] = useState<string | null>(null);
   const [uploadedName, setUploadedName] = useState("");
   const [project, setProject] = useState("");
@@ -450,8 +452,7 @@ function TestPlanDocSection() {
           <DocField label="Автор тест-плана" required value={author} onChange={setAuthor} placeholder="Иванов Иван" />
           <DocField label="Утверждающий (Approver)" required value={approver} onChange={setApprover} placeholder="Руководитель QA" />
           <div>
-            <FieldLabel label="Дата создания" required />
-            <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full bg-input-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary focus:outline-none" />
+            <DocDateField label="Дата создания" value={date} onChange={setDate} required />
           </div>
         </div>
       </div>
@@ -465,12 +466,10 @@ function TestPlanDocSection() {
         <DocField label="Тестовое окружение" required multiline rows={2} value={environment} onChange={setEnvironment} placeholder={"Staging: https://staging.example.com\nБраузеры: Chrome 124, Firefox 125, Safari 17\nОС: Windows 11, macOS 14"} />
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <FieldLabel label="Дата начала" required />
-            <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full bg-input-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary focus:outline-none" />
+            <DocDateField label="Дата начала" value={startDate} onChange={setStartDate} required />
           </div>
           <div>
-            <FieldLabel label="Дата окончания" required />
-            <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full bg-input-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary focus:outline-none" />
+            <DocDateField label="Дата окончания" value={endDate} onChange={setEndDate} required />
           </div>
         </div>
         <DocField label="Критерии входа (Entry Criteria)" required multiline rows={3} value={entryCriteria} onChange={setEntryCriteria} placeholder={"- Готова сборка для тестирования\n- Smoke-тесты пройдены\n- Тестовая среда развёрнута и доступна\n- Тест-кейсы согласованы"} />
@@ -485,7 +484,7 @@ function TestPlanDocSection() {
 
 // ─── Bug Report Template ──────────────────────────────
 function BugReportDocSection() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = formatDate(new Date());
   const [bugId, setBugId] = useState("BUG-001");
   const [titleWhere, setTitleWhere] = useState("");
   const [titleWhat, setTitleWhat] = useState("");
@@ -537,8 +536,7 @@ function BugReportDocSection() {
           <DocSelect label="Серьёзность (Severity)" required value={severity} onChange={setSeverity} options={[{value:"critical",label:"Critical"},{value:"high",label:"High"},{value:"medium",label:"Medium"},{value:"low",label:"Low"}]} />
           <DocSelect label="Приоритет" required value={priority} onChange={setPriority} options={[{value:"P1",label:"P1 (Высокий)"},{value:"P2",label:"P2 (Средний)"},{value:"P3",label:"P3 (Низкий)"}]} />
           <div>
-            <FieldLabel label="Дата обнаружения" required />
-            <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full bg-input-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary focus:outline-none" />
+            <DocDateField label="Дата обнаружения" value={date} onChange={setDate} required />
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -578,7 +576,7 @@ function BugReportDocSection() {
 
 // ─── Test Report Template ─────────────────────────────
 function TestReportDocSection() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = formatDate(new Date());
   const [project, setProject] = useState("");
   const [version, setVersion] = useState("");
   const [period, setPeriod] = useState("");
@@ -643,8 +641,7 @@ function TestReportDocSection() {
           <DocField label="Автор отчёта" required value={author} onChange={setAuthor} placeholder="Иванов Иван" />
           <DocField label="Утверждающий" required value={approver} onChange={setApprover} placeholder="Руководитель QA" />
           <div>
-            <FieldLabel label="Дата отчёта" required />
-            <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full bg-input-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary focus:outline-none" />
+            <DocDateField label="Дата отчёта" value={date} onChange={setDate} required />
           </div>
         </div>
       </div>
@@ -859,6 +856,7 @@ function RTMSection() {
           Кликайте на ячейки матрицы, чтобы связать требования с тест-кейсами
         </div>
       </div>
+      <ExportCard text={csvText} filename="requirements-traceability-matrix.csv" />
     </div>
   );
 }
@@ -875,6 +873,8 @@ export function DocumentationModule() {
       tab.iconName === "Clipboard" ? <Clipboard className="w-4 h-4" /> :
       tab.iconName === "Bug" ? <Bug className="w-4 h-4" /> :
       tab.iconName === "BarChart2" ? <BarChart2 className="w-4 h-4" /> :
+      tab.iconName === "ShieldCheck" ? <ShieldCheck className="w-4 h-4" /> :
+      tab.iconName === "Database" ? <Database className="w-4 h-4" /> :
       <Layers className="w-4 h-4" />,
   }));
 
@@ -904,6 +904,8 @@ export function DocumentationModule() {
       {activeTab === "testplan" && <TestPlanDocSection />}
       {activeTab === "bugreport" && <BugReportDocSection />}
       {activeTab === "testreport" && <TestReportDocSection />}
+      {activeTab === "teststrategy" && <TestStrategyDocSection />}
+      {activeTab === "testdata" && <TestDataDocSection />}
       {activeTab === "rtm" && <RTMSection />}
     </div>
   );

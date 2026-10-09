@@ -1,7 +1,9 @@
+import { useEffect, useRef } from "react";
 import type { ChangeEvent } from "react";
 import { CopyButton } from "../../components/shared";
 import { downloadTextFile } from "../../lib/download";
 import { Download } from "lucide-react";
+import { formatDateInput, downloadPlainText, downloadWordDocument } from "./document-format";
 
 export function FieldLabel({ label, required }: { label: string; required?: boolean }) {
   return (
@@ -17,12 +19,19 @@ export function DocField({
   label: string; required?: boolean; value: string; onChange: (v: string) => void;
   placeholder?: string; type?: string; multiline?: boolean; rows?: number;
 }) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea || !multiline) return;
+    textarea.style.height = "auto";
+    textarea.style.height = textarea.scrollHeight + "px";
+  }, [value, multiline]);
   const cls = "w-full bg-input-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary focus:outline-none resize-none";
   return (
     <div>
       <FieldLabel label={label} required={required} />
       {multiline
-        ? <textarea value={value} onChange={(e: ChangeEvent<HTMLTextAreaElement>) => onChange(e.target.value)} placeholder={placeholder} rows={rows} className={cls} />
+        ? <textarea ref={textareaRef} value={value} onChange={(e: ChangeEvent<HTMLTextAreaElement>) => onChange(e.target.value)} onInput={e => { e.currentTarget.style.height = "auto"; e.currentTarget.style.height = e.currentTarget.scrollHeight + "px"; }} placeholder={placeholder} rows={rows} style={{ overflow: "hidden" }} className={cls} />
         : <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className={cls} />
       }
     </div>
@@ -45,17 +54,29 @@ export function DocSelect({
   );
 }
 
+export function DocDateField({ label, value, onChange, required }: { label: string; value: string; onChange: (value: string) => void; required?: boolean }) {
+  return (
+    <div>
+      <FieldLabel label={label} required={required} />
+      <input type="text" inputMode="numeric" placeholder="ДД.ММ.ГГГГ" value={value} onChange={e => onChange(formatDateInput(e.target.value))} maxLength={10} className="w-full bg-input-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary focus:outline-none" />
+    </div>
+  );
+}
+
 export function ExportCard({ text, filename }: { text: string; filename: string }) {
-  const download = () => downloadTextFile(text, filename, "text/markdown;charset=utf-8");
+  const baseName = filename.replace(/\.[^.]+$/, "");
+  const downloadMarkdown = () => downloadTextFile(text, baseName + ".md", "text/markdown;charset=utf-8");
+  const downloadText = () => downloadPlainText(text, baseName + ".txt");
+  const downloadDoc = () => downloadWordDocument(text, baseName + ".doc");
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
       <div className="px-4 py-3 border-b border-border bg-muted/50 flex items-center justify-between">
         <span className="text-sm font-medium text-foreground">Предпросмотр / Экспорт</span>
         <div className="flex items-center gap-2">
           <CopyButton text={text} label="Копировать" />
-          <button onClick={download} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
-            <Download className="w-3.5 h-3.5" /> .md
-          </button>
+          <button onClick={downloadMarkdown} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-muted text-muted-foreground hover:text-foreground transition-colors"><Download className="w-3.5 h-3.5" /> .md</button>
+          <button onClick={downloadText} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-muted text-muted-foreground hover:text-foreground transition-colors">.txt</button>
+          <button onClick={downloadDoc} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors">.doc</button>
         </div>
       </div>
       <pre className="px-4 py-4 text-xs text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed max-h-72 overflow-y-auto">{text}</pre>
