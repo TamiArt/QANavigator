@@ -104,7 +104,7 @@ test("learning mode contains the approved Module 4 topics in exact order", () =>
     "Тест-кейс (Test Case)",
   ];
   for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
-  assert.equal((source.match(/id: "m4-\d{2}"/g) ?? []).length, 18);
+  assert.equal((source.match(/id: "m4-\d{2}"/g) ?? []).length, 17);
   const titleIndex = (title) => source.indexOf(`title: "${title}"`);
   assert.ok(titleIndex("Что такое тестовая документация?") < titleIndex("В чем важность тестовой документации?"));
   assert.ok(titleIndex("В чем важность тестовой документации?") < titleIndex("Тест-план (Test Plan)"));
