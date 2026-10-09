@@ -120,6 +120,7 @@ test("test case Markdown keeps multiline steps and document metadata", () => {
 test("plain document export removes Markdown formatting markers", () => {
   assert.equal(documentFormat.toPlainDocumentText("# Заголовок\n\n**Название:** Тест\n- Первая проверка\n## Результат *"), "Заголовок\n\nНазвание: Тест\nПервая проверка\nРезультат");
   assert.doesNotMatch(documentFormat.toPlainDocumentText("# Заголовок\n**Название:** Тест"), /[#*]/);
+  assert.match(documentFormat.toPlainDocumentText("1. Первый шаг\n2. Второй шаг"), /1\. Первый шаг\n2\. Второй шаг/);
 });
 
 test("document date inputs and defaults use DD.MM.YYYY", () => {

@@ -20,7 +20,7 @@ export function toPlainDocumentText(markdown: string): string {
     line = line.replace(/\*\*(.*?)\*\*/g, "$1").replace(/__(.*?)__/g, "$1");
     line = line.replace(/~~(.*?)~~/g, "$1").replace(/`([^`]+)`/g, "$1");
     line = line.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1 ($2)");
-    line = line.replace(/^\s*(?:[-*+]\s+|\d+[.)]\s+)/, "");
+    line = line.replace(/^\s*[-*+]\s+/, "");
     if (line.startsWith("|") || line.endsWith("|")) {
       line = line.replace(/^\|\s*/, "").replace(/\s*\|$/, "").split("|").map((cell) => cell.trim()).filter(Boolean).join(" — ");
     }
