@@ -84,6 +84,7 @@ Completed:
 - infographic semantic/presentation regression coverage added;
 - IT terminology glossary added to the Knowledge Base and exposed as a dedicated Learning Mode module; regression coverage added.
 - Module 4 documentation clarified: product-wide Test Strategy, preconditions/postconditions, checklist yes/no checks, execution-time Actual Result with bug-report link, and Test Suite definition; regression coverage added.
+- Module 4 Learning Mode refined: added a concise Test Summary Report contents list after its definition; removed lesson m4-13 on defect-documentation steps; renamed m4-18 to “Свойства качественного тест-кейса” and replaced its content with concise quality criteria; updated infographic definitions and regression tests. Module 4 now contains 17 lessons; existing IDs for retained lessons are preserved.
 - `tt2` testing-types content/template boundary fixed;
 - PR #14 handbook hierarchy refactor merged into `main`.
 
