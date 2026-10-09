@@ -3,7 +3,7 @@ import type { ChangeEvent } from "react";
 import { CopyButton } from "../../components/shared";
 import { downloadTextFile } from "../../lib/download";
 import { Download } from "lucide-react";
-import { formatDateInput, downloadPlainText, downloadWordDocument } from "./document-format";
+import { formatDateInput, toPlainDocumentText, toWordDocumentHtml } from "./document-format";
 
 export function FieldLabel({ label, required }: { label: string; required?: boolean }) {
   return (
@@ -66,8 +66,8 @@ export function DocDateField({ label, value, onChange, required }: { label: stri
 export function ExportCard({ text, filename }: { text: string; filename: string }) {
   const baseName = filename.replace(/\.[^.]+$/, "");
   const downloadMarkdown = () => downloadTextFile(text, baseName + ".md", "text/markdown;charset=utf-8");
-  const downloadText = () => downloadPlainText(text, baseName + ".txt");
-  const downloadDoc = () => downloadWordDocument(text, baseName + ".doc");
+  const downloadText = () => downloadTextFile(toPlainDocumentText(text), baseName + ".txt", "text/plain;charset=utf-8");
+  const downloadDoc = () => downloadTextFile(toWordDocumentHtml(text), baseName + ".doc", "application/msword;charset=utf-8");
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
       <div className="px-4 py-3 border-b border-border bg-muted/50 flex items-center justify-between">

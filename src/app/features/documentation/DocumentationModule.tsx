@@ -13,7 +13,7 @@ import type { RTMRequirement, RTMTestCase } from "./rtm-model";
 import { HANDBOOK } from "../../handbook-data";
 import { downloadTextFile } from "../../lib/download";
 import { DocField, DocSelect, DocDateField, ExportCard, FieldLabel } from "./documentation-fields";
-import { formatDate, downloadPlainText, downloadWordDocument } from "./document-format";
+import { formatDate, toPlainDocumentText, toWordDocumentHtml } from "./document-format";
 import { TestStrategyDocSection, TestDataDocSection } from "./additional-documents";
 
 // ─── Checklist (AI + Manual) ──────────────────────────
@@ -172,8 +172,8 @@ function ChecklistDocSection() {
                   {aiMarkdown && (
                     <>
                       <button onClick={() => downloadTextFile(aiMarkdown, "checklist.md", "text/markdown;charset=utf-8")} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-muted text-muted-foreground border border-border hover:text-foreground transition-colors"><Download className="w-3.5 h-3.5" /> .md</button>
-                      <button onClick={() => downloadPlainText(aiMarkdown, "checklist.txt")} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-muted text-muted-foreground border border-border hover:text-foreground transition-colors">.txt</button>
-                      <button onClick={() => downloadWordDocument(aiMarkdown, "checklist.doc")} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-muted text-muted-foreground border border-border hover:text-foreground transition-colors">.doc</button>
+                      <button onClick={() => downloadTextFile(toPlainDocumentText(aiMarkdown), "checklist.txt", "text/plain;charset=utf-8")} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-muted text-muted-foreground border border-border hover:text-foreground transition-colors">.txt</button>
+                      <button onClick={() => downloadTextFile(toWordDocumentHtml(aiMarkdown), "checklist.doc", "application/msword;charset=utf-8")} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-muted text-muted-foreground border border-border hover:text-foreground transition-colors">.doc</button>
                     </>
                   )}
                   <button onClick={() => setActiveModule("test-execution")} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:opacity-80 transition-opacity">

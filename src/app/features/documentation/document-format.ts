@@ -1,5 +1,3 @@
-import { downloadTextFile } from "../../lib/download";
-
 export function formatDate(date: Date): string {
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -51,10 +49,3 @@ export function toWordDocumentHtml(markdown: string): string {
   return '<!doctype html><html><head><meta charset="utf-8"><style>body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.45}h1,h2,h3{color:#203864}p{margin:0 0 8pt}</style></head><body>' + paragraphs + "</body></html>";
 }
 
-export function downloadPlainText(markdown: string, filename: string): void {
-  downloadTextFile(toPlainDocumentText(markdown), filename, "text/plain;charset=utf-8");
-}
-
-export function downloadWordDocument(markdown: string, filename: string): void {
-  downloadTextFile(toWordDocumentHtml(markdown), filename, "application/msword;charset=utf-8");
-}
