@@ -144,12 +144,11 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
     "Баг, ошибка, дефект и их классификация",
     "Жизненный цикл дефекта (Bug Life Cycle)",
     "Баг vs задача на доработку (Feature Request)",
-    "Основные шаги документирования дефекта",
     "Pre-release баг и Production Bug",
     "Где ведут тестовую документацию",
     "Локализация багов",
     "Работа с задачей при написании тестовой документации",
-    "Лучшие практики тест-кейсов",
+    "Свойства качественного тест-кейса",
   ];
   for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
   assert.equal((source.match(/id: "m4-\d{2}"/g) ?? []).length, 18);
@@ -171,6 +170,14 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
   assert.match(source, /Шаги воспроизведения/);
   assert.match(source, /Test Summary Report/);
   assert.match(source, /Цели тестирования/);
+  assert.match(source, /Обычно отчёт включает:/);
+  assert.match(source, /цели и объём тестирования/);
+  assert.match(source, /риски, ограничения и отклонения от плана/);
+  assert.ok(!source.includes('title: "Основные шаги документирования дефекта"'), "Removed Module 4 lesson 13 must not remain in the curriculum");
+  assert.match(source, /title: "Свойства качественного тест-кейса"/);
+  assert.match(source, /Проверяемый ожидаемый результат/);
+  assert.match(source, /Независимость/);
+  assert.match(source, /Трассируемость/);
   assert.match(source, /Severity/);
   assert.match(source, /Blocker/);
   assert.match(source, /Priority/);
@@ -179,16 +186,12 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
   assert.match(source, /Bug Life Cycle/);
   assert.match(source, /Ready for Retest/);
   assert.match(source, /Feature Request/);
-  assert.match(source, /Основные шаги документирования дефекта/);
   assert.match(source, /Production Bug/);
   assert.match(source, /TestRail/);
   assert.match(source, /Локализация бага/);
   assert.match(source, /Network/);
   assert.match(source, /Уточнение требований/);
   assert.match(source, /Атомарность/);
-  assert.ok(source.includes("1. Что это? → 2. Зачем? → 3. Из чего состоит? → 4. Пример."), "Module 4 exam formula must preserve its numbered form");
-  assert.match(source, /15 фраз для запоминания/);
-  assert.match(source, /Супер-шпаргалка/);
 });
 
 
@@ -197,8 +200,9 @@ test("Learning Mode has a semantic infographic contract for every lesson in Modu
   const expectedIds = Array.from({ length: 11 }, (_, i) => "m1-" + String(i + 1).padStart(2, "0"))
     .concat(Array.from({ length: 12 }, (_, i) => "m2-" + String(i + 1).padStart(2, "0")))
     .concat(Array.from({ length: 7 }, (_, i) => "m3-" + String(i + 1).padStart(2, "0")))
-    .concat(Array.from({ length: 18 }, (_, i) => "m4-" + String(i + 1).padStart(2, "0")));
-  assert.equal(expectedIds.length, 48);
+    .concat(Array.from({ length: 12 }, (_, i) => "m4-" + String(i + 1).padStart(2, "0")))
+    .concat(Array.from({ length: 5 }, (_, i) => "m4-" + String(i + 14).padStart(2, "0")));
+  assert.equal(expectedIds.length, 47);
   for (const id of expectedIds) {
     assert.ok(infographic.includes('"' + id + '": V('), "Missing semantic infographic definition for " + id);
   }
