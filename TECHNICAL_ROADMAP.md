@@ -83,6 +83,7 @@ Completed:
 - 48 lesson infographics implemented with reusable visual definitions;
 - infographic semantic/presentation regression coverage added;
 - IT terminology glossary added to the Knowledge Base and exposed as a dedicated Learning Mode module; regression coverage added.
+- Module 4 documentation clarified: product-wide Test Strategy, preconditions/postconditions, checklist yes/no checks, execution-time Actual Result with bug-report link, and Test Suite definition; regression coverage added.
 - `tt2` testing-types content/template boundary fixed;
 - PR #14 handbook hierarchy refactor merged into `main`.
 

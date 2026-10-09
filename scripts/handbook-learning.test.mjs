@@ -119,6 +119,13 @@ test("learning mode contains the approved Module 4 topics in exact order", () =>
   assert.match(source, /Blocked/);
   assert.match(source, /Skipped/);
   assert.match(source, /Постусловия/);
+  assert.match(source, /Тестовая стратегия.*продукта в целом/);
+  assert.match(source, /Предусловия.*до теста/);
+  assert.match(source, /Постусловия.*после теста/);
+  assert.match(source, /Тест-сьют \(Test Suite\)/);
+  assert.match(source, /на этапе планирования тест-кейса не заполняется/);
+  assert.match(source, /ссылку на соответствующий баг-репорт/);
+  assert.match(source, /ответ \*\*«да\/нет»\*\*/);
 });
 
 
