@@ -90,10 +90,15 @@ export function CodeBlock({ code, lang = "text" }: { code: string; lang?: string
 }
 
 // Simple markdown-ish renderer
-export function MarkdownView({ content }: { content: string }) {
+export function MarkdownView({ content, compact = false }: { content: string; compact?: boolean }) {
   // AI responses and imported handbook content are untrusted. Escape them before
   // adding the small, controlled set of markup supported by this renderer.
-  const escapedContent = content
+  const normalizedContent = content
+    .replace(/\r\n?/g, "\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n[ \t]*\n(?:[ \t]*\n)+/g, "\n\n")
+    .trim();
+  const escapedContent = normalizedContent
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -108,13 +113,13 @@ export function MarkdownView({ content }: { content: string }) {
         .map((line) => line.split("|").slice(1, -1).map((cell) => cell.trim()));
       const columnCount = Math.max(...rows.map((row) => row.length));
 
-      return `<div role="table" class="my-4 overflow-hidden rounded-xl border border-border bg-card text-sm"><div class="grid bg-muted font-semibold text-foreground" style="grid-template-columns:repeat(${columnCount},minmax(0,1fr))">${rows[0].map((cell) => `<div role="columnheader" class="border-r border-border px-3 py-2 last:border-r-0">${cell}</div>`).join("")}</div>${rows.slice(1).map((row) => `<div role="row" class="grid border-t border-border text-muted-foreground" style="grid-template-columns:repeat(${columnCount},minmax(0,1fr))">${row.map((cell) => `<div role="cell" class="border-r border-border px-3 py-2 last:border-r-0">${cell}</div>`).join("")}</div>`).join("")}</div>`;
+      return `<div role="table" class="${compact ? "my-2" : "my-4"} overflow-hidden rounded-xl border border-border bg-card text-sm"><div class="grid bg-muted font-semibold text-foreground" style="grid-template-columns:repeat(${columnCount},minmax(0,1fr))">${rows[0].map((cell) => `<div role="columnheader" class="border-r border-border px-3 py-2 last:border-r-0">${cell}</div>`).join("")}</div>${rows.slice(1).map((row) => `<div role="row" class="grid border-t border-border text-muted-foreground" style="grid-template-columns:repeat(${columnCount},minmax(0,1fr))">${row.map((cell) => `<div role="cell" class="border-r border-border px-3 py-2 last:border-r-0">${cell}</div>`).join("")}</div>`).join("")}</div>`;
     },
   );
   const html = contentWithTables
-    .replace(/^### (.+)$/gm, '<h3 class="text-base font-semibold mt-4 mb-1.5 text-foreground">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 class="text-lg font-semibold mt-5 mb-2 text-foreground">$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold mt-6 mb-2 text-foreground">$1</h1>')
+    .replace(/^### (.+)$/gm, '<h3 class="text-base font-semibold ${compact ? "mt-2 mb-1" : "mt-4 mb-1.5"} text-foreground">$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2 class="text-lg font-semibold ${compact ? "mt-3 mb-1" : "mt-5 mb-2"} text-foreground">$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold ${compact ? "mt-4 mb-1" : "mt-6 mb-2"} text-foreground">$1</h1>')
     .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold">$1</strong>')
     .replace(/`{3}(\w*)\n([\s\S]*?)`{3}/gm, '<pre class="bg-muted border border-border rounded-lg p-3 my-2 text-xs font-mono overflow-x-auto whitespace-pre-wrap">$2</pre>')
     .replace(/`([^`]+)`/g, '<code class="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-primary">$1</code>')
@@ -124,11 +129,11 @@ export function MarkdownView({ content }: { content: string }) {
     .replace(/^✅ (.+)$/gm, '<li class="ml-4 text-sm mb-0.5 text-emerald-600 dark:text-emerald-400 list-none">✅ $1</li>')
     .replace(/^❌ (.+)$/gm, '<li class="ml-4 text-sm mb-0.5 text-red-600 dark:text-red-400 list-none">❌ $1</li>')
     .replace(/^⚠️ (.+)$/gm, '<li class="ml-4 text-sm mb-0.5 text-amber-600 dark:text-amber-400 list-none">⚠️ $1</li>')
-    .replace(/\n\n/g, '<br/>')
+    .replace(/\n\n/g, compact ? "<br/>" : "<br/><br/>")
     .replace(/\n/g, '<br/>');
   return (
     <div
-      className="prose prose-sm max-w-none text-foreground leading-relaxed"
+      className={`prose prose-sm max-w-none text-foreground ${compact ? "leading-normal" : "leading-relaxed"}`}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
