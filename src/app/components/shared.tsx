@@ -93,11 +93,13 @@ export function CodeBlock({ code, lang = "text" }: { code: string; lang?: string
 export function MarkdownView({ content, compact = false }: { content: string; compact?: boolean }) {
   // AI responses and imported handbook content are untrusted. Escape them before
   // adding the small, controlled set of markup supported by this renderer.
-  const normalizedContent = content
-    .replace(/\r\n?/g, "\n")
-    .replace(/[ \t]+\n/g, "\n")
-    .replace(/\n[ \t]*\n(?:[ \t]*\n)+/g, "\n\n")
-    .trim();
+  const normalizedContent = compact
+    ? content
+      .replace(/\r\n?/g, "\n")
+      .replace(/[ \t]+\n/g, "\n")
+      .replace(/\n[ \t]*\n(?:[ \t]*\n)+/g, "\n\n")
+      .trim()
+    : content;
   const escapedContent = normalizedContent
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
