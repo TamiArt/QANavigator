@@ -117,9 +117,9 @@ export function MarkdownView({ content, compact = false }: { content: string; co
     },
   );
   const html = contentWithTables
-    .replace(/^### (.+)$/gm, '<h3 class="text-base font-semibold ${compact ? "mt-2 mb-1" : "mt-4 mb-1.5"} text-foreground">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 class="text-lg font-semibold ${compact ? "mt-3 mb-1" : "mt-5 mb-2"} text-foreground">$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold ${compact ? "mt-4 mb-1" : "mt-6 mb-2"} text-foreground">$1</h1>')
+    .replace(/^### (.+)$/gm, `<h3 class="text-base font-semibold ${compact ? "mt-2 mb-1" : "mt-4 mb-1.5"} text-foreground">$1</h3>`)
+    .replace(/^## (.+)$/gm, `<h2 class="text-lg font-semibold ${compact ? "mt-3 mb-1" : "mt-5 mb-2"} text-foreground">$1</h2>`)
+    .replace(/^# (.+)$/gm, `<h1 class="text-xl font-bold ${compact ? "mt-4 mb-1" : "mt-6 mb-2"} text-foreground">$1</h1>`)
     .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold">$1</strong>')
     .replace(/`{3}(\w*)\n([\s\S]*?)`{3}/gm, '<pre class="bg-muted border border-border rounded-lg p-3 my-2 text-xs font-mono overflow-x-auto whitespace-pre-wrap">$2</pre>')
     .replace(/`([^`]+)`/g, '<code class="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-primary">$1</code>')
