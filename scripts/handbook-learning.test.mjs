@@ -503,5 +503,17 @@ test("Learning Mode opens the active lesson without repeating the full topic lis
   assert.ok(!source.includes('<LearningInfographic mode="module"'), "Module topic overview must not appear before every lesson");
   assert.ok(!source.includes('<span className="text-sm text-foreground">{lesson.title}</span>'), "Full lesson-title list must not be repeated before the active lesson");
   assert.match(source, /<LearningInfographic mode="lesson" lesson=\{activeLesson\} \/>/);
-  assert.match(source, /<MarkdownView content=\{getLearningLessonContent\(activeLesson\)\} \/>/);
+  assert.match(source, /<MarkdownView content=\{getLearningLessonContent\(activeLesson\)\} compact \/>/);
+});
+
+
+test("Learning Mode renders lesson Markdown with compact, normalized spacing", () => {
+  const renderer = fs.readFileSync("src/app/components/shared.tsx", "utf8");
+  const learningMode = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
+  assert.match(renderer, /compact = false/);
+  assert.match(renderer, /replace\(\/\\n\[ \\t\]\*\\n\(\?:\[ \\t\]\*\\n\)\+\/g, "\\n\\n"\)/);
+  assert.match(renderer, /compact \? "<br\/>" : "<br\/><br\/>"/);
+  assert.match(renderer, /compact \? "mt-3 mb-1" : "mt-5 mb-2"/);
+  assert.match(learningMode, /className="bg-card border border-border rounded-xl p-4 scroll-mt-24"/);
+  assert.match(learningMode, /className="mt-3"[\s\S]*MarkdownView content=\{getLearningLessonContent\(activeLesson\)\} compact/);
 });
