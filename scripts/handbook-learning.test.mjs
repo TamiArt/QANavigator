@@ -511,7 +511,7 @@ test("Learning Mode renders lesson Markdown with compact, normalized spacing", (
   const renderer = fs.readFileSync("src/app/components/shared.tsx", "utf8");
   const learningMode = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
   assert.match(renderer, /compact = false/);
-  assert.match(renderer, /replace\(\/\\n\[ \\t\]\*\\n\(\?:\[ \\t\]\*\\n\)\+\/g, "\\n\\n"\)/);
+  assert.ok(renderer.includes('.replace(/\\n[ \\t]*\\n(?:[ \\t]*\\n)+/g, "\\n\\n")'));
   assert.match(renderer, /compact \? "<br\/>" : "<br\/><br\/>"/);
   assert.match(renderer, /compact \? "mt-3 mb-1" : "mt-5 mb-2"/);
   assert.match(learningMode, /className="bg-card border border-border rounded-xl p-4 scroll-mt-24"/);
