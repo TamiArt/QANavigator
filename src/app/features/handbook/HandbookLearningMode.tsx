@@ -150,20 +150,20 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
       <article
         ref={lessonArticleRef}
         id={`learning-lesson-${activeLesson.id}`}
-        className="bg-card border border-border rounded-xl p-5 scroll-mt-24"
+        className="bg-card border border-border rounded-xl p-4 scroll-mt-24"
       >
-        <div className="mb-4">
+        <div className="mb-3">
           <div className="text-xs text-muted-foreground mb-1">
             Урок {activeIndex + 1} из {module.lessons.length}
           </div>
           <h3 className="text-lg font-semibold text-foreground">{activeLesson.title}</h3>
         </div>
         <LearningInfographic mode="lesson" lesson={activeLesson} />
-        <div className="mt-6">
-          <MarkdownView content={getLearningLessonContent(activeLesson)} />
+        <div className="mt-3">
+          <MarkdownView content={getLearningLessonContent(activeLesson)} compact />
         </div>
 
-        <div className="flex flex-wrap justify-between gap-2 pt-5 mt-5 border-t border-border">
+        <div className="flex flex-wrap justify-between gap-2 pt-4 mt-4 border-t border-border">
           <button
             onClick={() => selectLesson(Math.max(activeIndex - 1, 0))}
             disabled={activeIndex === 0}
