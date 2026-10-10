@@ -497,3 +497,11 @@ test("IT glossary is available in both the knowledge base and Learning Mode", ()
   assert.match(learning, /title: "Словарь IT-терминов и процессов"/);
   assert.match(learning, /topicIds: \["it-glossary"\]/);
 });
+
+test("Learning Mode opens the active lesson without repeating the full topic list", () => {
+  const source = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
+  assert.ok(!source.includes('<LearningInfographic mode="module"'), "Module topic overview must not appear before every lesson");
+  assert.ok(!source.includes('<span className="text-sm text-foreground">{lesson.title}</span>'), "Full lesson-title list must not be repeated before the active lesson");
+  assert.match(source, /<LearningInfographic mode="lesson" lesson=\{activeLesson\} \/>/);
+  assert.match(source, /<MarkdownView content=\{getLearningLessonContent\(activeLesson\)\} \/>/);
+});
