@@ -147,33 +147,6 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
         />
       </div>
 
-      <div id="learning-module-content" className="scroll-mt-24">
-        <LearningInfographic mode="module" module={module} />
-      </div>
-
-      <div className="grid gap-2">
-        {module.lessons.map((lesson, index) => {
-          const isActive = index === activeIndex;
-          const isCompleted = completed.has(lesson.id);
-          return (
-            <button
-              key={lesson.id}
-              onClick={() => selectLesson(index)}
-              className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors ${
-                isActive ? "border-primary bg-primary/10" : "border-border hover:bg-muted/30"
-              }`}
-            >
-              <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-                isCompleted ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-              }`}>
-                {isCompleted ? <Check className="w-4 h-4" /> : index + 1}
-              </span>
-              <span className="text-sm text-foreground">{lesson.title}</span>
-            </button>
-          );
-        })}
-      </div>
-
       <article
         ref={lessonArticleRef}
         id={`learning-lesson-${activeLesson.id}`}
