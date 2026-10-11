@@ -28,7 +28,7 @@ test("Module 5 contains the 13 requested lessons in order", () => {
   for (let index = 1; index < positions.length; index += 1) {
     assert.ok(positions[index - 1] < positions[index], "Lesson order is wrong at " + expected[index]);
   }
-  for (const term of ["TCP", "UDP", "DNS", "ICMP", "API", "HTTPS", "TLS", "GET", "POST", "PATCH", "201 Created", "401 Unauthorized", "REST", "JSON", "OpenAPI", "Postman", "Webhook", "idempot"]) {
+  for (const term of ["TCP", "UDP", "DNS", "ICMP", "API", "HTTPS", "TLS", "GET", "POST", "PATCH", "201 Created", "401 Unauthorized", "REST", "JSON", "OpenAPI", "Postman", "Webhook", "идемпотент"]) {
     assert.ok(source.toLowerCase().includes(term.toLowerCase()), "Missing key concept: " + term);
   }
 });
