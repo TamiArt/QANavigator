@@ -156,7 +156,9 @@ export function MarkdownView({ content, compact = false, extraCompactLists = fal
     .replace(/\n\n/g, compact ? "<br/>" : "<br/><br/>")
     .replace(/\n/g, '<br/>')
     // Keep consecutive list items together; injected <br/> tags create visible gaps between them.
-    .replace(/<\/li>(?:<br\/>)+(?=<li\b)/g, "</li>");
+    .replace(/<\/li>(?:<br\/>)+(?=<li\b)/g, "</li>")
+    // Keep a list directly under its heading without injected line-break spacing.
+    .replace(/<\/h3>(?:<br\/>)+(?=<li\b)/g, "</h3>");
   return (
     <div
       className={`prose prose-sm max-w-none text-foreground ${compact ? "leading-normal" : "leading-relaxed"}`}
