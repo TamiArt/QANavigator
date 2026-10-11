@@ -154,7 +154,9 @@ export function MarkdownView({ content, compact = false, extraCompactLists = fal
     .replace(/^❌ (.+)$/gm, `<li class="${extraCompactLists ? "ml-8" : "ml-4"} text-sm ${extraCompactLists ? "mb-0 leading-relaxed" : compact ? "mb-0 leading-snug" : "mb-0.5"} text-red-600 dark:text-red-400 list-none">❌ $1</li>`)
     .replace(/^⚠️ (.+)$/gm, `<li class="${extraCompactLists ? "ml-8" : "ml-4"} text-sm ${extraCompactLists ? "mb-0 leading-relaxed" : compact ? "mb-0 leading-snug" : "mb-0.5"} text-amber-600 dark:text-amber-400 list-none">⚠️ $1</li>`)
     .replace(/\n\n/g, compact ? "<br/>" : "<br/><br/>")
-    .replace(/\n/g, '<br/>');
+    .replace(/\n/g, '<br/>')
+    // Keep consecutive list items together; injected <br/> tags create visible gaps between them.
+    .replace(/<\/li>(?:<br\/>)+(?=<li\b)/g, "</li>");
   return (
     <div
       className={`prose prose-sm max-w-none text-foreground ${compact ? "leading-normal" : "leading-relaxed"}`}
