@@ -149,7 +149,7 @@ export function MarkdownView({ content, compact = false, extraCompactLists = fal
     .replace(/`([^`]+)`/g, '<code class="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-primary">$1</code>')
     .replace(/^> (.+)$/gm, '<blockquote class="border-l-4 border-primary pl-3 my-2 text-sm text-muted-foreground italic">$1</blockquote>')
     .replace(/^(\d+)\. (.+)$/gm, `<li class="${extraCompactLists ? "ml-8" : "ml-4"} list-decimal text-sm ${extraCompactLists ? "mb-0 leading-relaxed" : compact ? "mb-0 leading-snug" : "mb-0.5"}">$2</li>`)
-    .replace(/^[•\-] (.+)$/gm, `<li class="${extraCompactLists ? "ml-8" : "ml-4"} list-disc text-sm ${extraCompactLists ? "mb-0 leading-relaxed" : compact ? "mb-0 leading-snug" : "mb-0.5"}">$1</li>`)
+    .replace(/^[ \t]*[•\\-] (.+)$/gm, `<li class="${extraCompactLists ? "ml-13" : "ml-4"} list-disc text-sm ${extraCompactLists ? "mb-0 leading-relaxed" : compact ? "mb-0 leading-snug" : "mb-0.5"}">$1</li>`)
     .replace(/^✅ (.+)$/gm, `<li class="${extraCompactLists ? "ml-8" : "ml-4"} text-sm ${extraCompactLists ? "mb-0 leading-relaxed" : compact ? "mb-0 leading-snug" : "mb-0.5"} text-emerald-600 dark:text-emerald-400 list-none">✅ $1</li>`)
     .replace(/^❌ (.+)$/gm, `<li class="${extraCompactLists ? "ml-8" : "ml-4"} text-sm ${extraCompactLists ? "mb-0 leading-relaxed" : compact ? "mb-0 leading-snug" : "mb-0.5"} text-red-600 dark:text-red-400 list-none">❌ $1</li>`)
     .replace(/^⚠️ (.+)$/gm, `<li class="${extraCompactLists ? "ml-8" : "ml-4"} text-sm ${extraCompactLists ? "mb-0 leading-relaxed" : compact ? "mb-0 leading-snug" : "mb-0.5"} text-amber-600 dark:text-amber-400 list-none">⚠️ $1</li>`)
