@@ -93,13 +93,17 @@ export function CodeBlock({ code, lang = "text" }: { code: string; lang?: string
 export function MarkdownView({ content, compact = false, extraCompactLists = false }: { content: string; compact?: boolean; extraCompactLists?: boolean }) {
   // AI responses and imported handbook content are untrusted. Escape them before
   // adding the small, controlled set of markup supported by this renderer.
+  // Normalize spacing for every MarkdownView consumer, including the knowledge base
+  // and all learning modules: three or more newlines become one blank line.
+  const lineNormalizedContent = content
+    .replace(/\r\n?/g, "\n")
+    .replace(/\n{3,}/g, "\n\n");
   const normalizedContent = compact
-    ? content
-      .replace(/\r\n?/g, "\n")
+    ? lineNormalizedContent
       .replace(/[ \t]+\n/g, "\n")
       .replace(/\n[ \t]*\n(?:[ \t]*\n)+/g, "\n\n")
       .trim()
-    : content;
+    : lineNormalizedContent;
   const formattedContent = extraCompactLists
     ? normalizedContent
       .replace(/^### Зачем тестируют:?$/gm, "### Зачем тестируют:")
