@@ -74,20 +74,28 @@ function extractRange(content: string, start?: string, end?: string): string {
 }
 
 export function getLearningLessonContent(lesson: LearningLesson): string {
-  if (lesson.content) return lesson.content;
+  let content: string;
 
-  const parts = lesson.topicIds
-    .map(findTopic)
-    .filter(Boolean)
-    .map((topic) => topic!.content);
+  if (lesson.content) {
+    content = lesson.content;
+  } else {
+    const parts = lesson.topicIds
+      .map(findTopic)
+      .filter(Boolean)
+      .map((topic) => topic!.content);
 
-  if (lesson.sectionStart || lesson.sectionEnd) {
-    const firstTopic = findTopic(lesson.topicIds[0]);
-    if (!firstTopic) return "";
-    return extractRange(firstTopic.content, lesson.sectionStart, lesson.sectionEnd);
+    if (lesson.sectionStart || lesson.sectionEnd) {
+      const firstTopic = findTopic(lesson.topicIds[0]);
+      if (!firstTopic) return "";
+      content = extractRange(firstTopic.content, lesson.sectionStart, lesson.sectionEnd);
+    } else {
+      content = parts.join("\n\n---\n\n");
+    }
   }
 
-  return parts.join("\n\n---\n\n");
+  // The lesson title is already shown above the content. Remove its redundant
+  // opening Markdown heading so every lesson displays only one title.
+  return content.replace(/^\s*#{1,6}\s+[^\n]+(?:\n+|$)/, "").trimStart();
 }
 
 export function getLearningModule(moduleId: string): LearningModule | undefined {
