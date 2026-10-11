@@ -101,7 +101,16 @@ export function MarkdownView({ content, compact = false, extraCompactLists = fal
       .trim()
     : content;
   const formattedContent = extraCompactLists
-    ? normalizedContent.replace(/^### Зачем тестируют:?$/gm, "### Зачем тестируют:")
+    ? normalizedContent
+      .replace(/^### Зачем тестируют:?$/gm, "### Зачем тестируют:")
+      .split("\n")
+      .map((line, index, lines) => {
+        const headingIndex = lines.findIndex((item) => /^### Зачем тестируют:$/.test(item));
+        const nextHeadingIndex = lines.findIndex((item, i) => i > headingIndex && /^#{1,3} /.test(item));
+        const inPurposeList = headingIndex >= 0 && index > headingIndex && (nextHeadingIndex < 0 || index < nextHeadingIndex);
+        return inPurposeList && /^\s*\d+\. /.test(line) ? line.replace(/;\s*$/, ":") : line;
+      })
+      .join("\n")
     : normalizedContent;
   const escapedContent = formattedContent
     .replace(/&/g, "&amp;")
@@ -129,11 +138,11 @@ export function MarkdownView({ content, compact = false, extraCompactLists = fal
     .replace(/`{3}(\w*)\n([\s\S]*?)`{3}/gm, '<pre class="bg-muted border border-border rounded-lg p-3 my-2 text-xs font-mono overflow-x-auto whitespace-pre-wrap">$2</pre>')
     .replace(/`([^`]+)`/g, '<code class="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-primary">$1</code>')
     .replace(/^> (.+)$/gm, '<blockquote class="border-l-4 border-primary pl-3 my-2 text-sm text-muted-foreground italic">$1</blockquote>')
-    .replace(/^(\d+)\. (.+)$/gm, `<li class="ml-4 list-decimal text-sm ${extraCompactLists ? "mb-0 leading-[0.95]" : compact ? "mb-0 leading-snug" : "mb-0.5"}">$2</li>`)
-    .replace(/^[•\-] (.+)$/gm, `<li class="ml-4 list-disc text-sm ${extraCompactLists ? "mb-0 leading-[0.95]" : compact ? "mb-0 leading-snug" : "mb-0.5"}">$1</li>`)
-    .replace(/^✅ (.+)$/gm, `<li class="ml-4 text-sm ${extraCompactLists ? "mb-0 leading-[0.95]" : compact ? "mb-0 leading-snug" : "mb-0.5"} text-emerald-600 dark:text-emerald-400 list-none">✅ $1</li>`)
-    .replace(/^❌ (.+)$/gm, `<li class="ml-4 text-sm ${extraCompactLists ? "mb-0 leading-[0.95]" : compact ? "mb-0 leading-snug" : "mb-0.5"} text-red-600 dark:text-red-400 list-none">❌ $1</li>`)
-    .replace(/^⚠️ (.+)$/gm, `<li class="ml-4 text-sm ${extraCompactLists ? "mb-0 leading-[0.95]" : compact ? "mb-0 leading-snug" : "mb-0.5"} text-amber-600 dark:text-amber-400 list-none">⚠️ $1</li>`)
+    .replace(/^(\d+)\. (.+)$/gm, `<li class="ml-8 list-decimal text-sm ${extraCompactLists ? "mb-0 leading-relaxed" : compact ? "mb-0 leading-snug" : "mb-0.5"}">$2</li>`)
+    .replace(/^[•\-] (.+)$/gm, `<li class="ml-8 list-disc text-sm ${extraCompactLists ? "mb-0 leading-relaxed" : compact ? "mb-0 leading-snug" : "mb-0.5"}">$1</li>`)
+    .replace(/^✅ (.+)$/gm, `<li class="ml-8 text-sm ${extraCompactLists ? "mb-0 leading-relaxed" : compact ? "mb-0 leading-snug" : "mb-0.5"} text-emerald-600 dark:text-emerald-400 list-none">✅ $1</li>`)
+    .replace(/^❌ (.+)$/gm, `<li class="ml-8 text-sm ${extraCompactLists ? "mb-0 leading-relaxed" : compact ? "mb-0 leading-snug" : "mb-0.5"} text-red-600 dark:text-red-400 list-none">❌ $1</li>`)
+    .replace(/^⚠️ (.+)$/gm, `<li class="ml-8 text-sm ${extraCompactLists ? "mb-0 leading-relaxed" : compact ? "mb-0 leading-snug" : "mb-0.5"} text-amber-600 dark:text-amber-400 list-none">⚠️ $1</li>`)
     .replace(/\n\n/g, compact ? "<br/>" : "<br/><br/>")
     .replace(/\n/g, '<br/>');
   return (
