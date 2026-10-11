@@ -18,6 +18,7 @@
     "test:storage-validators": "node --test scripts/storage-validators.test.mjs",
     "test:navigation": "node --test scripts/navigation-contract.test.mjs",
     "test:handbook-learning": "node --test scripts/handbook-learning.test.mjs",
+    "test:module5-learning": "node --test scripts/module5-learning.test.mjs",
     "test:project-context": "node --test scripts/project-context.test.mjs"
   },
   "dependencies": {
