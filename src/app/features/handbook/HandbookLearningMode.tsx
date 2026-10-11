@@ -160,7 +160,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
         </div>
         <LearningInfographic mode="lesson" lesson={activeLesson} />
         <div className="mt-3">
-          <MarkdownView content={getLearningLessonContent(activeLesson)} compact />
+          <MarkdownView content={getLearningLessonContent(activeLesson)} compact extraCompactLists={activeLesson.id === "m1-01"} />
         </div>
 
         <div className="flex flex-wrap justify-between gap-2 pt-4 mt-4 border-t border-border">
