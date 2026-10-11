@@ -1848,3 +1848,14 @@ Implemented on `fix/module4-lesson1-png`:
 - added regression tests for text cleanup, Word-compatible export, date formatting and the new documentation tabs.
 
 Verification must still be run against the updated branch head before this milestone is considered complete.
+
+### 7.1.4 Learning Mode — Module 5: networks and API — 2026-10-11
+
+Implemented on \`feat/module5-network-api-learning\`:
+- added 13 ordered lessons covering frontend/backend interaction, client-server architecture, TCP/IP, DNS/ping, API, HTTP/HTTPS, HTTP methods and status codes, REST/JSON, Swagger, URL navigation, Postman, and integrations;
+- registered Module 5 in Learning Mode without changing existing lesson IDs or order;
+- added semantic visual summaries for all 13 lessons;
+- added a dedicated curriculum/visual regression test and included it in \`npm run verify\`.
+
+Verification status: pending execution against the updated branch head. Do not consider the milestone complete until the new regression test, full \`npm run verify\`, and current-head CI have been checked.
+
