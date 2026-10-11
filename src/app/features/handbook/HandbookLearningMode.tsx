@@ -158,9 +158,11 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
           </div>
           <h3 className="text-lg font-semibold text-foreground">{activeLesson.title}</h3>
         </div>
-        <LearningInfographic mode="lesson" lesson={activeLesson} />
-        <div className="mt-3">
+        <div>
           <MarkdownView content={getLearningLessonContent(activeLesson)} compact extraCompactLists={activeLesson.id === "m1-01"} />
+        </div>
+        <div className="mt-4">
+          <LearningInfographic mode="lesson" lesson={activeLesson} />
         </div>
 
         <div className="flex flex-wrap justify-between gap-2 pt-4 mt-4 border-t border-border">
