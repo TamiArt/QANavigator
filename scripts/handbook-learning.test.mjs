@@ -514,7 +514,8 @@ test("Learning Mode renders lesson Markdown with compact, normalized spacing", (
   assert.ok(renderer.includes('.replace(/\\n[ \\t]*\\n(?:[ \\t]*\\n)+/g, "\\n\\n")'));
   assert.match(renderer, /compact \? "<br\/>" : "<br\/><br\/>"/);
   assert.match(renderer, /compact \? "mt-3 mb-1" : "mt-5 mb-2"/);
-  assert.equal((renderer.match(/compact \? "mb-0 leading-snug" : "mb-0.5"/g) || []).length, 5, "All numbered, bulleted, and status lists should use tighter spacing in compact mode");
+  assert.equal((renderer.match(/extraCompactLists \? "mb-0 leading-\[1\.05\] text-\[13px\]"/g) || []).length, 5, "All numbered, bulleted, and status lists should support extra-compact spacing");
+  assert.match(learningMode, /extraCompactLists=\{activeLesson\.id === "m1-01"\}/, "Extra-compact list spacing must be limited to Lesson 1: What is testing?");
   assert.match(learningMode, /className="bg-card border border-border rounded-xl p-4 scroll-mt-24"/);
   assert.match(learningMode, /className="mt-3"[\s\S]*MarkdownView content=\{getLearningLessonContent\(activeLesson\)\} compact/);
 });
