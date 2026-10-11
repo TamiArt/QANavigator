@@ -108,7 +108,7 @@ export function MarkdownView({ content, compact = false, extraCompactLists = fal
         const headingIndex = lines.findIndex((item) => /^### Зачем тестируют:$/.test(item));
         const nextHeadingIndex = lines.findIndex((item, i) => i > headingIndex && /^#{1,3} /.test(item));
         const inPurposeList = headingIndex >= 0 && index > headingIndex && (nextHeadingIndex < 0 || index < nextHeadingIndex);
-        return inPurposeList && /^\\s*\\d+\\. /.test(line) ? line.replace(/;\\s*$/, ":") : line;
+        return inPurposeList && /^\s*\d+\. /.test(line) ? line.replace(/;\s*$/, ":") : line;
       })
       .filter((line, index, lines) => {
         const headingIndex = lines.findIndex((item) => /^### Зачем тестируют:$/.test(item));
@@ -116,8 +116,8 @@ export function MarkdownView({ content, compact = false, extraCompactLists = fal
         const inPurposeList = headingIndex >= 0 && index > headingIndex && (nextHeadingIndex < 0 || index < nextHeadingIndex);
         const isBlankBetweenListItems = !line.trim()
           && index > headingIndex
-          && /^\\s*(?:\\d+\\. |[•-] )/.test(lines[index - 1] || "")
-          && /^\\s*(?:\\d+\\. |[•-] )/.test(lines[index + 1] || "");
+          && /^\s*(?:\d+\. |[•-] )/.test(lines[index - 1] || "")
+          && /^\s*(?:\d+\. |[•-] )/.test(lines[index + 1] || "");
         return !(inPurposeList && isBlankBetweenListItems);
       })
       .join("\n")
