@@ -89,7 +89,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
           <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Быстрая навигация</span>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Модули">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5" role="tablist" aria-label="Модули">
           {HANDBOOK_LEARNING_MODULES.map((item, index) => {
             const isActive = index === moduleIndex;
             const itemCompleted = item.lessons.filter((lesson) => completed.has(lesson.id)).length;
@@ -102,8 +102,8 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
                 aria-controls="learning-module-content"
                 onClick={() => selectModule(index)}
                 className={isActive
-                  ? "min-w-max rounded-lg border border-primary bg-primary/10 px-3 py-2 text-left text-xs font-semibold text-primary"
-                  : "min-w-max rounded-lg border border-border px-3 py-2 text-left text-xs text-muted-foreground hover:bg-muted/30"}
+                  ? "min-w-0 w-full rounded-lg border border-primary bg-primary/10 px-2.5 py-2 text-left text-[11px] font-semibold leading-tight text-primary"
+                  : "min-w-0 w-full rounded-lg border border-border px-2.5 py-2 text-left text-[11px] leading-tight text-muted-foreground hover:bg-muted/30"}
               >
                 <span className="block">{item.title.replace(/^Модуль \d+\. /, "Модуль ")}</span>
                 <span className="mt-0.5 block text-[10px] opacity-80">{itemCompleted}/{item.lessons.length} изучено</span>
