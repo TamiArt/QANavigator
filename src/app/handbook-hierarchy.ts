@@ -150,6 +150,14 @@ export const HANDBOOK_SECTIONS: HandbookSection[] = [
       "game2",
     ],
   },
+  {
+    id: "13-it-glossary",
+    title: "13. Словарь IT-терминов",
+    description: "Рабочая лексика, профессиональный жаргон и термины из повседневной жизни IT-команды.",
+    topicIds: [
+      "it-glossary",
+    ],
+  },
 ];
 
 export const HANDBOOK_SECTION_BY_TOPIC = new Map<string, HandbookSection>(
