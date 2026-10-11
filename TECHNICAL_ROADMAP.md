@@ -86,6 +86,7 @@ Completed:
 - Module 4 documentation clarified: product-wide Test Strategy, preconditions/postconditions, checklist yes/no checks, execution-time Actual Result with bug-report link, and Test Suite definition; regression coverage added.
 - Module 4 Learning Mode refined: added a concise Test Summary Report contents list after its definition; removed lesson m4-13 on defect-documentation steps; renamed m4-18 to “Свойства качественного тест-кейса” and replaced its content with concise quality criteria; updated infographic definitions and regression tests. Module 4 now contains 17 lessons; existing IDs for retained lessons are preserved.
 - Learning Mode lesson layout compacted: normalized excess whitespace in rendered Markdown, reduced blank-line and heading spacing, tightened lesson-card padding, and added regression coverage; lesson wording and IDs remain unchanged.
+- Learning Mode lists tightened: numbered, bulleted, and status lists use reduced line height and no extra item margin in compact lesson rendering; covered by regression test.
 - `tt2` testing-types content/template boundary fixed;
 - PR #14 handbook hierarchy refactor merged into `main`.
 
