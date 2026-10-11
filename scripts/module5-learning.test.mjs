@@ -1,0 +1,45 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import fs from "node:fs";
+
+test("Module 5 contains the 13 requested lessons in order", () => {
+  const source = fs.readFileSync("src/app/features/handbook/handbook-learning-module5.ts", "utf8");
+  const expected = [
+    "Как работают фронтенд и бэкенд вместе",
+    "Клиент-серверная архитектура",
+    "Модель TCP/IP",
+    "DNS и проверка доступности через ping",
+    "API: принцип работы и назначение",
+    "HTTP и HTTPS",
+    "HTTP-методы",
+    "HTTP-статус-коды",
+    "REST, RESTful и JSON",
+    "Swagger и документация API",
+    "Что происходит после ввода URL",
+    "Postman: тестирование API",
+    "Тестирование интеграций",
+  ];
+  assert.equal((source.match(/id: "m5-\d{2}"/g) ?? []).length, 13);
+  const positions = expected.map((title) => {
+    const position = source.indexOf("title: \"" + title + "\"");
+    assert.notEqual(position, -1, "Missing lesson: " + title);
+    return position;
+  });
+  for (let index = 1; index < positions.length; index += 1) {
+    assert.ok(positions[index - 1] < positions[index], "Lesson order is wrong at " + expected[index]);
+  }
+  for (const term of ["TCP", "UDP", "DNS", "ICMP", "API", "HTTPS", "TLS", "GET", "POST", "PATCH", "201 Created", "401 Unauthorized", "REST", "JSON", "OpenAPI", "Postman", "Webhook", "idempot"]) {
+    assert.ok(source.toLowerCase().includes(term.toLowerCase()), "Missing key concept: " + term);
+  }
+});
+
+test("Module 5 is registered in Learning Mode and has a visual summary for each lesson", () => {
+  const registry = fs.readFileSync("src/app/features/handbook/handbook-learning.ts", "utf8");
+  const visuals = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  assert.match(registry, /import \{ HANDBOOK_LEARNING_MODULE_5_LESSONS \} from "\.\/handbook-learning-module5"/);
+  assert.match(registry, /id: "module-5-network-api"[\s\S]*?title: "Модуль 5 — Сети, HTTP и тестирование API"[\s\S]*?lessons: HANDBOOK_LEARNING_MODULE_5_LESSONS/);
+  for (let index = 1; index <= 13; index += 1) {
+    const id = "m5-" + String(index).padStart(2, "0");
+    assert.ok(visuals.includes("\"" + id + "\": V("), "Missing infographic model for " + id);
+  }
+});
