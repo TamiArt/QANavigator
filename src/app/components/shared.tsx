@@ -100,7 +100,10 @@ export function MarkdownView({ content, compact = false, extraCompactLists = fal
       .replace(/\n[ \t]*\n(?:[ \t]*\n)+/g, "\n\n")
       .trim()
     : content;
-  const escapedContent = normalizedContent
+  const formattedContent = extraCompactLists
+    ? normalizedContent.replace(/^### Зачем тестируют:?$/gm, "### Зачем тестируют:")
+    : normalizedContent;
+  const escapedContent = formattedContent
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
