@@ -90,10 +90,43 @@ export function CodeBlock({ code, lang = "text" }: { code: string; lang?: string
 }
 
 // Simple markdown-ish renderer
-export function MarkdownView({ content }: { content: string }) {
+export function MarkdownView({ content, compact = false, extraCompactLists = false }: { content: string; compact?: boolean; extraCompactLists?: boolean }) {
   // AI responses and imported handbook content are untrusted. Escape them before
   // adding the small, controlled set of markup supported by this renderer.
-  const escapedContent = content
+  // Normalize spacing for every MarkdownView consumer, including the knowledge base
+  // and all learning modules: three or more newlines become one blank line.
+  const lineNormalizedContent = content
+    .replace(/\r\n?/g, "\n")
+    .replace(/\n{3,}/g, "\n\n");
+  const normalizedContent = compact
+    ? lineNormalizedContent
+      .replace(/[ \t]+\n/g, "\n")
+      .replace(/\n[ \t]*\n(?:[ \t]*\n)+/g, "\n\n")
+      .trim()
+    : lineNormalizedContent;
+  const formattedContent = extraCompactLists
+    ? normalizedContent
+      .replace(/^### Зачем тестируют:?$/gm, "### Зачем тестируют:")
+      .split("\n")
+      .map((line, index, lines) => {
+        const headingIndex = lines.findIndex((item) => /^### Зачем тестируют:$/.test(item));
+        const nextHeadingIndex = lines.findIndex((item, i) => i > headingIndex && /^#{1,3} /.test(item));
+        const inPurposeList = headingIndex >= 0 && index > headingIndex && (nextHeadingIndex < 0 || index < nextHeadingIndex);
+        return inPurposeList && /^\s*\d+\. /.test(line) ? line.replace(/;\s*$/, ":") : line;
+      })
+      .filter((line, index, lines) => {
+        const headingIndex = lines.findIndex((item) => /^### Зачем тестируют:$/.test(item));
+        const nextHeadingIndex = lines.findIndex((item, i) => i > headingIndex && /^#{1,3} /.test(item));
+        const inPurposeList = headingIndex >= 0 && index > headingIndex && (nextHeadingIndex < 0 || index < nextHeadingIndex);
+        const isListItem = (item: string) => /^\s*(?:\d+\. |[•-] )/.test(item);
+        const hasListItemBefore = lines.slice(headingIndex + 1, index).some(isListItem);
+        const hasListItemAfter = lines.slice(index + 1, nextHeadingIndex < 0 ? lines.length : nextHeadingIndex).some(isListItem);
+        const isBlankInsideList = inPurposeList && !line.trim() && hasListItemBefore && hasListItemAfter;
+        return !isBlankInsideList;
+      })
+      .join("\n")
+    : normalizedContent;
+  const escapedContent = formattedContent
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -108,27 +141,31 @@ export function MarkdownView({ content }: { content: string }) {
         .map((line) => line.split("|").slice(1, -1).map((cell) => cell.trim()));
       const columnCount = Math.max(...rows.map((row) => row.length));
 
-      return `<div role="table" class="my-4 overflow-hidden rounded-xl border border-border bg-card text-sm"><div class="grid bg-muted font-semibold text-foreground" style="grid-template-columns:repeat(${columnCount},minmax(0,1fr))">${rows[0].map((cell) => `<div role="columnheader" class="border-r border-border px-3 py-2 last:border-r-0">${cell}</div>`).join("")}</div>${rows.slice(1).map((row) => `<div role="row" class="grid border-t border-border text-muted-foreground" style="grid-template-columns:repeat(${columnCount},minmax(0,1fr))">${row.map((cell) => `<div role="cell" class="border-r border-border px-3 py-2 last:border-r-0">${cell}</div>`).join("")}</div>`).join("")}</div>`;
+      return `<div role="table" class="${compact ? "my-2" : "my-4"} overflow-hidden rounded-xl border border-border bg-card text-sm"><div class="grid bg-muted font-semibold text-foreground" style="grid-template-columns:repeat(${columnCount},minmax(0,1fr))">${rows[0].map((cell) => `<div role="columnheader" class="border-r border-border px-3 py-2 last:border-r-0">${cell}</div>`).join("")}</div>${rows.slice(1).map((row) => `<div role="row" class="grid border-t border-border text-muted-foreground" style="grid-template-columns:repeat(${columnCount},minmax(0,1fr))">${row.map((cell) => `<div role="cell" class="border-r border-border px-3 py-2 last:border-r-0">${cell}</div>`).join("")}</div>`).join("")}</div>`;
     },
   );
   const html = contentWithTables
-    .replace(/^### (.+)$/gm, '<h3 class="text-base font-semibold mt-4 mb-1.5 text-foreground">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 class="text-lg font-semibold mt-5 mb-2 text-foreground">$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold mt-6 mb-2 text-foreground">$1</h1>')
+    .replace(/^### (.+)$/gm, `<h3 class="text-base font-semibold ${compact ? "mt-2 mb-1" : "mt-4 mb-1.5"} text-foreground">$1</h3>`)
+    .replace(/^## (.+)$/gm, `<h2 class="text-lg font-semibold ${compact ? "mt-3 mb-1" : "mt-5 mb-2"} text-foreground">$1</h2>`)
+    .replace(/^# (.+)$/gm, `<h1 class="text-xl font-bold ${compact ? "mt-4 mb-1" : "mt-6 mb-2"} text-foreground">$1</h1>`)
     .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold">$1</strong>')
     .replace(/`{3}(\w*)\n([\s\S]*?)`{3}/gm, '<pre class="bg-muted border border-border rounded-lg p-3 my-2 text-xs font-mono overflow-x-auto whitespace-pre-wrap">$2</pre>')
     .replace(/`([^`]+)`/g, '<code class="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-primary">$1</code>')
     .replace(/^> (.+)$/gm, '<blockquote class="border-l-4 border-primary pl-3 my-2 text-sm text-muted-foreground italic">$1</blockquote>')
-    .replace(/^(\d+)\. (.+)$/gm, '<li class="ml-4 list-decimal text-sm mb-0.5">$2</li>')
-    .replace(/^[•\-] (.+)$/gm, '<li class="ml-4 list-disc text-sm mb-0.5">$1</li>')
-    .replace(/^✅ (.+)$/gm, '<li class="ml-4 text-sm mb-0.5 text-emerald-600 dark:text-emerald-400 list-none">✅ $1</li>')
-    .replace(/^❌ (.+)$/gm, '<li class="ml-4 text-sm mb-0.5 text-red-600 dark:text-red-400 list-none">❌ $1</li>')
-    .replace(/^⚠️ (.+)$/gm, '<li class="ml-4 text-sm mb-0.5 text-amber-600 dark:text-amber-400 list-none">⚠️ $1</li>')
-    .replace(/\n\n/g, '<br/>')
-    .replace(/\n/g, '<br/>');
+    .replace(/^(\d+)\. (.+)$/gm, `<li class="${extraCompactLists ? "ml-8" : "ml-4"} list-decimal ${extraCompactLists ? "mb-0 leading-[1.05] text-[13px]" : compact ? "text-sm mb-0 leading-snug" : "text-sm mb-0.5"}">$2</li>`)
+    .replace(/^[ \t]*[•\\-] (.+)$/gm, `<li class="${extraCompactLists ? "ml-13" : "ml-4"} list-disc ${extraCompactLists ? "mb-0 leading-[1.05] text-[13px]" : compact ? "text-sm mb-0 leading-snug" : "text-sm mb-0.5"}">$1</li>`)
+    .replace(/^✅ (.+)$/gm, `<li class="${extraCompactLists ? "ml-8" : "ml-4"} ${extraCompactLists ? "mb-0 leading-[1.05] text-[13px]" : compact ? "text-sm mb-0 leading-snug" : "text-sm mb-0.5"} text-emerald-600 dark:text-emerald-400 list-none">✅ $1</li>`)
+    .replace(/^❌ (.+)$/gm, `<li class="${extraCompactLists ? "ml-8" : "ml-4"} ${extraCompactLists ? "mb-0 leading-[1.05] text-[13px]" : compact ? "text-sm mb-0 leading-snug" : "text-sm mb-0.5"} text-red-600 dark:text-red-400 list-none">❌ $1</li>`)
+    .replace(/^⚠️ (.+)$/gm, `<li class="${extraCompactLists ? "ml-8" : "ml-4"} ${extraCompactLists ? "mb-0 leading-[1.05] text-[13px]" : compact ? "text-sm mb-0 leading-snug" : "text-sm mb-0.5"} text-amber-600 dark:text-amber-400 list-none">⚠️ $1</li>`)
+    .replace(/\n\n/g, compact ? "<br/>" : "<br/><br/>")
+    .replace(/\n/g, '<br/>')
+    // Keep consecutive list items together; injected <br/> tags create visible gaps between them.
+    .replace(/<\/li>(?:<br\/>)+(?=<li\b)/g, "</li>")
+    // Keep a list directly under its heading without injected line-break spacing.
+    .replace(/<\/h([1-6])>(?:<br\/>)+(?=<li\b)/g, "</h$1>");
   return (
     <div
-      className="prose prose-sm max-w-none text-foreground leading-relaxed"
+      className={`prose prose-sm max-w-none text-foreground ${compact ? "leading-normal" : "leading-relaxed"}`}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );

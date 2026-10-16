@@ -324,14 +324,6 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "Правило", text: "Не соответствует согласованным требованиям → может быть баг. Нового поведения не было в спецификации → доработка." },
   ], "Главный вопрос: «Так должно было работать по согласованным требованиям?»"),
 
-  "m4-13": V("flow", ["Заголовок", "Среда", "Шаги", "Ожидание", "Факт", "Evidence", "Severity/Priority"], Route, "mint", [
-    { title: "1. Заголовок", text: "Кратко и точно: что произошло и где." },
-    { title: "2. Окружение + предусловие", text: "ОС, браузер, устройство и версии; состояние, из которого стартуем." },
-    { title: "3. Воспроизведение", text: "Последовательность действий, достаточная для повторения проблемы." },
-    { title: "4. Expected vs Actual", text: "Что должно было произойти и что происходит фактически." },
-    { title: "5. Evidence", text: "Скриншоты, видео, логи и другие доказательства." },
-    { title: "6. Severity + Priority", text: "Насколько сильно влияет и насколько срочно исправлять." },
-  ], "Качественный баг-репорт позволяет быстро понять проблему и воспроизвести её."),
 
   "m4-14": V("compare", ["Pre-release", "Production", "Impact"], Cloud, "yellow", [
     { title: "Pre-release", text: "Баг найден до релиза; часто фиксируется в контексте текущей задачи." },
@@ -356,12 +348,12 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "Написать", text: "Кейсы с понятным названием, предусловиями и тестовыми данными." },
     { title: "Ревью", text: "Проверить полноту, логику и воспроизводимость." },
   ], "Документация создаётся как часть работы над задачей, а не после неё."),
-  "m4-18": V("checklist", ["Что?", "Зачем?", "Из чего?", "Пример"], CheckCircle2, "mint", [
-    { title: "Название", text: "Где + что проверяем + как, если это нужно." },
-    { title: "Шаги", text: "Другой QA должен воспроизвести проверку без лишних вопросов." },
-    { title: "Данные и дизайн", text: "Ссылки вместо дублирования секретов; утверждённый макет — в предусловиях." },
-    { title: "Атомарность", text: "Один тест-кейс = одна проверка или одна логическая цепочка." },
-  ], "Формула ответа: что это → зачем → из чего состоит → пример."),
+  "m4-18": V("checklist", ["Точность", "Повторяемость", "Проверяемость", "Актуальность"], CheckCircle2, "mint", [
+    { title: "Понятное название", text: "Сразу показывает, где и что проверяется." },
+    { title: "Шаги и данные", text: "Конкретны и позволяют повторить сценарий." },
+    { title: "Ожидаемый результат", text: "Наблюдаемый и однозначно проверяемый." },
+    { title: "Атомарность и актуальность", text: "Одна цель; кейс соответствует текущему продукту." },
+  ], "Качественный тест-кейс можно воспроизвести и объективно оценить."),
 };
 
 const ACCENT_STYLES: Record<Accent, { marker: string; card: string; badge: string; line: string }> = {
@@ -839,6 +831,10 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
   const isScrumContextInfographic = lesson.id === "m2-04";
   // CI contract: lesson\.id === "m2-04"
   const isSprintPlanningInfographic = lesson.id === "m2-05";
+  const isTestDocumentationInfographic = lesson.id === "m4-01";
+  const isTestPlanInfographic = lesson.id === "m4-02";
+  const isTestPlanDetailsInfographic = lesson.id === "m4-03";
+  const isTestCasesInfographic = lesson.id === "m4-04";
 
   return (
     <section
@@ -846,16 +842,16 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
       className="overflow-hidden rounded-[28px] border-2 border-blue-100 bg-white shadow-[0_8px_30px_rgba(30,64,175,0.08)]"
       aria-label={`Инфографика урока: ${lesson.title}`}
     >
-      <div className="flex items-center justify-between gap-3 border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-3 sm:px-5">
+      <div className="flex items-center justify-between gap-3 border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-2 sm:px-5">
         <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{lesson.title}</h4>
         <PdfDownloadButton targetId={infographicId} />
       </div>
 
-      {isTestTypesInfographic || isScrumContextInfographic || isSprintPlanningInfographic ? (
+      {isTestTypesInfographic || isScrumContextInfographic || isSprintPlanningInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? (
         <div className="min-w-0 overflow-hidden bg-white p-2 sm:p-4">
           <div
             className="mx-auto w-full max-w-[1065px] overflow-hidden rounded-[18px] bg-white"
-            style={{ aspectRatio: isTestTypesInfographic ? "1054 / 1492" : "1065 / 1476" }}
+            style={{ aspectRatio: isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? "1054 / 1492" : "1065 / 1476" }}
             // CI regex compatibility for the immutable source contracts:
             // width=\{1065\}, height=\{1476\}, and overflow-hidden rounded-\[18px\]
             // CI regex compatibility: alt="Инфографика: Погружение в контекст \Scrum\"
@@ -864,12 +860,20 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
             <img
               src={isTestTypesInfographic
                 ? "/infographics/m1-09-vidi-testirovaniya.png"
-                : isScrumContextInfographic
-                  ? "/infographics/m2-04-scrum-context.svg"
-                  : "/infographics/m2-05-sprint-planning.svg"}
-              alt={isTestTypesInfographic ? "Инфографика: Виды тестирования" : "Инфографика: Погружение в контекст (Scrum)"}
-              width={isTestTypesInfographic ? 1054 : 1065}
-              height={isTestTypesInfographic ? 1492 : 1476}
+                : isTestDocumentationInfographic
+                  ? "/infographics/m4-01-test documentation.png"
+                  : isTestPlanInfographic
+                    ? "/infographics/m4-02-vajnost.png"
+                    : isTestPlanDetailsInfographic
+                      ? "/infographics/m4-03-testplan.png"
+                      : isTestCasesInfographic
+                        ? "/infographics/m4-04-teskeys.png"
+                        : isScrumContextInfographic
+                          ? "/infographics/m2-04-scrum-context.svg"
+                          : "/infographics/m2-05-sprint-planning.svg"}
+              alt={isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"}
+              width={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1054 : 1065}
+              height={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1492 : 1476}
               decoding="async"
               className="block h-full w-full max-w-none object-contain object-top"
             />
