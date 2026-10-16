@@ -326,11 +326,15 @@ test("Handbook exposes a reachable Learning Mode from the knowledge base", () =>
   assert.match(source, /onBack=\{\(\) => setLearningMode\(false\)\}/);
 });
 
-test("Learning Mode renders module and lesson infographics", () => {
+test("LearningInfographic supports module and lesson modes while Learning Mode renders the active lesson", () => {
   const source = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
+  const infographic = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
   assert.match(source, /LearningInfographic/);
-  assert.match(source, /mode="module"/);
   assert.match(source, /mode="lesson"/);
+  assert.ok(!source.includes('<LearningInfographic mode="module"'), "Module topic overview must not appear before every lesson");
+  assert.match(infographic, /mode: "module"/);
+  assert.match(infographic, /mode: "lesson"/);
+  assert.match(infographic, /return <ModuleInfographic module=\{props\.module\} \/>/);
 });
 
 test("Lesson infographics expose semantic diagram structure", () => {
