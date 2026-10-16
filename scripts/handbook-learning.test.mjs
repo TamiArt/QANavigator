@@ -507,7 +507,7 @@ test("Learning Mode opens the active lesson without repeating the full topic lis
   assert.ok(!source.includes('<LearningInfographic mode="module"'), "Module topic overview must not appear before every lesson");
   assert.ok(!source.includes('<span className="text-sm text-foreground">{lesson.title}</span>'), "Full lesson-title list must not be repeated before the active lesson");
   assert.match(source, /<LearningInfographic mode="lesson" lesson=\{activeLesson\} \/>/);
-  assert.match(source, /<MarkdownView content=\{getLearningLessonContent\(activeLesson\)\} compact \/>/);
+  assert.match(source, /<MarkdownView content=\{getLearningLessonContent\(activeLesson\)\} compact(?: extraCompactLists=\{[^}]+\})? \/>/);
 });
 
 
