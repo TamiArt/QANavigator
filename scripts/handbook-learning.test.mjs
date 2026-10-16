@@ -151,7 +151,7 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
     "Свойства качественного тест-кейса",
   ];
   for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
-  assert.equal((source.match(/id: "m4-\d{2}"/g) ?? []).length, 18);
+  assert.equal((source.match(/id: "m4-\d{2}"/g) ?? []).length, 17);
   const titleIndex = (title) => source.indexOf(`title: "${title}"`);
   for (let i = 0; i < expected.length - 1; i += 1) {
     assert.ok(titleIndex(expected[i]) < titleIndex(expected[i + 1]));
@@ -326,11 +326,15 @@ test("Handbook exposes a reachable Learning Mode from the knowledge base", () =>
   assert.match(source, /onBack=\{\(\) => setLearningMode\(false\)\}/);
 });
 
-test("Learning Mode renders module and lesson infographics", () => {
+test("LearningInfographic supports module and lesson modes while Learning Mode renders the active lesson", () => {
   const source = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
+  const infographic = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
   assert.match(source, /LearningInfographic/);
-  assert.match(source, /mode="module"/);
   assert.match(source, /mode="lesson"/);
+  assert.ok(!source.includes('<LearningInfographic mode="module"'), "Module topic overview must not appear before every lesson");
+  assert.match(infographic, /mode: "module"/);
+  assert.match(infographic, /mode: "lesson"/);
+  assert.match(infographic, /return <ModuleInfographic module=\{props\.module\} \/>/);
 });
 
 test("Lesson infographics expose semantic diagram structure", () => {
@@ -503,7 +507,7 @@ test("Learning Mode opens the active lesson without repeating the full topic lis
   assert.ok(!source.includes('<LearningInfographic mode="module"'), "Module topic overview must not appear before every lesson");
   assert.ok(!source.includes('<span className="text-sm text-foreground">{lesson.title}</span>'), "Full lesson-title list must not be repeated before the active lesson");
   assert.match(source, /<LearningInfographic mode="lesson" lesson=\{activeLesson\} \/>/);
-  assert.match(source, /<MarkdownView content=\{getLearningLessonContent\(activeLesson\)\} compact \/>/);
+  assert.match(source, /<MarkdownView content=\{getLearningLessonContent\(activeLesson\)\} compact(?: extraCompactLists=\{[^}]+\})? \/>/);
 });
 
 
