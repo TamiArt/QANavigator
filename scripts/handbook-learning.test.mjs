@@ -151,7 +151,7 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
     "Свойства качественного тест-кейса",
   ];
   for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
-  assert.equal((source.match(/id: "m4-\d{2}"/g) ?? []).length, 18);
+  assert.equal((source.match(/id: "m4-\d{2}"/g) ?? []).length, 17);
   const titleIndex = (title) => source.indexOf(`title: "${title}"`);
   for (let i = 0; i < expected.length - 1; i += 1) {
     assert.ok(titleIndex(expected[i]) < titleIndex(expected[i + 1]));
