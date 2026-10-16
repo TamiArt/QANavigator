@@ -82,11 +82,16 @@ Completed:
 - Learning Mode mobile entry point implemented;
 - 48 lesson infographics implemented with reusable visual definitions;
 - infographic semantic/presentation regression coverage added;
+- IT terminology glossary added to the Knowledge Base and exposed as a dedicated Learning Mode module; regression coverage added.
+- Module 4 documentation clarified: product-wide Test Strategy, preconditions/postconditions, checklist yes/no checks, execution-time Actual Result with bug-report link, and Test Suite definition; regression coverage added.
+- Module 4 Learning Mode refined: added a concise Test Summary Report contents list after its definition; removed lesson m4-13 on defect-documentation steps; renamed m4-18 to “Свойства качественного тест-кейса” and replaced its content with concise quality criteria; updated infographic definitions and regression tests. Module 4 now contains 17 lessons; existing IDs for retained lessons are preserved.
+- Learning Mode lesson layout compacted: normalized excess whitespace in rendered Markdown, reduced blank-line and heading spacing, tightened lesson-card padding, and added regression coverage; lesson wording and IDs remain unchanged.
+- Learning Mode lists tightened: numbered, bulleted, and status lists use reduced line height and no extra item margin in compact lesson rendering; covered by regression test.
 - `tt2` testing-types content/template boundary fixed;
 - PR #14 handbook hierarchy refactor merged into `main`.
 
 Current development branch:
-`fix/m2-04-infographic-text-layout`
+`fix/module4-lesson1-png`
 
 Current active milestone:
 - continue Learning Mode production hardening;
@@ -1832,3 +1837,25 @@ Next development block:
 2. check desktop/mobile/PDF behavior;
 3. fix only confirmed defects without changing lesson content or the approved visual system;
 4. run the full verification block before committing the completed stage.
+
+### 7.1.3 Documentation usability and export — 2026-10-09
+
+Implemented on `fix/module4-lesson1-png`:
+- added Word-compatible `.doc` and clean plain-text `.txt` export to documentation templates, including AI checklist output and RTM;
+- added editable Test Strategy and Test Data documents;
+- changed documentation date fields and default values to DD.MM.YYYY;
+- made multiline documentation inputs grow with entered content instead of using an internal scroll area;
+- added regression tests for text cleanup, Word-compatible export, date formatting and the new documentation tabs.
+
+Verification must still be run against the updated branch head before this milestone is considered complete.
+
+### 7.1.4 Learning Mode — Module 5: networks and API — 2026-10-11
+
+Implemented on \`feat/module5-network-api-learning\`:
+- added 13 ordered lessons covering frontend/backend interaction, client-server architecture, TCP/IP, DNS/ping, API, HTTP/HTTPS, HTTP methods and status codes, REST/JSON, Swagger, URL navigation, Postman, and integrations;
+- registered Module 5 in Learning Mode without changing existing lesson IDs or order;
+- added semantic visual summaries for all 13 lessons;
+- added a dedicated curriculum/visual regression test and included it in \`npm run verify\`.
+
+Verification status: pending execution against the updated branch head. Do not consider the milestone complete until the new regression test, full \`npm run verify\`, and current-head CI have been checked.
+

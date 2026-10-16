@@ -2,6 +2,8 @@ import { HANDBOOK } from "../../handbook-data";
 import { HANDBOOK_LEARNING_MODULE_2_LESSONS } from "./handbook-learning-module2";
 import { HANDBOOK_LEARNING_MODULE_3_LESSONS } from "./handbook-learning-module3";
 import { HANDBOOK_LEARNING_MODULE_4_LESSONS } from "./handbook-learning-module4";
+import { HANDBOOK_LEARNING_MODULE_5_LESSONS } from "./handbook-learning-module5";
+
 
 export interface LearningLesson {
   id: string;
@@ -47,9 +49,21 @@ export const HANDBOOK_LEARNING_MODULES: readonly LearningModule[] = [
     lessons: HANDBOOK_LEARNING_MODULE_3_LESSONS,
   },
   {
+    id: "module-it-glossary",
+    title: "Словарь IT-терминов и процессов",
+    lessons: [
+      { id: "it-glossary-01", title: "Основные IT-термины и жаргон", topicIds: ["it-glossary"] },
+    ],
+  },
+  {
     id: "module-4-test-documentation",
     title: "Модуль 4 — Тестовая документация",
     lessons: HANDBOOK_LEARNING_MODULE_4_LESSONS,
+  },
+  {
+    id: "module-5-network-api",
+    title: "Модуль 5 — Сети, HTTP и тестирование API",
+    lessons: HANDBOOK_LEARNING_MODULE_5_LESSONS,
   },
 ];
 
@@ -66,20 +80,28 @@ function extractRange(content: string, start?: string, end?: string): string {
 }
 
 export function getLearningLessonContent(lesson: LearningLesson): string {
-  if (lesson.content) return lesson.content;
+  let content: string;
 
-  const parts = lesson.topicIds
-    .map(findTopic)
-    .filter(Boolean)
-    .map((topic) => topic!.content);
+  if (lesson.content) {
+    content = lesson.content;
+  } else {
+    const parts = lesson.topicIds
+      .map(findTopic)
+      .filter(Boolean)
+      .map((topic) => topic!.content);
 
-  if (lesson.sectionStart || lesson.sectionEnd) {
-    const firstTopic = findTopic(lesson.topicIds[0]);
-    if (!firstTopic) return "";
-    return extractRange(firstTopic.content, lesson.sectionStart, lesson.sectionEnd);
+    if (lesson.sectionStart || lesson.sectionEnd) {
+      const firstTopic = findTopic(lesson.topicIds[0]);
+      if (!firstTopic) return "";
+      content = extractRange(firstTopic.content, lesson.sectionStart, lesson.sectionEnd);
+    } else {
+      content = parts.join("\n\n---\n\n");
+    }
   }
 
-  return parts.join("\n\n---\n\n");
+  // The lesson title is already shown above the content. Remove its redundant
+  // opening Markdown heading so every lesson displays only one title.
+  return content.replace(/^\s*#{1,6}\s+[^\n]+(?:\n+|$)/, "").trimStart();
 }
 
 export function getLearningModule(moduleId: string): LearningModule | undefined {
