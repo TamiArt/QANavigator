@@ -244,7 +244,7 @@ test("Scrum lesson 4 uses the dedicated Scrum study sheet", () => {
   const asset = fs.readFileSync("public/infographics/m2-04-scrum-context.svg", "utf8");
 
   assert.match(infographic, /lesson\\.id === "m2-04"/);
-  assert.match(infographic, /aspectRatio: isTestTypesInfographic \|\| isTestDocumentationInfographic \|\| isTestPlanInfographic \|\| isTestPlanDetailsInfographic \|\| isTestCasesInfographic \? "1054 \/ 1492" : "1065 \/ 1476"/);
+  assert.match(infographic, /aspectRatio: module5ImagePath \? "auto" : isTestTypesInfographic \|\| isTestDocumentationInfographic \|\| isTestPlanInfographic \|\| isTestPlanDetailsInfographic \|\| isTestCasesInfographic \? "1054 \/ 1492" : "1065 \/ 1476"/);
   assert.match(infographic, /width=\{isTestTypesInfographic \|\| isTestDocumentationInfographic \|\| isTestPlanInfographic \|\| isTestPlanDetailsInfographic \|\| isTestCasesInfographic \? 1054 : 1065\}/);
   assert.match(infographic, /height=\{isTestTypesInfographic \|\| isTestDocumentationInfographic \|\| isTestPlanInfographic \|\| isTestPlanDetailsInfographic \|\| isTestCasesInfographic \? 1492 : 1476\}/);
   assert.match(infographic, /object-contain object-top/);
