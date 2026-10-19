@@ -1866,18 +1866,18 @@ Verification status: pending execution against the updated branch head. Do not c
 
 Implemented on `feat/learning-block-completion`:
 - created a dedicated continuation branch from the verified Module 4–5 integration head;
-- lesson navigation now continues into the next module when the current module's last lesson is reached;
-- previous navigation returns to the prior module's final lesson when the current module starts;
-- the first curriculum lesson and final curriculum lesson have explicit boundary states;
-- advancing from a lesson marks it completed, and completion IDs are de-duplicated defensively;
-- previous/next controls now have explicit accessible labels;
-- added regression coverage for cross-module navigation and completion behavior.
+- lesson navigation continues into the next module at module boundaries and returns to the prior module's final lesson when navigating backward;
+- the first and final course lessons have explicit boundary states;
+- lesson completion is de-duplicated defensively, with both module-level and course-wide progress indicators;
+- module selection uses button/group semantics rather than declaring an incomplete ARIA tab pattern;
+- navigation controls expose explicit accessible labels and a stable lesson-content target;
+- the IT glossary now has its own semantic visual model rather than the generic fallback diagram;
+- regression tests assert navigation, progress semantics, static image mappings and dedicated visual-model coverage for every curriculum lesson.
 
 Validation:
-- the code/test revision `42ce012cee39b9d5b541f1311d675f40168019da` passed GitHub Actions `npm run verify` (Learning Mode regressions, TypeScript and production build);
-- Vercel reported success for the following documentation-only head `61e133d252c3a00d6647dacb880c55ff7382bf06`;
-- rerun verification after this roadmap status update;
-- manual desktop/mobile interaction and browser download checks remain required before calling the entire Learning Mode block complete.
+- GitHub Actions `npm run verify` passed on `2ced6bd0dadc0cc933bb834f345102af4438b9cb`: [run 39261110517](https://github.com/TamiArt/QANavigator/actions/runs/39261110517);
+- Vercel generated a READY preview deployment for that branch revision;
+- live browser verification is still blocked because Vercel denied the connected tool's access to this deployment (403); the browser-download and desktop/mobile interaction checks therefore remain unverified until project access is authorized.
 
 Scope guard:
 - no lesson source wording or lesson IDs changed in this navigation fix;
