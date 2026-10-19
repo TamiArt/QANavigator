@@ -939,7 +939,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
         <div className="min-w-0 overflow-hidden bg-white p-2 sm:p-4">
           <div
             className="mx-auto w-full max-w-[1065px] overflow-hidden rounded-[18px] bg-white"
-            style={{ aspectRatio: isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? "1054 / 1492" : "1065 / 1476" }}
+            style={{ aspectRatio: module5ImagePath ? "auto" : isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? "1054 / 1492" : "1065 / 1476" }}
             // CI regex compatibility for the immutable source contracts:
             // width=\{1065\}, height=\{1476\}, and overflow-hidden rounded-\[18px\]
             // CI regex compatibility: alt="Инфографика: Погружение в контекст \Scrum\"
@@ -959,7 +959,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
                         : isScrumContextInfographic
                           ? "/infographics/m2-04-scrum-context.svg"
                           : "/infographics/m2-05-sprint-planning.svg")}
-              alt={isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"}
+              alt={module5ImagePath ? `Инфографика: ${lesson.title}` : isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"}
               width={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1054 : 1065}
               height={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1492 : 1476}
               decoding="async"
