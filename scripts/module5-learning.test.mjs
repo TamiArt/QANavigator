@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import fs from "node:fs";
 
-test("Module 5 contains the 13 requested lessons in order", () => {
+test("Module 5 contains the 13 core lessons plus OSI/TCP-IP in the intended order", () => {
   const source = fs.readFileSync("src/app/features/handbook/handbook-learning-module5.ts", "utf8");
   const expected = [
     "Как работают фронтенд и бэкенд вместе",
@@ -13,6 +13,7 @@ test("Module 5 contains the 13 requested lessons in order", () => {
     "HTTP и HTTPS",
     "HTTP-методы",
     "HTTP-статус-коды",
+    "Модель OSI и TCP/IP: уровни сетевого взаимодействия",
     "REST, RESTful и JSON",
     "Swagger и документация API",
     "Что происходит после ввода URL",
