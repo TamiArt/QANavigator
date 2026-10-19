@@ -904,14 +904,14 @@ function PdfDownloadButton({ targetId, imagePath }: { targetId: string; imagePat
       data-pdf-ignore
       onClick={downloadPdf}
       disabled={isGenerating}
-      aria-label="Сохранить инфографику в PDF"
-      title="Сохранить инфографику в PDF"
+      aria-label={imagePath ? "Скачать файл инфографики" : "Сохранить инфографику в PDF"}
+      title={imagePath ? "Скачать исходный файл инфографики" : "Сохранить инфографику в PDF"}
       className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-2.5 text-[10px] font-bold text-blue-800 shadow-sm transition hover:bg-blue-50 disabled:cursor-wait disabled:opacity-60"
     >
       <Download className="h-3.5 w-3.5" aria-hidden="true" />
       <span>{isGenerating ? "Сохранение…" : "Сохранить"}</span>
-      {error ? <span className="sr-only" role="alert">{error}</span> : null}
     </button>
+      {error ? <span className="ml-2 text-[10px] font-semibold text-red-600" role="alert">{error}</span> : null}
   );
 }
 function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
