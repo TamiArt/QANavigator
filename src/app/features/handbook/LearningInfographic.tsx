@@ -909,6 +909,20 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
   const isTestPlanInfographic = lesson.id === "m4-02";
   const isTestPlanDetailsInfographic = lesson.id === "m4-03";
   const isTestCasesInfographic = lesson.id === "m4-04";
+  const module5ImagePath: Record<string, string> = {
+    "m5-01": "/infographics/m5-01 infografic po modul.png",
+    "m5-02": "/infographics/m5-02-klient-servernaya arhitectura.jpg",
+    "m5-03": "/infographics/m5-03-TCP.jpg",
+    "m5-04": "/infographics/m5-04-DNS.jpg",
+    "m5-05": "/infographics/m5-05-API i metodi.jpg",
+    "m5-06": "/infographics/m5-06-07-08 http i kodi.jpg",
+    "m5-07": "/infographics/m5-06-07-08 http i kodi.jpg",
+    "m5-08": "/infographics/m5-06-07-08 http i kodi.jpg",
+    "m5-osi-tcp-ip": "/infographics/m5-09 oci i tcp ip.jpg",
+    "m5-09": "/infographics/m5-10 rest i restful.jpg",
+    "m5-10": "/infographics/m5-11-13 swagger i postman.jpg",
+    "m5-12": "/infographics/m5-11-13 swagger i postman.jpg",
+  }[lesson.id];
 
   return (
     <section
@@ -921,7 +935,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
         <PdfDownloadButton targetId={infographicId} />
       </div>
 
-      {isTestTypesInfographic || isScrumContextInfographic || isSprintPlanningInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? (
+      {module5ImagePath || isTestTypesInfographic || isScrumContextInfographic || isSprintPlanningInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? (
         <div className="min-w-0 overflow-hidden bg-white p-2 sm:p-4">
           <div
             className="mx-auto w-full max-w-[1065px] overflow-hidden rounded-[18px] bg-white"
@@ -932,7 +946,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
             data-ci-layout-contract="width=\\{1065\\}; overflow-hidden rounded-\\[18px\\]"
           >
             <img
-              src={isTestTypesInfographic
+              src={module5ImagePath ?? (isTestTypesInfographic
                 ? "/infographics/m1-09-vidi-testirovaniya.png"
                 : isTestDocumentationInfographic
                   ? "/infographics/m4-01-test documentation.png"
@@ -944,12 +958,12 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
                         ? "/infographics/m4-04-teskeys.png"
                         : isScrumContextInfographic
                           ? "/infographics/m2-04-scrum-context.svg"
-                          : "/infographics/m2-05-sprint-planning.svg"}
+                          : "/infographics/m2-05-sprint-planning.svg")}
               alt={isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"}
               width={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1054 : 1065}
               height={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1492 : 1476}
               decoding="async"
-              className="block h-full w-full max-w-none object-contain object-top"
+              className={`block h-full w-full max-w-none object-contain object-top ${module5ImagePath ? "h-auto" : ""}`}
             />
           </div>
         </div>
