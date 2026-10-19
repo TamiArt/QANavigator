@@ -1859,3 +1859,24 @@ Implemented on \`feat/module5-network-api-learning\`:
 
 Verification status: pending execution against the updated branch head. Do not consider the milestone complete until the new regression test, full \`npm run verify\`, and current-head CI have been checked.
 
+
+
+### 7.1.5 Learning Mode — continuous lesson navigation — 2026-10-19
+
+Implemented on `feat/learning-block-completion`:
+- created a dedicated continuation branch from the verified Module 4–5 integration head;
+- lesson navigation now continues into the next module when the current module's last lesson is reached;
+- previous navigation returns to the prior module's final lesson when the current module starts;
+- the first curriculum lesson and final curriculum lesson have explicit boundary states;
+- advancing from a lesson marks it completed, and completion IDs are de-duplicated defensively;
+- previous/next controls now have explicit accessible labels;
+- added regression coverage for cross-module navigation and completion behavior.
+
+Validation:
+- pending current-head GitHub Actions and full `npm run verify`;
+- manual desktop/mobile interaction and browser download checks remain required before calling the entire Learning Mode block complete.
+
+Scope guard:
+- no lesson source wording or lesson IDs changed in this navigation fix;
+- `main` is not used as a development branch;
+- do not create a PR or merge without explicit user permission.
