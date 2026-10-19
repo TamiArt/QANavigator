@@ -89,7 +89,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
           <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Быстрая навигация</span>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Модули">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5" role="tablist" aria-label="Модули">
           {HANDBOOK_LEARNING_MODULES.map((item, index) => {
             const isActive = index === moduleIndex;
             const itemCompleted = item.lessons.filter((lesson) => completed.has(lesson.id)).length;
@@ -102,8 +102,8 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
                 aria-controls="learning-module-content"
                 onClick={() => selectModule(index)}
                 className={isActive
-                  ? "min-w-max rounded-lg border border-primary bg-primary/10 px-3 py-2 text-left text-xs font-semibold text-primary"
-                  : "min-w-max rounded-lg border border-border px-3 py-2 text-left text-xs text-muted-foreground hover:bg-muted/30"}
+                  ? "min-w-0 w-full rounded-lg border border-primary bg-primary/10 px-2.5 py-2 text-left text-[11px] font-semibold leading-tight text-primary"
+                  : "min-w-0 w-full rounded-lg border border-border px-2.5 py-2 text-left text-[11px] leading-tight text-muted-foreground hover:bg-muted/30"}
               >
                 <span className="block">{item.title.replace(/^Модуль \d+\. /, "Модуль ")}</span>
                 <span className="mt-0.5 block text-[10px] opacity-80">{itemCompleted}/{item.lessons.length} изучено</span>
@@ -147,50 +147,25 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
         />
       </div>
 
-      <div id="learning-module-content" className="scroll-mt-24">
-        <LearningInfographic mode="module" module={module} />
-      </div>
-
-      <div className="grid gap-2">
-        {module.lessons.map((lesson, index) => {
-          const isActive = index === activeIndex;
-          const isCompleted = completed.has(lesson.id);
-          return (
-            <button
-              key={lesson.id}
-              onClick={() => selectLesson(index)}
-              className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors ${
-                isActive ? "border-primary bg-primary/10" : "border-border hover:bg-muted/30"
-              }`}
-            >
-              <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-                isCompleted ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-              }`}>
-                {isCompleted ? <Check className="w-4 h-4" /> : index + 1}
-              </span>
-              <span className="text-sm text-foreground">{lesson.title}</span>
-            </button>
-          );
-        })}
-      </div>
-
       <article
         ref={lessonArticleRef}
         id={`learning-lesson-${activeLesson.id}`}
-        className="bg-card border border-border rounded-xl p-5 scroll-mt-24"
+        className="bg-card border border-border rounded-xl p-4 scroll-mt-24"
       >
-        <div className="mb-4">
+        <div className="mb-3">
           <div className="text-xs text-muted-foreground mb-1">
             Урок {activeIndex + 1} из {module.lessons.length}
           </div>
           <h3 className="text-lg font-semibold text-foreground">{activeLesson.title}</h3>
         </div>
-        <LearningInfographic mode="lesson" lesson={activeLesson} />
-        <div className="mt-6">
-          <MarkdownView content={getLearningLessonContent(activeLesson)} />
+        <div className="mt-3">
+          <MarkdownView content={getLearningLessonContent(activeLesson)} compact extraCompactLists={activeLesson.id === "m1-01"} />
+        </div>
+        <div className="mt-4">
+          <LearningInfographic mode="lesson" lesson={activeLesson} />
         </div>
 
-        <div className="flex flex-wrap justify-between gap-2 pt-5 mt-5 border-t border-border">
+        <div className="flex flex-wrap justify-between gap-2 pt-4 mt-4 border-t border-border">
           <button
             onClick={() => selectLesson(Math.max(activeIndex - 1, 0))}
             disabled={activeIndex === 0}

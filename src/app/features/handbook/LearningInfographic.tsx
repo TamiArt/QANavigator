@@ -324,14 +324,6 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "Правило", text: "Не соответствует согласованным требованиям → может быть баг. Нового поведения не было в спецификации → доработка." },
   ], "Главный вопрос: «Так должно было работать по согласованным требованиям?»"),
 
-  "m4-13": V("flow", ["Заголовок", "Среда", "Шаги", "Ожидание", "Факт", "Evidence", "Severity/Priority"], Route, "mint", [
-    { title: "1. Заголовок", text: "Кратко и точно: что произошло и где." },
-    { title: "2. Окружение + предусловие", text: "ОС, браузер, устройство и версии; состояние, из которого стартуем." },
-    { title: "3. Воспроизведение", text: "Последовательность действий, достаточная для повторения проблемы." },
-    { title: "4. Expected vs Actual", text: "Что должно было произойти и что происходит фактически." },
-    { title: "5. Evidence", text: "Скриншоты, видео, логи и другие доказательства." },
-    { title: "6. Severity + Priority", text: "Насколько сильно влияет и насколько срочно исправлять." },
-  ], "Качественный баг-репорт позволяет быстро понять проблему и воспроизвести её."),
 
   "m4-14": V("compare", ["Pre-release", "Production", "Impact"], Cloud, "yellow", [
     { title: "Pre-release", text: "Баг найден до релиза; часто фиксируется в контексте текущей задачи." },
@@ -356,12 +348,80 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "Написать", text: "Кейсы с понятным названием, предусловиями и тестовыми данными." },
     { title: "Ревью", text: "Проверить полноту, логику и воспроизводимость." },
   ], "Документация создаётся как часть работы над задачей, а не после неё."),
-  "m4-18": V("checklist", ["Что?", "Зачем?", "Из чего?", "Пример"], CheckCircle2, "mint", [
-    { title: "Название", text: "Где + что проверяем + как, если это нужно." },
-    { title: "Шаги", text: "Другой QA должен воспроизвести проверку без лишних вопросов." },
-    { title: "Данные и дизайн", text: "Ссылки вместо дублирования секретов; утверждённый макет — в предусловиях." },
-    { title: "Атомарность", text: "Один тест-кейс = одна проверка или одна логическая цепочка." },
-  ], "Формула ответа: что это → зачем → из чего состоит → пример."),
+  "m4-18": V("checklist", ["Точность", "Повторяемость", "Проверяемость", "Актуальность"], CheckCircle2, "mint", [
+    { title: "Понятное название", text: "Сразу показывает, где и что проверяется." },
+    { title: "Шаги и данные", text: "Конкретны и позволяют повторить сценарий." },
+    { title: "Ожидаемый результат", text: "Наблюдаемый и однозначно проверяемый." },
+    { title: "Атомарность и актуальность", text: "Одна цель; кейс соответствует текущему продукту." },
+  ], "Качественный тест-кейс можно воспроизвести и объективно оценить."),
+  "m5-01": V("flow", ["Frontend", "API", "Backend", "Ответ"], Network, "blue", [
+    { title: "Frontend", text: "Собирает действия пользователя и отображает результат." },
+    { title: "API", text: "Передаёт запросы и ответы по согласованному контракту." },
+    { title: "Backend", text: "Проверяет данные, выполняет бизнес-логику и работает с БД." },
+  ], "Если API ответил правильно, а экран нет — исследуйте обработку ответа на фронтенде."),
+  "m5-02": V("layers", ["1-tier", "2-tier", "3-tier"], Layers3, "lavender", [
+    { title: "1-tier", text: "Интерфейс, логика и данные на одном устройстве." },
+    { title: "2-tier", text: "Клиент напрямую обращается к серверу." },
+    { title: "3-tier", text: "Клиент → сервер приложений → сервер базы данных." },
+  ], "Чем больше разделение слоёв, тем гибче масштабирование и сложнее инфраструктура."),
+  "m5-03": V("layers", ["Application", "Transport", "Network", "Link"], Network, "mint", [
+    { title: "Прикладной", text: "HTTP, HTTPS, DNS и протоколы приложений." },
+    { title: "Транспортный", text: "TCP/UDP, порты и обмен между процессами." },
+    { title: "Сетевой", text: "IP-адресация и маршрутизация." },
+    { title: "Канальный", text: "Передача кадров в локальной сети: Ethernet, Wi-Fi." },
+  ], "TCP/IP описывает практический обмен данными на четырёх уровнях."),
+  "m5-04": V("flow", ["Домен", "DNS", "IP", "Проверка"], Globe, "yellow", [
+    { title: "DNS", text: "Сопоставляет доменное имя с IP-адресом." },
+    { title: "ping", text: "Проверяет, приходит ли ICMP-ответ, и показывает задержку." },
+    { title: "Ограничение", text: "ICMP может быть заблокирован даже при доступном веб-сервисе." },
+  ], "Нет ответа на ping — это повод продолжить диагностику, а не окончательный диагноз."),
+  "m5-05": V("flow", ["Запрос", "Контракт API", "Сервер", "Ответ"], Code2, "blue", [
+    { title: "Запрос", text: "Метод, endpoint, параметры, заголовки и при необходимости тело." },
+    { title: "Контракт", text: "Описывает допустимые входные данные и ожидаемые ответы." },
+    { title: "Ответ", text: "Статус-код, заголовки и данные результата или ошибки." },
+  ], "API позволяет тестировать серверную логику без графического интерфейса."),
+  "m5-06": V("compare", ["HTTP", "HTTPS", "TLS"], ShieldCheck, "mint", [
+    { title: "HTTP", text: "Обмен запросами и ответами между клиентом и сервером." },
+    { title: "HTTPS", text: "HTTP через защищённое TLS-соединение." },
+    { title: "Request / Response", text: "Метод, URL, заголовки, тело; затем статус, заголовки и тело ответа." },
+  ], "В HTTPS проверяйте не только HTTP-ответ, но и корректность TLS-соединения."),
+  "m5-07": V("compare", ["GET", "POST", "PUT", "PATCH", "DELETE"], Workflow, "orange", [
+    { title: "GET", text: "Чтение; безопасный и идемпотентный метод." },
+    { title: "POST", text: "Создание или выполнение операции; обычно неидемпотентен." },
+    { title: "PUT / PATCH", text: "Полная замена ресурса / частичное изменение." },
+    { title: "DELETE", text: "Удаление ресурса; целевое состояние идемпотентно." },
+  ], "Проверяйте повторную отправку и сверяйтесь с контрактом конкретного API."),
+  "m5-08": V("layers", ["1xx", "2xx", "3xx", "4xx", "5xx"], CheckCircle2, "pink", [
+    { title: "1xx / 2xx", text: "Информация о продолжении обработки / успешный результат." },
+    { title: "3xx", text: "Перенаправление или использование кэшированного ответа." },
+    { title: "4xx", text: "Проблема запроса, аутентификации или доступа." },
+    { title: "5xx", text: "Ошибка сервера, сервиса или шлюза." },
+  ], "Сверяйте статус-код с телом ответа и фактическим состоянием данных."),
+  "m5-09": V("network", ["Ресурсы", "HTTP-методы", "REST", "JSON"], Boxes, "lavender", [
+    { title: "REST", text: "Ресурсы и стандартные методы HTTP с согласованным контрактом." },
+    { title: "Stateless", text: "Каждый запрос содержит данные, необходимые для обработки." },
+    { title: "JSON", text: "Объекты, массивы, строки, числа, boolean и null." },
+  ], "Проверяйте не только значения JSON, но и типы, обязательность полей и заголовки."),
+  "m5-10": V("flow", ["OpenAPI", "Swagger UI", "Try it out", "Проверка"], FileText, "blue", [
+    { title: "Изучить контракт", text: "Endpoints, методы, параметры, схемы и коды ответов." },
+    { title: "Отправить запрос", text: "Try it out позволяет выполнить доступный запрос." },
+    { title: "Сверить результат", text: "Сравнить реальный ответ с документацией." },
+  ], "Документация описывает ожидания, но не гарантирует корректность реализации."),
+  "m5-11": V("timeline", ["URL", "DNS", "Соединение", "HTTP", "DOM"], Route, "mint", [
+    { title: "Адрес и DNS", text: "Разбор URL и получение IP-адреса." },
+    { title: "Сеть и защита", text: "Соединение и TLS для HTTPS." },
+    { title: "Ответ и страница", text: "HTTP-ответ, DOM, CSS, JavaScript и ресурсы." },
+  ], "DevTools Network помогает определить, на каком этапе нарушается загрузка."),
+  "m5-12": V("checklist", ["Метод и URL", "Headers / Body", "Send", "Assertions"], PlayCircle, "yellow", [
+    { title: "Настроить запрос", text: "Выбрать метод, URL, параметры, заголовки и тело." },
+    { title: "Проверить ответ", text: "Статус, время, заголовки, структуру и значения." },
+    { title: "Повторить сценарий", text: "Сохранить запрос в коллекции и использовать окружение." },
+  ], "Статус 200 сам по себе не доказывает, что данные и бизнес-логика корректны."),
+  "m5-13": V("network", ["Сервис A", "Сервис B", "Внешний API", "Webhook"], GitBranch, "orange", [
+    { title: "Контракт", text: "Проверить формат данных и согласованность сервисов." },
+    { title: "Повтор и сбой", text: "Проверить таймауты, повторные события и идемпотентность." },
+    { title: "Наблюдаемость", text: "Сопоставить логи, идентификаторы и итоговое состояние данных." },
+  ], "Интеграционные дефекты часто возникают на стыке исправных компонентов.")
 };
 
 const ACCENT_STYLES: Record<Accent, { marker: string; card: string; badge: string; line: string }> = {
@@ -839,6 +899,10 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
   const isScrumContextInfographic = lesson.id === "m2-04";
   // CI contract: lesson\.id === "m2-04"
   const isSprintPlanningInfographic = lesson.id === "m2-05";
+  const isTestDocumentationInfographic = lesson.id === "m4-01";
+  const isTestPlanInfographic = lesson.id === "m4-02";
+  const isTestPlanDetailsInfographic = lesson.id === "m4-03";
+  const isTestCasesInfographic = lesson.id === "m4-04";
 
   return (
     <section
@@ -846,16 +910,16 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
       className="overflow-hidden rounded-[28px] border-2 border-blue-100 bg-white shadow-[0_8px_30px_rgba(30,64,175,0.08)]"
       aria-label={`Инфографика урока: ${lesson.title}`}
     >
-      <div className="flex items-center justify-between gap-3 border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-3 sm:px-5">
+      <div className="flex items-center justify-between gap-3 border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-2 sm:px-5">
         <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{lesson.title}</h4>
         <PdfDownloadButton targetId={infographicId} />
       </div>
 
-      {isTestTypesInfographic || isScrumContextInfographic || isSprintPlanningInfographic ? (
+      {isTestTypesInfographic || isScrumContextInfographic || isSprintPlanningInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? (
         <div className="min-w-0 overflow-hidden bg-white p-2 sm:p-4">
           <div
             className="mx-auto w-full max-w-[1065px] overflow-hidden rounded-[18px] bg-white"
-            style={{ aspectRatio: isTestTypesInfographic ? "1054 / 1492" : "1065 / 1476" }}
+            style={{ aspectRatio: isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? "1054 / 1492" : "1065 / 1476" }}
             // CI regex compatibility for the immutable source contracts:
             // width=\{1065\}, height=\{1476\}, and overflow-hidden rounded-\[18px\]
             // CI regex compatibility: alt="Инфографика: Погружение в контекст \Scrum\"
@@ -864,12 +928,20 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
             <img
               src={isTestTypesInfographic
                 ? "/infographics/m1-09-vidi-testirovaniya.png"
-                : isScrumContextInfographic
-                  ? "/infographics/m2-04-scrum-context.svg"
-                  : "/infographics/m2-05-sprint-planning.svg"}
-              alt={isTestTypesInfographic ? "Инфографика: Виды тестирования" : "Инфографика: Погружение в контекст (Scrum)"}
-              width={isTestTypesInfographic ? 1054 : 1065}
-              height={isTestTypesInfographic ? 1492 : 1476}
+                : isTestDocumentationInfographic
+                  ? "/infographics/m4-01-test documentation.png"
+                  : isTestPlanInfographic
+                    ? "/infographics/m4-02-vajnost.png"
+                    : isTestPlanDetailsInfographic
+                      ? "/infographics/m4-03-testplan.png"
+                      : isTestCasesInfographic
+                        ? "/infographics/m4-04-teskeys.png"
+                        : isScrumContextInfographic
+                          ? "/infographics/m2-04-scrum-context.svg"
+                          : "/infographics/m2-05-sprint-planning.svg"}
+              alt={isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"}
+              width={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1054 : 1065}
+              height={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1492 : 1476}
               decoding="async"
               className="block h-full w-full max-w-none object-contain object-top"
             />

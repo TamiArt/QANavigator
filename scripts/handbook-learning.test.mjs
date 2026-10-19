@@ -104,7 +104,7 @@ test("learning mode contains the approved Module 4 topics in exact order", () =>
     "Тест-кейс (Test Case)",
   ];
   for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
-  assert.equal((source.match(/id: "m4-\d{2}"/g) ?? []).length, 18);
+  assert.equal((source.match(/id: "m4-\d{2}"/g) ?? []).length, 17);
   const titleIndex = (title) => source.indexOf(`title: "${title}"`);
   assert.ok(titleIndex("Что такое тестовая документация?") < titleIndex("В чем важность тестовой документации?"));
   assert.ok(titleIndex("В чем важность тестовой документации?") < titleIndex("Тест-план (Test Plan)"));
@@ -119,6 +119,13 @@ test("learning mode contains the approved Module 4 topics in exact order", () =>
   assert.match(source, /Blocked/);
   assert.match(source, /Skipped/);
   assert.match(source, /Постусловия/);
+  assert.match(source, /Тестовая стратегия.*продукта в целом/);
+  assert.match(source, /Предусловия.*до теста/);
+  assert.match(source, /Постусловия.*после теста/);
+  assert.match(source, /Тест-сьют \(Test Suite\)/);
+  assert.match(source, /на этапе планирования тест-кейса не заполняется/);
+  assert.match(source, /ссылку на соответствующий баг-репорт/);
+  assert.match(source, /ответ \*\*«да\/нет»\*\*/);
 });
 
 
@@ -137,15 +144,14 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
     "Баг, ошибка, дефект и их классификация",
     "Жизненный цикл дефекта (Bug Life Cycle)",
     "Баг vs задача на доработку (Feature Request)",
-    "Основные шаги документирования дефекта",
     "Pre-release баг и Production Bug",
     "Где ведут тестовую документацию",
     "Локализация багов",
     "Работа с задачей при написании тестовой документации",
-    "Лучшие практики тест-кейсов",
+    "Свойства качественного тест-кейса",
   ];
   for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
-  assert.equal((source.match(/id: "m4-\d{2}"/g) ?? []).length, 18);
+  assert.equal((source.match(/id: "m4-\d{2}"/g) ?? []).length, 17);
   const titleIndex = (title) => source.indexOf(`title: "${title}"`);
   for (let i = 0; i < expected.length - 1; i += 1) {
     assert.ok(titleIndex(expected[i]) < titleIndex(expected[i + 1]));
@@ -164,6 +170,14 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
   assert.match(source, /Шаги воспроизведения/);
   assert.match(source, /Test Summary Report/);
   assert.match(source, /Цели тестирования/);
+  assert.match(source, /Обычно отчёт включает:/);
+  assert.match(source, /цели и объём тестирования/);
+  assert.match(source, /риски, ограничения и отклонения от плана/);
+  assert.ok(!source.includes('title: "Основные шаги документирования дефекта"'), "Removed Module 4 lesson 13 must not remain in the curriculum");
+  assert.match(source, /title: "Свойства качественного тест-кейса"/);
+  assert.match(source, /Проверяемый ожидаемый результат/);
+  assert.match(source, /Независимость/);
+  assert.match(source, /Трассируемость/);
   assert.match(source, /Severity/);
   assert.match(source, /Blocker/);
   assert.match(source, /Priority/);
@@ -172,16 +186,12 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
   assert.match(source, /Bug Life Cycle/);
   assert.match(source, /Ready for Retest/);
   assert.match(source, /Feature Request/);
-  assert.match(source, /Основные шаги документирования дефекта/);
   assert.match(source, /Production Bug/);
   assert.match(source, /TestRail/);
   assert.match(source, /Локализация бага/);
   assert.match(source, /Network/);
   assert.match(source, /Уточнение требований/);
   assert.match(source, /Атомарность/);
-  assert.ok(source.includes("1. Что это? → 2. Зачем? → 3. Из чего состоит? → 4. Пример."), "Module 4 exam formula must preserve its numbered form");
-  assert.match(source, /15 фраз для запоминания/);
-  assert.match(source, /Супер-шпаргалка/);
 });
 
 
@@ -190,8 +200,10 @@ test("Learning Mode has a semantic infographic contract for every lesson in Modu
   const expectedIds = Array.from({ length: 11 }, (_, i) => "m1-" + String(i + 1).padStart(2, "0"))
     .concat(Array.from({ length: 12 }, (_, i) => "m2-" + String(i + 1).padStart(2, "0")))
     .concat(Array.from({ length: 7 }, (_, i) => "m3-" + String(i + 1).padStart(2, "0")))
-    .concat(Array.from({ length: 18 }, (_, i) => "m4-" + String(i + 1).padStart(2, "0")));
-  assert.equal(expectedIds.length, 48);
+    .concat(Array.from({ length: 12 }, (_, i) => "m4-" + String(i + 1).padStart(2, "0")))
+    .concat(Array.from({ length: 5 }, (_, i) => "m4-" + String(i + 14).padStart(2, "0")));
+  assert.equal(expectedIds.length, 47);
+  assert.ok(!infographic.includes('"m4-13": V('), "Removed lesson 13 must not retain an infographic definition");
   for (const id of expectedIds) {
     assert.ok(infographic.includes('"' + id + '": V('), "Missing semantic infographic definition for " + id);
   }
@@ -211,16 +223,32 @@ test("Learning Mode has a semantic infographic contract for every lesson in Modu
   assert.ok(fs.existsSync("public/infographics/m1-09-vidi-testirovaniya.png"));
 });
 
+test("Module 4 lessons 2–4 use their dedicated PNG infographics", () => {
+  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  const assets = [
+    ["m4-02", "m4-02-vajnost.png", "isTestPlanInfographic"],
+    ["m4-03", "m4-03-testplan.png", "isTestPlanDetailsInfographic"],
+    ["m4-04", "m4-04-teskeys.png", "isTestCasesInfographic"],
+  ];
+
+  for (const [lessonId, filename, flag] of assets) {
+    assert.match(source, new RegExp('lesson\\.id === "' + lessonId + '"'));
+    assert.ok(source.includes(flag), "Missing dedicated selector for " + lessonId);
+    assert.ok(source.includes('/infographics/' + filename), "Missing asset path for " + lessonId);
+    assert.ok(fs.existsSync("public/infographics/" + filename), "Missing PNG asset " + filename);
+  }
+});
+
 test("Scrum lesson 4 uses the dedicated Scrum study sheet", () => {
   const infographic = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
   const asset = fs.readFileSync("public/infographics/m2-04-scrum-context.svg", "utf8");
 
   assert.match(infographic, /lesson\\.id === "m2-04"/);
-  assert.match(infographic, /aspectRatio: isTestTypesInfographic \? "1054 \/ 1492" : "1065 \/ 1476"/);
-  assert.match(infographic, /width=\{isTestTypesInfographic \? 1054 : 1065\}/);
-  assert.match(infographic, /height=\{isTestTypesInfographic \? 1492 : 1476\}/);
+  assert.match(infographic, /aspectRatio: isTestTypesInfographic \|\| isTestDocumentationInfographic \|\| isTestPlanInfographic \|\| isTestPlanDetailsInfographic \|\| isTestCasesInfographic \? "1054 \/ 1492" : "1065 \/ 1476"/);
+  assert.match(infographic, /width=\{isTestTypesInfographic \|\| isTestDocumentationInfographic \|\| isTestPlanInfographic \|\| isTestPlanDetailsInfographic \|\| isTestCasesInfographic \? 1054 : 1065\}/);
+  assert.match(infographic, /height=\{isTestTypesInfographic \|\| isTestDocumentationInfographic \|\| isTestPlanInfographic \|\| isTestPlanDetailsInfographic \|\| isTestCasesInfographic \? 1492 : 1476\}/);
   assert.match(infographic, /object-contain object-top/);
-  assert.ok(infographic.includes('alt={isTestTypesInfographic ? "Инфографика: Виды тестирования" : "Инфографика: Погружение в контекст (Scrum)"}'));
+  assert.ok(infographic.includes('alt={isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"}'));
 
   for (const required of [
     "Фреймворк Scrum",
@@ -298,10 +326,10 @@ test("Handbook exposes a reachable Learning Mode from the knowledge base", () =>
   assert.match(source, /onBack=\{\(\) => setLearningMode\(false\)\}/);
 });
 
-test("Learning Mode renders module and lesson infographics", () => {
+test("Learning Mode renders only the active lesson infographic", () => {
   const source = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
   assert.match(source, /LearningInfographic/);
-  assert.match(source, /mode="module"/);
+  assert.doesNotMatch(source, /<LearningInfographic mode="module"/);
   assert.match(source, /mode="lesson"/);
 });
 
@@ -454,4 +482,40 @@ test("m2-05 Sprint infographic follows the semantic poster contract", () => {
   ]) {
     assert.ok(lesson.includes(required), required);
   }
+});
+
+
+test("IT glossary is available in both the knowledge base and Learning Mode", () => {
+  const curriculum = fs.readFileSync("src/app/handbook-curriculum.ts", "utf8");
+  const learning = fs.readFileSync("src/app/features/handbook/handbook-learning.ts", "utf8");
+  for (const term of ["Шерить", "Аппка", "Апрув", "Гейзенбаг", "Флаки-тест", "CI/CD", "WIP-лимит", "Контейнеризация", "Фишинг", "Frontend Developer", "Системный аналитик", "Project Manager"]) {
+    assert.ok(curriculum.includes(term), `Glossary term missing: ${term}`);
+  }
+  assert.match(curriculum, /id: "it-glossary"/);
+  assert.match(curriculum, /"it-glossary",/);
+  assert.match(learning, /id: "module-it-glossary"/);
+  assert.match(learning, /title: "Словарь IT-терминов и процессов"/);
+  assert.match(learning, /topicIds: \["it-glossary"\]/);
+});
+
+test("Learning Mode opens the active lesson without repeating the full topic list", () => {
+  const source = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
+  assert.ok(!source.includes('<LearningInfographic mode="module"'), "Module topic overview must not appear before every lesson");
+  assert.ok(!source.includes('<span className="text-sm text-foreground">{lesson.title}</span>'), "Full lesson-title list must not be repeated before the active lesson");
+  assert.match(source, /<LearningInfographic mode="lesson" lesson=\{activeLesson\} \/>/);
+  assert.match(source, /<MarkdownView content=\{getLearningLessonContent\(activeLesson\)\} compact extraCompactLists=\{activeLesson\.id === "m1-01"\} \/>/);
+});
+
+
+test("Learning Mode renders lesson Markdown with compact, normalized spacing", () => {
+  const renderer = fs.readFileSync("src/app/components/shared.tsx", "utf8");
+  const learningMode = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
+  assert.match(renderer, /compact = false/);
+  assert.ok(renderer.includes('.replace(/\\n[ \\t]*\\n(?:[ \\t]*\\n)+/g, "\\n\\n")'));
+  assert.match(renderer, /compact \? "<br\/>" : "<br\/><br\/>"/);
+  assert.match(renderer, /compact \? "mt-3 mb-1" : "mt-5 mb-2"/);
+  assert.equal((renderer.match(/extraCompactLists \? "mb-0 leading-\[1\.05\] text-\[13px\]"/g) || []).length, 5, "All numbered, bulleted, and status lists should support extra-compact spacing");
+  assert.match(learningMode, /extraCompactLists=\{activeLesson\.id === "m1-01"\}/, "Extra-compact list spacing must be limited to Lesson 1: What is testing?");
+  assert.match(learningMode, /className="bg-card border border-border rounded-xl p-4 scroll-mt-24"/);
+  assert.match(learningMode, /className="mt-3"[\s\S]*MarkdownView content=\{getLearningLessonContent\(activeLesson\)\} compact/);
 });
