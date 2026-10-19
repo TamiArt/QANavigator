@@ -46,16 +46,37 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
     scrollToLesson();
   };
 
+  const isFirstLesson = moduleIndex === 0 && activeIndex === 0;
+  const isLastLesson = moduleIndex === HANDBOOK_LEARNING_MODULES.length - 1
+    && activeIndex === module.lessons.length - 1;
+
   const markCompleted = () => {
     if (!activeLesson || completed.has(activeLesson.id)) return;
     setProgress({
-      completedLessonIds: [...progress.completedLessonIds, activeLesson.id],
+      completedLessonIds: [...new Set([...progress.completedLessonIds, activeLesson.id])],
     });
+  };
+
+  const goPrevious = () => {
+    if (activeIndex > 0) {
+      setActiveIndex(activeIndex - 1);
+    } else if (moduleIndex > 0) {
+      const previousModuleIndex = moduleIndex - 1;
+      setModuleIndex(previousModuleIndex);
+      setActiveIndex(HANDBOOK_LEARNING_MODULES[previousModuleIndex].lessons.length - 1);
+    }
+    scrollToLesson();
   };
 
   const goNext = () => {
     markCompleted();
-    setActiveIndex((index) => Math.min(index + 1, module.lessons.length - 1));
+    if (activeIndex < module.lessons.length - 1) {
+      setActiveIndex(activeIndex + 1);
+    } else if (moduleIndex < HANDBOOK_LEARNING_MODULES.length - 1) {
+      setModuleIndex(moduleIndex + 1);
+      setActiveIndex(0);
+    }
+    scrollToLesson();
   };
 
   return (
@@ -167,11 +188,13 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
 
         <div className="flex flex-wrap justify-between gap-2 pt-4 mt-4 border-t border-border">
           <button
-            onClick={() => selectLesson(Math.max(activeIndex - 1, 0))}
-            disabled={activeIndex === 0}
+            type="button"
+            onClick={goPrevious}
+            disabled={isFirstLesson}
+            aria-label="Перейти к предыдущей теме"
             className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs disabled:opacity-40"
           >
-            <ChevronLeft className="w-4 h-4" /> Назад
+            <ChevronLeft className="w-4 h-4" /> Предыдущая тема
           </button>
 
           <button
@@ -183,11 +206,16 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
           </button>
 
           <button
-            onClick={() => { goNext(); scrollToLesson(); }}
-            disabled={activeIndex === module.lessons.length - 1}
+            type="button"
+            onClick={goNext}
+            disabled={isLastLesson}
+            aria-label={moduleIndex < HANDBOOK_LEARNING_MODULES.length - 1 && activeIndex === module.lessons.length - 1
+              ? "Перейти к следующему модулю"
+              : "Перейти к следующей теме"}
             className="flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-2 text-xs disabled:opacity-40"
           >
-            Следующая тема <ChevronRight className="w-4 h-4" />
+            {activeIndex === module.lessons.length - 1 && !isLastLesson ? "Следующий модуль" : "Следующая тема"}
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </article>
