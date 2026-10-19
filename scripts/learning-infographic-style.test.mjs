@@ -22,3 +22,17 @@ test("Scrum remains the dedicated visual master while other lessons use shared p
   assert.match(source, /m2-05-sprint-planning\.svg/);
   assert.match(source, /return <ScrumStylePosterDiagram visual=\{visual\} \/>/);
 });
+
+test("static infographic assets exist and lesson downloads use the original file", () => {
+  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  const assetPaths = [...source.matchAll(/"\/infographics\/([^"]+)"/g)].map((match) => match[1]);
+  assert.ok(assetPaths.length > 0, "Expected static infographic assets to be mapped");
+  for (const assetPath of assetPaths) {
+    assert.ok(fs.existsSync("public/infographics/" + assetPath), "Missing infographic asset: " + assetPath);
+  }
+
+  // The module overview belongs at module level, not under the Frontend/Backend lesson.
+  assert.doesNotMatch(source, /"m5-01": "\/infographics\/m5-01 infografic po modul\.png"/);
+  assert.match(source, /link\.download = decodeURIComponent\(imagePath\.split\("\/"\)\.pop\(\) \|\| "infographic"\)/);
+  assert.match(source, /setError\("Не удалось сохранить файл\. Попробуйте ещё раз\."\)/);
+});
