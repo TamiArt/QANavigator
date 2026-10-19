@@ -537,6 +537,10 @@ test("Learning Mode navigation continues across module boundaries and preserves 
   assert.match(source, /aria-label="Перейти к предыдущей теме"/);
   assert.match(source, /aria-label=\{moduleIndex < HANDBOOK_LEARNING_MODULES\.length - 1/);
   assert.match(source, /aria-controls="learning-module-content"/);
+  assert.match(source, /role="group" aria-label="Выбор учебного модуля"/);
+  assert.doesNotMatch(source, /role="tablist"|role="tab"/, "Module selector uses button semantics, not incomplete tab semantics");
+  assert.match(source, /Прогресс курса: \{totalCompletedCount\}\/\{allLessons\.length\}/);
+  assert.match(source, /const totalProgressPercent = allLessons\.length/);
   assert.match(source, /id="learning-module-content"/);
   assert.match(source, /data-active-lesson-id=\{activeLesson\.id\}/);
   assert.match(source, /<button\s+type="button"\s+onClick=\{onBack\}/);
