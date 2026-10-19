@@ -535,4 +535,9 @@ test("Learning Mode navigation continues across module boundaries and preserves 
   assert.match(source, /Следующий модуль/);
   assert.match(source, /aria-label="Перейти к предыдущей теме"/);
   assert.match(source, /aria-label=\{moduleIndex < HANDBOOK_LEARNING_MODULES\.length - 1/);
+  assert.match(source, /aria-controls="learning-module-content"/);
+  assert.match(source, /id="learning-module-content"/);
+  assert.match(source, /data-active-lesson-id=\{activeLesson\.id\}/);
+  assert.match(source, /<button\s+type="button"\s+onClick=\{onBack\}/);
+  assert.match(source, /<button\s+type="button"\s+onClick=\{markCompleted\}/);
 });
