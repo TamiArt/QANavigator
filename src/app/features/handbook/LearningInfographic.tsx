@@ -397,6 +397,12 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "4xx", text: "Проблема запроса, аутентификации или доступа." },
     { title: "5xx", text: "Ошибка сервера, сервиса или шлюза." },
   ], "Сверяйте статус-код с телом ответа и фактическим состоянием данных."),
+  "m5-osi-tcp-ip": V("layers", ["OSI: 7 уровней", "TCP/IP: 4", "TCP / UDP", "HTTP / HTTPS"], Route, "mint", [
+    { title: "OSI", text: "7 — приложение; 6 — представление; 5 — сеанс; 4 — транспорт." },
+    { title: "Нижние уровни", text: "3 — IP и маршрутизация; 2 — кадры и MAC; 1 — физическая передача." },
+    { title: "TCP/IP", text: "Прикладной, транспортный, межсетевой, доступ к сети." },
+    { title: "Диагностика QA", text: "Проверяй подключение → IP/DNS → порт/TLS → HTTP → поведение приложения." },
+  ], "TCP надёжно доставляет упорядоченный поток; UDP сам по себе не гарантирует доставку и порядок."),
   "m5-09": V("network", ["Ресурсы", "HTTP-методы", "REST", "JSON"], Boxes, "lavender", [
     { title: "REST", text: "Ресурсы и стандартные методы HTTP с согласованным контрактом." },
     { title: "Stateless", text: "Каждый запрос содержит данные, необходимые для обработки." },
@@ -819,14 +825,26 @@ function ScrumStylePosterDiagram({ visual }: { visual: LessonVisual }) {
 function VisualDiagram({ visual }: { visual: LessonVisual }) {
   return <ScrumStylePosterDiagram visual={visual} />;
 }
-function PdfDownloadButton({ targetId }: { targetId: string }) {
+function PdfDownloadButton({ targetId, imagePath }: { targetId: string; imagePath?: string }) {
   const [isGenerating, setIsGenerating] = React.useState(false);
+  const [error, setError] = React.useState("");
 
   const downloadPdf = async () => {
     const target = document.getElementById(targetId);
     if (!target || isGenerating) return;
     setIsGenerating(true);
+    setError("");
     try {
+      if (imagePath) {
+        const link = document.createElement("a");
+        link.href = imagePath;
+        link.download = decodeURIComponent(imagePath.split("/").pop() || "infographic");
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        return;
+      }
       const [{ jsPDF }, html2canvasModule] = await Promise.all([
         import("jspdf"),
         import("html2canvas"),
@@ -871,25 +889,31 @@ function PdfDownloadButton({ targetId }: { targetId: string }) {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 0);
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+    } catch (error) {
+      console.error("Не удалось сохранить инфографику:", error);
+      setError("Не удалось сохранить файл. Попробуйте ещё раз.");
     } finally {
       setIsGenerating(false);
     }
   };
 
   return (
+    <>
     <button
       type="button"
       data-pdf-ignore
       onClick={downloadPdf}
       disabled={isGenerating}
-      aria-label="Сохранить инфографику в PDF"
-      title="Сохранить инфографику в PDF"
+      aria-label={imagePath ? "Скачать файл инфографики" : "Сохранить инфографику в PDF"}
+      title={imagePath ? "Скачать исходный файл инфографики" : "Сохранить инфографику в PDF"}
       className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-2.5 text-[10px] font-bold text-blue-800 shadow-sm transition hover:bg-blue-50 disabled:cursor-wait disabled:opacity-60"
     >
       <Download className="h-3.5 w-3.5" aria-hidden="true" />
       <span>{isGenerating ? "Сохранение…" : "Сохранить"}</span>
     </button>
+      {error ? <span className="ml-2 text-[10px] font-semibold text-red-600" role="alert">{error}</span> : null}
+    </>
   );
 }
 function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
@@ -903,6 +927,29 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
   const isTestPlanInfographic = lesson.id === "m4-02";
   const isTestPlanDetailsInfographic = lesson.id === "m4-03";
   const isTestCasesInfographic = lesson.id === "m4-04";
+  const module5ImagePath: string | undefined = ({
+    "m5-02": "/infographics/m5-02-klient-servernaya arhitectura.jpg",
+    "m5-03": "/infographics/m5-03-TCP.jpg",
+    "m5-04": "/infographics/m5-04-DNS.jpg",
+    "m5-05": "/infographics/m5-05-API i metodi.jpg",
+    "m5-06": "/infographics/m5-06-07-08 http i kodi.jpg",
+    "m5-07": "/infographics/m5-06-07-08 http i kodi.jpg",
+    "m5-08": "/infographics/m5-06-07-08 http i kodi.jpg",
+    "m5-osi-tcp-ip": "/infographics/m5-09 oci i tcp ip.jpg",
+    "m5-09": "/infographics/m5-10 rest i restful.jpg",
+    "m5-10": "/infographics/m5-11-13 swagger i postman.jpg",
+    "m5-12": "/infographics/m5-11-13 swagger i postman.jpg",
+  } as Record<string, string>)[lesson.id];
+  const infographicImagePath = module5ImagePath ?? (
+    isTestTypesInfographic ? "/infographics/m1-09-vidi-testirovaniya.png"
+      : isTestDocumentationInfographic ? "/infographics/m4-01-test documentation.png"
+        : isTestPlanInfographic ? "/infographics/m4-02-vajnost.png"
+          : isTestPlanDetailsInfographic ? "/infographics/m4-03-testplan.png"
+            : isTestCasesInfographic ? "/infographics/m4-04-teskeys.png"
+              : isScrumContextInfographic ? "/infographics/m2-04-scrum-context.svg"
+                : isSprintPlanningInfographic ? "/infographics/m2-05-sprint-planning.svg"
+                  : undefined
+  );
 
   return (
     <section
@@ -912,38 +959,26 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
     >
       <div className="flex items-center justify-between gap-3 border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-2 sm:px-5">
         <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{lesson.title}</h4>
-        <PdfDownloadButton targetId={infographicId} />
+        <PdfDownloadButton targetId={infographicId} imagePath={infographicImagePath} />
       </div>
 
-      {isTestTypesInfographic || isScrumContextInfographic || isSprintPlanningInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? (
+      {module5ImagePath || isTestTypesInfographic || isScrumContextInfographic || isSprintPlanningInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? (
         <div className="min-w-0 overflow-hidden bg-white p-2 sm:p-4">
           <div
             className="mx-auto w-full max-w-[1065px] overflow-hidden rounded-[18px] bg-white"
-            style={{ aspectRatio: isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? "1054 / 1492" : "1065 / 1476" }}
+            style={{ aspectRatio: module5ImagePath ? "auto" : isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? "1054 / 1492" : "1065 / 1476" }}
             // CI regex compatibility for the immutable source contracts:
             // width=\{1065\}, height=\{1476\}, and overflow-hidden rounded-\[18px\]
             // CI regex compatibility: alt="Инфографика: Погружение в контекст \Scrum\"
             data-ci-layout-contract="width=\\{1065\\}; overflow-hidden rounded-\\[18px\\]"
           >
             <img
-              src={isTestTypesInfographic
-                ? "/infographics/m1-09-vidi-testirovaniya.png"
-                : isTestDocumentationInfographic
-                  ? "/infographics/m4-01-test documentation.png"
-                  : isTestPlanInfographic
-                    ? "/infographics/m4-02-vajnost.png"
-                    : isTestPlanDetailsInfographic
-                      ? "/infographics/m4-03-testplan.png"
-                      : isTestCasesInfographic
-                        ? "/infographics/m4-04-teskeys.png"
-                        : isScrumContextInfographic
-                          ? "/infographics/m2-04-scrum-context.svg"
-                          : "/infographics/m2-05-sprint-planning.svg"}
-              alt={isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"}
+              src={infographicImagePath}
+              alt={module5ImagePath ? `Инфографика: ${lesson.title}` : isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"}
               width={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1054 : 1065}
               height={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1492 : 1476}
               decoding="async"
-              className="block h-full w-full max-w-none object-contain object-top"
+              className={`block ${module5ImagePath ? "h-auto" : "h-full"} w-full max-w-none object-contain object-top`}
             />
           </div>
         </div>

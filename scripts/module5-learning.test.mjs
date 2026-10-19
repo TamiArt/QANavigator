@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import fs from "node:fs";
 
-test("Module 5 contains the 13 requested lessons in order", () => {
+test("Module 5 contains the 13 core lessons plus OSI/TCP-IP in the intended order", () => {
   const source = fs.readFileSync("src/app/features/handbook/handbook-learning-module5.ts", "utf8");
   const expected = [
     "Как работают фронтенд и бэкенд вместе",
@@ -13,6 +13,7 @@ test("Module 5 contains the 13 requested lessons in order", () => {
     "HTTP и HTTPS",
     "HTTP-методы",
     "HTTP-статус-коды",
+    "Модель OSI и TCP/IP: уровни сетевого взаимодействия",
     "REST, RESTful и JSON",
     "Swagger и документация API",
     "Что происходит после ввода URL",
@@ -20,8 +21,9 @@ test("Module 5 contains the 13 requested lessons in order", () => {
     "Тестирование интеграций",
   ];
   assert.equal((source.match(/id: "m5-\d{2}"/g) ?? []).length, 13);
+  assert.ok(source.indexOf('title: "Модель OSI и TCP/IP: уровни сетевого взаимодействия"') > source.indexOf('id: "m5-osi-tcp-ip"'));
   const positions = expected.map((title) => {
-    const position = source.indexOf("title: \"" + title + "\"");
+    const position = source.indexOf('title: "' + title + '"');
     assert.notEqual(position, -1, "Missing lesson: " + title);
     return position;
   });
@@ -38,8 +40,9 @@ test("Module 5 is registered in Learning Mode and has a visual summary for each 
   const visuals = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
   assert.match(registry, /import \{ HANDBOOK_LEARNING_MODULE_5_LESSONS \} from "\.\/handbook-learning-module5"/);
   assert.match(registry, /id: "module-5-network-api"[\s\S]*?title: "Модуль 5 — Сети, HTTP и тестирование API"[\s\S]*?lessons: HANDBOOK_LEARNING_MODULE_5_LESSONS/);
-  for (let index = 1; index <= 13; index += 1) {
-    const id = "m5-" + String(index).padStart(2, "0");
-    assert.ok(visuals.includes("\"" + id + "\": V("), "Missing infographic model for " + id);
+  const lessonIds = Array.from({ length: 13 }, (_, index) => "m5-" + String(index + 1).padStart(2, "0"));
+  lessonIds.splice(8, 0, "m5-osi-tcp-ip");
+  for (const id of lessonIds) {
+    assert.ok(visuals.includes('"' + id + '": V('), "Missing infographic model for " + id);
   }
 });
