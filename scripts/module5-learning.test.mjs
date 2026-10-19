@@ -21,6 +21,7 @@ test("Module 5 contains the 13 core lessons plus OSI/TCP-IP in the intended orde
     "Тестирование интеграций",
   ];
   assert.equal((source.match(/id: "m5-\d{2}"/g) ?? []).length, 13);
+  assert.match(source, /id: "m5-osi-tcp-ip"[\\s\\S]*?title: "Модель OSI и TCP\\/IP: уровни сетевого взаимодействия"/);
   const positions = expected.map((title) => {
     const position = source.indexOf("title: \"" + title + "\"");
     assert.notEqual(position, -1, "Missing lesson: " + title);
@@ -39,8 +40,9 @@ test("Module 5 is registered in Learning Mode and has a visual summary for each 
   const visuals = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
   assert.match(registry, /import \{ HANDBOOK_LEARNING_MODULE_5_LESSONS \} from "\.\/handbook-learning-module5"/);
   assert.match(registry, /id: "module-5-network-api"[\s\S]*?title: "Модуль 5 — Сети, HTTP и тестирование API"[\s\S]*?lessons: HANDBOOK_LEARNING_MODULE_5_LESSONS/);
-  for (let index = 1; index <= 13; index += 1) {
-    const id = "m5-" + String(index).padStart(2, "0");
-    assert.ok(visuals.includes("\"" + id + "\": V("), "Missing infographic model for " + id);
+  const lessonIds = Array.from({ length: 13 }, (_, index) => "m5-" + String(index + 1).padStart(2, "0"));
+  lessonIds.splice(8, 0, "m5-osi-tcp-ip");
+  for (const id of lessonIds) {
+    assert.ok(visuals.includes("\\\"" + id + "\\": V("), "Missing infographic model for " + id);
   }
 });
