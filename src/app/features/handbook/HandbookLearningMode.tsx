@@ -28,6 +28,11 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
   const activeLesson = module.lessons[activeIndex];
   const completedCount = module.lessons.filter((lesson) => completed.has(lesson.id)).length;
   const progressPercent = Math.round((completedCount / module.lessons.length) * 100);
+  const allLessons = HANDBOOK_LEARNING_MODULES.flatMap((item) => item.lessons);
+  const totalCompletedCount = allLessons.filter((lesson) => completed.has(lesson.id)).length;
+  const totalProgressPercent = allLessons.length
+    ? Math.round((totalCompletedCount / allLessons.length) * 100)
+    : 0;
 
   const scrollToLesson = () => {
     requestAnimationFrame(() => {
@@ -89,9 +94,12 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
         >
           <ArrowLeft className="w-4 h-4" /> К базе знаний
         </button>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <GraduationCap className="w-4 h-4" />
-          Прогресс модуля: {completedCount}/{module.lessons.length} ({progressPercent}%)
+        <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-2">
+            <GraduationCap className="w-4 h-4" />
+            Прогресс курса: {totalCompletedCount}/{allLessons.length} ({totalProgressPercent}%)
+          </span>
+          <span>Модуль: {completedCount}/{module.lessons.length} ({progressPercent}%)</span>
         </div>
       </div>
 
@@ -111,7 +119,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
           <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Быстрая навигация</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5" role="tablist" aria-label="Модули">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5" role="group" aria-label="Выбор учебного модуля">
           {HANDBOOK_LEARNING_MODULES.map((item, index) => {
             const isActive = index === moduleIndex;
             const itemCompleted = item.lessons.filter((lesson) => completed.has(lesson.id)).length;
@@ -119,8 +127,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
               <button
                 key={item.id}
                 type="button"
-                role="tab"
-                aria-selected={isActive}
+                aria-current={isActive ? "step" : undefined}
                 aria-controls="learning-module-content"
                 onClick={() => selectModule(index)}
                 className={isActive
