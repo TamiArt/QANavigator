@@ -91,11 +91,12 @@ Completed:
 - PR #14 handbook hierarchy refactor merged into `main`.
 
 Current development branch:
-`fix/module4-lesson1-png`
+`feat/learning-block-completion`
 
 Current active milestone:
-- continue Learning Mode production hardening;
-- provide direct navigation from the module/lesson navigator to the selected learning content;
+- finish Learning Mode navigation and accessibility hardening;
+- enable continuous forward/backward navigation across module boundaries;
+- validate cross-module completion tracking and the full Learning Mode regression suite;
 - continue semantic infographic refinement without changing lesson source content.
 
 Verification baseline:
