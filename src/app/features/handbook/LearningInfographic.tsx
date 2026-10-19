@@ -978,7 +978,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
               width={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1054 : 1065}
               height={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1492 : 1476}
               decoding="async"
-              className={`block h-full w-full max-w-none object-contain object-top ${module5ImagePath ? "h-auto" : ""}`}
+              className={`block ${module5ImagePath ? "h-auto" : "h-full"} w-full max-w-none object-contain object-top`}
             />
           </div>
         </div>
