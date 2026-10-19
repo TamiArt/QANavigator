@@ -927,7 +927,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
   const isTestPlanInfographic = lesson.id === "m4-02";
   const isTestPlanDetailsInfographic = lesson.id === "m4-03";
   const isTestCasesInfographic = lesson.id === "m4-04";
-  const module5ImagePath: Record<string, string> = {
+  const module5ImagePath: string | undefined = ({
     "m5-02": "/infographics/m5-02-klient-servernaya arhitectura.jpg",
     "m5-03": "/infographics/m5-03-TCP.jpg",
     "m5-04": "/infographics/m5-04-DNS.jpg",
@@ -939,7 +939,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
     "m5-09": "/infographics/m5-10 rest i restful.jpg",
     "m5-10": "/infographics/m5-11-13 swagger i postman.jpg",
     "m5-12": "/infographics/m5-11-13 swagger i postman.jpg",
-  }[lesson.id];
+  } as Record<string, string>)[lesson.id];
   const infographicImagePath = module5ImagePath ?? (
     isTestTypesInfographic ? "/infographics/m1-09-vidi-testirovaniya.png"
       : isTestDocumentationInfographic ? "/infographics/m4-01-test documentation.png"
