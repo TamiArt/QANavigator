@@ -83,6 +83,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <button
+          type="button"
           onClick={onBack}
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
@@ -170,7 +171,8 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
 
       <article
         ref={lessonArticleRef}
-        id={`learning-lesson-${activeLesson.id}`}
+        id="learning-module-content"
+        data-active-lesson-id={activeLesson.id}
         className="bg-card border border-border rounded-xl p-4 scroll-mt-24"
       >
         <div className="mb-3">
@@ -198,6 +200,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
           </button>
 
           <button
+            type="button"
             onClick={markCompleted}
             className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs"
           >
