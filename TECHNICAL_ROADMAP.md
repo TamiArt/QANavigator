@@ -1874,7 +1874,9 @@ Implemented on `feat/learning-block-completion`:
 - added regression coverage for cross-module navigation and completion behavior.
 
 Validation:
-- pending current-head GitHub Actions and full `npm run verify`;
+- the code/test revision `42ce012cee39b9d5b541f1311d675f40168019da` passed GitHub Actions `npm run verify` (Learning Mode regressions, TypeScript and production build);
+- Vercel reported success for the following documentation-only head `61e133d252c3a00d6647dacb880c55ff7382bf06`;
+- rerun verification after this roadmap status update;
 - manual desktop/mobile interaction and browser download checks remain required before calling the entire Learning Mode block complete.
 
 Scope guard:
