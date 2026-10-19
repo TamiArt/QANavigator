@@ -928,7 +928,6 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
   const isTestPlanDetailsInfographic = lesson.id === "m4-03";
   const isTestCasesInfographic = lesson.id === "m4-04";
   const module5ImagePath: Record<string, string> = {
-    "m5-01": "/infographics/m5-01 infografic po modul.png",
     "m5-02": "/infographics/m5-02-klient-servernaya arhitectura.jpg",
     "m5-03": "/infographics/m5-03-TCP.jpg",
     "m5-04": "/infographics/m5-04-DNS.jpg",
