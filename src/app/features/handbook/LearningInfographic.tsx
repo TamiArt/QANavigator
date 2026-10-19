@@ -825,14 +825,26 @@ function ScrumStylePosterDiagram({ visual }: { visual: LessonVisual }) {
 function VisualDiagram({ visual }: { visual: LessonVisual }) {
   return <ScrumStylePosterDiagram visual={visual} />;
 }
-function PdfDownloadButton({ targetId }: { targetId: string }) {
+function PdfDownloadButton({ targetId, imagePath }: { targetId: string; imagePath?: string }) {
   const [isGenerating, setIsGenerating] = React.useState(false);
+  const [error, setError] = React.useState("");
 
   const downloadPdf = async () => {
     const target = document.getElementById(targetId);
     if (!target || isGenerating) return;
     setIsGenerating(true);
+    setError("");
     try {
+      if (imagePath) {
+        const link = document.createElement("a");
+        link.href = imagePath;
+        link.download = decodeURIComponent(imagePath.split("/").pop() || "infographic");
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        return;
+      }
       const [{ jsPDF }, html2canvasModule] = await Promise.all([
         import("jspdf"),
         import("html2canvas"),
@@ -877,7 +889,10 @@ function PdfDownloadButton({ targetId }: { targetId: string }) {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 0);
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+    } catch (error) {
+      console.error("Не удалось сохранить инфографику:", error);
+      setError("Не удалось сохранить файл. Попробуйте ещё раз.");
     } finally {
       setIsGenerating(false);
     }
@@ -895,6 +910,7 @@ function PdfDownloadButton({ targetId }: { targetId: string }) {
     >
       <Download className="h-3.5 w-3.5" aria-hidden="true" />
       <span>{isGenerating ? "Сохранение…" : "Сохранить"}</span>
+      {error ? <span className="sr-only" role="alert">{error}</span> : null}
     </button>
   );
 }
@@ -923,6 +939,16 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
     "m5-10": "/infographics/m5-11-13 swagger i postman.jpg",
     "m5-12": "/infographics/m5-11-13 swagger i postman.jpg",
   }[lesson.id];
+  const infographicImagePath = module5ImagePath ?? (
+    isTestTypesInfographic ? "/infographics/m1-09-vidi-testirovaniya.png"
+      : isTestDocumentationInfographic ? "/infographics/m4-01-test documentation.png"
+        : isTestPlanInfographic ? "/infographics/m4-02-vajnost.png"
+          : isTestPlanDetailsInfographic ? "/infographics/m4-03-testplan.png"
+            : isTestCasesInfographic ? "/infographics/m4-04-teskeys.png"
+              : isScrumContextInfographic ? "/infographics/m2-04-scrum-context.svg"
+                : isSprintPlanningInfographic ? "/infographics/m2-05-sprint-planning.svg"
+                  : undefined
+  );
 
   return (
     <section
@@ -932,7 +958,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
     >
       <div className="flex items-center justify-between gap-3 border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-2 sm:px-5">
         <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{lesson.title}</h4>
-        <PdfDownloadButton targetId={infographicId} />
+        <PdfDownloadButton targetId={infographicId} imagePath={infographicImagePath} />
       </div>
 
       {module5ImagePath || isTestTypesInfographic || isScrumContextInfographic || isSprintPlanningInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? (
@@ -946,19 +972,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
             data-ci-layout-contract="width=\\{1065\\}; overflow-hidden rounded-\\[18px\\]"
           >
             <img
-              src={module5ImagePath ?? (isTestTypesInfographic
-                ? "/infographics/m1-09-vidi-testirovaniya.png"
-                : isTestDocumentationInfographic
-                  ? "/infographics/m4-01-test documentation.png"
-                  : isTestPlanInfographic
-                    ? "/infographics/m4-02-vajnost.png"
-                    : isTestPlanDetailsInfographic
-                      ? "/infographics/m4-03-testplan.png"
-                      : isTestCasesInfographic
-                        ? "/infographics/m4-04-teskeys.png"
-                        : isScrumContextInfographic
-                          ? "/infographics/m2-04-scrum-context.svg"
-                          : "/infographics/m2-05-sprint-planning.svg")}
+              src={infographicImagePath}
               alt={module5ImagePath ? `Инфографика: ${lesson.title}` : isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"}
               width={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1054 : 1065}
               height={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1492 : 1476}
