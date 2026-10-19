@@ -248,7 +248,7 @@ test("Scrum lesson 4 uses the dedicated Scrum study sheet", () => {
   assert.match(infographic, /width=\{isTestTypesInfographic \|\| isTestDocumentationInfographic \|\| isTestPlanInfographic \|\| isTestPlanDetailsInfographic \|\| isTestCasesInfographic \? 1054 : 1065\}/);
   assert.match(infographic, /height=\{isTestTypesInfographic \|\| isTestDocumentationInfographic \|\| isTestPlanInfographic \|\| isTestPlanDetailsInfographic \|\| isTestCasesInfographic \? 1492 : 1476\}/);
   assert.match(infographic, /object-contain object-top/);
-  assert.ok(infographic.includes('alt={isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"}'));
+  assert.ok(infographic.includes('alt={module5ImagePath ? `Инфографика: ${lesson.title}` : isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"}'));
 
   for (const required of [
     "Фреймворк Scrum",
