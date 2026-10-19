@@ -899,6 +899,7 @@ function PdfDownloadButton({ targetId, imagePath }: { targetId: string; imagePat
   };
 
   return (
+    <>
     <button
       type="button"
       data-pdf-ignore
@@ -912,6 +913,7 @@ function PdfDownloadButton({ targetId, imagePath }: { targetId: string; imagePat
       <span>{isGenerating ? "Сохранение…" : "Сохранить"}</span>
     </button>
       {error ? <span className="ml-2 text-[10px] font-semibold text-red-600" role="alert">{error}</span> : null}
+    </>
   );
 }
 function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
