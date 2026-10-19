@@ -519,3 +519,20 @@ test("Learning Mode renders lesson Markdown with compact, normalized spacing", (
   assert.match(learningMode, /className="bg-card border border-border rounded-xl p-4 scroll-mt-24"/);
   assert.match(learningMode, /className="mt-3"[\s\S]*MarkdownView content=\{getLearningLessonContent\(activeLesson\)\} compact/);
 });
+
+
+test("Learning Mode navigation continues across module boundaries and preserves lesson progress", () => {
+  const source = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
+  assert.match(source, /const isFirstLesson = moduleIndex === 0 && activeIndex === 0/);
+  assert.match(source, /const isLastLesson = moduleIndex === HANDBOOK_LEARNING_MODULES\.length - 1/);
+  assert.match(source, /const previousModuleIndex = moduleIndex - 1/);
+  assert.match(source, /setActiveIndex\(HANDBOOK_LEARNING_MODULES\[previousModuleIndex\]\.lessons\.length - 1\)/);
+  assert.match(source, /setModuleIndex\(moduleIndex \+ 1\)/);
+  assert.match(source, /setActiveIndex\(0\)/);
+  assert.match(source, /markCompleted\(\);[\s\S]*?if \(activeIndex < module\.lessons\.length - 1\)/);
+  assert.match(source, /disabled=\{isFirstLesson\}/);
+  assert.match(source, /disabled=\{isLastLesson\}/);
+  assert.match(source, /Следующий модуль/);
+  assert.match(source, /aria-label="Перейти к предыдущей теме"/);
+  assert.match(source, /aria-label=\{moduleIndex < HANDBOOK_LEARNING_MODULES\.length - 1/);
+});
