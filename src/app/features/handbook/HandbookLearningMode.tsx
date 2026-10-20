@@ -229,6 +229,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
           <button
             type="button"
             onClick={markCompleted}
+            disabled={!activeLesson}
             className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs"
           >
             <Check className="w-4 h-4" />
@@ -239,8 +240,8 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
             type="button"
             onClick={goNext}
             disabled={isLastLesson}
-            aria-label={moduleIndex < HANDBOOK_LEARNING_MODULES.length - 1 && activeIndex === module.lessons.length - 1
-              ) ? "Перейти к следующему модулю"
+            aria-label={moduleIndex < HANDBOOK_LEARNING_MODULES.length - 1 && (module.lessons.length === 0 || activeIndex === module.lessons.length - 1)
+              ? "Перейти к следующему модулю"
               : "Перейти к следующей теме"}
             className="flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-2 text-xs disabled:opacity-40"
           >
