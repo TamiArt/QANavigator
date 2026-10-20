@@ -532,7 +532,8 @@ test("Learning Mode navigation continues across module boundaries and preserves 
   assert.match(source, /setActiveIndex\(Math\.max\(0, HANDBOOK_LEARNING_MODULES\[previousModuleIndex\]\.lessons\.length - 1\)\)/);
   assert.match(source, /setModuleIndex\(moduleIndex \+ 1\)/);
   assert.match(source, /setActiveIndex\(0\)/);
-  assert.match(source, /markCompleted\(\);[\s\S]*?if \(module\.lessons\.length === 0\)/);\n  assert.match(source, /else if \(activeIndex < module\.lessons\.length - 1\)/);
+  assert.match(source, /markCompleted\(\);[\s\S]*?if \(module\.lessons\.length === 0\)/);
+  assert.match(source, /else if \(activeIndex < module\.lessons\.length - 1\)/);
   assert.match(source, /disabled=\{isFirstLesson\}/);
   assert.match(source, /disabled=\{isLastLesson\}/);
   assert.match(source, /Следующий модуль/);
