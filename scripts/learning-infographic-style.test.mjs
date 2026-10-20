@@ -67,6 +67,7 @@ test("every Learning Mode lesson has a dedicated visual model", () => {
     "src/app/features/handbook/handbook-learning-module3.ts",
     "src/app/features/handbook/handbook-learning-module4.ts",
     "src/app/features/handbook/handbook-learning-module5.ts",
+    "src/app/features/handbook/handbook-learning-module7.ts",
   ];
   const lessonIds = new Set();
   for (const file of lessonFiles) {
