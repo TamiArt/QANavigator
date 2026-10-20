@@ -202,7 +202,8 @@ test("Learning Mode has a semantic infographic contract for every lesson in Modu
     .concat(Array.from({ length: 7 }, (_, i) => "m3-" + String(i + 1).padStart(2, "0")))
     .concat(Array.from({ length: 12 }, (_, i) => "m4-" + String(i + 1).padStart(2, "0")))
     .concat(Array.from({ length: 5 }, (_, i) => "m4-" + String(i + 14).padStart(2, "0")));
-  assert.equal(expectedIds.length, 47);
+  expectedIds.push(...Array.from({ length: 8 }, (_, i) => "m7-" + String(i + 1).padStart(2, "0")));
+  assert.equal(expectedIds.length, 55);
   assert.ok(!infographic.includes('"m4-13": V('), "Removed lesson 13 must not retain an infographic definition");
   for (const id of expectedIds) {
     assert.ok(infographic.includes('"' + id + '": V('), "Missing semantic infographic definition for " + id);
@@ -546,4 +547,19 @@ test("Learning Mode navigation continues across module boundaries and preserves 
   assert.match(source, /data-active-lesson-id=\{activeLesson\.id\}/);
   assert.match(source, /<button\s+type="button"\s+onClick=\{onBack\}/);
   assert.match(source, /<button\s+type="button"\s+onClick=\{markCompleted\}/);
+});
+
+
+test("Modules 6 and 7 are registered in the intended order; Module 6 remains title-only", () => {
+  const source = fs.readFileSync("src/app/features/handbook/handbook-learning.ts", "utf8");
+  const module6 = source.indexOf('id: "module-6-api"');
+  const module7 = source.indexOf('id: "module-7-sql"');
+  assert.ok(module6 >= 0, "Module 6 placeholder must be registered");
+  assert.ok(module7 > module6, "SQL module must follow the API placeholder");
+  assert.match(source, /id: "module-6-api",\\s+title: "Модуль 6 — Работа с API",\\s+lessons: \[\]/);
+  assert.match(source, /id: "module-7-sql",\\s+title: "Модуль 7 — SQL",\\s+lessons: HANDBOOK_LEARNING_MODULE_7_LESSONS/);
+  const ui = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
+  assert.match(ui, /activeLesson \? \(/);
+  assert.match(ui, /Материалы этого модуля будут добавлены позже/);
+  assert.match(ui, /module\.lessons\.length === 0/);
 });
