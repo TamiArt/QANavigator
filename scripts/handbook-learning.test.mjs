@@ -357,7 +357,7 @@ test("Learning Mode provides direct module and lesson navigation", () => {
   assert.match(source, /scrollIntoView\(\{ behavior: "smooth", block: "start" \}\)/);
   assert.match(source, /learning-module-content/);
   assert.match(source, /id="learning-module-content"/);
-  assert.match(source, /data-active-lesson-id=\{activeLesson\.id\}/);
+  assert.match(source, /data-active-lesson-id=\{activeLesson\?\.id \?\? module\.id\}/);
 });
 
 
