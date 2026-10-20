@@ -110,24 +110,6 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "WHERE / HAVING", text: "WHERE фильтрует строки до группировки; HAVING — группы после неё." },
     { title: "UNION / UNION ALL", text: "UNION убирает дубликаты; UNION ALL сохраняет их." },
   ], "Проверяй совпадения, строки без пары, агрегаты и дубликаты."),
-  "m7-07": V("layers", ["Числа", "Строки", "Дата и время", "NULL"], Database, "blue", [
-    { title: "Числа", text: "INT для целых; DECIMAL для точных денежных значений." },
-    { title: "Строки", text: "VARCHAR, CHAR, TEXT; длина и ограничения важны." },
-    { title: "Дата и время", text: "DATE, TIME, DATETIME, TIMESTAMP — поведение зависит от СУБД." },
-    { title: "NULL", text: "Отсутствие или неизвестность, не равно пустой строке и нулю." },
-  ], "Выбирай тип по смыслу данных и проверяй граничные значения."),
-  "m7-08": V("flow", ["CREATE", "INSERT", "SELECT", "UPDATE", "DELETE"], Code2, "mint", [
-    { title: "DDL", text: "CREATE DATABASE, USE, DROP — управление базами и структурой." },
-    { title: "Create / Read", text: "INSERT добавляет строки; SELECT читает и фильтрует." },
-    { title: "Update / Delete", text: "UPDATE меняет данные; DELETE удаляет строки." },
-    { title: "WHERE", text: "Без условия UPDATE или DELETE затронет все строки." },
-  ], "Перед изменением данных внимательно проверь WHERE и область действия запроса."),
-  "m7-09": V("network", ["JOIN", "GROUP BY", "HAVING", "UNION"], Database, "lavender", [
-    { title: "INNER / LEFT / RIGHT JOIN", text: "Соединяют таблицы с разным правилом сохранения несовпавших строк." },
-    { title: "GROUP BY", text: "Собирает строки в группы для COUNT, SUM и AVG." },
-    { title: "WHERE / HAVING", text: "WHERE фильтрует строки до группировки; HAVING — группы после неё." },
-    { title: "UNION / UNION ALL", text: "UNION убирает дубликаты; UNION ALL сохраняет их." },
-  ], "Проверяй совпадения, строки без пары, агрегаты и дубликаты."),
   "m7-10": V("flow", ["Скачать", "Установить", "Настроить"], Download, "orange", [
     { title: "Официальный источник", text: "MySQL Community Server на mysql.com." },
     { title: "Установка", text: "Следуй установщику для своей версии Windows." },
