@@ -80,6 +80,8 @@ Completed:
 - handbook hierarchy and consolidation implemented;
 - Learning Mode implemented;
 - Learning Mode mobile entry point implemented;
+- Module 6 registered as a title-only “Работа с API” placeholder, with empty-module navigation handled safely;
+- Module 7 SQL curriculum added with database models, relational tables and keys, NoSQL families, normalization/denormalization, table relationships, SQL introduction, MySQL installation and command-line connection; topic-specific infographic models and regression tests added;
 - 48 lesson infographics implemented with reusable visual definitions;
 - infographic semantic/presentation regression coverage added;
 - IT terminology glossary added to the Knowledge Base and exposed as a dedicated Learning Mode module; regression coverage added.
@@ -95,6 +97,7 @@ Current development branch:
 
 Current active milestone:
 - finish Learning Mode navigation and accessibility hardening;
+- verify Module 6 title-only placeholder and Module 7 SQL lessons in the deployed UI;
 - enable continuous forward/backward navigation across module boundaries;
 - validate cross-module completion tracking and the full Learning Mode regression suite;
 - continue semantic infographic refinement without changing lesson source content.
