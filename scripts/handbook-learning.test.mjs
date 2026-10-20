@@ -545,7 +545,7 @@ test("Learning Mode navigation continues across module boundaries and preserves 
   assert.match(source, /Прогресс курса: \{totalCompletedCount\}\/\{allLessons\.length\}/);
   assert.match(source, /const totalProgressPercent = allLessons\.length/);
   assert.match(source, /id="learning-module-content"/);
-  assert.match(source, /data-active-lesson-id=\{activeLesson\.id\}/);
+  assert.match(source, /data-active-lesson-id=\{activeLesson\?\.id \?\? module\.id\}/);
   assert.match(source, /<button\s+type="button"\s+onClick=\{onBack\}/);
   assert.match(source, /<button\s+type="button"\s+onClick=\{markCompleted\}/);
 });
