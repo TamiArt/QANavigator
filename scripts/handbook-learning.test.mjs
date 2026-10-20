@@ -527,12 +527,12 @@ test("Learning Mode renders lesson Markdown with compact, normalized spacing", (
 test("Learning Mode navigation continues across module boundaries and preserves lesson progress", () => {
   const source = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
   assert.match(source, /const isFirstLesson = moduleIndex === 0 && activeIndex === 0/);
-  assert.match(source, /const isLastLesson = moduleIndex === HANDBOOK_LEARNING_MODULES\.length - 1/);
+  assert.match(source, /const isLastLesson = module\.lessons\.length > 0/);
   assert.match(source, /const previousModuleIndex = moduleIndex - 1/);
-  assert.match(source, /setActiveIndex\(HANDBOOK_LEARNING_MODULES\[previousModuleIndex\]\.lessons\.length - 1\)/);
+  assert.match(source, /setActiveIndex\(Math\.max\(0, HANDBOOK_LEARNING_MODULES\[previousModuleIndex\]\.lessons\.length - 1\)\)/);
   assert.match(source, /setModuleIndex\(moduleIndex \+ 1\)/);
   assert.match(source, /setActiveIndex\(0\)/);
-  assert.match(source, /markCompleted\(\);[\s\S]*?if \(activeIndex < module\.lessons\.length - 1\)/);
+  assert.match(source, /markCompleted\(\);[\s\S]*?if \(module\.lessons\.length === 0\)/);\n  assert.match(source, /else if \(activeIndex < module\.lessons\.length - 1\)/);
   assert.match(source, /disabled=\{isFirstLesson\}/);
   assert.match(source, /disabled=\{isLastLesson\}/);
   assert.match(source, /Следующий модуль/);
