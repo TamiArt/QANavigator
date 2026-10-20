@@ -245,7 +245,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
               : "Перейти к следующей теме"}
             className="flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-2 text-xs disabled:opacity-40"
           >
-            {activeIndex === module.lessons.length - 1 && !isLastLesson ? "Следующий модуль" : "Следующая тема"}
+            {(module.lessons.length === 0 || activeIndex === module.lessons.length - 1) && !isLastLesson ? "Следующий модуль" : "Следующая тема"}
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
