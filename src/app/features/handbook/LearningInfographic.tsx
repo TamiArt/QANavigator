@@ -86,12 +86,30 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "Многие ко многим", text: "Студенты и предметы соединяются промежуточной таблицей." },
     { title: "Проверки QA", text: "Ссылки на отсутствующие записи, дубли и правила удаления." },
   ], "Внешние ключи и промежуточные таблицы помогают сохранять целостность."),
-  "m7-06": V("flow", ["SQL", "Команда", "Результат"], Code2, "blue", [
-    { title: "SQL", text: "Декларативный язык для работы с реляционными данными." },
-    { title: "SHOW DATABASES", text: "В MySQL показывает доступные пользователю базы." },
-    { title: "DDL / DML", text: "Структура: CREATE; данные: INSERT, UPDATE, DELETE." },
-    { title: "SELECT и транзакции", text: "Чтение данных, COMMIT и ROLLBACK." },
-  ], "Не путай SQL — язык запросов — и СУБД, которая его выполняет."),
+  "m7-06": V("layers", ["Числа", "Строки", "Дата и время", "NULL"], Database, "blue", [
+    { title: "Числа", text: "INT для целых; DECIMAL для точных денежных значений." },
+    { title: "Строки", text: "VARCHAR, CHAR, TEXT; длина и ограничения важны." },
+    { title: "Дата и время", text: "DATE, TIME, DATETIME, TIMESTAMP — поведение зависит от СУБД." },
+    { title: "NULL", text: "Отсутствие или неизвестность, не равно пустой строке и нулю." },
+  ], "Выбирай тип по смыслу данных и проверяй граничные значения."),
+  "m7-07": V("flow", ["CREATE", "SHOW DATABASES", "USE", "DROP"], Code2, "blue", [
+    { title: "DDL", text: "CREATE DATABASE, USE, DROP — управление базами и структурой." },
+    { title: "SHOW DATABASES", text: "Показывает доступные пользователю базы в MySQL." },
+    { title: "Другие группы", text: "DML меняет данные; SELECT читает; DCL управляет правами." },
+    { title: "Осторожно", text: "DROP DATABASE удаляет базу вместе с объектами." },
+  ], "Команды SHOW DATABASES и USE относятся к MySQL."),
+  "m7-08": V("flow", ["CREATE", "INSERT", "SELECT", "UPDATE", "DELETE"], Code2, "mint", [
+    { title: "DDL", text: "CREATE DATABASE, USE, DROP — управление базами и структурой." },
+    { title: "Create / Read", text: "INSERT добавляет строки; SELECT читает и фильтрует." },
+    { title: "Update / Delete", text: "UPDATE меняет данные; DELETE удаляет строки." },
+    { title: "WHERE", text: "Без условия UPDATE или DELETE затронет все строки." },
+  ], "Перед изменением данных внимательно проверь WHERE и область действия запроса."),
+  "m7-09": V("network", ["JOIN", "GROUP BY", "HAVING", "UNION"], Database, "lavender", [
+    { title: "INNER / LEFT / RIGHT JOIN", text: "Соединяют таблицы с разным правилом сохранения несовпавших строк." },
+    { title: "GROUP BY", text: "Собирает строки в группы для COUNT, SUM и AVG." },
+    { title: "WHERE / HAVING", text: "WHERE фильтрует строки до группировки; HAVING — группы после неё." },
+    { title: "UNION / UNION ALL", text: "UNION убирает дубликаты; UNION ALL сохраняет их." },
+  ], "Проверяй совпадения, строки без пары, агрегаты и дубликаты."),
   "m7-07": V("layers", ["Числа", "Строки", "Дата и время", "NULL"], Database, "blue", [
     { title: "Числа", text: "INT для целых; DECIMAL для точных денежных значений." },
     { title: "Строки", text: "VARCHAR, CHAR, TEXT; длина и ограничения важны." },
