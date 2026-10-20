@@ -14,7 +14,7 @@ test("Module 7 contains the SQL and database concepts in curriculum order", () =
     "Установка MySQL Community Server",
     "Подключение к MySQL через командную строку",
   ];
-  assert.equal((source.match(/id: "m7-\\d{2}"/g) ?? []).length, 8);
+  assert.equal((source.match(/id: "m7-\d{2}"/g) ?? []).length, 8);
   const positions = expected.map((title) => {
     const position = source.indexOf('title: "' + title + '"');
     assert.notEqual(position, -1, "Missing lesson: " + title);
@@ -32,7 +32,7 @@ test("Module 7 is registered and every SQL lesson has a dedicated visual model",
   const registry = fs.readFileSync("src/app/features/handbook/handbook-learning.ts", "utf8");
   const visuals = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
   assert.match(registry, /import \{ HANDBOOK_LEARNING_MODULE_7_LESSONS \} from "\.\/handbook-learning-module7"/);
-  assert.match(registry, /id: "module-7-sql"[\\s\\S]*?title: "Модуль 7 — SQL"[\\s\\S]*?lessons: HANDBOOK_LEARNING_MODULE_7_LESSONS/);
+  assert.match(registry, /id: "module-7-sql"[\s\S]*?title: "Модуль 7 — SQL"[\s\S]*?lessons: HANDBOOK_LEARNING_MODULE_7_LESSONS/);
   for (let i = 1; i <= 8; i += 1) {
     const id = "m7-" + String(i).padStart(2, "0");
     assert.ok(visuals.includes('"' + id + '": V('), "Missing infographic model for " + id);
