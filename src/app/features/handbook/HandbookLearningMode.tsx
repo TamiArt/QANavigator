@@ -27,7 +27,9 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
   const completed = new Set(progress.completedLessonIds);
   const activeLesson = module.lessons[activeIndex];
   const completedCount = module.lessons.filter((lesson) => completed.has(lesson.id)).length;
-  const progressPercent = Math.round((completedCount / module.lessons.length) * 100);
+  const progressPercent = module.lessons.length
+    ? Math.round((completedCount / module.lessons.length) * 100)
+    : 0;
   const allLessons = HANDBOOK_LEARNING_MODULES.flatMap((item) => item.lessons);
   const totalCompletedCount = allLessons.filter((lesson) => completed.has(lesson.id)).length;
   const totalProgressPercent = allLessons.length
@@ -52,7 +54,8 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
   };
 
   const isFirstLesson = moduleIndex === 0 && activeIndex === 0;
-  const isLastLesson = moduleIndex === HANDBOOK_LEARNING_MODULES.length - 1
+  const isLastLesson = module.lessons.length > 0
+    && moduleIndex === HANDBOOK_LEARNING_MODULES.length - 1
     && activeIndex === module.lessons.length - 1;
 
   const markCompleted = () => {
@@ -63,19 +66,30 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
   };
 
   const goPrevious = () => {
-    if (activeIndex > 0) {
+    if (module.lessons.length === 0) {
+      const previousModuleIndex = moduleIndex - 1;
+      if (previousModuleIndex >= 0) {
+        setModuleIndex(previousModuleIndex);
+        setActiveIndex(Math.max(0, HANDBOOK_LEARNING_MODULES[previousModuleIndex].lessons.length - 1));
+      }
+    } else if (activeIndex > 0) {
       setActiveIndex(activeIndex - 1);
     } else if (moduleIndex > 0) {
       const previousModuleIndex = moduleIndex - 1;
       setModuleIndex(previousModuleIndex);
-      setActiveIndex(HANDBOOK_LEARNING_MODULES[previousModuleIndex].lessons.length - 1);
+      setActiveIndex(Math.max(0, HANDBOOK_LEARNING_MODULES[previousModuleIndex].lessons.length - 1));
     }
     scrollToLesson();
   };
 
   const goNext = () => {
     markCompleted();
-    if (activeIndex < module.lessons.length - 1) {
+    if (module.lessons.length === 0) {
+      if (moduleIndex < HANDBOOK_LEARNING_MODULES.length - 1) {
+        setModuleIndex(moduleIndex + 1);
+        setActiveIndex(0);
+      }
+    } else if (activeIndex < module.lessons.length - 1) {
       setActiveIndex(activeIndex + 1);
     } else if (moduleIndex < HANDBOOK_LEARNING_MODULES.length - 1) {
       setModuleIndex(moduleIndex + 1);
@@ -179,21 +193,27 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
       <article
         ref={lessonArticleRef}
         id="learning-module-content"
-        data-active-lesson-id={activeLesson.id}
+        data-active-lesson-id={activeLesson?.id ?? module.id}
         className="bg-card border border-border rounded-xl p-4 scroll-mt-24"
       >
-        <div className="mb-3">
-          <div className="text-xs text-muted-foreground mb-1">
-            Урок {activeIndex + 1} из {module.lessons.length}
-          </div>
-          <h3 className="text-lg font-semibold text-foreground">{activeLesson.title}</h3>
-        </div>
-        <div className="mt-3">
-          <MarkdownView content={getLearningLessonContent(activeLesson)} compact extraCompactLists={activeLesson.id === "m1-01"} />
-        </div>
-        <div className="mt-4">
-          <LearningInfographic mode="lesson" lesson={activeLesson} />
-        </div>
+        {activeLesson ? (
+          <>
+            <div className="mb-3">
+              <div className="text-xs text-muted-foreground mb-1">
+                Урок {activeIndex + 1} из {module.lessons.length}
+              </div>
+              <h3 className="text-lg font-semibold text-foreground">{activeLesson.title}</h3>
+            </div>
+            <div className="mt-3">
+              <MarkdownView content={getLearningLessonContent(activeLesson)} compact extraCompactLists={activeLesson.id === "m1-01"} />
+            </div>
+            <div className="mt-4">
+              <LearningInfographic mode="lesson" lesson={activeLesson} />
+            </div>
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground">Материалы этого модуля будут добавлены позже.</p>
+        )}
 
         <div className="flex flex-wrap justify-between gap-2 pt-4 mt-4 border-t border-border">
           <button
@@ -212,7 +232,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
             className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs"
           >
             <Check className="w-4 h-4" />
-            {completed.has(activeLesson.id) ? "Изучено" : "Отметить как изученное"}
+            {activeLesson && completed.has(activeLesson.id) ? "Изучено" : "Отметить как изученное"}
           </button>
 
           <button
@@ -220,7 +240,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
             onClick={goNext}
             disabled={isLastLesson}
             aria-label={moduleIndex < HANDBOOK_LEARNING_MODULES.length - 1 && activeIndex === module.lessons.length - 1
-              ? "Перейти к следующему модулю"
+              ) ? "Перейти к следующему модулю"
               : "Перейти к следующей теме"}
             className="flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-2 text-xs disabled:opacity-40"
           >
