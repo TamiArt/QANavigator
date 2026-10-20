@@ -27,7 +27,14 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
   const completed = new Set(progress.completedLessonIds);
   const activeLesson = module.lessons[activeIndex];
   const completedCount = module.lessons.filter((lesson) => completed.has(lesson.id)).length;
-  const progressPercent = Math.round((completedCount / module.lessons.length) * 100);
+  const progressPercent = module.lessons.length
+    ? Math.round((completedCount / module.lessons.length) * 100)
+    : 0;
+  const allLessons = HANDBOOK_LEARNING_MODULES.flatMap((item) => item.lessons);
+  const totalCompletedCount = allLessons.filter((lesson) => completed.has(lesson.id)).length;
+  const totalProgressPercent = allLessons.length
+    ? Math.round((totalCompletedCount / allLessons.length) * 100)
+    : 0;
 
   const scrollToLesson = () => {
     requestAnimationFrame(() => {
@@ -46,30 +53,67 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
     scrollToLesson();
   };
 
+  const isFirstLesson = moduleIndex === 0 && activeIndex === 0;
+  const isLastLesson = module.lessons.length > 0
+    && moduleIndex === HANDBOOK_LEARNING_MODULES.length - 1
+    && activeIndex === module.lessons.length - 1;
+
   const markCompleted = () => {
     if (!activeLesson || completed.has(activeLesson.id)) return;
     setProgress({
-      completedLessonIds: [...progress.completedLessonIds, activeLesson.id],
+      completedLessonIds: [...new Set([...progress.completedLessonIds, activeLesson.id])],
     });
+  };
+
+  const goPrevious = () => {
+    if (module.lessons.length === 0) {
+      const previousModuleIndex = moduleIndex - 1;
+      if (previousModuleIndex >= 0) {
+        setModuleIndex(previousModuleIndex);
+        setActiveIndex(Math.max(0, HANDBOOK_LEARNING_MODULES[previousModuleIndex].lessons.length - 1));
+      }
+    } else if (activeIndex > 0) {
+      setActiveIndex(activeIndex - 1);
+    } else if (moduleIndex > 0) {
+      const previousModuleIndex = moduleIndex - 1;
+      setModuleIndex(previousModuleIndex);
+      setActiveIndex(Math.max(0, HANDBOOK_LEARNING_MODULES[previousModuleIndex].lessons.length - 1));
+    }
+    scrollToLesson();
   };
 
   const goNext = () => {
     markCompleted();
-    setActiveIndex((index) => Math.min(index + 1, module.lessons.length - 1));
+    if (module.lessons.length === 0) {
+      if (moduleIndex < HANDBOOK_LEARNING_MODULES.length - 1) {
+        setModuleIndex(moduleIndex + 1);
+        setActiveIndex(0);
+      }
+    } else if (activeIndex < module.lessons.length - 1) {
+      setActiveIndex(activeIndex + 1);
+    } else if (moduleIndex < HANDBOOK_LEARNING_MODULES.length - 1) {
+      setModuleIndex(moduleIndex + 1);
+      setActiveIndex(0);
+    }
+    scrollToLesson();
   };
 
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <button
+          type="button"
           onClick={onBack}
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="w-4 h-4" /> К базе знаний
         </button>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <GraduationCap className="w-4 h-4" />
-          Прогресс модуля: {completedCount}/{module.lessons.length} ({progressPercent}%)
+        <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-2">
+            <GraduationCap className="w-4 h-4" />
+            Прогресс курса: {totalCompletedCount}/{allLessons.length} ({totalProgressPercent}%)
+          </span>
+          <span>Модуль: {completedCount}/{module.lessons.length} ({progressPercent}%)</span>
         </div>
       </div>
 
@@ -89,7 +133,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
           <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Быстрая навигация</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5" role="tablist" aria-label="Модули">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5" role="group" aria-label="Выбор учебного модуля">
           {HANDBOOK_LEARNING_MODULES.map((item, index) => {
             const isActive = index === moduleIndex;
             const itemCompleted = item.lessons.filter((lesson) => completed.has(lesson.id)).length;
@@ -97,8 +141,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
               <button
                 key={item.id}
                 type="button"
-                role="tab"
-                aria-selected={isActive}
+                aria-current={isActive ? "step" : undefined}
                 aria-controls="learning-module-content"
                 onClick={() => selectModule(index)}
                 className={isActive
@@ -149,45 +192,61 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
 
       <article
         ref={lessonArticleRef}
-        id={`learning-lesson-${activeLesson.id}`}
+        id="learning-module-content"
+        data-active-lesson-id={activeLesson?.id ?? module.id}
         className="bg-card border border-border rounded-xl p-4 scroll-mt-24"
       >
-        <div className="mb-3">
-          <div className="text-xs text-muted-foreground mb-1">
-            Урок {activeIndex + 1} из {module.lessons.length}
-          </div>
-          <h3 className="text-lg font-semibold text-foreground">{activeLesson.title}</h3>
-        </div>
-        <div className="mt-3">
-          <MarkdownView content={getLearningLessonContent(activeLesson)} compact extraCompactLists={activeLesson.id === "m1-01"} />
-        </div>
-        <div className="mt-4">
-          <LearningInfographic mode="lesson" lesson={activeLesson} />
-        </div>
+        {activeLesson ? (
+          <>
+            <div className="mb-3">
+              <div className="text-xs text-muted-foreground mb-1">
+                Урок {activeIndex + 1} из {module.lessons.length}
+              </div>
+              <h3 className="text-lg font-semibold text-foreground">{activeLesson.title}</h3>
+            </div>
+            <div className="mt-3">
+              <MarkdownView content={getLearningLessonContent(activeLesson)} compact extraCompactLists={activeLesson.id === "m1-01"} />
+            </div>
+            <div className="mt-4">
+              <LearningInfographic mode="lesson" lesson={activeLesson} />
+            </div>
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground">Материалы этого модуля будут добавлены позже.</p>
+        )}
 
         <div className="flex flex-wrap justify-between gap-2 pt-4 mt-4 border-t border-border">
           <button
-            onClick={() => selectLesson(Math.max(activeIndex - 1, 0))}
-            disabled={activeIndex === 0}
+            type="button"
+            onClick={goPrevious}
+            disabled={isFirstLesson}
+            aria-label="Перейти к предыдущей теме"
             className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs disabled:opacity-40"
           >
-            <ChevronLeft className="w-4 h-4" /> Назад
+            <ChevronLeft className="w-4 h-4" /> Предыдущая тема
           </button>
 
           <button
+            type="button"
             onClick={markCompleted}
+            disabled={!activeLesson}
             className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs"
           >
             <Check className="w-4 h-4" />
-            {completed.has(activeLesson.id) ? "Изучено" : "Отметить как изученное"}
+            {activeLesson && completed.has(activeLesson.id) ? "Изучено" : "Отметить как изученное"}
           </button>
 
           <button
-            onClick={() => { goNext(); scrollToLesson(); }}
-            disabled={activeIndex === module.lessons.length - 1}
+            type="button"
+            onClick={goNext}
+            disabled={isLastLesson}
+            aria-label={moduleIndex < HANDBOOK_LEARNING_MODULES.length - 1 && (module.lessons.length === 0 || activeIndex === module.lessons.length - 1)
+              ? "Перейти к следующему модулю"
+              : "Перейти к следующей теме"}
             className="flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-2 text-xs disabled:opacity-40"
           >
-            Следующая тема <ChevronRight className="w-4 h-4" />
+            {(module.lessons.length === 0 || activeIndex === module.lessons.length - 1) && !isLastLesson ? "Следующий модуль" : "Следующая тема"}
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </article>

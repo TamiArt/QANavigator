@@ -58,3 +58,31 @@ test("Module 5 static infographic mappings are lesson-specific and preserve intr
   assert.match(source, /style=\{\{ aspectRatio: module5ImagePath \? "auto"/);
   assert.match(source, /module5ImagePath \? "h-auto" : "h-full"/);
 });
+
+
+test("every Learning Mode lesson has a dedicated visual model", () => {
+  const lessonFiles = [
+    "src/app/features/handbook/handbook-learning.ts",
+    "src/app/features/handbook/handbook-learning-module2.ts",
+    "src/app/features/handbook/handbook-learning-module3.ts",
+    "src/app/features/handbook/handbook-learning-module4.ts",
+    "src/app/features/handbook/handbook-learning-module5.ts",
+    "src/app/features/handbook/handbook-learning-module7.ts",
+  ];
+  const lessonIds = new Set();
+  for (const file of lessonFiles) {
+    const source = fs.readFileSync(file, "utf8");
+    for (const match of source.matchAll(/id:\\s*"(m\\d{1,2}-\\d{2}(?:-[a-z0-9-]+)?|it-glossary-\\d{2})"/g)) {
+      lessonIds.add(match[1]);
+    }
+  }
+
+  const visuals = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  const visualIds = new Set(
+    [...visuals.matchAll(/^\\s*"(m\\d{1,2}-\\d{2}(?:-[a-z0-9-]+)?|it-glossary-\\d{2})": V\\(/gm)]
+      .map((match) => match[1]),
+  );
+  const missing = [...lessonIds].filter((id) => !visualIds.has(id));
+  assert.deepEqual(missing, [], "Every curriculum lesson must have a topic-specific visual model");
+  assert.ok(visuals.includes('"it-glossary-01": V("network"'), "The IT glossary must use its own visual model");
+});

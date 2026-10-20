@@ -80,6 +80,8 @@ Completed:
 - handbook hierarchy and consolidation implemented;
 - Learning Mode implemented;
 - Learning Mode mobile entry point implemented;
+- Module 6 registered as a title-only “Работа с API” placeholder, with empty-module navigation handled safely;
+- Module 7 SQL curriculum added with database models, relational tables and keys, NoSQL families, normalization/denormalization, table relationships, SQL introduction, MySQL installation and command-line connection; topic-specific infographic models and regression tests added;
 - 48 lesson infographics implemented with reusable visual definitions;
 - infographic semantic/presentation regression coverage added;
 - IT terminology glossary added to the Knowledge Base and exposed as a dedicated Learning Mode module; regression coverage added.
@@ -91,11 +93,13 @@ Completed:
 - PR #14 handbook hierarchy refactor merged into `main`.
 
 Current development branch:
-`fix/module4-lesson1-png`
+`feat/learning-block-completion`
 
 Current active milestone:
-- continue Learning Mode production hardening;
-- provide direct navigation from the module/lesson navigator to the selected learning content;
+- finish Learning Mode navigation and accessibility hardening;
+- verify Module 6 title-only placeholder and Module 7 SQL lessons in the deployed UI;
+- enable continuous forward/backward navigation across module boundaries;
+- validate cross-module completion tracking and the full Learning Mode regression suite;
 - continue semantic infographic refinement without changing lesson source content.
 
 Verification baseline:
@@ -1859,3 +1863,43 @@ Implemented on \`feat/module5-network-api-learning\`:
 
 Verification status: pending execution against the updated branch head. Do not consider the milestone complete until the new regression test, full \`npm run verify\`, and current-head CI have been checked.
 
+
+
+### 7.1.5 Learning Mode — continuous lesson navigation — 2026-10-19
+
+Implemented on `feat/learning-block-completion`:
+- created a dedicated continuation branch from the verified Module 4–5 integration head;
+- lesson navigation continues into the next module at module boundaries and returns to the prior module's final lesson when navigating backward;
+- the first and final course lessons have explicit boundary states;
+- lesson completion is de-duplicated defensively, with both module-level and course-wide progress indicators;
+- module selection uses button/group semantics rather than declaring an incomplete ARIA tab pattern;
+- navigation controls expose explicit accessible labels and a stable lesson-content target;
+- the IT glossary now has its own semantic visual model rather than the generic fallback diagram;
+- regression tests assert navigation, progress semantics, static image mappings and dedicated visual-model coverage for every curriculum lesson.
+
+Validation:
+- GitHub Actions `npm run verify` passed on `2ced6bd0dadc0cc933bb834f345102af4438b9cb`: [run 39261110517](https://github.com/TamiArt/QANavigator/actions/runs/39261110517);
+- Vercel generated a READY preview deployment for that branch revision;
+- live browser verification is still blocked because Vercel denied the connected tool's access to this deployment (403); the browser-download and desktop/mobile interaction checks therefore remain unverified until project access is authorized.
+
+Scope guard:
+- no lesson source wording or lesson IDs changed in this navigation fix;
+- `main` is not used as a development branch;
+- do not create a PR or merge without explicit user permission.
+
+
+### 7.1.6 Learning Mode — расширение учебной программы SQL — 2026-10-20
+
+Расширен Модуль 7 «SQL» в ветке \`feat/learning-block-completion\` на основе предоставленного учебного материала.
+
+- сохранены определения БД, СУБД и SQL, историческая и практическая классификация баз данных;
+- дополнены реляционная модель, ключи и связи 1:1, 1:N, N:1 и M:N;
+- добавлен отдельный урок о типах данных SQL, включая точные и приближённые числа, строки, даты/время, BLOB и NULL;
+- добавлены DDL-команды и CRUD с практическими примерами;
+- добавлен урок по INNER/LEFT/RIGHT JOIN, GROUP BY, WHERE/HAVING и UNION/UNION ALL;
+- инструкции по установке MySQL и подключению через CMD сохранены в конце последовательности;
+- добавлены отдельные тематические модели инфографики и обновлён регрессионный тест количества, порядка и ключевых понятий уроков.
+
+При объяснении типов данных и SQL-синтаксиса отдельно отмечены различия между СУБД, чтобы учебные примеры не представляли поведение MySQL как универсальное для всех баз данных.
+
+Проверка: GitHub Actions \`npm run verify\` была зелёной на предыдущем состоянии ветки. После этого изменения требуется дождаться нового CI и подтвердить полный \`npm run verify\`; не считать блок завершённым до зелёного результата.

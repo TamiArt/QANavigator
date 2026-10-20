@@ -202,7 +202,8 @@ test("Learning Mode has a semantic infographic contract for every lesson in Modu
     .concat(Array.from({ length: 7 }, (_, i) => "m3-" + String(i + 1).padStart(2, "0")))
     .concat(Array.from({ length: 12 }, (_, i) => "m4-" + String(i + 1).padStart(2, "0")))
     .concat(Array.from({ length: 5 }, (_, i) => "m4-" + String(i + 14).padStart(2, "0")));
-  assert.equal(expectedIds.length, 47);
+  expectedIds.push(...Array.from({ length: 8 }, (_, i) => "m7-" + String(i + 1).padStart(2, "0")));
+  assert.equal(expectedIds.length, 55);
   assert.ok(!infographic.includes('"m4-13": V('), "Removed lesson 13 must not retain an infographic definition");
   for (const id of expectedIds) {
     assert.ok(infographic.includes('"' + id + '": V('), "Missing semantic infographic definition for " + id);
@@ -349,12 +350,14 @@ test("Lesson infographics expose semantic diagram structure", () => {
 test("Learning Mode provides direct module and lesson navigation", () => {
   const source = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
   assert.match(source, /aria-label="Навигация по модулям и темам"/);
-  assert.match(source, /role="tablist"/);
-  assert.match(source, /aria-selected=\{isActive\}/);
+  assert.match(source, /role="group" aria-label="Выбор учебного модуля"/);
+  assert.match(source, /aria-current=\{isActive \? "step" : undefined\}/);
+  assert.doesNotMatch(source, /role="tablist"|role="tab"/);
   assert.match(source, /Перейти к теме/);
   assert.match(source, /scrollIntoView\(\{ behavior: "smooth", block: "start" \}\)/);
   assert.match(source, /learning-module-content/);
-  assert.match(source, /learning-lesson-\$\{activeLesson\.id\}/);
+  assert.match(source, /id="learning-module-content"/);
+  assert.match(source, /data-active-lesson-id=\{activeLesson\?\.id \?\? module\.id\}/);
 });
 
 
@@ -518,4 +521,46 @@ test("Learning Mode renders lesson Markdown with compact, normalized spacing", (
   assert.match(learningMode, /extraCompactLists=\{activeLesson\.id === "m1-01"\}/, "Extra-compact list spacing must be limited to Lesson 1: What is testing?");
   assert.match(learningMode, /className="bg-card border border-border rounded-xl p-4 scroll-mt-24"/);
   assert.match(learningMode, /className="mt-3"[\s\S]*MarkdownView content=\{getLearningLessonContent\(activeLesson\)\} compact/);
+});
+
+
+test("Learning Mode navigation continues across module boundaries and preserves lesson progress", () => {
+  const source = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
+  assert.match(source, /const isFirstLesson = moduleIndex === 0 && activeIndex === 0/);
+  assert.match(source, /const isLastLesson = module\.lessons\.length > 0/);
+  assert.match(source, /const previousModuleIndex = moduleIndex - 1/);
+  assert.match(source, /setActiveIndex\(Math\.max\(0, HANDBOOK_LEARNING_MODULES\[previousModuleIndex\]\.lessons\.length - 1\)\)/);
+  assert.match(source, /setModuleIndex\(moduleIndex \+ 1\)/);
+  assert.match(source, /setActiveIndex\(0\)/);
+  assert.match(source, /markCompleted\(\);[\s\S]*?if \(module\.lessons\.length === 0\)/);
+  assert.match(source, /else if \(activeIndex < module\.lessons\.length - 1\)/);
+  assert.match(source, /disabled=\{isFirstLesson\}/);
+  assert.match(source, /disabled=\{isLastLesson\}/);
+  assert.match(source, /Следующий модуль/);
+  assert.match(source, /aria-label="Перейти к предыдущей теме"/);
+  assert.match(source, /aria-label=\{moduleIndex < HANDBOOK_LEARNING_MODULES\.length - 1/);
+  assert.match(source, /aria-controls="learning-module-content"/);
+  assert.match(source, /role="group" aria-label="Выбор учебного модуля"/);
+  assert.doesNotMatch(source, /role="tablist"|role="tab"/, "Module selector uses button semantics, not incomplete tab semantics");
+  assert.match(source, /Прогресс курса: \{totalCompletedCount\}\/\{allLessons\.length\}/);
+  assert.match(source, /const totalProgressPercent = allLessons\.length/);
+  assert.match(source, /id="learning-module-content"/);
+  assert.match(source, /data-active-lesson-id=\{activeLesson\?\.id \?\? module\.id\}/);
+  assert.match(source, /<button\s+type="button"\s+onClick=\{onBack\}/);
+  assert.match(source, /<button\s+type="button"\s+onClick=\{markCompleted\}/);
+});
+
+
+test("Modules 6 and 7 are registered in the intended order; Module 6 remains title-only", () => {
+  const source = fs.readFileSync("src/app/features/handbook/handbook-learning.ts", "utf8");
+  const module6 = source.indexOf('id: "module-6-api"');
+  const module7 = source.indexOf('id: "module-7-sql"');
+  assert.ok(module6 >= 0, "Module 6 placeholder must be registered");
+  assert.ok(module7 > module6, "SQL module must follow the API placeholder");
+  assert.ok(source.includes('id: "module-6-api",\n    title: "Модуль 6 — Работа с API",\n    lessons: [],'));
+  assert.ok(source.includes('id: "module-7-sql",\n    title: "Модуль 7 — SQL",\n    lessons: HANDBOOK_LEARNING_MODULE_7_LESSONS'));
+  const ui = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
+  assert.match(ui, /activeLesson \? \(/);
+  assert.match(ui, /Материалы этого модуля будут добавлены позже/);
+  assert.match(ui, /module\.lessons\.length === 0/);
 });
