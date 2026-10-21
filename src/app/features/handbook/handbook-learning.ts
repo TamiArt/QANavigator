@@ -3,7 +3,6 @@ import { HANDBOOK_LEARNING_MODULE_2_LESSONS } from "./handbook-learning-module2"
 import { HANDBOOK_LEARNING_MODULE_3_LESSONS } from "./handbook-learning-module3";
 import { HANDBOOK_LEARNING_MODULE_4_LESSONS } from "./handbook-learning-module4";
 import { HANDBOOK_LEARNING_MODULE_5_LESSONS } from "./handbook-learning-module5";
-import { HANDBOOK_LEARNING_MODULE_6_LESSONS } from "./handbook-learning-module6";
 import { HANDBOOK_LEARNING_MODULE_7_LESSONS } from "./handbook-learning-module7";
 
 
@@ -69,8 +68,8 @@ export const HANDBOOK_LEARNING_MODULES: readonly LearningModule[] = [
   },
   {
     id: "module-6-api",
-    title: "Модуль 6 — Практика тестирования API",
-    lessons: HANDBOOK_LEARNING_MODULE_6_LESSONS,
+    title: "Модуль 6 — Работа с API",
+    lessons: [],
   },
   {
     id: "module-7-sql",
