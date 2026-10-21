@@ -1903,18 +1903,3 @@ Scope guard:
 При объяснении типов данных и SQL-синтаксиса отдельно отмечены различия между СУБД, чтобы учебные примеры не представляли поведение MySQL как универсальное для всех баз данных.
 
 Проверка: GitHub Actions \`npm run verify\` была зелёной на предыдущем состоянии ветки. После этого изменения требуется дождаться нового CI и подтвердить полный \`npm run verify\`; не считать блок завершённым до зелёного результата.
-
-
-### 2026-10-21 — Learning Mode: Module 6 practical API testing
-
-Implemented on `feat/module6-api-testing-practice`, based on the latest SQL lesson branch head.
-
-- replaced the empty Module 6 placeholder with 10 ordered, practice-focused lessons;
-- covered request/response anatomy, parameters and headers, authorization, JSON validation, status/body assertions, negative and boundary cases, API contracts, pagination/filtering/sorting, idempotency, and end-to-end API workflows;
-- registered the module without changing the existing module ID or the lesson IDs/order in other modules;
-- added a dedicated semantic infographic model for every new lesson;
-- added `scripts/module6-api-learning.test.mjs` to protect lesson count/order, key concepts, module registration and complete visual-model coverage;
-- included the new test in `npm run verify`;
-- removed the duplicate `test:module7-learning` key from `package.json` while updating the verification chain.
-
-Validation status: pending current-head GitHub Actions. Do not consider this block complete until the Module 6 regression test, full `npm run verify`, TypeScript check and production build pass on the branch head.
