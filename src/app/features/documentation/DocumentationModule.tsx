@@ -16,6 +16,107 @@ import { DocField, DocSelect, DocDateField, ExportCard, FieldLabel } from "./doc
 import { formatDate, toPlainDocumentText, toWordDocumentHtml } from "./document-format";
 import { TestStrategyDocSection, TestDataDocSection } from "./additional-documents";
 
+// ─── API testing checklist reference ───────────────────
+function ApiTestingChecklistReference() {
+  const apiChecklist = [
+    "Проверить URL, HTTP-метод и доступность endpoint.",
+    "Проверить обязательные параметры path, query и request body по контракту.",
+    "Проверить Authorization: корректный токен, отсутствующий, просроченный и недостаточные права (если endpoint защищён).",
+    "Проверить Accept и Content-Type в соответствии с форматом ответа и тела запроса.",
+    "Проверить успешный сценарий и ожидаемый статус ответа (например, 200, 201 или 204 по контракту).",
+    "Проверить структуру JSON-ответа: обязательные поля, типы, значения и формат дат.",
+    "Проверить негативные сценарии: неверный тип/формат, отсутствующее поле, невалидный JSON.",
+    "Проверить ошибки авторизации и доступа: 401 и 403 — согласно контракту.",
+    "Проверить несуществующий ресурс (обычно 404) и конфликт данных (например, 409), если применимо.",
+    "Проверить валидацию и граничные значения параметров.",
+    "Проверить пагинацию, фильтрацию и сортировку, если поддерживаются.",
+    "Проверить, что ответ не раскрывает секреты и лишние персональные данные.",
+    "Проверить время ответа и поведение при повторном запросе/повторной отправке, если это важно для endpoint.",
+  ];
+  const exportText = [
+    "ЧЕК-ЛИСТ: ТЕСТИРОВАНИЕ API",
+    "",
+    "Общее",
+    ...apiChecklist.map((item, index) => (index + 1) + ". [ ] " + item),
+    "",
+    "Заголовки HTTP",
+    "Authorization: требуется для защищённых endpoint; тип и формат определяет API-контракт.",
+    "Content-Type: application/json — указывать, когда отправляется JSON-тело запроса.",
+    "Accept: application/json — указывать, если клиент ожидает JSON; обязательность определяется контрактом.",
+    "Host и Content-Length обычно формируются HTTP-клиентом автоматически.",
+  ].join("\n");
+
+  return (
+    <section className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="px-4 py-3 border-b border-border bg-primary/5">
+        <h3 className="text-sm font-semibold text-foreground">Тестирование API</h3>
+        <p className="text-xs text-muted-foreground mt-1">Пример чек-листа и памятка по HTTP-заголовкам. Точные требования всегда сверяйте с документацией конкретного API.</p>
+      </div>
+      <div className="p-4 space-y-4">
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium text-foreground">Какие заголовки использовать для разных методов</h4>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs border-collapse">
+              <thead>
+                <tr className="text-left bg-muted/60">
+                  <th className="border border-border p-2">Метод</th>
+                  <th className="border border-border p-2">Content-Type</th>
+                  <th className="border border-border p-2">Accept</th>
+                  <th className="border border-border p-2">Authorization</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-border p-2 font-mono">GET / HEAD</td>
+                  <td className="border border-border p-2">Обычно не нужен: тело запроса обычно отсутствует.</td>
+                  <td className="border border-border p-2">Рекомендуется, если ожидается JSON; обязательность задаёт контракт.</td>
+                  <td className="border border-border p-2">Нужен только для защищённых endpoint.</td>
+                </tr>
+                <tr>
+                  <td className="border border-border p-2 font-mono">POST</td>
+                  <td className="border border-border p-2">Нужен при отправке JSON-тела: <code>application/json</code>.</td>
+                  <td className="border border-border p-2">Рекомендуется, если ожидается JSON.</td>
+                  <td className="border border-border p-2">Нужен только для защищённых endpoint.</td>
+                </tr>
+                <tr>
+                  <td className="border border-border p-2 font-mono">PUT / PATCH</td>
+                  <td className="border border-border p-2">Нужен при отправке JSON-тела: <code>application/json</code>.</td>
+                  <td className="border border-border p-2">Рекомендуется, если ожидается JSON.</td>
+                  <td className="border border-border p-2">Нужен только для защищённых endpoint.</td>
+                </tr>
+                <tr>
+                  <td className="border border-border p-2 font-mono">DELETE</td>
+                  <td className="border border-border p-2">Только если endpoint принимает тело запроса; для JSON — <code>application/json</code>.</td>
+                  <td className="border border-border p-2">Рекомендуется, если ожидается JSON.</td>
+                  <td className="border border-border p-2">Нужен только для защищённых endpoint.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ul className="list-disc pl-5 space-y-1 text-xs text-muted-foreground">
+            <li><code>Accept</code> описывает желаемый формат ответа; сам по себе обычно не является обязательным.</li>
+            <li><code>Content-Type</code> описывает формат отправляемого тела. Он нужен не из-за названия метода, а когда запрос содержит тело, для которого нужно указать тип.</li>
+            <li><code>Authorization</code> требуется, если API защищает endpoint. Используйте именно схему из документации, например <code>Bearer</code> или API key.</li>
+            <li><code>Host</code> и <code>Content-Length</code> обычно выставляет HTTP-клиент автоматически. Дополнительные заголовки (например, CSRF или idempotency key) зависят от API.</li>
+          </ul>
+        </div>
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium text-foreground">Пример чек-листа API</h4>
+          <div className="space-y-2">
+            {apiChecklist.map((item, index) => (
+              <div key={item} className="flex items-start gap-2 text-sm text-foreground">
+                <CheckSquare className="w-4 h-4 mt-0.5 shrink-0 text-muted-foreground" />
+                <span><span className="text-muted-foreground mr-1">{index + 1}.</span>{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <ExportCard text={exportText} filename="api-testing-checklist.md" />
+      </div>
+    </section>
+  );
+}
+
 // ─── Checklist (AI + Manual) ──────────────────────────
 interface ChecklistDocItem { id: string; text: string; category: "positive" | "negative" | "boundary" | "nonfunctional"; priority: "P1" | "P2" | "P3" }
 
@@ -119,6 +220,7 @@ function ChecklistDocSection() {
 
   return (
     <div className="space-y-5">
+      <ApiTestingChecklistReference />
       {/* Mode switcher */}
       <div className="flex items-center gap-1 bg-muted rounded-xl p-1 w-max">
         <button onClick={() => setMode("ai")} className={"flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all " + (mode === "ai" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
@@ -290,7 +392,7 @@ function TestCaseDocSection() {
   const [expected, setExpected] = useState("");
   const [actualResult, setActualResult] = useState("");
   const [priority, setPriority] = useState("P2");
-  const [severity, setSeverity] = useState("medium");
+  const [severity, setSeverity] = useState("major");
   const [status, setStatus] = useState("Draft");
   const [author, setAuthor] = useState("");
   const [date, setDate] = useState(today);
@@ -311,7 +413,7 @@ function TestCaseDocSection() {
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <DocSelect label="Приоритет" required value={priority} onChange={setPriority} options={[{value:"P1",label:"P1 (Высокий)"},{value:"P2",label:"P2 (Средний)"},{value:"P3",label:"P3 (Низкий)"}]} />
-          <DocSelect label="Серьёзность" required value={severity} onChange={setSeverity} options={[{value:"critical",label:"Critical"},{value:"high",label:"High"},{value:"medium",label:"Medium"},{value:"low",label:"Low"}]} />
+          <DocSelect label="Серьёзность" required value={severity} onChange={setSeverity} options={[{value:"blocker",label:"Blocker"},{value:"critical",label:"Critical"},{value:"major",label:"Major"},{value:"minor",label:"Minor"},{value:"trivial",label:"Trivial"}]} />
           <DocSelect label="Статус" value={status} onChange={setStatus} options={[{value:"Draft",label:"Draft"},{value:"Ready",label:"Ready"},{value:"Approved",label:"Approved"},{value:"Obsolete",label:"Obsolete"}]} />
           <div>
             <DocDateField label="Дата создания" value={date} onChange={setDate} required />
