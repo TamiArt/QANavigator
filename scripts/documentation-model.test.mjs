@@ -21,6 +21,12 @@ const rtm = loadModel("src/app/features/documentation/rtm-model.ts");
 const documents = loadModel("src/app/features/documentation/document-markdown.ts");
 const documentFormat = loadModel("src/app/features/documentation/document-format.ts");
 
+const documentationModuleSource = fs.readFileSync(
+  path.resolve("src/app/features/documentation/DocumentationModule.tsx"),
+  "utf8",
+);
+
+
 const requirements = [
   { id: "1", reqId: "REQ-001", title: "Login", priority: "high" },
   { id: "2", reqId: "REQ-002", title: "Password reset", priority: "medium" },
@@ -41,6 +47,26 @@ test("documentation tabs expose the complete stable tab contract", () => {
   for (const tab of tabs.DOCUMENT_TABS) {
     assert.ok(tab.label);
     assert.ok(tab.iconName);
+  }
+});
+
+test("API checklist documents method-dependent headers and example checks", () => {
+  assert.match(documentationModuleSource, /Тестирование API/);
+  assert.match(documentationModuleSource, /Пример чек-листа API/);
+  assert.match(documentationModuleSource, /Content-Type/);
+  assert.match(documentationModuleSource, /Authorization/);
+  assert.match(documentationModuleSource, /Accept/);
+  assert.match(documentationModuleSource, /Content-Type<\/code> описывает формат отправляемого тела/);
+  assert.match(documentationModuleSource, /не является обязательным/);
+});
+
+test("test-case severity options use the requested five levels", () => {
+  for (const level of ["Blocker", "Critical", "Major", "Minor", "Trivial"]) {
+    assert.match(documentationModuleSource, new RegExp('label:"' + level + '"'));
+  }
+  const severityField = documentationModuleSource.match(/<DocSelect label="Серьёзность" required value={severity}[^>]+\/>/)?.[0] ?? "";
+  for (const value of ["blocker", "critical", "major", "minor", "trivial"]) {
+    assert.ok(severityField.includes(`value:"${value}"`), `missing severity value: ${value}`);
   }
 });
 
