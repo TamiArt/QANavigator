@@ -64,7 +64,7 @@ test("test-case severity options use the requested five levels", () => {
   for (const level of ["Blocker", "Critical", "Major", "Minor", "Trivial"]) {
     assert.match(documentationModuleSource, new RegExp('label:"' + level + '"'));
   }
-  assert.doesNotMatch(documentationModuleSource, /label:"High"|label:"Medium"|label:"Low"/);
+  assert.match(documentationModuleSource, /<DocSelect label="Серьёзность" required value={severity} onChange={setSeverity} options=\[\{value:"blocker",label:"Blocker"\},\{value:"critical",label:"Critical"\},\{value:"major",label:"Major"\},\{value:"minor",label:"Minor"\},\{value:"trivial",label:"Trivial"\}\]\} \/>/);
 });
 
 test("RTM coverage counts linked test cases per requirement", () => {
