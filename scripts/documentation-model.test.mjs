@@ -64,7 +64,10 @@ test("test-case severity options use the requested five levels", () => {
   for (const level of ["Blocker", "Critical", "Major", "Minor", "Trivial"]) {
     assert.match(documentationModuleSource, new RegExp('label:"' + level + '"'));
   }
-  const severityField = documentationModuleSource.match(/<DocSelect label="Серьёзность" required value={severity}[^>]+\/>/)?.[0] ?? "";\n  for (const value of ["blocker", "critical", "major", "minor", "trivial"]) {\n    assert.ok(severityField.includes(`value:"${value}"`), `missing severity value: ${value}`);\n  }
+  const severityField = documentationModuleSource.match(/<DocSelect label="Серьёзность" required value={severity}[^>]+\/>/)?.[0] ?? "";
+  for (const value of ["blocker", "critical", "major", "minor", "trivial"]) {
+    assert.ok(severityField.includes(`value:"${value}"`), `missing severity value: ${value}`);
+  }
 });
 
 test("RTM coverage counts linked test cases per requirement", () => {
