@@ -1911,10 +1911,15 @@ Implemented on `fix/documentation-api-checklist-visibility`:
 
 - moved the API checklist out of the general checklist editor into its own `API-чек-лист` documentation tab;
 - made the API checklist the initial Documentation tab so the feature is immediately visible when opening the section;
-- added regression coverage for the new tab contract, default selection and render mapping;
-- kept Module 6 as a title-only placeholder; no lesson content was added.
+- added regression coverage for the new tab contract, default selection and render mapping.
 
-Verification must be confirmed against this branch's head via GitHub Actions before the change is considered complete.
+### 7.1.62 Learning Mode — Module 6 API curriculum and test-contract alignment — 2026-10-27
+
+- Module 6 `module-6-api` now registers the eight structured lessons from `handbook-learning-module6.ts`;
+- updated `test:handbook-learning` to verify the populated Module 6 contract and all eight lesson IDs, instead of the obsolete title-only placeholder assertion;
+- retained the separate `test:module6-learning` regression test for lesson content and infographic coverage.
+
+Verification must be confirmed against the current branch head via GitHub Actions and `npm run verify` before this block is considered complete.
 
 
 ### 7.1.62 Checklist quick-start templates — 2026-10-27
