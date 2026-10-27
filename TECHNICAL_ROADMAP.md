@@ -1915,3 +1915,13 @@ Implemented on `fix/documentation-api-checklist-visibility`:
 - kept Module 6 as a title-only placeholder; no lesson content was added.
 
 Verification must be confirmed against this branch's head via GitHub Actions before the change is considered complete.
+
+
+### 7.1.62 Checklist quick-start templates — 2026-10-27
+
+Updated on `fix/documentation-api-checklist-visibility` per requested information architecture:
+
+- moved API checklist access inside the `Чек-лист` tab under `Быстрый старт — шаблоны`; removed API as a top-level documentation tab;
+- added concrete example checks for input forms, authentication/registration, buttons/CTA, payments, tables/search, and custom functionality;
+- each example can be previewed and loaded into the checklist generator; API checklist remains available inline from its quick-start card;
+- added regression tests for the nested API checklist and the preset example catalogue.
