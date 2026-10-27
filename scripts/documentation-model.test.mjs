@@ -40,7 +40,7 @@ const links = new Set(["REQ-001:TC-001", "REQ-002:TC-002"]);
 test("documentation tabs expose the complete stable tab contract", () => {
   assert.deepEqual(
     JSON.parse(JSON.stringify(tabs.DOCUMENT_TAB_IDS)),
-    ["checklist", "testcase", "testplan", "bugreport", "testreport", "teststrategy", "testdata", "rtm"],
+    ["checklist", "api-checklist", "testcase", "testplan", "bugreport", "testreport", "teststrategy", "testdata", "rtm"],
   );
   assert.equal(tabs.DOCUMENT_TABS.length, tabs.DOCUMENT_TAB_IDS.length);
   assert.equal(new Set(tabs.DOCUMENT_TAB_IDS).size, tabs.DOCUMENT_TAB_IDS.length);
@@ -48,6 +48,12 @@ test("documentation tabs expose the complete stable tab contract", () => {
     assert.ok(tab.label);
     assert.ok(tab.iconName);
   }
+});
+
+test("API checklist has a dedicated, initially visible documentation tab", () => {
+  assert.equal(tabs.DOCUMENT_TABS.find((tab) => tab.id === "api-checklist")?.label, "API-чек-лист");
+  assert.match(documentationModuleSource, /useState<DocTab>\("api-checklist"\)/);
+  assert.match(documentationModuleSource, /activeTab === "api-checklist" && <ApiTestingChecklistReference \/>/);
 });
 
 test("API checklist documents method-dependent headers and example checks", () => {
