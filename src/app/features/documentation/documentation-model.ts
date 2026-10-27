@@ -1,13 +1,14 @@
-export type DocTab = "checklist" | "testcase" | "testplan" | "bugreport" | "testreport" | "teststrategy" | "testdata" | "rtm";
+export type DocTab = "checklist" | "api-checklist" | "testcase" | "testplan" | "bugreport" | "testreport" | "teststrategy" | "testdata" | "rtm";
 
 export interface DocumentTab {
   id: DocTab;
   label: string;
-  iconName: "CheckSquare" | "FileText" | "Clipboard" | "Bug" | "BarChart2" | "Layers" | "ShieldCheck" | "Database";
+  iconName: "CheckSquare" | "FileText" | "Clipboard" | "Bug" | "BarChart2" | "Layers" | "ShieldCheck" | "Database" | "Zap";
 }
 
 export const DOCUMENT_TABS: DocumentTab[] = [
   { id: "checklist", label: "Чек-лист", iconName: "CheckSquare" },
+  { id: "api-checklist", label: "API-чек-лист", iconName: "Zap" },
   { id: "testcase", label: "Тест-кейс", iconName: "FileText" },
   { id: "testplan", label: "Тест-план", iconName: "Clipboard" },
   { id: "bugreport", label: "Баг-репорт", iconName: "Bug" },
