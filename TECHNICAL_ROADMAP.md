@@ -1903,3 +1903,15 @@ Scope guard:
 При объяснении типов данных и SQL-синтаксиса отдельно отмечены различия между СУБД, чтобы учебные примеры не представляли поведение MySQL как универсальное для всех баз данных.
 
 Проверка: GitHub Actions \`npm run verify\` была зелёной на предыдущем состоянии ветки. После этого изменения требуется дождаться нового CI и подтвердить полный \`npm run verify\`; не считать блок завершённым до зелёного результата.
+
+
+### 7.1.61 Documentation API checklist visibility — 2026-10-27
+
+Implemented on `fix/documentation-api-checklist-visibility`:
+
+- moved the API checklist out of the general checklist editor into its own `API-чек-лист` documentation tab;
+- made the API checklist the initial Documentation tab so the feature is immediately visible when opening the section;
+- added regression coverage for the new tab contract, default selection and render mapping;
+- kept Module 6 as a title-only placeholder; no lesson content was added.
+
+Verification must be confirmed against this branch's head via GitHub Actions before the change is considered complete.
