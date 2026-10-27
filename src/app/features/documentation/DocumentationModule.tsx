@@ -6,7 +6,7 @@ import { CopyButton, Badge, EmptyState } from "../../components/shared";
 import { PRESETS } from "../../core/constants";
 import { callAI, QA_SYSTEM_PROMPT, uid } from "../../core/ai";
 import type { ChecklistItem, TestCase, Module, Severity } from "../../domain/types";
-import { DOCUMENT_TABS } from "./documentation-model";
+import { DOCUMENT_TABS, type DocTab } from "./documentation-model";
 import { buildTestCaseMarkdown } from "./document-markdown";
 import { buildRTMCsv, calculateRTMCoverage } from "./rtm-model";
 import type { RTMRequirement, RTMTestCase } from "./rtm-model";
@@ -117,6 +117,34 @@ function ApiTestingChecklistReference() {
   );
 }
 
+// Example checklist templates shown in "Быстрый старт — шаблоны".
+const CHECKLIST_EXAMPLE_TEMPLATES: Record<string, { description: string; checks: string[] }> = {
+  "input-form": {
+    description: "Форма ввода: обязательные поля, формат email, минимальная и максимальная длина, сообщения об ошибках.",
+    checks: ["Форма отображается со всеми полями и подсказками", "Обязательное поле не принимает пустое значение", "Пробелы в начале и конце обрабатываются ожидаемо", "Проверяется корректный и некорректный формат email", "Проверяются минимальная и максимальная длина", "Ошибка показана рядом с соответствующим полем", "Валидные данные успешно отправляются", "При ошибке сервера введённые данные не теряются"],
+  },
+  "auth": {
+    description: "Авторизация и регистрация: email, пароль, создание учётной записи, вход, выход и восстановление пароля.",
+    checks: ["Регистрация с валидными данными проходит успешно", "Повторная регистрация с занятым email отклоняется", "Неверный формат email не принимается", "Пароль проверяется по требованиям сложности", "Вход с правильными учётными данными успешен", "Неверный пароль не авторизует пользователя", "Восстановление пароля отправляет ожидаемое подтверждение", "После выхода защищённая страница недоступна без входа"],
+  },
+  "button-cta": {
+    description: "Кнопка или CTA: состояния, доступность, повторные нажатия и результат действия.",
+    checks: ["Кнопка отображается в правильном состоянии", "Действие запускается одним нажатием", "Во время обработки отображается loading", "Во время отправки повторное нажатие предотвращено или обработано безопасно", "Disabled-кнопка не запускает действие", "Клавиша Enter или Space работает там, где ожидается", "После ошибки пользователь может повторить действие", "Успешное действие приводит к ожидаемому экрану или результату"],
+  },
+  "payment": {
+    description: "Оплата: сумма, платёжные данные, ошибки провайдера и подтверждение результата.",
+    checks: ["Сумма и валюта совпадают с заказом", "Невалидные или неполные платёжные данные отклоняются", "Успешная оплата создаёт ожидаемый статус заказа", "Отказ банка отображается понятным сообщением", "Повторная отправка не создаёт двойное списание", "Обновление страницы не дублирует платёж", "Секретные платёжные данные не попадают в логи и интерфейс", "Статус заказа обновляется после подтверждения провайдера"],
+  },
+  "search-table": {
+    description: "Таблица и поиск: выдача, пустые результаты, фильтры, сортировка и страницы.",
+    checks: ["Поиск возвращает записи по точному совпадению", "Частичный запрос возвращает ожидаемые результаты", "Поиск без совпадений показывает пустое состояние", "Фильтры можно применить и сбросить", "Сортировка меняет порядок согласно выбранному столбцу", "Пагинация не повторяет и не пропускает записи", "Состояние фильтров сохраняется при допустимой навигации", "Пустые и ошибочные ответы обработаны корректно"],
+  },
+  "custom": {
+    description: "Своя функциональность: укажите цель, основные сценарии, ошибки и граничные условия.",
+    checks: ["Основной позитивный сценарий работает", "Обязательные данные валидируются", "Невалидные данные обрабатываются корректно", "Граничные значения проверены", "Ошибки понятны пользователю", "Повторное действие не приводит к дублированию", "Состояние сохраняется после обновления, если это предусмотрено", "Права доступа и нефункциональные требования проверены"],
+  },
+};
+
 // ─── Checklist (AI + Manual) ──────────────────────────
 interface ChecklistDocItem { id: string; text: string; category: "positive" | "negative" | "boundary" | "nonfunctional"; priority: "P1" | "P2" | "P3" }
 
@@ -127,6 +155,8 @@ function ChecklistDocSection() {
   // ── AI mode state ────────────────────────────────────
   const [preset, setPreset] = useState<string | null>(null);
   const [featureDesc, setFeatureDesc] = useState("");
+  const [showApiTemplate, setShowApiTemplate] = useState(false);
+  const [templatePreview, setTemplatePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [expandingId, setExpandingId] = useState<string | null>(null);
   const [aiError, setAiError] = useState("");
@@ -220,7 +250,6 @@ function ChecklistDocSection() {
 
   return (
     <div className="space-y-5">
-      <ApiTestingChecklistReference />
       {/* Mode switcher */}
       <div className="flex items-center gap-1 bg-muted rounded-xl p-1 w-max">
         <button onClick={() => setMode("ai")} className={"flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all " + (mode === "ai" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
@@ -247,14 +276,41 @@ function ChecklistDocSection() {
 
           <div className="space-y-3">
             <label className="text-sm font-medium text-foreground">Быстрый старт — шаблоны</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            <p className="text-xs text-muted-foreground">Выберите готовый пример, чтобы посмотреть проверки и перенести описание в генератор. Шаблоны можно адаптировать под требования своего проекта.</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
               {PRESETS.map(p => (
-                <button key={p.id} onClick={() => { setPreset(p.id); if (p.id !== "custom") setFeatureDesc(p.name + ": " + p.hint); else setFeatureDesc(""); }} className={"flex flex-col items-center gap-1.5 p-3 rounded-xl border text-xs transition-all " + (preset === p.id ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/40")}>
+                <button key={p.id} onClick={() => {
+                  setPreset(p.id);
+                  setShowApiTemplate(false);
+                  setTemplatePreview(p.id);
+                  setFeatureDesc(CHECKLIST_EXAMPLE_TEMPLATES[p.id]?.description ?? "");
+                }} className={"flex flex-col items-center gap-1.5 p-3 rounded-xl border text-xs transition-all " + (preset === p.id && !showApiTemplate ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/40")}>
                   <span className="text-xl">{p.icon}</span>
                   <span className="font-medium text-center leading-tight">{p.name}</span>
+                  <span className="text-[10px] text-center leading-snug">{p.hint}</span>
                 </button>
               ))}
+              <button onClick={() => { setPreset("api"); setShowApiTemplate(true); setTemplatePreview(null); }} className={"flex flex-col items-center gap-1.5 p-3 rounded-xl border text-xs transition-all " + (showApiTemplate ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/40")}>
+                <Zap className="w-5 h-5" />
+                <span className="font-medium text-center leading-tight">Тестирование API</span>
+                <span className="text-[10px] text-center leading-snug">endpoint, HTTP, статусы, JSON</span>
+              </button>
             </div>
+            {templatePreview && CHECKLIST_EXAMPLE_TEMPLATES[templatePreview] && (
+              <div className="border border-border rounded-xl overflow-hidden">
+                <div className="px-4 py-3 bg-muted/50 border-b border-border flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground">Пример: {PRESETS.find(p => p.id === templatePreview)?.name ?? "Чек-лист"}</h4>
+                    <p className="text-xs text-muted-foreground mt-1">{CHECKLIST_EXAMPLE_TEMPLATES[templatePreview].description}</p>
+                  </div>
+                  <button onClick={() => { setFeatureDesc(CHECKLIST_EXAMPLE_TEMPLATES[templatePreview].description + "\n\nПримерные проверки:\n" + CHECKLIST_EXAMPLE_TEMPLATES[templatePreview].checks.map((check, index) => (index + 1) + ". " + check).join("\n")); setMode("ai"); }} className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium">Использовать шаблон</button>
+                </div>
+                <ol className="p-4 space-y-2 list-decimal list-inside">
+                  {CHECKLIST_EXAMPLE_TEMPLATES[templatePreview].checks.map(check => <li key={check} className="text-sm text-foreground">{check}</li>)}
+                </ol>
+              </div>
+            )}
+            {showApiTemplate && <ApiTestingChecklistReference />}
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-5 gap-5">
@@ -965,7 +1021,7 @@ function RTMSection() {
 
 // ─── Main Documentation Module ────────────────────────
 export function DocumentationModule() {
-  const [activeTab, setActiveTab] = useState<DocTab>("testplan");
+  const [activeTab, setActiveTab] = useState<DocTab>("checklist");
 
   const tabs = DOCUMENT_TABS.map((tab) => ({
     ...tab,

@@ -1903,3 +1903,30 @@ Scope guard:
 При объяснении типов данных и SQL-синтаксиса отдельно отмечены различия между СУБД, чтобы учебные примеры не представляли поведение MySQL как универсальное для всех баз данных.
 
 Проверка: GitHub Actions \`npm run verify\` была зелёной на предыдущем состоянии ветки. После этого изменения требуется дождаться нового CI и подтвердить полный \`npm run verify\`; не считать блок завершённым до зелёного результата.
+
+
+### 7.1.61 Documentation API checklist visibility — 2026-10-27
+
+Implemented on `fix/documentation-api-checklist-visibility`:
+
+- moved the API checklist out of the general checklist editor into its own `API-чек-лист` documentation tab;
+- made the API checklist the initial Documentation tab so the feature is immediately visible when opening the section;
+- added regression coverage for the new tab contract, default selection and render mapping.
+
+### 7.1.62 Learning Mode — Module 6 API curriculum and test-contract alignment — 2026-10-27
+
+- Module 6 `module-6-api` now registers the eight structured lessons from `handbook-learning-module6.ts`;
+- updated `test:handbook-learning` to verify the populated Module 6 contract and all eight lesson IDs, instead of the obsolete title-only placeholder assertion;
+- retained the separate `test:module6-learning` regression test for lesson content and infographic coverage.
+
+Verification must be confirmed against the current branch head via GitHub Actions and `npm run verify` before this block is considered complete.
+
+
+### 7.1.62 Checklist quick-start templates — 2026-10-27
+
+Updated on `fix/documentation-api-checklist-visibility` per requested information architecture:
+
+- moved API checklist access inside the `Чек-лист` tab under `Быстрый старт — шаблоны`; removed API as a top-level documentation tab;
+- added concrete example checks for input forms, authentication/registration, buttons/CTA, payments, tables/search, and custom functionality;
+- each example can be previewed and loaded into the checklist generator; API checklist remains available inline from its quick-start card;
+- added regression tests for the nested API checklist and the preset example catalogue.

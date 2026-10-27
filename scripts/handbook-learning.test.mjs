@@ -551,16 +551,22 @@ test("Learning Mode navigation continues across module boundaries and preserves 
 });
 
 
-test("Modules 6 and 7 are registered in the intended order; Module 6 remains title-only", () => {
+test("Modules 6 and 7 are registered in order and Module 6 contains the approved API lessons", () => {
   const source = fs.readFileSync("src/app/features/handbook/handbook-learning.ts", "utf8");
   const module6 = source.indexOf('id: "module-6-api"');
   const module7 = source.indexOf('id: "module-7-sql"');
-  assert.ok(module6 >= 0, "Module 6 placeholder must be registered");
-  assert.ok(module7 > module6, "SQL module must follow the API placeholder");
-  assert.ok(source.includes('id: "module-6-api",\n    title: "Модуль 6 — Работа с API",\n    lessons: [],'));
+  assert.ok(module6 >= 0, "Module 6 must be registered");
+  assert.ok(module7 > module6, "SQL module must follow the API module");
+  assert.ok(source.includes('id: "module-6-api",\n    title: "Модуль 6 — Работа с API",\n    lessons: HANDBOOK_LEARNING_MODULE_6_LESSONS'));
   assert.ok(source.includes('id: "module-7-sql",\n    title: "Модуль 7 — SQL",\n    lessons: HANDBOOK_LEARNING_MODULE_7_LESSONS'));
+
+  const module6Lessons = fs.readFileSync("src/app/features/handbook/handbook-learning-module6.ts", "utf8");
+  assert.equal((module6Lessons.match(/id: "m6-\d{2}"/g) ?? []).length, 8, "Module 6 must contain eight lessons");
+  for (const id of ["m6-01", "m6-02", "m6-03", "m6-04", "m6-05", "m6-06", "m6-07", "m6-08"]) {
+    assert.ok(module6Lessons.includes('id: "' + id + '"'), "Missing Module 6 lesson " + id);
+  }
+
   const ui = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
   assert.match(ui, /activeLesson \? \(/);
-  assert.match(ui, /Материалы этого модуля будут добавлены позже/);
   assert.match(ui, /module\.lessons\.length === 0/);
 });
