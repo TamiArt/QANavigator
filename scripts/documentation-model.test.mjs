@@ -40,7 +40,7 @@ const links = new Set(["REQ-001:TC-001", "REQ-002:TC-002"]);
 test("documentation tabs expose the complete stable tab contract", () => {
   assert.deepEqual(
     JSON.parse(JSON.stringify(tabs.DOCUMENT_TAB_IDS)),
-    ["checklist", "api-checklist", "testcase", "testplan", "bugreport", "testreport", "teststrategy", "testdata", "rtm"],
+    ["checklist", "testcase", "testplan", "bugreport", "testreport", "teststrategy", "testdata", "rtm"],
   );
   assert.equal(tabs.DOCUMENT_TABS.length, tabs.DOCUMENT_TAB_IDS.length);
   assert.equal(new Set(tabs.DOCUMENT_TAB_IDS).size, tabs.DOCUMENT_TAB_IDS.length);
@@ -50,10 +50,21 @@ test("documentation tabs expose the complete stable tab contract", () => {
   }
 });
 
-test("API checklist has a dedicated, initially visible documentation tab", () => {
-  assert.equal(tabs.DOCUMENT_TABS.find((tab) => tab.id === "api-checklist")?.label, "API-чек-лист");
-  assert.match(documentationModuleSource, /useState<DocTab>\("api-checklist"\)/);
-  assert.match(documentationModuleSource, /activeTab === "api-checklist" && <ApiTestingChecklistReference \/>/);
+test("API checklist is inside the Checklist quick-start templates, not a separate tab", () => {
+  assert.ok(!tabs.DOCUMENT_TAB_IDS.includes("api-checklist"));
+  assert.match(documentationModuleSource, /Быстрый старт — шаблоны/);
+  assert.match(documentationModuleSource, /setShowApiTemplate\(true\)/);
+  assert.match(documentationModuleSource, /\{showApiTemplate && <ApiTestingChecklistReference \/>\}/);
+  assert.match(documentationModuleSource, /useState<DocTab>\("checklist"\)/);
+});
+
+test("quick-start includes concrete examples for each checklist preset", () => {
+  for (const presetId of ["input-form", "auth", "button-cta", "payment", "search-table", "custom"]) {
+    assert.match(documentationModuleSource, new RegExp('"' + presetId + '": \\{'));
+  }
+  assert.match(documentationModuleSource, /Форма ввода/);
+  assert.match(documentationModuleSource, /Авторизация и регистрация/);
+  assert.match(documentationModuleSource, /Использовать шаблон/);
 });
 
 test("API checklist documents method-dependent headers and example checks", () => {
