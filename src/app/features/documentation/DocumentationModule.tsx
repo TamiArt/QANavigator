@@ -1033,7 +1033,6 @@ export function DocumentationModule() {
       tab.iconName === "BarChart2" ? <BarChart2 className="w-4 h-4" /> :
       tab.iconName === "ShieldCheck" ? <ShieldCheck className="w-4 h-4" /> :
       tab.iconName === "Database" ? <Database className="w-4 h-4" /> :
-      tab.iconName === "Zap" ? <Zap className="w-4 h-4" /> :
       <Layers className="w-4 h-4" />,
   }));
 
