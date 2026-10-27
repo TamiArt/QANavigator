@@ -6,7 +6,7 @@ import { CopyButton, Badge, EmptyState } from "../../components/shared";
 import { PRESETS } from "../../core/constants";
 import { callAI, QA_SYSTEM_PROMPT, uid } from "../../core/ai";
 import type { ChecklistItem, TestCase, Module, Severity } from "../../domain/types";
-import { DOCUMENT_TABS } from "./documentation-model";
+import { DOCUMENT_TABS, type DocTab } from "./documentation-model";
 import { buildTestCaseMarkdown } from "./document-markdown";
 import { buildRTMCsv, calculateRTMCoverage } from "./rtm-model";
 import type { RTMRequirement, RTMTestCase } from "./rtm-model";
@@ -220,7 +220,6 @@ function ChecklistDocSection() {
 
   return (
     <div className="space-y-5">
-      <ApiTestingChecklistReference />
       {/* Mode switcher */}
       <div className="flex items-center gap-1 bg-muted rounded-xl p-1 w-max">
         <button onClick={() => setMode("ai")} className={"flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all " + (mode === "ai" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
@@ -965,7 +964,7 @@ function RTMSection() {
 
 // ─── Main Documentation Module ────────────────────────
 export function DocumentationModule() {
-  const [activeTab, setActiveTab] = useState<DocTab>("testplan");
+  const [activeTab, setActiveTab] = useState<DocTab>("api-checklist");
 
   const tabs = DOCUMENT_TABS.map((tab) => ({
     ...tab,
@@ -977,6 +976,7 @@ export function DocumentationModule() {
       tab.iconName === "BarChart2" ? <BarChart2 className="w-4 h-4" /> :
       tab.iconName === "ShieldCheck" ? <ShieldCheck className="w-4 h-4" /> :
       tab.iconName === "Database" ? <Database className="w-4 h-4" /> :
+      tab.iconName === "Zap" ? <Zap className="w-4 h-4" /> :
       <Layers className="w-4 h-4" />,
   }));
 
@@ -1001,6 +1001,7 @@ export function DocumentationModule() {
         </div>
       </div>
 
+      {activeTab === "api-checklist" && <ApiTestingChecklistReference />}
       {activeTab === "checklist" && <ChecklistDocSection />}
       {activeTab === "testcase" && <TestCaseDocSection />}
       {activeTab === "testplan" && <TestPlanDocSection />}
