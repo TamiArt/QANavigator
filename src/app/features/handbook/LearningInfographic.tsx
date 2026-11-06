@@ -562,6 +562,11 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "Повтор и сбой", text: "Проверить таймауты, повторные события и идемпотентность." },
     { title: "Наблюдаемость", text: "Сопоставить логи, идентификаторы и итоговое состояние данных." },
   ], "Интеграционные дефекты часто возникают на стыке исправных компонентов."),
+  "m5-14": V("cycle", ["Create", "Read", "Update", "Delete"], GitBranch, "blue", [
+    { title: "SQL", text: "INSERT создаёт, SELECT читает, UPDATE изменяет, DELETE удаляет записи." },
+    { title: "REST API", text: "POST создаёт, GET читает, PUT/PATCH изменяют, DELETE удаляет ресурс." },
+    { title: "QA", text: "Проверить результат, права доступа и сохранность остальных данных." },
+  ], "CRUD — создать, прочитать, изменить и удалить данные."),
 };
 
 const ACCENT_STYLES: Record<Accent, { marker: string; card: string; badge: string; line: string }> = {
