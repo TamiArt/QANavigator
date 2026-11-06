@@ -1962,3 +1962,13 @@ Verification: run `npm run test:module7-learning` and the full `npm run verify` 
 - added a matching lesson infographic and regression assertions; existing lessons were left intact.
 
 Verification: run `npm run test:module5-learning` and the full `npm run verify` against the latest branch head; do not mark the changes verified until checks complete.
+
+
+### 7.1.66 Learning Mode — CAP theorem explanation in Module 7 lesson 3 — 2026-11-06
+
+- expanded the existing CAP bullet in lesson m7-03 with plain-language definitions of Consistency, Availability, and Partition Tolerance;
+- added a two-server network-partition scenario and an online-store example illustrating the consistency/availability trade-off;
+- clarified that the CAP trade-off applies during a network partition, rather than describing a permanent choice of any two properties;
+- clarified the matching lesson infographic.
+
+Verification: run `npm run test:module7-learning` and the full `npm run verify` against the latest branch head.
