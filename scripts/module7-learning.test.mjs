@@ -18,6 +18,20 @@ test("Module 7 contains the SQL and database concepts in curriculum order", () =
     "Подключение к MySQL через командную строку",
   ];
   assert.equal((source.match(/id: "m7-\d{2}"/g) ?? []).length, 11);
+  for (const term of [
+    "три идеализированных свойства",
+    "самую свежую запись",
+    "не упавшему узлу",
+    "Теорема CAP (теорема Брюера)",
+    "CP-системы",
+    "AP-системы",
+    "eventual consistency",
+    "Apache Cassandra",
+    "CouchDB",
+    "HBase"
+  ]) {
+    assert.ok(source.toLowerCase().includes(term.toLowerCase()), "Missing CAP concept: " + term);
+  }
   const positions = expected.map((title) => {
     const position = source.indexOf('title: "' + title + '"');
     assert.notEqual(position, -1, "Missing lesson: " + title);
