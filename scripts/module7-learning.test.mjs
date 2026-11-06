@@ -26,7 +26,7 @@ test("Module 7 contains the SQL and database concepts in curriculum order", () =
   for (let i = 1; i < positions.length; i += 1) {
     assert.ok(positions[i - 1] < positions[i], "Lesson order is wrong at " + expected[i]);
   }
-  for (const term of ["Primary Key", "Foreign Key", "MongoDB", "Redis", "ClickHouse", "Neo4j", "Elasticsearch", "InfluxDB", "шардирование", "CAP-теорема", "ACID", "1НФ", "2НФ", "3НФ", "One-to-Many", "Many-to-Many", "SHOW DATABASES;", "mysql -u root -p", "Structured Query Language", "DECIMAL", "VARCHAR", "INT4", "NULL", "INSERT INTO", "UPDATE users", "INNER JOIN", "FULL OUTER JOIN", "GROUP BY", "ORDER BY", "COUNT(DISTINCT", "HAVING", "UNION ALL", "One-to-One", "LIKE", "SELECT DISTINCT", "AS", "Прямой доступ к БД", "Через API", "Через фронтенд"]) {
+  for (const term of ["Primary Key", "Foreign Key", "MongoDB", "Redis", "ClickHouse", "Neo4j", "Elasticsearch", "InfluxDB", "шардирование", "CAP-теорема", "ACID", "Atomicity", "Consistency", "Isolation", "Durability", "ROLLBACK", "COMMIT", "1НФ", "2НФ", "3НФ", "One-to-Many", "Many-to-Many", "SHOW DATABASES;", "mysql -u root -p", "Structured Query Language", "DECIMAL", "VARCHAR", "INT4", "NULL", "INSERT INTO", "UPDATE users", "INNER JOIN", "FULL OUTER JOIN", "GROUP BY", "ORDER BY", "COUNT(DISTINCT", "HAVING", "UNION ALL", "One-to-One", "LIKE", "SELECT DISTINCT", "AS", "Прямой доступ к БД", "Через API", "Через фронтенд"]) {
     assert.ok(source.toLowerCase().includes(term.toLowerCase()), "Missing key concept: " + term);
   }
 });
