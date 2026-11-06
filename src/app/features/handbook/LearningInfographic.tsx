@@ -63,6 +63,9 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
   ], "Выбирают модель под структуру данных, запросы и требования системы."),
   "m7-02": V("network", ["Таблицы", "Строки", "Столбцы", "PK", "FK"], Database, "lavender", [
     { title: "Таблица", text: "Сущность: Users, Orders или Products." },
+    { title: "Архитектура", text: "Фронтенд показывает интерфейс, бэкенд обрабатывает логику, БД хранит данные." },
+    { title: "СУБД", text: "Создаёт структуру, управляет запросами, данными и доступом." },
+    { title: "QA", text: "Проверяет сохранение, чтение, обновление и удаление данных." },
     { title: "Строка и столбец", text: "Запись об объекте и его типизированное поле." },
     { title: "Primary Key", text: "Уникально идентифицирует запись." },
     { title: "Foreign Key", text: "Ссылается на ключ и связывает записи." },
@@ -73,6 +76,9 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "Ключ — значение", text: "Доступ по ключу, часто кэш и сессии. Redis." },
     { title: "Колоночные", text: "Эффективная аналитика больших наборов. ClickHouse." },
     { title: "Графовые", text: "Узлы и рёбра для анализа связей. Neo4j." },
+    { title: "Поиск и время", text: "Elasticsearch и Solr; InfluxDB и Prometheus." },
+    { title: "Шардирование", text: "Деление данных на части для распределённого хранения." },
+    { title: "CAP", text: "Компромисс согласованности и доступности при сетевом разделении." },
   ], "NoSQL — семейство разных моделей, а не одна универсальная технология."),
   "m7-04": V("compare", ["Нормализация", "Денормализация", "Баланс"], Layers3, "yellow", [
     { title: "Нормализация", text: "Убирает лишние дубли и аномалии обновления." },
@@ -102,6 +108,8 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "DDL", text: "CREATE DATABASE, USE, DROP — управление базами и структурой." },
     { title: "Create / Read", text: "INSERT добавляет строки; SELECT читает и фильтрует." },
     { title: "Update / Delete", text: "UPDATE меняет данные; DELETE удаляет строки." },
+    { title: "SELECT и фильтры", text: "WHERE, LIKE и DISTINCT помогают находить нужные записи." },
+    { title: "Вычисления", text: "Арифметика и AS формируют вычисляемые поля и псевдонимы." },
     { title: "WHERE", text: "Без условия UPDATE или DELETE затронет все строки." },
   ], "Перед изменением данных внимательно проверь WHERE и область действия запроса."),
   "m7-09": V("network", ["JOIN", "GROUP BY", "HAVING", "UNION"], Database, "lavender", [
@@ -109,6 +117,9 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "GROUP BY", text: "Собирает строки в группы для COUNT, SUM и AVG." },
     { title: "WHERE / HAVING", text: "WHERE фильтрует строки до группировки; HAVING — группы после неё." },
     { title: "UNION / UNION ALL", text: "UNION убирает дубликаты; UNION ALL сохраняет их." },
+    { title: "Агрегаты", text: "COUNT, SUM, AVG, MIN и MAX подсчитывают показатели." },
+    { title: "Сортировка", text: "ORDER BY с ASC и DESC задаёт порядок результата." },
+    { title: "Проверка БД", text: "Прямо в БД, через API и сквозной сценарий UI." },
   ], "Проверяй совпадения, строки без пары, агрегаты и дубликаты."),
   "m7-10": V("flow", ["Скачать", "Установить", "Настроить"], Download, "orange", [
     { title: "Официальный источник", text: "MySQL Community Server на mysql.com." },
