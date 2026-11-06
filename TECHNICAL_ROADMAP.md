@@ -1942,3 +1942,13 @@ Updated on `fix/documentation-api-checklist-visibility` per requested informatio
 - updated existing lesson infographic summaries and Module 7 regression assertions; no duplicate lesson was created.
 
 Verification: run `npm run test:module7-learning` and the full `npm run verify` against this branch head. Do not mark the block verified until current-head CI and local checks pass.
+
+
+### 7.1.64 Learning Mode — ACID transaction principles — 2026-11-06
+
+- added an introductory ACID explanation to the existing Module 7 lesson on SQL command groups and TCL; no new lesson or duplicate topic was created;
+- explained Atomicity, Consistency, Isolation and Durability with short practical examples and QA-focused checks;
+- clarified that isolation guarantees depend on the selected transaction isolation level, and durability is subject to the DBMS guarantees and configuration;
+- added a concise ACID infographic summary and regression assertions for all four properties and transaction commands.
+
+Verification: run `npm run test:module7-learning` and the full `npm run verify` against the latest branch head; do not mark the changes as verified until checks complete.
