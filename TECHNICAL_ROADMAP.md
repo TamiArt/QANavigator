@@ -1952,3 +1952,13 @@ Verification: run `npm run test:module7-learning` and the full `npm run verify` 
 - added a concise ACID infographic summary and regression assertions for all four properties and transaction commands.
 
 Verification: run `npm run test:module7-learning` and the full `npm run verify` against the latest branch head; do not mark the changes as verified until checks complete.
+
+
+### 7.1.65 Learning Mode — CRUD fundamentals in Module 5 — 2026-11-06
+
+- added a separate Module 5 lesson explaining Create, Read, Update and Delete with beginner-friendly examples;
+- mapped CRUD operations to SQL commands and typical REST API HTTP methods, including the distinction between PUT and PATCH;
+- included QA checks for resulting data, access rights, repeated requests, and safe use of UPDATE / DELETE conditions;
+- added a matching lesson infographic and regression assertions; existing lessons were left intact.
+
+Verification: run `npm run test:module5-learning` and the full `npm run verify` against the latest branch head; do not mark the changes verified until checks complete.
