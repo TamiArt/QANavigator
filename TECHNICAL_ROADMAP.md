@@ -1930,3 +1930,15 @@ Updated on `fix/documentation-api-checklist-visibility` per requested informatio
 - added concrete example checks for input forms, authentication/registration, buttons/CTA, payments, tables/search, and custom functionality;
 - each example can be previewed and loaded into the checklist generator; API checklist remains available inline from its quick-start card;
 - added regression tests for the nested API checklist and the preset example catalogue.
+
+
+### 7.1.63 Learning Mode — Module 7 theory enrichment — 2026-11-06
+
+- extended the existing 11 SQL lessons using the supplied Module 7 theory document; lesson IDs, titles, order and installation lessons remain unchanged;
+- added the database/DBMS and frontend–backend–database context, database testing rationale, table cells and NOT NULL constraints;
+- expanded NoSQL coverage with search and time-series stores, sharding, scaling, CAP and a qualified SQL/NoSQL comparison;
+- added SQL selection/filtering details (comparison operators, LIKE, DISTINCT, arithmetic expressions and AS), aggregate functions, GROUP BY / ORDER BY details, and FULL OUTER JOIN support caveats;
+- added the three database testing approaches: direct DB checks, API-to-DB verification, and end-to-end frontend flow;
+- updated existing lesson infographic summaries and Module 7 regression assertions; no duplicate lesson was created.
+
+Verification: run `npm run test:module7-learning` and the full `npm run verify` against this branch head. Do not mark the block verified until current-head CI and local checks pass.
