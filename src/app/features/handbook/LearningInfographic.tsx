@@ -102,6 +102,7 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "DDL", text: "CREATE DATABASE, USE, DROP — управление базами и структурой." },
     { title: "SHOW DATABASES", text: "Показывает доступные пользователю базы в MySQL." },
     { title: "Другие группы", text: "DML меняет данные; SELECT читает; DCL управляет правами." },
+    { title: "ACID", text: "A — всё или ничего; C — данные корректны; I — параллельность; D — сохранность после подтверждения." },
     { title: "Осторожно", text: "DROP DATABASE удаляет базу вместе с объектами." },
   ], "Команды SHOW DATABASES и USE относятся к MySQL."),
   "m7-08": V("flow", ["CREATE", "INSERT", "SELECT", "UPDATE", "DELETE"], Code2, "mint", [
