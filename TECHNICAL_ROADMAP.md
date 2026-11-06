@@ -1972,3 +1972,15 @@ Verification: run `npm run test:module5-learning` and the full `npm run verify` 
 - clarified the matching lesson infographic.
 
 Verification: run `npm run test:module7-learning` and the full `npm run verify` against the latest branch head.
+
+
+### 7.1.67 CAP theorem explanation replaced with complete CP/AP model — 2026-11-06
+
+- replaced the previous simplified CAP explanation in Module 7, lesson 3 with the supplied definitions of the three idealized properties: Consistency, Availability and Partition Tolerance;
+- added the Brewer CAP theorem statement and explained the CP/AP trade-off during a network partition;
+- documented CP and AP behavior separately, including refusal/error or timeout behavior for CP and eventual consistency for AP;
+- added the supplied examples: quorum-based SQL configurations, MongoDB configurations and HBase for CP; Apache Cassandra, CouchDB, caches and DNS for AP;
+- aligned the lesson infographic with the new CP/AP framing;
+- added focused regression assertions for the required CAP terminology and examples.
+
+Validation: source-level changes committed. Focused tests and full `npm run verify` still need to be executed before this item is considered fully verified.
