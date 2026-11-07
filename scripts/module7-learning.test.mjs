@@ -68,7 +68,17 @@ test("Module 7 contains the SQL and database concepts in curriculum order", () =
     "SELECT *",
     "WHERE",
     "Операторы сравнения",
+    "BETWEEN",
+    "IN",
+    "обе границы включаются",
+    "тот же приоритет",
+    "Приоритет операторов в WHERE — от высшего к низшему",
+    "NOT",
+    "AND",
+    "OR",
     "LIKE",
+    "% — ноль, один или несколько любых символов",
+    "**_** — ровно один любой символ",
     "DISTINCT",
     "COUNT(*)",
     "COUNT(DISTINCT",
@@ -101,6 +111,41 @@ test("Module 7 contains the SQL and database concepts in curriculum order", () =
   }
   for (const term of ["Primary Key", "Foreign Key", "MongoDB", "Redis", "ClickHouse", "Neo4j", "Elasticsearch", "InfluxDB", "шардирование", "CAP-теорема", "ACID", "Atomicity", "Consistency", "Isolation", "Durability", "ROLLBACK", "COMMIT", "1НФ", "2НФ", "3НФ", "One-to-Many", "Many-to-Many", "SHOW DATABASES;", "mysql -u root -p", "Structured Query Language", "DECIMAL", "VARCHAR", "INT4", "NULL", "INSERT INTO", "UPDATE users", "INNER JOIN", "FULL OUTER JOIN", "GROUP BY", "ORDER BY", "COUNT(DISTINCT", "HAVING", "UNION ALL", "One-to-One", "LIKE", "SELECT DISTINCT", "AS", "Прямой доступ к БД", "Через API", "Через фронтенд"]) {
     assert.ok(source.toLowerCase().includes(term.toLowerCase()), "Missing key concept: " + term);
+  }
+});
+
+test("Module 7 lesson templates contain no unescaped Markdown backticks", () => {
+  const source = fs.readFileSync("src/app/features/handbook/handbook-learning-module7.ts", "utf8");
+  let unescapedCount = 0;
+  for (let index = 0; index < source.length; index += 1) {
+    if (source.charCodeAt(index) !== 96) continue;
+    let precedingBackslashes = 0;
+    for (let cursor = index - 1; cursor >= 0 && source[cursor] === "\\"; cursor -= 1) {
+      precedingBackslashes += 1;
+    }
+    if (precedingBackslashes % 2 === 0) unescapedCount += 1;
+  }
+  assert.equal(unescapedCount, 24, "Only the 12 lesson template openings and closings may use unescaped backticks");
+});
+test("SQL reference explains both LIKE wildcard characters", () => {
+  const source = fs.readFileSync("src/app/handbook-data-part-3.ts", "utf8");
+  assert.ok(source.includes("% — ноль или более любых символов"), "SQL reference must explain percent wildcard");
+  assert.ok(source.includes("_ — ровно один любой символ"), "SQL reference must explain underscore wildcard");
+});
+
+test("SQL knowledge base documents WHERE operator precedence", () => {
+  const source = fs.readFileSync("src/app/handbook-data-part-6.ts", "utf8");
+  for (const term of [
+    "Приоритет операторов в WHERE — от высшего к низшему",
+    "BETWEEN",
+    "IN",
+    "LIKE",
+    "IS NULL",
+    "NOT",
+    "AND",
+    "OR"
+  ]) {
+    assert.ok(source.toLowerCase().includes(term.toLowerCase()), "Missing SQL precedence guidance: " + term);
   }
 });
 

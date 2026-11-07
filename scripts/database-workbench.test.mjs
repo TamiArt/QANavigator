@@ -40,6 +40,19 @@ test("database workbench supports multiple WHERE conditions with AND and OR", ()
   assert.ok(source.includes('option value="OR"'));
   assert.ok(source.includes('clauses.join("\\\\n  ")') || source.includes('clauses.join("\\n  ")'));
   assert.ok(source.includes("Заполни столбец во всех добавленных условиях или удали пустое условие."));
+  assert.ok(source.includes("AND имеет более высокий приоритет, чем OR"), "SQL builder must explain AND precedence over OR");
+  assert.ok(source.includes("A OR B AND C читается как A OR (B AND C)"), "SQL builder must show the default logical grouping");
+  assert.ok(source.includes('"BETWEEN"'), "SQL builder must offer BETWEEN");
+  assert.ok(source.includes('operator === "BETWEEN"'), "SQL builder must generate a BETWEEN expression");
+  assert.ok(source.includes("укажи две границы через запятую"), "BETWEEN must validate both range boundaries");
+  assert.ok(source.includes("BETWEEN и IN имеют тот же приоритет"), "SQL builder must explain BETWEEN and IN precedence");
+});
+
+test("database workbench explains LIKE wildcard characters", () => {
+  assert.ok(source.includes('condition.operator === "LIKE" ? "Шаблон LIKE"'), "LIKE should have a dedicated field label");
+  assert.ok(source.includes("Например: Ан%, %ов, а_я"), "LIKE should show wildcard examples");
+  assert.ok(source.includes("% означает ноль или более любых символов"), "LIKE help must explain percent wildcard");
+  assert.ok(source.includes("_ — ровно один любой символ"), "LIKE help must explain underscore wildcard");
 });
 
 test("database workbench handles PostgreSQL and MySQL syntax differences", () => {
@@ -50,4 +63,22 @@ test("database workbench handles PostgreSQL and MySQL syntax differences", () =>
 test("database workbench never executes SQL or connects to a database", () => {
   assert.ok(source.includes("он не подключается к БД и ничего не выполняет"));
   assert.equal(/\b(mysql2|pg|sequelize|prisma|knex)\b/.test(source), false);
+});
+
+test("database workbench builds grouped aggregate queries with distinct counts and aliases", () => {
+  assert.ok(source.includes('type Operation = "select" | "aggregate"'), "GROUP BY must be available as a builder operation");
+  assert.ok(source.includes('case "aggregate":'), "aggregate operation must generate SQL");
+  assert.ok(source.includes('"COUNT(DISTINCT " + q(column) + ")"'), "distinct book counting must use a unique book identifier");
+  assert.ok(source.includes('"COUNT(*) AS " + aliasSql(alias)'), "COUNT(*) must support counting physical-copy rows");
+  assert.ok(source.includes('" + groupColumns.map(q).join(", ") + ";"'), "aggregate queries must group by the selected author column");
+  assert.ok(source.includes("groupAliases") && source.includes("aliasSql"), "grouped and aggregate output columns must support aliases");
+  assert.ok(source.includes('groupBy: "", groupAliases: ""'), "GROUP BY must not default to a domain-specific column");
+  assert.ok(source.includes('{ id: 1, fn: "COUNT", column: "*", alias: "total" }'), "aggregate metrics must start with a neutral COUNT(*) example");
+  assert.ok(source.includes('form.groupAliases.trim() ? form.groupAliases.split(",")'), "group-column aliases must be optional");
+  assert.ok(source.includes("Можно группировать по любым полям текущей таблицы"), "the UI must describe schema-agnostic grouping");
+  assert.ok(!source.includes('groupBy: "author"'), "author must not be hard-coded as the grouping column");
+  assert.ok(!source.includes('table: current.table === "users" ? "books" : current.table'), "switching to aggregation must not force a books table");
+  assert.ok(source.includes('title: "Различные книги и экземпляры по авторам"'));
+  assert.ok(source.includes("если в строке хранится количество в поле quantity, используй SUM(quantity)"), "the reference must explain the alternative quantity-column schema");
+  assert.ok(source.includes('dialect === "mysql"'), "aliases must be quoted according to the SQL dialect");
 });
