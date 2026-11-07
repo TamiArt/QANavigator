@@ -1995,3 +1995,11 @@ Validation: source-level changes committed. Focused tests and full `npm run veri
 - refreshed all three lesson infographics and added regression assertions for the requested terms and sections.
 
 Validation: source and regression assertions updated. Run the focused Module 7 test and full `npm run verify` before treating the work as fully verified.
+
+
+### 7.1.69 Learning Mode — Module 7 SQL fundamentals and practice lesson — 2026-11-07
+- expanded lesson 7 while preserving its existing DDL, database-selection, SQL command-group and ACID sections; added SQL/query definitions and the core operator pattern;
+- inserted a new lesson immediately after lesson 7 covering SELECT, WHERE, comparison and arithmetic operators, AS, DISTINCT, LIKE, INSERT/UPDATE/DELETE, aggregate functions, GROUP BY, HAVING, ORDER BY, JOIN variants and API-to-database verification;
+- shifted the IDs of the former lessons 8–11 to 9–12 and updated the matching infographic models and regression expectations;
+- corrected malformed examples from the supplied notes (SELECT *, multiplication *, four-character LIKE pattern) and clarified NULL counting and JOIN support differences.
+Validation: source, infographic entries and regression assertions updated. Run the focused Module 7 test and full `npm run verify` before treating the work as fully verified.
