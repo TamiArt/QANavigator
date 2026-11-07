@@ -76,7 +76,8 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
     return sqlLiteral(value);
   };
   const where = () => {
-    const conditions = form.conditions.filter((condition) => condition.column.trim());
+    if (form.conditions.some((condition) => !condition.column.trim())) throw new Error("Заполни столбец во всех добавленных условиях или удали пустое условие.");
+    const conditions = form.conditions;
     if (!conditions.length) return "";
     const clauses = conditions.map((condition, index) => {
       if (!validIdentifier(condition.column.trim())) throw new Error("Имя поля условия №" + (index + 1) + " должно быть SQL-идентификатором.");
