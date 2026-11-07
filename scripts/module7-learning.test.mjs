@@ -32,6 +32,35 @@ test("Module 7 contains the SQL and database concepts in curriculum order", () =
   ]) {
     assert.ok(source.toLowerCase().includes(term.toLowerCase()), "Missing CAP concept: " + term);
   }
+  for (const term of [
+    "База данных (БД)",
+    "СУБД (система управления базами данных)",
+    "Три подхода к тестированию БД",
+    "Прямой доступ к БД",
+    "Тестирование через API",
+    "Тестирование через фронтенд",
+    "Реляционные базы данных и структура",
+    "INTEGER / INT / INT4",
+    "VARCHAR(n)",
+    "BOOLEAN",
+    "TIMESTAMP",
+    "Один к одному (1:1)",
+    "Один ко многим (1:N)",
+    "Многие ко многим (M:N)",
+    "PostgreSQL",
+    "Microsoft SQL Server",
+    "семь основных типов",
+    "Документоориентированные",
+    "Ключ — значение",
+    "Графовые",
+    "Колоночно-ориентированные аналитические",
+    "Базы широких строк",
+    "Поисковые базы данных",
+    "Базы временных рядов",
+    "eventual consistency"
+  ]) {
+    assert.ok(source.toLowerCase().includes(term.toLowerCase()), "Missing Module 7 foundation: " + term);
+  }
   const positions = expected.map((title) => {
     const position = source.indexOf('title: "' + title + '"');
     assert.notEqual(position, -1, "Missing lesson: " + title);
