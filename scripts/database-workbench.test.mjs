@@ -68,9 +68,9 @@ test("database workbench never executes SQL or connects to a database", () => {
 test("database workbench builds grouped aggregate queries with distinct counts and aliases", () => {
   assert.ok(source.includes('type Operation = "select" | "aggregate"'), "GROUP BY must be available as a builder operation");
   assert.ok(source.includes('case "aggregate":'), "aggregate operation must generate SQL");
-  assert.ok(source.includes("COUNT(DISTINCT " + q(column) + ")"), "distinct book counting must use a unique book identifier");
-  assert.ok(source.includes('"COUNT(*) AS "' + aliasSql(alias)), "COUNT(*) must support counting physical-copy rows");
-  assert.ok(source.includes('"\\nGROUP BY "' + groupColumns.map(q).join(", ")), "aggregate queries must group by the selected author column");
+  assert.ok(source.includes('"COUNT(DISTINCT " + q(column) + ")"'), "distinct book counting must use a unique book identifier");
+  assert.ok(source.includes('"COUNT(*) AS " + aliasSql(alias)'), "COUNT(*) must support counting physical-copy rows");
+  assert.ok(source.includes('" + groupColumns.map(q).join(", ") + ";"'), "aggregate queries must group by the selected author column");
   assert.ok(source.includes("groupAliases") && source.includes("aliasSql"), "grouped and aggregate output columns must support aliases");
   assert.ok(source.includes('column: "book_id", alias: "Различных_книг"'));
   assert.ok(source.includes('column: "*", alias: "Количество_экземпляров"'));
