@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import {
   BarChart2, BookOpen, Brain, CheckSquare, Clipboard, Database, FileText,
-  GraduationCap, Key, Menu, Moon, Play, Settings, Shield, Sun, Terminal,
+  GraduationCap, Key, Menu, Moon, Play, Settings, Shield, Sun, TableProperties, Terminal,
 } from "lucide-react";
 import { ProjectWorkspace } from "./features/project-workspace/ProjectWorkspace";
 import { BeginnerWizard } from "./features/beginner-wizard/BeginnerWizard";
@@ -46,7 +46,7 @@ const NAV_ICONS: Record<Module, ReactNode> = {
   automation: <Terminal className="w-4 h-4" />,
   "release-report": <BarChart2 className="w-4 h-4" />,
   "test-data": <Database className="w-4 h-4" />,
-  "database-workbench": <Database className="w-4 h-4" />,
+  "database-workbench": <TableProperties className="w-4 h-4" />,
   handbook: <BookOpen className="w-4 h-4" />,
   documentation: <FileText className="w-4 h-4" />,
   settings: <Settings className="w-4 h-4" />,
