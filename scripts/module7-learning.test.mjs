@@ -120,7 +120,7 @@ test("Module 7 lesson templates contain no unescaped Markdown backticks", () => 
   for (let index = 0; index < source.length; index += 1) {
     if (source.charCodeAt(index) !== 96) continue;
     let precedingBackslashes = 0;
-    for (let cursor = index - 1; cursor >= 0 && source[cursor] === "\\\\"; cursor -= 1) {
+    for (let cursor = index - 1; cursor >= 0 && source[cursor] === "\\"; cursor -= 1) {
       precedingBackslashes += 1;
     }
     if (precedingBackslashes % 2 === 0) unescapedCount += 1;
