@@ -75,6 +75,6 @@ test("database workbench builds grouped aggregate queries with distinct counts a
   assert.ok(source.includes('column: "book_id", alias: "Различных_книг"'));
   assert.ok(source.includes('column: "*", alias: "Количество_экземпляров"'));
   assert.ok(source.includes('title: "Различные книги и экземпляры по авторам"'));
-  assert.ok(source.includes("вместо COUNT(*) используй SUM(quantity)"), "the reference must explain the alternative quantity-column schema");
+  assert.ok(source.includes("если в строке хранится количество в поле quantity, используй SUM(quantity)"), "the reference must explain the alternative quantity-column schema");
   assert.ok(source.includes('dialect === "mysql"'), "aliases must be quoted according to the SQL dialect");
 });
