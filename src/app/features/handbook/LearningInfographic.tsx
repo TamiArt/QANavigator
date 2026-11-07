@@ -108,7 +108,17 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "ACID", text: "A — всё или ничего; C — данные корректны; I — параллельность; D — сохранность после подтверждения." },
     { title: "Осторожно", text: "DROP DATABASE удаляет базу вместе с объектами." },
   ], "Команды SHOW DATABASES и USE относятся к MySQL."),
-  "m7-08": V("flow", ["CREATE", "INSERT", "SELECT", "UPDATE", "DELETE"], Code2, "mint", [
+  "m7-08": V("flow", ["SELECT", "WHERE", "LIKE", "DISTINCT", "JOIN", "GROUP BY"], Code2, "mint", [
+    { title: "SELECT / FROM", text: "Выбираем столбцы и указываем исходную таблицу; * выводит все столбцы." },
+    { title: "WHERE и сравнения", text: "Фильтруем строки по условиям =, <>, >, <, >=, <=; для NULL — IS NULL." },
+    { title: "AS и DISTINCT", text: "AS задаёт псевдонимы; DISTINCT убирает дубли только из результата." },
+    { title: "LIKE", text: "% заменяет любое количество символов, _ — ровно один символ." },
+    { title: "INSERT / UPDATE / DELETE", text: "Добавляют, изменяют и удаляют строки; перед UPDATE/DELETE проверь WHERE." },
+    { title: "Агрегаты и группировка", text: "COUNT, SUM, AVG, MIN, MAX вместе с GROUP BY и HAVING." },
+    { title: "ORDER BY и JOIN", text: "Сортировка результата и соединение таблиц по условию ON." },
+    { title: "Проверка API", text: "Подготовь данные, выполни API-действие и проверь БД через SELECT с WHERE." },
+  ], "SQL помогает QA проверять не только ответ API, но и фактические изменения в базе данных."),
+  "m7-09": V("flow", ["CREATE", "INSERT", "SELECT", "UPDATE", "DELETE"], Code2, "mint", [
     { title: "DDL", text: "CREATE DATABASE, USE, DROP — управление базами и структурой." },
     { title: "Create / Read", text: "INSERT добавляет строки; SELECT читает и фильтрует." },
     { title: "Update / Delete", text: "UPDATE меняет данные; DELETE удаляет строки." },
@@ -116,7 +126,7 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "Вычисления", text: "Арифметика и AS формируют вычисляемые поля и псевдонимы." },
     { title: "WHERE", text: "Без условия UPDATE или DELETE затронет все строки." },
   ], "Перед изменением данных внимательно проверь WHERE и область действия запроса."),
-  "m7-09": V("network", ["JOIN", "GROUP BY", "HAVING", "UNION"], Database, "lavender", [
+  "m7-10": V("network", ["JOIN", "GROUP BY", "HAVING", "UNION"], Database, "lavender", [
     { title: "INNER / LEFT / RIGHT JOIN", text: "Соединяют таблицы с разным правилом сохранения несовпавших строк." },
     { title: "GROUP BY", text: "Собирает строки в группы для COUNT, SUM и AVG." },
     { title: "WHERE / HAVING", text: "WHERE фильтрует строки до группировки; HAVING — группы после неё." },
@@ -125,13 +135,13 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "Сортировка", text: "ORDER BY с ASC и DESC задаёт порядок результата." },
     { title: "Проверка БД", text: "Прямо в БД, через API и сквозной сценарий UI." },
   ], "Проверяй совпадения, строки без пары, агрегаты и дубликаты."),
-  "m7-10": V("flow", ["Скачать", "Установить", "Настроить"], Download, "orange", [
+  "m7-11": V("flow", ["Скачать", "Установить", "Настроить"], Download, "orange", [
     { title: "Официальный источник", text: "MySQL Community Server на mysql.com." },
     { title: "Установка", text: "Следуй установщику для своей версии Windows." },
     { title: "Учётная запись", text: "Задай пароль и не публикуй его." },
     { title: "Путь к bin", text: "Найди фактическую папку установки; путь зависит от версии." },
   ], "Путь установки и экраны мастера могут отличаться."),
-  "m7-11": V("flow", ["Win + R", "cd /d", "mysql -u root -p", "SHOW DATABASES;"], Code2, "lavender", [
+  "m7-12": V("flow", ["Win + R", "cd /d", "mysql -u root -p", "SHOW DATABASES;"], Code2, "lavender", [
     { title: "1. Открыть CMD", text: "Win + R → cmd → Enter." },
     { title: "2. Перейти в bin", text: "Используй реальный путь к папке MySQL." },
     { title: "3. Подключиться", text: "mysql -u root -p; пароль не отображается при вводе." },
