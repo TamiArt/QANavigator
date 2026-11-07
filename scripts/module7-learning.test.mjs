@@ -78,8 +78,7 @@ test("Module 7 contains the SQL and database concepts in curriculum order", () =
     "OR",
     "LIKE",
     "% — ноль, один или несколько любых символов",
-    "_",
-    "ровно один любой символ",
+    "**_** — ровно один любой символ",
     "DISTINCT",
     "COUNT(*)",
     "COUNT(DISTINCT",
@@ -113,6 +112,12 @@ test("Module 7 contains the SQL and database concepts in curriculum order", () =
   for (const term of ["Primary Key", "Foreign Key", "MongoDB", "Redis", "ClickHouse", "Neo4j", "Elasticsearch", "InfluxDB", "шардирование", "CAP-теорема", "ACID", "Atomicity", "Consistency", "Isolation", "Durability", "ROLLBACK", "COMMIT", "1НФ", "2НФ", "3НФ", "One-to-Many", "Many-to-Many", "SHOW DATABASES;", "mysql -u root -p", "Structured Query Language", "DECIMAL", "VARCHAR", "INT4", "NULL", "INSERT INTO", "UPDATE users", "INNER JOIN", "FULL OUTER JOIN", "GROUP BY", "ORDER BY", "COUNT(DISTINCT", "HAVING", "UNION ALL", "One-to-One", "LIKE", "SELECT DISTINCT", "AS", "Прямой доступ к БД", "Через API", "Через фронтенд"]) {
     assert.ok(source.toLowerCase().includes(term.toLowerCase()), "Missing key concept: " + term);
   }
+});
+
+test("SQL reference explains both LIKE wildcard characters", () => {
+  const source = fs.readFileSync("src/app/handbook-data-part-3.ts", "utf8");
+  assert.ok(source.includes("% — ноль или более любых символов"), "SQL reference must explain percent wildcard");
+  assert.ok(source.includes("_ — ровно один любой символ"), "SQL reference must explain underscore wildcard");
 });
 
 test("SQL knowledge base documents WHERE operator precedence", () => {
