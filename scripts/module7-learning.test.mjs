@@ -112,6 +112,22 @@ test("Module 7 contains the SQL and database concepts in curriculum order", () =
   }
 });
 
+test("SQL knowledge base documents WHERE operator precedence", () => {
+  const source = fs.readFileSync("src/app/handbook-data-part-6.ts", "utf8");
+  for (const term of [
+    "Приоритет операторов в WHERE — от высшего к низшему",
+    "BETWEEN",
+    "IN",
+    "LIKE",
+    "IS NULL",
+    "NOT",
+    "AND",
+    "OR"
+  ]) {
+    assert.ok(source.toLowerCase().includes(term.toLowerCase()), "Missing SQL precedence guidance: " + term);
+  }
+});
+
 test("Module 7 is registered and every SQL lesson has a dedicated visual model", () => {
   const registry = fs.readFileSync("src/app/features/handbook/handbook-learning.ts", "utf8");
   const visuals = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
