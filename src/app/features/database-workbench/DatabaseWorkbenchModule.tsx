@@ -5,11 +5,15 @@ import {
 } from "lucide-react";
 
 type Dialect = "postgres" | "mysql";
-type Operation = "select" | "join" | "insert" | "update" | "delete" | "rename" | "alias";
+type Operation = "select" | "aggregate" | "join" | "insert" | "update" | "delete" | "rename" | "alias";
+type AggregateFunction = "COUNT" | "COUNT_DISTINCT" | "SUM" | "AVG" | "MIN" | "MAX";
+type AggregateMetric = { id: number; fn: AggregateFunction; column: string; alias: string };
 type FilterCondition = { id: number; column: string; operator: string; value: string; connector: "AND" | "OR" };
 type BuilderState = {
   table: string;
   columns: string;
+  groupBy: string;
+  aggregates: AggregateMetric[];
   insertValues: string;
   conditions: FilterCondition[];
   orderColumn: string;
@@ -27,7 +31,12 @@ type BuilderState = {
 };
 
 const initial: BuilderState = {
-  table: "users", columns: "id, email, created_at", insertValues: "101 | qa@example.com | 2026-11-07",
+  table: "users", columns: "id, email, created_at", groupBy: "author",
+  aggregates: [
+    { id: 1, fn: "COUNT_DISTINCT", column: "title", alias: "Различных_книг" },
+    { id: 2, fn: "COUNT", column: "*", alias: "Количество_экземпляров" },
+  ],
+  insertValues: "101 | qa@example.com | 2026-11-07",
   conditions: [{ id: 1, column: "id", operator: "=", value: "10", connector: "AND" }], orderColumn: "", orderDirection: "DESC",
   limit: "50", secondTable: "orders", joinType: "LEFT",
   leftKey: "users.id", rightKey: "orders.user_id",
@@ -42,6 +51,7 @@ const snippets = [
   { group: "JOIN", title: "Пользователи без заказов", sql: "SELECT u.*\nFROM users AS u\nLEFT JOIN orders AS o ON o.user_id = u.id\nWHERE o.id IS NULL;", note: "Классический LEFT JOIN + IS NULL для поиска записей без пары." },
   { group: "JOIN", title: "Сверить связанные записи", sql: "SELECT o.id, o.user_id, u.email\nFROM orders AS o\nINNER JOIN users AS u ON u.id = o.user_id;", note: "Подходит для проверки связи внешнего ключа с родительской записью." },
   { group: "Агрегация", title: "Количество по статусам", sql: "SELECT status, COUNT(*) AS total\nFROM orders\nGROUP BY status\nORDER BY total DESC;", note: "Помогает проверить распределение данных по статусам." },
+  { group: "Агрегация", title: "Различные книги и экземпляры по авторам", sql: "SELECT author, COUNT(DISTINCT title) AS \\"Различных_книг\\", COUNT(*) AS \\"Количество_экземпляров\\"\\nFROM books\\nGROUP BY author;", note: "Предполагается, что одна строка books соответствует одному физическому экземпляру. Если в строке хранится общее количество экземпляров в поле quantity, вместо COUNT(*) используй SUM(quantity)." },
   { group: "Агрегация", title: "Группы с количеством больше 5", sql: "SELECT user_id, COUNT(*) AS orders_count\nFROM orders\nGROUP BY user_id\nHAVING COUNT(*) > 5;", note: "WHERE фильтрует строки до группировки, HAVING — группы после неё." },
   { group: "Изменение данных", title: "Безопасный UPDATE", sql: "BEGIN;\nSELECT * FROM users WHERE id = :id;\nUPDATE users SET status = :status WHERE id = :id;\nSELECT * FROM users WHERE id = :id;\n-- COMMIT;  -- только после проверки\n-- ROLLBACK; -- если результат неверный", note: "Выполняй только в разрешённой тестовой среде. Сначала проверь выборку." },
   { group: "Изменение данных", title: "Удаление тестовой записи", sql: "BEGIN;\nSELECT * FROM users WHERE email = :test_email;\nDELETE FROM users WHERE email = :test_email;\nSELECT * FROM users WHERE email = :test_email;\n-- COMMIT;  -- только после проверки\n-- ROLLBACK; -- если результат неверный", note: "Убедись, что WHERE выбирает ровно тестовую запись. Не запускай на production." },
@@ -68,6 +78,9 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
   const table = form.table.trim();
   if (!validIdentifier(table)) return { sql: "", params: [], error: "Укажи имя таблицы латиницей: users, order_items." };
   const q = (name: string) => name;
+  const aliasSql = (name: string) => dialect === "mysql"
+    ? "`" + name.replace(/`/g, "``") + "`"
+    : "\"" + name.replace(/"/g, "\"\"") + "\"";
   const tableSql = table;
   const columns = splitIdentifiers(form.columns);
   const params: string[] = [];
@@ -111,6 +124,23 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         if (form.orderColumn.trim() && !sorting) return { sql: "", params, error: "Проверь имя столбца сортировки." };
         const limit = form.limit.trim() && /^\d+$/.test(form.limit.trim()) ? " LIMIT " + Math.min(Number(form.limit), 10000) : "";
         return { sql: "SELECT " + selected + "\nFROM " + tableSql + where() + sorting.replace(" ORDER BY ", "\nORDER BY ") + limit.replace(" LIMIT ", "\nLIMIT ") + ";", params, error: "" };
+      }
+      case "aggregate": {
+        const groupColumns = splitIdentifiers(form.groupBy);
+        if (!groupColumns) return { sql: "", params, error: "Укажи один или несколько столбцов группировки через запятую." };
+        if (!form.aggregates.length) return { sql: "", params, error: "Добавь хотя бы один агрегатный показатель." };
+        const expressions = form.aggregates.map((metric, index) => {
+          const column = metric.column.trim();
+          const alias = metric.alias.trim();
+          if (!alias) throw new Error("Укажи псевдоним для агрегатного столбца №" + (index + 1) + ".");
+          if (metric.fn === "COUNT" && column === "*") return "COUNT(*) AS " + aliasSql(alias);
+          if (!validIdentifier(column)) throw new Error("Проверь столбец агрегатного показателя №" + (index + 1) + ". Для COUNT(*) укажи звёздочку.");
+          const expression = metric.fn === "COUNT_DISTINCT"
+            ? "COUNT(DISTINCT " + q(column) + ")"
+            : metric.fn + "(" + q(column) + ")";
+          return expression + " AS " + aliasSql(alias);
+        });
+        return { sql: "SELECT " + groupColumns.map(q).join(", ") + ",\n       " + expressions.join(",\n       ") + "\nFROM " + tableSql + where() + "\nGROUP BY " + groupColumns.map(q).join(", ") + ";", params, error: "" };
       }
       case "join": {
         if (!validIdentifier(form.secondTable.trim()) || !/^[A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*$/.test(form.leftKey.trim()) || !/^[A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*$/.test(form.rightKey.trim())) {
@@ -203,8 +233,9 @@ export function DatabaseWorkbenchModule() {
         <section className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-3">
             <div><p className="text-sm font-semibold">1. Что нужно сделать?</p><p className="text-xs text-muted-foreground">Выбери тип SQL-запроса.</p></div>
-            <select value={operation} onChange={(event) => setOperation(event.target.value as Operation)} className={fieldClass + " max-w-xs"}>
+            <select value={operation} onChange={(event) => { const next = event.target.value as Operation; setOperation(next); if (next === "aggregate") setForm((current) => ({ ...current, table: "books", conditions: [] })); }} className={fieldClass + " max-w-xs"}>
               <option value="select">Получить данные — SELECT</option>
+              <option value="aggregate">Сгруппировать и посчитать — GROUP BY</option>
               <option value="join">Объединить таблицы — JOIN</option>
               <option value="insert">Добавить запись — INSERT</option>
               <option value="update">Изменить запись — UPDATE</option>
@@ -219,8 +250,18 @@ export function DatabaseWorkbenchModule() {
               <div className="flex items-center justify-between gap-2"><p className="text-sm font-semibold">2. Параметры запроса</p><select aria-label="Диалект SQL" value={dialect} onChange={(event) => setDialect(event.target.value as Dialect)} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs"><option value="postgres">PostgreSQL</option><option value="mysql">MySQL</option></select></div>
               <div><label className={labelClass}>Название таблицы</label><input value={form.table} onChange={(event) => update("table", event.target.value)} className={fieldClass} placeholder="users" /></div>
               {(operation === "select" || operation === "insert" || operation === "alias") && <div><label className={labelClass}>Столбцы, которые нужно вывести через запятую</label><input value={form.columns} onChange={(event) => update("columns", event.target.value)} className={fieldClass} placeholder="id, email, created_at" /><p className="mt-1 text-[11px] text-muted-foreground">Для SELECT можно указать * — все столбцы.</p></div>}
+              {operation === "aggregate" && <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
+                <div><label className={labelClass}>Группировать по</label><input value={form.groupBy} onChange={(event) => update("groupBy", event.target.value)} className={fieldClass} placeholder="author" /><p className="mt-1 text-[11px] text-muted-foreground">Например, author — каждая группа будет соответствовать одному автору.</p></div>
+                <div className="flex items-center justify-between gap-2"><p className="text-xs font-semibold">Агрегатные показатели</p><button type="button" onClick={() => setForm((current) => ({ ...current, aggregates: [...current.aggregates, { id: Math.max(0, ...current.aggregates.map((metric) => metric.id)) + 1, fn: "COUNT", column: "*", alias: "total" }] }))} className="rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-background">+ Добавить показатель</button></div>
+                {form.aggregates.map((metric, index) => <div key={metric.id} className="space-y-2 rounded-lg border border-border bg-card p-3">
+                  <div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold">Показатель {index + 1}</span>{form.aggregates.length > 1 && <button type="button" onClick={() => setForm((current) => ({ ...current, aggregates: current.aggregates.filter((item) => item.id !== metric.id) }))} className="text-xs text-destructive hover:underline">Удалить</button>}</div>
+                  <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Функция</label><select value={metric.fn} onChange={(event) => setForm((current) => ({ ...current, aggregates: current.aggregates.map((item) => item.id === metric.id ? { ...item, fn: event.target.value as AggregateFunction } : item) }))} className={fieldClass}><option value="COUNT">COUNT — посчитать</option><option value="COUNT_DISTINCT">COUNT DISTINCT — уникальные</option><option value="SUM">SUM — сумма</option><option value="AVG">AVG — среднее</option><option value="MIN">MIN — минимум</option><option value="MAX">MAX — максимум</option></select></div><div><label className={labelClass}>Столбец</label><input value={metric.column} onChange={(event) => setForm((current) => ({ ...current, aggregates: current.aggregates.map((item) => item.id === metric.id ? { ...item, column: event.target.value } : item) }))} className={fieldClass} placeholder="* или book_id" /></div></div>
+                  <div><label className={labelClass}>Название столбца в результате (AS)</label><input value={metric.alias} onChange={(event) => setForm((current) => ({ ...current, aggregates: current.aggregates.map((item) => item.id === metric.id ? { ...item, alias: event.target.value } : item) }))} className={fieldClass} placeholder="Количество_экземпляров" /></div>
+                </div>)}
+                <p className="text-[11px] leading-relaxed text-muted-foreground">COUNT(DISTINCT title) считает разные названия книг, COUNT(*) — строки таблицы. Это верно, если одна строка соответствует одному физическому экземпляру. Если в одной строке хранится число экземпляров в поле quantity, выбери SUM и укажи quantity. COUNT(column) и COUNT(DISTINCT column) не учитывают NULL.</p>
+              </div>}
               {operation === "insert" && <div><label className={labelClass}>Значения в том же порядке (разделитель |)</label><input value={form.insertValues} onChange={(event) => update("insertValues", event.target.value)} className={fieldClass} placeholder="101 | qa@example.com | Anna" /><p className="mt-1 text-[11px] text-muted-foreground">Значения попадут в список параметров отдельно от SQL. Текстовые кавычки вручную добавлять не нужно.</p></div>}
-              {(operation === "select" || operation === "update" || operation === "delete") && (
+              {(operation === "select" || operation === "aggregate" || operation === "update" || operation === "delete") && (
                 <div className="space-y-3 rounded-lg bg-muted/40 p-3">
                   <div className="flex items-center justify-between gap-2"><p className="text-xs font-semibold">Условия WHERE</p><button type="button" onClick={addCondition} className="rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-background">+ Добавить условие</button></div>
                   {form.conditions.map((condition, index) => <div key={condition.id} className="space-y-2 rounded-lg border border-border bg-card p-3">
