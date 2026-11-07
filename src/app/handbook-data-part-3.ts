@@ -532,9 +532,15 @@ WHERE status = 'active'
 WHERE amount != 0
 WHERE amount <> 0     -- то же самое
 
--- Диапазон
+-- Диапазон: BETWEEN включает обе границы
 WHERE price BETWEEN 100 AND 500
 WHERE created_at >= '2024-01-01'
+
+-- Список допустимых значений
+WHERE status IN ('active', 'pending')
+
+-- BETWEEN и IN имеют приоритет операторов сравнения:
+-- они выполняются раньше NOT, AND и OR.
 
 -- NULL проверка (= NULL не работает!)
 WHERE deleted_at IS NULL
