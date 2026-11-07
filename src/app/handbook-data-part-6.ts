@@ -261,7 +261,7 @@ HAVING o.total != SUM(oi.price * oi.quantity);
 SELECT * FROM tasks
 WHERE status = 'pending'
   AND created_at < NOW() - INTERVAL '24 hours';
-\`\`\``,
+\`\`\`
 
 ### Краткая шпаргалка по SQL-командам для QA
 
@@ -403,6 +403,7 @@ WHERE фильтрует отдельные строки до группиров
 **Важно:** UPDATE или DELETE без WHERE затронет все строки таблицы. TRUNCATE TABLE удаляет все строки, DROP TABLE удаляет таблицу, DROP DATABASE — базу и её объекты. Не запускай эти команды в общей, staging- или production-среде без явного разрешения и согласованного плана восстановления.
 
 **Обозначения:** users, orders, products — примеры имён таблиц; id, status, email — примеры столбцов. Текстовые значения указываются в одинарных кавычках, числовые — обычно без кавычек.
+`,
   },
   {
     id: "db2",
