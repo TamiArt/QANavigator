@@ -48,6 +48,13 @@ test("database workbench supports multiple WHERE conditions with AND and OR", ()
   assert.ok(source.includes("BETWEEN и IN имеют тот же приоритет"), "SQL builder must explain BETWEEN and IN precedence");
 });
 
+test("database workbench explains LIKE wildcard characters", () => {
+  assert.ok(source.includes('condition.operator === "LIKE" ? "Шаблон LIKE"'), "LIKE should have a dedicated field label");
+  assert.ok(source.includes("Например: Ан%, %ов, а_я"), "LIKE should show wildcard examples");
+  assert.ok(source.includes("% означает ноль или более любых символов"), "LIKE help must explain percent wildcard");
+  assert.ok(source.includes("_ — ровно один любой символ"), "LIKE help must explain underscore wildcard");
+});
+
 test("database workbench handles PostgreSQL and MySQL syntax differences", () => {
   assert.ok(source.includes('dialect === "mysql"'));
   assert.ok(source.includes("MySQL не поддерживает FULL OUTER JOIN напрямую"));
