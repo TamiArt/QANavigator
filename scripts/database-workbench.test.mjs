@@ -72,8 +72,12 @@ test("database workbench builds grouped aggregate queries with distinct counts a
   assert.ok(source.includes('"COUNT(*) AS " + aliasSql(alias)'), "COUNT(*) must support counting physical-copy rows");
   assert.ok(source.includes('" + groupColumns.map(q).join(", ") + ";"'), "aggregate queries must group by the selected author column");
   assert.ok(source.includes("groupAliases") && source.includes("aliasSql"), "grouped and aggregate output columns must support aliases");
-  assert.ok(source.includes('column: "book_id", alias: "Различных_книг"'));
-  assert.ok(source.includes('column: "*", alias: "Количество_экземпляров"'));
+  assert.ok(source.includes('groupBy: "", groupAliases: ""'), "GROUP BY must not default to a domain-specific column");
+  assert.ok(source.includes('{ id: 1, fn: "COUNT", column: "*", alias: "total" }'), "aggregate metrics must start with a neutral COUNT(*) example");
+  assert.ok(source.includes('form.groupAliases.trim() ? form.groupAliases.split(",")'), "group-column aliases must be optional");
+  assert.ok(source.includes("Можно группировать по любым полям текущей таблицы"), "the UI must describe schema-agnostic grouping");
+  assert.ok(!source.includes('groupBy: "author"'), "author must not be hard-coded as the grouping column");
+  assert.ok(!source.includes('table: current.table === "users" ? "books" : current.table'), "switching to aggregation must not force a books table");
   assert.ok(source.includes('title: "Различные книги и экземпляры по авторам"'));
   assert.ok(source.includes("если в строке хранится количество в поле quantity, используй SUM(quantity)"), "the reference must explain the alternative quantity-column schema");
   assert.ok(source.includes('dialect === "mysql"'), "aliases must be quoted according to the SQL dialect");
