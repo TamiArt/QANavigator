@@ -142,7 +142,6 @@ If the conflict is between old and new architecture, the new architecture wins.
 8. Do not remove existing functionality unless explicitly required.
 9. New functionality must be documented in this file.
 10. Do not create demo/mock implementations when production logic is expected.
-11. For SQL WHERE clauses, preserve and explain SQL operator precedence: AND has higher precedence than OR; use explicit parentheses when a different logical grouping is intended. Describe precedence as expression grouping, not guaranteed physical evaluation order.
 
 ---
 
