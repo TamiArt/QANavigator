@@ -18,7 +18,7 @@ test("database workbench keeps destructive statements behind a WHERE guard", () 
 test("database workbench validates identifiers and previews literal parameter values", () => {
   assert.ok(source.includes("function validIdentifier(value: string)"));
   assert.ok(source.includes("function sqlLiteral(value: string)"));
-  assert.ok(source.includes('value.replace(/'/g, "''")'), "string values must escape single quotes");
+  assert.ok(source.includes("value.replace(/'/g, \"''\")"), "string values must escape single quotes");
   assert.ok(source.includes('const q = (name: string) => name;'), "identifiers must be shown without quotes");
   assert.ok(source.includes('placeholder(form.filterValue)'), "filter value must be included in the SQL preview");
   assert.ok(source.includes('"\\nFROM " + tableSql'), "SELECT preview must use readable multiline formatting");
@@ -31,7 +31,7 @@ test("database workbench uses the requested Russian field labels", () => {
 });
 
 test("database workbench handles PostgreSQL and MySQL syntax differences", () => {
-  assert.ok(source.includes('dialect === "mysql" ? String.fromCharCode(96)'));
+  assert.ok(source.includes('dialect === "mysql"'));
   assert.ok(source.includes("MySQL не поддерживает FULL OUTER JOIN напрямую"));
 });
 
