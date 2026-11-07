@@ -161,11 +161,17 @@ SELECT * FROM users WHERE status <> 'deleted'; -- то же самое
 SELECT * FROM orders WHERE deleted_at IS NULL;
 SELECT * FROM orders WHERE deleted_at IS NOT NULL;
 
--- Диапазон
+-- Диапазон: BETWEEN включает нижнюю и верхнюю границы
 SELECT * FROM products WHERE price BETWEEN 100 AND 500;
 
--- Вхождение в список
+-- Список допустимых значений
 SELECT * FROM orders WHERE status IN ('pending', 'processing');
+
+-- BETWEEN и IN имеют тот же приоритет, что и операторы сравнения:
+-- они выполняются раньше NOT, AND и OR.
+-- Скобки помогают явно задать нужную группировку.
+SELECT * FROM products
+WHERE price BETWEEN 100 AND 500 AND category IN ('books', 'games');
 
 -- Поиск по шаблону
 SELECT * FROM users WHERE email LIKE '%@gmail.com';  -- заканчивается на
@@ -349,10 +355,12 @@ SELECT u.email FROM users AS u;
 | Одно из условий | status = 'active' OR status = 'pending' |
 | Отрицание | NOT (status = 'blocked') |
 | Значение входит в список | status IN ('new', 'active') |
-| Значение в диапазоне | price BETWEEN 100 AND 500 |
+| Значение в диапазоне, включая границы | price BETWEEN 100 AND 500 |
 | Строка начинается с символов | name LIKE 'Ан%' |
 | Строка заканчивается символами | email LIKE '%@test.com' |
 | Строка содержит фрагмент | name LIKE '%ан%' |
+
+**BETWEEN** проверяет, попадает ли значение в диапазон; обе границы включены. **IN** проверяет, совпадает ли значение хотя бы с одним элементом списка. В выражении WHERE BETWEEN и IN имеют тот же приоритет, что и операторы сравнения: выполняются раньше NOT, AND и OR. Для сложных условий используй скобки, чтобы явно показать группировку.
 
 Для LIKE: % означает любое количество символов (в том числе ноль), _ — ровно один любой символ. Для NULL используй IS NULL / IS NOT NULL, а не = NULL.
 
