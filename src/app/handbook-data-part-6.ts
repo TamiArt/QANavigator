@@ -262,6 +262,147 @@ SELECT * FROM tasks
 WHERE status = 'pending'
   AND created_at < NOW() - INTERVAL '24 hours';
 \`\`\``,
+
+### Краткая шпаргалка по SQL-командам для QA
+
+Используй таблицы ниже как быстрый указатель: найди задачу, скопируй шаблон и замени условные имена таблиц, столбцов и значения на реальные. Примеры в основном совместимы с MySQL и PostgreSQL; пометки указывают на различия между СУБД.
+
+#### 1. Выбрать БД и посмотреть её структуру
+
+| Задача | Запрос |
+|---|---|
+| Показать доступные базы (MySQL) | SHOW DATABASES; |
+| Выбрать базу (MySQL) | USE имя_БД; |
+| Показать таблицы (MySQL) | SHOW TABLES; |
+| Посмотреть структуру таблицы (MySQL) | DESC имя_таблицы; |
+| Посмотреть столбцы таблицы | SHOW COLUMNS FROM имя_таблицы; |
+| Посмотреть схему таблицы в PostgreSQL | SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'users'; |
+
+#### 2. Создать или изменить структуру — DDL
+
+| Задача | Запрос |
+|---|---|
+| Создать базу данных | CREATE DATABASE имя_БД; |
+| Создать таблицу | CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(100), email VARCHAR(255)); |
+| Добавить столбец | ALTER TABLE users ADD COLUMN status VARCHAR(20); |
+| Изменить тип столбца (MySQL) | ALTER TABLE users MODIFY COLUMN status VARCHAR(50); |
+| Переименовать столбец | ALTER TABLE users RENAME COLUMN old_name TO new_name; |
+| Удалить столбец | ALTER TABLE users DROP COLUMN status; |
+| Удалить таблицу вместе с данными | DROP TABLE users; |
+| Удалить все строки, сохранив таблицу | TRUNCATE TABLE users; |
+| Удалить базу данных и все её объекты | DROP DATABASE имя_БД; |
+
+#### 3. Получить данные — SELECT
+
+| Задача | Запрос |
+|---|---|
+| Получить все столбцы | SELECT * FROM users; |
+| Получить только нужные столбцы | SELECT id, name, email FROM users; |
+| Найти запись по ID | SELECT * FROM users WHERE id = 10; |
+| Найти несколько статусов | SELECT * FROM users WHERE status IN ('active', 'pending'); |
+| Найти значения в диапазоне | SELECT * FROM products WHERE price BETWEEN 100 AND 500; |
+| Найти по шаблону | SELECT * FROM users WHERE name LIKE 'Ан%'; |
+| Найти пустое значение | SELECT * FROM users WHERE phone IS NULL; |
+| Найти заполненное значение | SELECT * FROM users WHERE phone IS NOT NULL; |
+| Вывести уникальные значения | SELECT DISTINCT city FROM users; |
+| Дать столбцу понятное имя в результате | SELECT price AS product_price FROM products; |
+| Сортировать по убыванию | SELECT * FROM users ORDER BY created_at DESC; |
+| Сортировать по нескольким полям | SELECT * FROM orders ORDER BY status ASC, created_at DESC; |
+| Ограничить результат 10 строками | SELECT * FROM users LIMIT 10; |
+| Пропустить строки (пагинация) | SELECT * FROM users LIMIT 10 OFFSET 20; |
+
+#### 4. Условия фильтрации — WHERE
+
+| Что нужно проверить | Условие |
+|---|---|
+| Равно / не равно | status = 'active' / status <> 'active' |
+| Больше / меньше | age > 18 / price < 500 |
+| Больше или равно / меньше или равно | age >= 18 / price <= 500 |
+| Оба условия одновременно | status = 'active' AND age >= 18 |
+| Одно из условий | status = 'active' OR status = 'pending' |
+| Отрицание | NOT (status = 'blocked') |
+| Значение входит в список | status IN ('new', 'active') |
+| Значение в диапазоне | price BETWEEN 100 AND 500 |
+| Строка начинается с символов | name LIKE 'Ан%' |
+| Строка заканчивается символами | email LIKE '%@test.com' |
+| Строка содержит фрагмент | name LIKE '%ан%' |
+
+Для LIKE: % означает любое количество символов (в том числе ноль), _ — ровно один любой символ. Для NULL используй IS NULL / IS NOT NULL, а не = NULL.
+
+#### 5. Соединить таблицы — JOIN
+
+| Задача | Запрос |
+|---|---|
+| Только строки с совпадениями с обеих сторон | SELECT * FROM users u INNER JOIN orders o ON o.user_id = u.id; |
+| Все строки users и совпадения из orders | SELECT * FROM users u LEFT JOIN orders o ON o.user_id = u.id; |
+| Все строки orders и совпадения из users | SELECT * FROM users u RIGHT JOIN orders o ON o.user_id = u.id; |
+| Все строки обеих таблиц | SELECT * FROM users u FULL OUTER JOIN orders o ON o.user_id = u.id; |
+| Найти пользователей без заказов | SELECT u.* FROM users u LEFT JOIN orders o ON o.user_id = u.id WHERE o.id IS NULL; |
+
+FULL OUTER JOIN поддерживается не всеми СУБД: PostgreSQL поддерживает его, MySQL — нет как отдельный тип. В JOIN проверяй не только совпавшие строки, но и записи без пары, а также неожиданные дубликаты из-за связи «один ко многим».
+
+#### 6. Посчитать и сгруппировать — агрегаты
+
+| Задача | Запрос |
+|---|---|
+| Посчитать все строки | SELECT COUNT(*) FROM users; |
+| Посчитать только заполненные значения | SELECT COUNT(email) FROM users; |
+| Посчитать уникальные непустые значения | SELECT COUNT(DISTINCT email) FROM users; |
+| Найти сумму и среднее | SELECT SUM(total), AVG(total) FROM orders; |
+| Найти минимум и максимум | SELECT MIN(total), MAX(total) FROM orders; |
+| Сгруппировать и посчитать | SELECT status, COUNT(*) FROM orders GROUP BY status; |
+| Оставить группы с количеством больше 5 | SELECT status, COUNT(*) FROM orders GROUP BY status HAVING COUNT(*) > 5; |
+
+WHERE фильтрует отдельные строки до группировки, HAVING — уже сформированные группы. COUNT(*) считает все строки, COUNT(column) не учитывает NULL.
+
+#### 7. Добавить, изменить и удалить данные — INSERT / UPDATE / DELETE
+
+| Задача | Запрос |
+|---|---|
+| Добавить строку по порядку всех столбцов | INSERT INTO users VALUES (10, 'Anna', 'anna@test.com'); |
+| Добавить строку в выбранные столбцы (предпочтительно) | INSERT INTO users (id, name, email) VALUES (10, 'Anna', 'anna@test.com'); |
+| Добавить несколько строк | INSERT INTO users (name, email) VALUES ('Anna', 'a@test.com'), ('Ivan', 'i@test.com'); |
+| Изменить одно поле | UPDATE users SET status = 'active' WHERE id = 10; |
+| Изменить несколько полей | UPDATE users SET status = 'active', city = 'Kazan' WHERE id = 10; |
+| Удалить выбранную запись | DELETE FROM users WHERE id = 10; |
+| Проверить результат | SELECT * FROM users WHERE id = 10; |
+
+При INSERT с явным списком столбцов значения должны идти в том же порядке. Если список столбцов опущен, нужно передать значения в порядке столбцов таблицы и учесть обязательные поля.
+
+#### 8. Транзакции — COMMIT / ROLLBACK
+
+| Задача | Запрос |
+|---|---|
+| Начать транзакцию | START TRANSACTION; |
+| Подтвердить изменения | COMMIT; |
+| Отменить неподтверждённые изменения | ROLLBACK; |
+| Создать точку возврата | SAVEPOINT before_update; |
+| Вернуться к точке | ROLLBACK TO SAVEPOINT before_update; |
+
+Поддержка и синтаксис отдельных команд зависят от СУБД. DDL-команды в некоторых СУБД могут автоматически завершать транзакцию.
+
+#### 9. Диагностика и контроль качества данных
+
+| Задача | Запрос |
+|---|---|
+| Посмотреть план выполнения | EXPLAIN SELECT * FROM users WHERE id = 10; |
+| Посчитать записи с нужным статусом | SELECT COUNT(*) FROM orders WHERE status = 'paid'; |
+| Найти дубликаты email | SELECT email, COUNT(*) FROM users GROUP BY email HAVING COUNT(*) > 1; |
+| Найти NULL в обязательном поле | SELECT * FROM orders WHERE user_id IS NULL; |
+| Найти последние ошибки | SELECT * FROM error_logs ORDER BY created_at DESC LIMIT 20; |
+| Сверить сумму заказа с позициями | SELECT o.id, o.total, SUM(oi.price * oi.quantity) AS calculated FROM orders o JOIN order_items oi ON oi.order_id = o.id GROUP BY o.id, o.total HAVING o.total <> SUM(oi.price * oi.quantity); |
+
+#### 10. Безопасный алгоритм QA перед изменением данных
+
+1. Сначала выполни SELECT с тем же WHERE, который собираешься использовать в UPDATE или DELETE.
+2. Убедись, что выбраны именно нужные строки и их количество ожидаемо.
+3. Выполняй изменение только в разрешённой тестовой среде.
+4. После изменения снова выполни SELECT и сравни фактические значения с ожидаемыми.
+5. Если используешь транзакцию и результат неверный, выполни ROLLBACK до COMMIT.
+
+**Важно:** UPDATE или DELETE без WHERE затронет все строки таблицы. TRUNCATE TABLE удаляет все строки, DROP TABLE удаляет таблицу, DROP DATABASE — базу и её объекты. Не запускай эти команды в общей, staging- или production-среде без явного разрешения и согласованного плана восстановления.
+
+**Обозначения:** users, orders, products — примеры имён таблиц; id, status, email — примеры столбцов. Текстовые значения указываются в одинарных кавычках, числовые — обычно без кавычек.
   },
   {
     id: "db2",
