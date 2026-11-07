@@ -12,12 +12,13 @@ test("Module 7 contains the SQL and database concepts in curriculum order", () =
     "Связи между таблицами",
     "Типы данных в SQL",
     "Основные SQL-команды: DDL и выбор базы",
+    "SQL на практике: выборка, фильтрация и изменение данных",
     "CRUD: создание, чтение, изменение и удаление",
     "Продвинутый SQL: JOIN, GROUP BY, HAVING и UNION",
     "Установка MySQL Community Server",
     "Подключение к MySQL через командную строку",
   ];
-  assert.equal((source.match(/id: "m7-\d{2}"/g) ?? []).length, 11);
+  assert.equal((source.match(/id: "m7-\d{2}"/g) ?? []).length, 12);
   for (const term of [
     "три идеализированных свойства",
     "самую свежую запись",
@@ -61,6 +62,35 @@ test("Module 7 contains the SQL and database concepts in curriculum order", () =
   ]) {
     assert.ok(source.toLowerCase().includes(term.toLowerCase()), "Missing Module 7 foundation: " + term);
   }
+  for (const term of [
+    "SQL-запрос",
+    "SELECT column_1",
+    "SELECT *",
+    "WHERE",
+    "Операторы сравнения",
+    "LIKE",
+    "DISTINCT",
+    "COUNT(*)",
+    "COUNT(DISTINCT",
+    "SUM(column)",
+    "AVG(column)",
+    "GROUP BY",
+    "HAVING",
+    "ORDER BY",
+    "INNER JOIN",
+    "LEFT JOIN",
+    "RIGHT JOIN",
+    "FULL OUTER JOIN",
+    "INSERT INTO",
+    "UPDATE table_1",
+    "DELETE FROM",
+    "AS — псевдонимы",
+    "sql-ex.ru",
+    "sql-academy.org",
+    "W3Schools SQL"
+]) {
+    assert.ok(source.toLowerCase().includes(term.toLowerCase()), "Missing SQL practice concept: " + term);
+  }
   const positions = expected.map((title) => {
     const position = source.indexOf('title: "' + title + '"');
     assert.notEqual(position, -1, "Missing lesson: " + title);
@@ -79,7 +109,7 @@ test("Module 7 is registered and every SQL lesson has a dedicated visual model",
   const visuals = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
   assert.match(registry, /import \{ HANDBOOK_LEARNING_MODULE_7_LESSONS \} from "\.\/handbook-learning-module7"/);
   assert.match(registry, /id: "module-7-sql"[\s\S]*?title: "Модуль 7 — SQL"[\s\S]*?lessons: HANDBOOK_LEARNING_MODULE_7_LESSONS/);
-  for (let i = 1; i <= 11; i += 1) {
+  for (let i = 1; i <= 12; i += 1) {
     const id = "m7-" + String(i).padStart(2, "0");
     assert.ok(visuals.includes('"' + id + '": V('), "Missing infographic model for " + id);
   }
