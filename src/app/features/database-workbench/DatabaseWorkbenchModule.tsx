@@ -6,13 +6,12 @@ import {
 
 type Dialect = "postgres" | "mysql";
 type Operation = "select" | "join" | "insert" | "update" | "delete" | "rename" | "alias";
+type FilterCondition = { id: number; column: string; operator: string; value: string; connector: "AND" | "OR" };
 type BuilderState = {
   table: string;
   columns: string;
   insertValues: string;
-  filterColumn: string;
-  filterOperator: string;
-  filterValue: string;
+  conditions: FilterCondition[];
   orderColumn: string;
   orderDirection: "ASC" | "DESC";
   limit: string;
@@ -28,8 +27,8 @@ type BuilderState = {
 };
 
 const initial: BuilderState = {
-  table: "users", columns: "id, email, created_at", insertValues: "101 | qa@example.com | 2026-11-07", filterColumn: "id",
-  filterOperator: "=", filterValue: "10", orderColumn: "", orderDirection: "DESC",
+  table: "users", columns: "id, email, created_at", insertValues: "101 | qa@example.com | 2026-11-07",
+  conditions: [{ id: 1, column: "id", operator: "=", value: "10", connector: "AND" }], orderColumn: "", orderDirection: "DESC",
   limit: "50", secondTable: "orders", joinType: "LEFT",
   leftKey: "users.id", rightKey: "orders.user_id",
   setColumn: "status", setValue: "active", newColumn: "display_name",
@@ -77,17 +76,25 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
     return sqlLiteral(value);
   };
   const where = () => {
-    if (!form.filterColumn.trim()) return "";
-    if (!validIdentifier(form.filterColumn.trim())) throw new Error("Имя поля фильтра должно быть SQL-идентификатором.");
-    const operator = ["=", "<>", ">", ">=", "<", "<=", "LIKE", "IN", "IS NULL", "IS NOT NULL"].includes(form.filterOperator)
-      ? form.filterOperator : "=";
-    if (operator === "IS NULL" || operator === "IS NOT NULL") return "\nWHERE " + q(form.filterColumn.trim()) + " " + operator;
-    if (operator === "IN") {
-      const values = form.filterValue.split(",").map((value) => value.trim());
-      if (!values.length || values.some((value) => !value)) throw new Error("Для IN укажи значения через запятую.");
-      return "\nWHERE " + q(form.filterColumn.trim()) + " IN (" + values.map(placeholder).join(", ") + ")";
-    }
-    return "\nWHERE " + q(form.filterColumn.trim()) + " " + operator + " " + placeholder(form.filterValue);
+    if (form.conditions.some((condition) => !condition.column.trim())) throw new Error("Заполни столбец во всех добавленных условиях или удали пустое условие.");
+    const conditions = form.conditions;
+    if (!conditions.length) return "";
+    const clauses = conditions.map((condition, index) => {
+      if (!validIdentifier(condition.column.trim())) throw new Error("Имя поля условия №" + (index + 1) + " должно быть SQL-идентификатором.");
+      const operator = ["=", "<>", ">", ">=", "<", "<=", "LIKE", "IN", "IS NULL", "IS NOT NULL"].includes(condition.operator) ? condition.operator : "=";
+      let expression: string;
+      if (operator === "IS NULL" || operator === "IS NOT NULL") expression = q(condition.column.trim()) + " " + operator;
+      else if (operator === "IN") {
+        const values = condition.value.split(",").map((value) => value.trim());
+        if (!values.length || values.some((value) => !value)) throw new Error("Для IN в условии №" + (index + 1) + " укажи значения через запятую.");
+        expression = q(condition.column.trim()) + " IN (" + values.map(placeholder).join(", ") + ")";
+      } else {
+        if (!condition.value.trim()) throw new Error("Укажи значение для условия №" + (index + 1) + ".");
+        expression = q(condition.column.trim()) + " " + operator + " " + placeholder(condition.value);
+      }
+      return (index === 0 ? "" : condition.connector + " ") + expression;
+    });
+    return "\\nWHERE " + clauses.join("\\n  ");
   };
   try {
     switch (operation) {
@@ -119,13 +126,13 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
       }
       case "update": {
         if (!validIdentifier(form.setColumn.trim())) return { sql: "", params, error: "Укажи корректное имя столбца для изменения." };
-        if (!form.filterColumn.trim()) return { sql: "", params, error: "Для безопасности UPDATE обязательно задай WHERE." };
+        if (!form.conditions.some((condition) => condition.column.trim())) return { sql: "", params, error: "Для безопасности UPDATE обязательно задай хотя бы одно условие WHERE." };
         const value = placeholder(form.setValue);
         const condition = where();
         return { sql: "UPDATE " + tableSql + "\nSET " + q(form.setColumn.trim()) + " = " + value + condition + ";", params, error: "" };
       }
       case "delete": {
-        if (!form.filterColumn.trim()) return { sql: "", params, error: "DELETE без WHERE заблокирован конструктором. Укажи поле фильтра." };
+        if (!form.conditions.some((condition) => condition.column.trim())) return { sql: "", params, error: "DELETE без WHERE заблокирован конструктором. Добавь хотя бы одно условие." };
         return { sql: "DELETE FROM " + tableSql + where() + ";", params, error: "" };
       }
       case "rename":
@@ -155,6 +162,9 @@ export function DatabaseWorkbenchModule() {
   const [copied, setCopied] = useState(false);
   const generated = useMemo(() => buildSql(operation, dialect, form), [operation, dialect, form]);
   const update = (key: keyof BuilderState, value: string) => setForm((current) => ({ ...current, [key]: value }));
+  const updateCondition = (id: number, key: keyof Omit<FilterCondition, "id">, value: string) => setForm((current) => ({ ...current, conditions: current.conditions.map((condition) => condition.id === id ? { ...condition, [key]: value } : condition) }));
+  const addCondition = () => setForm((current) => ({ ...current, conditions: [...current.conditions, { id: Math.max(0, ...current.conditions.map((condition) => condition.id)) + 1, column: "", operator: "=", value: "", connector: "AND" }] }));
+  const removeCondition = (id: number) => setForm((current) => ({ ...current, conditions: current.conditions.filter((condition) => condition.id !== id) }));
   const copy = async (value: string) => {
     await navigator.clipboard.writeText(value);
     setCopied(true);
@@ -207,11 +217,15 @@ export function DatabaseWorkbenchModule() {
               {(operation === "select" || operation === "insert" || operation === "alias") && <div><label className={labelClass}>Столбцы, которые нужно вывести через запятую</label><input value={form.columns} onChange={(event) => update("columns", event.target.value)} className={fieldClass} placeholder="id, email, created_at" /><p className="mt-1 text-[11px] text-muted-foreground">Для SELECT можно указать * — все столбцы.</p></div>}
               {operation === "insert" && <div><label className={labelClass}>Значения в том же порядке (разделитель |)</label><input value={form.insertValues} onChange={(event) => update("insertValues", event.target.value)} className={fieldClass} placeholder="101 | qa@example.com | Anna" /><p className="mt-1 text-[11px] text-muted-foreground">Значения попадут в список параметров отдельно от SQL. Текстовые кавычки вручную добавлять не нужно.</p></div>}
               {(operation === "select" || operation === "update" || operation === "delete") && (
-                <div className="space-y-2 rounded-lg bg-muted/40 p-3">
-                  <p className="text-xs font-semibold">Условие WHERE</p>
-                  <div className="grid grid-cols-[1fr_auto] gap-2"><input value={form.filterColumn} onChange={(event) => update("filterColumn", event.target.value)} className={fieldClass} placeholder="id" /><select value={form.filterOperator} onChange={(event) => update("filterOperator", event.target.value)} className={fieldClass + " w-auto"}>{["=", "<>", ">", ">=", "<", "<=", "LIKE", "IN", "IS NULL", "IS NOT NULL"].map((operator) => <option key={operator}>{operator}</option>)}</select></div>
-                  {!["IS NULL", "IS NOT NULL"].includes(form.filterOperator) && <div><label className={labelClass}>Значение параметра</label><input value={form.filterValue} onChange={(event) => update("filterValue", event.target.value)} className={fieldClass} placeholder="Например, 42 или active" /></div>}
-                  <p className="text-[11px] text-muted-foreground">Значение будет безопасно экранировано и показано непосредственно в готовом SQL.</p>
+                <div className="space-y-3 rounded-lg bg-muted/40 p-3">
+                  <div className="flex items-center justify-between gap-2"><p className="text-xs font-semibold">Условия WHERE</p><button type="button" onClick={addCondition} className="rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-background">+ Добавить условие</button></div>
+                  {form.conditions.map((condition, index) => <div key={condition.id} className="space-y-2 rounded-lg border border-border bg-card p-3">
+                    <div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold">Условие {index + 1}</span>{form.conditions.length > 1 && <button type="button" onClick={() => removeCondition(condition.id)} className="text-xs text-destructive hover:underline">Удалить</button>}</div>
+                    {index > 0 && <select aria-label={"Связка перед условием " + (index + 1)} value={condition.connector} onChange={(event) => updateCondition(condition.id, "connector", event.target.value)} className={fieldClass}><option value="AND">AND — должны выполняться оба условия</option><option value="OR">OR — достаточно одного условия</option></select>}
+                    <div className="grid grid-cols-[1fr_auto] gap-2"><input aria-label={"Столбец условия " + (index + 1)} value={condition.column} onChange={(event) => updateCondition(condition.id, "column", event.target.value)} className={fieldClass} placeholder="Например, status" /><select aria-label={"Оператор условия " + (index + 1)} value={condition.operator} onChange={(event) => updateCondition(condition.id, "operator", event.target.value)} className={fieldClass + " w-auto"}>{["=", "<>", ">", ">=", "<", "<=", "LIKE", "IN", "IS NULL", "IS NOT NULL"].map((operator) => <option key={operator}>{operator}</option>)}</select></div>
+                    {![ "IS NULL", "IS NOT NULL" ].includes(condition.operator) && <div><label className={labelClass}>Значение параметра</label><input aria-label={"Значение условия " + (index + 1)} value={condition.value} onChange={(event) => updateCondition(condition.id, "value", event.target.value)} className={fieldClass} placeholder={condition.operator === "IN" ? "Например: new, active, pending" : "Например, 42 или active"} /></div>}
+                  </div>)}
+                  <p className="text-[11px] text-muted-foreground">Значения будут безопасно экранированы и показаны непосредственно в готовом SQL. Для нескольких условий выбери AND или OR.</p>
                 </div>
               )}
               {operation === "select" && <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Сортировать по</label><input value={form.orderColumn} onChange={(event) => update("orderColumn", event.target.value)} className={fieldClass} placeholder="created_at" /></div><div><label className={labelClass}>Порядок</label><select value={form.orderDirection} onChange={(event) => update("orderDirection", event.target.value)} className={fieldClass}><option>DESC</option><option>ASC</option></select></div><div className="col-span-2"><label className={labelClass}>Лимит строк</label><input value={form.limit} onChange={(event) => update("limit", event.target.value)} className={fieldClass} placeholder="50" /></div></div>}
