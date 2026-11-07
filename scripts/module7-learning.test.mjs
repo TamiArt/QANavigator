@@ -77,7 +77,7 @@ test("Module 7 contains the SQL and database concepts in curriculum order", () =
     "AND",
     "OR",
     "LIKE",
-    "%**",
+    "% — ноль, один или несколько любых символов",
     "_",
     "ровно один любой символ",
     "DISTINCT",
