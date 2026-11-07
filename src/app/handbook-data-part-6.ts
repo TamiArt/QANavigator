@@ -140,7 +140,7 @@ WHERE status = 'pending'
 -- OR условие
 SELECT * FROM users WHERE role = 'admin' OR role = 'moderator';
 
--- Приоритет операторов: AND выполняется раньше OR
+-- Приоритет операторов: AND имеет более высокий приоритет, чем OR
 -- Этот запрос читается как: status = 'paid' OR (status = 'shipped' AND total > 1000)
 SELECT * FROM orders
 WHERE status = 'paid'
