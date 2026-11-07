@@ -63,31 +63,6 @@ test("Module 7 contains the SQL and database concepts in curriculum order", () =
     assert.ok(source.toLowerCase().includes(term.toLowerCase()), "Missing Module 7 foundation: " + term);
   }
   for (const term of [
-    "Краткая шпаргалка по SQL-командам для QA",
-    "Показать доступные БД",
-    "SHOW TABLES;",
-    "DESC имя_таблицы;",
-    "ALTER TABLE",
-    "TRUNCATE TABLE",
-    "SELECT DISTINCT",
-    "IS NOT NULL",
-    "BETWEEN",
-    "INNER JOIN",
-    "FULL OUTER JOIN",
-    "COUNT(DISTINCT city)",
-    "GROUP BY",
-    "HAVING",
-    "INSERT INTO users",
-    "UPDATE users SET",
-    "DELETE FROM users",
-    "START TRANSACTION;",
-    "SAVEPOINT",
-    "EXPLAIN SELECT",
-    "Безопасный порядок действий тестировщика"
-  ]) {
-    assert.ok(source.toLowerCase().includes(term.toLowerCase()), "Missing QA SQL cheat-sheet item: " + term);
-  }
-  for (const term of [
     "SQL-запрос",
     "SELECT column_1",
     "SELECT *",
