@@ -42,6 +42,10 @@ test("database workbench supports multiple WHERE conditions with AND and OR", ()
   assert.ok(source.includes("Заполни столбец во всех добавленных условиях или удали пустое условие."));
   assert.ok(source.includes("AND имеет более высокий приоритет, чем OR"), "SQL builder must explain AND precedence over OR");
   assert.ok(source.includes("A OR B AND C читается как A OR (B AND C)"), "SQL builder must show the default logical grouping");
+  assert.ok(source.includes('"BETWEEN"'), "SQL builder must offer BETWEEN");
+  assert.ok(source.includes('operator === "BETWEEN"'), "SQL builder must generate a BETWEEN expression");
+  assert.ok(source.includes("укажи две границы через запятую"), "BETWEEN must validate both range boundaries");
+  assert.ok(source.includes("BETWEEN и IN имеют тот же приоритет"), "SQL builder must explain BETWEEN and IN precedence");
 });
 
 test("database workbench handles PostgreSQL and MySQL syntax differences", () => {
