@@ -81,13 +81,13 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
     if (!validIdentifier(form.filterColumn.trim())) throw new Error("Имя поля фильтра должно быть SQL-идентификатором.");
     const operator = ["=", "<>", ">", ">=", "<", "<=", "LIKE", "IN", "IS NULL", "IS NOT NULL"].includes(form.filterOperator)
       ? form.filterOperator : "=";
-    if (operator === "IS NULL" || operator === "IS NOT NULL") return "\\nWHERE " + q(form.filterColumn.trim()) + " " + operator;
+    if (operator === "IS NULL" || operator === "IS NOT NULL") return "\nWHERE " + q(form.filterColumn.trim()) + " " + operator;
     if (operator === "IN") {
       const values = form.filterValue.split(",").map((value) => value.trim());
       if (!values.length || values.some((value) => !value)) throw new Error("Для IN укажи значения через запятую.");
-      return "\\nWHERE " + q(form.filterColumn.trim()) + " IN (" + values.map(placeholder).join(", ") + ")";
+      return "\nWHERE " + q(form.filterColumn.trim()) + " IN (" + values.map(placeholder).join(", ") + ")";
     }
-    return "\\nWHERE " + q(form.filterColumn.trim()) + " " + operator + " " + placeholder(form.filterValue);
+    return "\nWHERE " + q(form.filterColumn.trim()) + " " + operator + " " + placeholder(form.filterValue);
   };
   try {
     switch (operation) {
@@ -99,7 +99,7 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
           : "";
         if (form.orderColumn.trim() && !sorting) return { sql: "", params, error: "Проверь имя столбца сортировки." };
         const limit = form.limit.trim() && /^\d+$/.test(form.limit.trim()) ? " LIMIT " + Math.min(Number(form.limit), 10000) : "";
-        return { sql: "SELECT " + selected + "\\nFROM " + tableSql + where() + sorting.replace(" ORDER BY ", "\\nORDER BY ") + limit.replace(" LIMIT ", "\\nLIMIT ") + ";", params, error: "" };
+        return { sql: "SELECT " + selected + "\nFROM " + tableSql + where() + sorting.replace(" ORDER BY ", "\nORDER BY ") + limit.replace(" LIMIT ", "\nLIMIT ") + ";", params, error: "" };
       }
       case "join": {
         if (!validIdentifier(form.secondTable.trim()) || !/^[A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*$/.test(form.leftKey.trim()) || !/^[A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*$/.test(form.rightKey.trim())) {
@@ -108,21 +108,21 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         if (form.joinType === "FULL OUTER" && dialect === "mysql") return { sql: "", params, error: "MySQL не поддерживает FULL OUTER JOIN напрямую. Используй UNION из LEFT и RIGHT JOIN." };
         const left = form.leftKey.split(".").map(q).join(".");
         const right = form.rightKey.split(".").map(q).join(".");
-        return { sql: "SELECT *\\nFROM " + tableSql + "\\n" + form.joinType + " JOIN " + q(form.secondTable.trim()) + " ON " + left + " = " + right + ";", params, error: "" };
+        return { sql: "SELECT *\nFROM " + tableSql + "\n" + form.joinType + " JOIN " + q(form.secondTable.trim()) + " ON " + left + " = " + right + ";", params, error: "" };
       }
       case "insert": {
         if (!columns) return { sql: "", params, error: "Укажи столбцы для INSERT через запятую." };
         const enteredValues = form.insertValues.split("|").map((value) => value.trim());
         if (enteredValues.length !== columns.length || enteredValues.some((value) => !value)) return { sql: "", params, error: "Количество значений должно совпадать с количеством столбцов. Разделяй значения символом |." };
         const values = enteredValues.map((value) => placeholder(value));
-        return { sql: "INSERT INTO " + tableSql + " (" + columns.map(q).join(", ") + ")\\nVALUES (" + values.join(", ") + ");", params, error: "" };
+        return { sql: "INSERT INTO " + tableSql + " (" + columns.map(q).join(", ") + ")\nVALUES (" + values.join(", ") + ");", params, error: "" };
       }
       case "update": {
         if (!validIdentifier(form.setColumn.trim())) return { sql: "", params, error: "Укажи корректное имя столбца для изменения." };
         if (!form.filterColumn.trim()) return { sql: "", params, error: "Для безопасности UPDATE обязательно задай WHERE." };
         const value = placeholder(form.setValue);
         const condition = where();
-        return { sql: "UPDATE " + tableSql + "\\nSET " + q(form.setColumn.trim()) + " = " + value + condition + ";", params, error: "" };
+        return { sql: "UPDATE " + tableSql + "\nSET " + q(form.setColumn.trim()) + " = " + value + condition + ";", params, error: "" };
       }
       case "delete": {
         if (!form.filterColumn.trim()) return { sql: "", params, error: "DELETE без WHERE заблокирован конструктором. Укажи поле фильтра." };
@@ -134,7 +134,7 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
       case "alias":
         if (!validIdentifier(form.alias.trim()) || !columns) return { sql: "", params, error: "Укажи псевдоним и список столбцов." };
         const selected = columns.map((column, index) => index === 0 ? q(column) + " AS " + form.alias.trim() : q(column)).join(", ");
-        return { sql: "SELECT " + selected + "\\nFROM " + tableSql + ";", params, error: "" };
+        return { sql: "SELECT " + selected + "\nFROM " + tableSql + ";", params, error: "" };
       default:
         return { sql: "", params, error: "Выбери поддерживаемый тип запроса." };
     }
