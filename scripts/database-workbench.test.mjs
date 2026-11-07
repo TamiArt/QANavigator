@@ -40,6 +40,8 @@ test("database workbench supports multiple WHERE conditions with AND and OR", ()
   assert.ok(source.includes('option value="OR"'));
   assert.ok(source.includes('clauses.join("\\\\n  ")') || source.includes('clauses.join("\\n  ")'));
   assert.ok(source.includes("Заполни столбец во всех добавленных условиях или удали пустое условие."));
+  assert.ok(source.includes("AND выполняется раньше OR"), "SQL builder must explain AND precedence over OR");
+  assert.ok(source.includes("A OR B AND C читается как A OR (B AND C)"), "SQL builder must show the default logical grouping");
 });
 
 test("database workbench handles PostgreSQL and MySQL syntax differences", () => {
