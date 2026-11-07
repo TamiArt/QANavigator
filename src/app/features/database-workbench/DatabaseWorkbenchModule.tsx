@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import {
-  AlertTriangle, BookOpen, CheckCircle2, Clipboard, Code2, Copy,
+  AlertTriangle, BookOpen, CheckCircle2, Code2, Copy,
   Database, Info, Search, ShieldCheck, WandSparkles,
 } from "lucide-react";
 
@@ -80,6 +80,11 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
     const operator = ["=", "<>", ">", ">=", "<", "<=", "LIKE", "IN", "IS NULL", "IS NOT NULL"].includes(form.filterOperator)
       ? form.filterOperator : "=";
     if (operator === "IS NULL" || operator === "IS NOT NULL") return " WHERE " + q(form.filterColumn.trim()) + " " + operator;
+    if (operator === "IN") {
+      const values = form.filterValue.split(",").map((value) => value.trim());
+      if (!values.length || values.some((value) => !value)) throw new Error("Для IN укажи значения через запятую.");
+      return " WHERE " + q(form.filterColumn.trim()) + " IN (" + values.map(placeholder).join(", ") + ")";
+    }
     return " WHERE " + q(form.filterColumn.trim()) + " " + operator + " " + placeholder(form.filterValue);
   };
   try {
@@ -124,7 +129,10 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         return { sql: "ALTER TABLE " + tableSql + " RENAME COLUMN " + q(form.oldColumn.trim()) + " TO " + q(form.newColumn.trim()) + ";", params, error: "" };
       case "alias":
         if (!validIdentifier(form.alias.trim()) || !columns) return { sql: "", params, error: "Укажи псевдоним и список столбцов." };
-        return { sql: "SELECT " + columns.map(q).join(", ") + " FROM " + tableSql + " AS " + q(form.alias.trim()) + ";", params, error: "" };
+        const selected = columns.map((column, index) => index === 0 ? q(column) + " AS " + q(form.alias.trim()) : q(column)).join(", ");
+        return { sql: "SELECT " + selected + " FROM " + tableSql + ";", params, error: "" };
+      default:
+        return { sql: "", params, error: "Выбери поддерживаемый тип запроса." };
     }
   } catch (error) {
     return { sql: "", params, error: error instanceof Error ? error.message : "Не удалось собрать запрос." };
@@ -184,7 +192,7 @@ export function DatabaseWorkbenchModule() {
               <option value="update">Изменить запись — UPDATE</option>
               <option value="delete">Удалить запись — DELETE</option>
               <option value="rename">Переименовать столбец в БД</option>
-              <option value="alias">Псевдоним в SELECT — AS</option>
+              <option value="alias">Псевдоним столбца — AS</option>
             </select>
           </div>
 
@@ -205,7 +213,7 @@ export function DatabaseWorkbenchModule() {
               {operation === "join" && <div className="space-y-2"><div><label className={labelClass}>Вторая таблица</label><input value={form.secondTable} onChange={(event) => update("secondTable", event.target.value)} className={fieldClass} /></div><div><label className={labelClass}>Тип JOIN</label><select value={form.joinType} onChange={(event) => update("joinType", event.target.value)} className={fieldClass}>{["INNER", "LEFT", "RIGHT", "FULL OUTER"].map((type) => <option key={type}>{type}</option>)}</select></div><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Левый ключ</label><input value={form.leftKey} onChange={(event) => update("leftKey", event.target.value)} className={fieldClass} /></div><div><label className={labelClass}>Правый ключ</label><input value={form.rightKey} onChange={(event) => update("rightKey", event.target.value)} className={fieldClass} /></div></div></div>}
               {operation === "update" && <div><label className={labelClass}>Какой столбец изменить?</label><input value={form.setColumn} onChange={(event) => update("setColumn", event.target.value)} className={fieldClass} /><label className={labelClass + " mt-2"}>Новое значение</label><input value={form.setValue} onChange={(event) => update("setValue", event.target.value)} className={fieldClass} /></div>}
               {operation === "rename" && <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Старое имя</label><input value={form.oldColumn} onChange={(event) => update("oldColumn", event.target.value)} className={fieldClass} /></div><div><label className={labelClass}>Новое имя</label><input value={form.newColumn} onChange={(event) => update("newColumn", event.target.value)} className={fieldClass} /></div></div>}
-              {operation === "alias" && <div><label className={labelClass}>Псевдоним таблицы</label><input value={form.alias} onChange={(event) => update("alias", event.target.value)} className={fieldClass} /></div>}
+              {operation === "alias" && <div><label className={labelClass}>Псевдоним первого столбца в результате</label><input value={form.alias} onChange={(event) => update("alias", event.target.value)} className={fieldClass} /></div>}
             </div>
 
             <div className="space-y-3">
