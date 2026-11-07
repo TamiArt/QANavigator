@@ -66,6 +66,39 @@ test("merged topic IDs are not visible in the hierarchy", () => {
 });
 
 
+test("general handbook SQL topic contains a quick reference for QA", () => {
+  const source = fs.readFileSync("src/app/handbook-data-part-6.ts", "utf8");
+  const start = source.indexOf('id: "db1"');
+  const end = source.indexOf('id: "db2"', start);
+  assert.ok(start >= 0 && end > start, "general SQL topic db1 must exist");
+  const topic = source.slice(start, end);
+  for (const command of [
+    "Краткая шпаргалка по SQL-командам для QA",
+    "SHOW DATABASES;",
+    "CREATE TABLE",
+    "ALTER TABLE",
+    "SELECT DISTINCT",
+    "IS NOT NULL",
+    "INNER JOIN",
+    "LEFT JOIN",
+    "RIGHT JOIN",
+    "FULL OUTER JOIN",
+    "COUNT(DISTINCT email)",
+    "GROUP BY",
+    "HAVING",
+    "INSERT INTO users",
+    "UPDATE users SET",
+    "DELETE FROM users",
+    "START TRANSACTION;",
+    "COMMIT;",
+    "ROLLBACK;",
+    "EXPLAIN SELECT",
+    "Безопасный алгоритм QA перед изменением данных",
+  ]) {
+    assert.ok(topic.includes(command), "general SQL topic is missing: " + command);
+  }
+});
+
 test("testing-types knowledge topic keeps the eight-axis classification contract", () => {
   const source = fs.readFileSync("src/app/handbook-data-part-1.ts", "utf8");
   const start = source.indexOf('id: "tt2"');

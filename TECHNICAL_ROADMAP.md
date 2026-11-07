@@ -1930,3 +1930,76 @@ Updated on `fix/documentation-api-checklist-visibility` per requested informatio
 - added concrete example checks for input forms, authentication/registration, buttons/CTA, payments, tables/search, and custom functionality;
 - each example can be previewed and loaded into the checklist generator; API checklist remains available inline from its quick-start card;
 - added regression tests for the nested API checklist and the preset example catalogue.
+
+
+### 7.1.63 Learning Mode — Module 7 theory enrichment — 2026-11-06
+
+- extended the existing 11 SQL lessons using the supplied Module 7 theory document; lesson IDs, titles, order and installation lessons remain unchanged;
+- added the database/DBMS and frontend–backend–database context, database testing rationale, table cells and NOT NULL constraints;
+- expanded NoSQL coverage with search and time-series stores, sharding, scaling, CAP and a qualified SQL/NoSQL comparison;
+- added SQL selection/filtering details (comparison operators, LIKE, DISTINCT, arithmetic expressions and AS), aggregate functions, GROUP BY / ORDER BY details, and FULL OUTER JOIN support caveats;
+- added the three database testing approaches: direct DB checks, API-to-DB verification, and end-to-end frontend flow;
+- updated existing lesson infographic summaries and Module 7 regression assertions; no duplicate lesson was created.
+
+Verification: run `npm run test:module7-learning` and the full `npm run verify` against this branch head. Do not mark the block verified until current-head CI and local checks pass.
+
+
+### 7.1.64 Learning Mode — ACID transaction principles — 2026-11-06
+
+- added an introductory ACID explanation to the existing Module 7 lesson on SQL command groups and TCL; no new lesson or duplicate topic was created;
+- explained Atomicity, Consistency, Isolation and Durability with short practical examples and QA-focused checks;
+- clarified that isolation guarantees depend on the selected transaction isolation level, and durability is subject to the DBMS guarantees and configuration;
+- added a concise ACID infographic summary and regression assertions for all four properties and transaction commands.
+
+Verification: run `npm run test:module7-learning` and the full `npm run verify` against the latest branch head; do not mark the changes as verified until checks complete.
+
+
+### 7.1.65 Learning Mode — CRUD fundamentals in Module 5 — 2026-11-06
+
+- added a separate Module 5 lesson explaining Create, Read, Update and Delete with beginner-friendly examples;
+- mapped CRUD operations to SQL commands and typical REST API HTTP methods, including the distinction between PUT and PATCH;
+- included QA checks for resulting data, access rights, repeated requests, and safe use of UPDATE / DELETE conditions;
+- added a matching lesson infographic and regression assertions; existing lessons were left intact.
+
+Verification: run `npm run test:module5-learning` and the full `npm run verify` against the latest branch head; do not mark the changes verified until checks complete.
+
+
+### 7.1.66 Learning Mode — CAP theorem explanation in Module 7 lesson 3 — 2026-11-06
+
+- expanded the existing CAP bullet in lesson m7-03 with plain-language definitions of Consistency, Availability, and Partition Tolerance;
+- added a two-server network-partition scenario and an online-store example illustrating the consistency/availability trade-off;
+- clarified that the CAP trade-off applies during a network partition, rather than describing a permanent choice of any two properties;
+- clarified the matching lesson infographic.
+
+Verification: run `npm run test:module7-learning` and the full `npm run verify` against the latest branch head.
+
+
+### 7.1.67 CAP theorem explanation replaced with complete CP/AP model — 2026-11-06
+
+- replaced the previous simplified CAP explanation in Module 7, lesson 3 with the supplied definitions of the three idealized properties: Consistency, Availability and Partition Tolerance;
+- added the Brewer CAP theorem statement and explained the CP/AP trade-off during a network partition;
+- documented CP and AP behavior separately, including refusal/error or timeout behavior for CP and eventual consistency for AP;
+- added the supplied examples: quorum-based SQL configurations, MongoDB configurations and HBase for CP; Apache Cassandra, CouchDB, caches and DNS for AP;
+- aligned the lesson infographic with the new CP/AP framing;
+- added focused regression assertions for the required CAP terminology and examples.
+
+Validation: source-level changes committed. Focused tests and full `npm run verify` still need to be executed before this item is considered fully verified.
+
+
+### 7.1.68 Module 7 lessons 1–3 expanded and reordered — 2026-11-07
+
+- rebuilt lesson 1 around database fundamentals: DB and DBMS definitions, frontend/backend/database architecture, why QA tests stored data, three testing approaches (direct DB access, API/Postman, frontend end-to-end), and relational vs NoSQL models;
+- expanded lesson 2 with relational table terminology, SQL data types (INTEGER/INT/INT4, VARCHAR, BOOLEAN, TIMESTAMP), SQL literal notation, 1:1 / 1:N / M:N relationships, DBMS purpose and common products;
+- reorganized lesson 3 so it begins with NoSQL purpose and seven storage categories, followed by SQL-vs-NoSQL comparison and the CAP/CP/AP glossary;
+- clarified the distinction between analytical columnar databases and wide-column stores, and qualified technology guarantees as product/configuration-dependent;
+- refreshed all three lesson infographics and added regression assertions for the requested terms and sections.
+
+Validation: source and regression assertions updated. Run the focused Module 7 test and full `npm run verify` before treating the work as fully verified.
+
+
+### 7.1.69 Learning Mode — Module 7 SQL fundamentals and practice lesson — 2026-11-07
+- expanded lesson 7 while preserving its existing DDL, database-selection, SQL command-group and ACID sections; added SQL/query definitions and the core operator pattern;
+- inserted a new lesson immediately after lesson 7 covering SELECT, WHERE, comparison and arithmetic operators, AS, DISTINCT, LIKE, INSERT/UPDATE/DELETE, aggregate functions, GROUP BY, HAVING, ORDER BY, JOIN variants and API-to-database verification;
+- shifted the IDs of the former lessons 8–11 to 9–12 and updated the matching infographic models and regression expectations;
+- corrected malformed examples from the supplied notes (SELECT *, multiplication *, four-character LIKE pattern) and clarified NULL counting and JOIN support differences.
+Validation: source, infographic entries and regression assertions updated. Run the focused Module 7 test and full `npm run verify` before treating the work as fully verified.
