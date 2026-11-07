@@ -101,13 +101,15 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "Дата и время", text: "DATE, TIME, DATETIME, TIMESTAMP — поведение зависит от СУБД." },
     { title: "NULL", text: "Отсутствие или неизвестность, не равно пустой строке и нулю." },
   ], "Выбирай тип по смыслу данных и проверяй граничные значения."),
-  "m7-07": V("flow", ["CREATE", "SHOW DATABASES", "USE", "DROP"], Code2, "blue", [
-    { title: "DDL", text: "CREATE DATABASE, USE, DROP — управление базами и структурой." },
-    { title: "SHOW DATABASES", text: "Показывает доступные пользователю базы в MySQL." },
-    { title: "Другие группы", text: "DML меняет данные; SELECT читает; DCL управляет правами." },
+  "m7-07": V("flow", ["SQL", "SELECT", "FROM", "WHERE", "DDL", "ACID"], Code2, "blue", [
+    { title: "SQL и запрос", text: "Язык для работы с данными; запрос описывает нужное действие и условия." },
+    { title: "Базовая формула", text: "SELECT выбирает поля; FROM указывает таблицу; JOIN и ON связывают данные; WHERE фильтрует." },
+    { title: "Изменение данных", text: "INSERT добавляет; UPDATE изменяет; DELETE удаляет строки." },
+    { title: "DDL и базы", text: "CREATE DATABASE, SHOW DATABASES, USE и DROP — команды управления базой." },
+    { title: "Группы команд", text: "DDL — структура; DML — изменение данных; DCL — права; TCL — транзакции." },
     { title: "ACID", text: "A — всё или ничего; C — данные корректны; I — параллельность; D — сохранность после подтверждения." },
     { title: "Осторожно", text: "DROP DATABASE удаляет базу вместе с объектами." },
-  ], "Команды SHOW DATABASES и USE относятся к MySQL."),
+  ], "Сохраняй исходную структуру команд и помни: SHOW DATABASES и USE относятся к MySQL."),
   "m7-08": V("flow", ["SELECT", "WHERE", "LIKE", "DISTINCT", "JOIN", "GROUP BY"], Code2, "mint", [
     { title: "SELECT / FROM", text: "Выбираем столбцы и указываем исходную таблицу; * выводит все столбцы." },
     { title: "WHERE и сравнения", text: "Фильтруем строки по условиям =, <>, >, <, >=, <=; для NULL — IS NULL." },
