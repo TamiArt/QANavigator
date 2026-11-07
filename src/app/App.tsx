@@ -12,6 +12,7 @@ import { TestExecutionModule } from "./features/test-execution/TestExecutionModu
 import { AutomationModule } from "./features/automation/AutomationModule";
 import { ReleaseReportModule } from "./features/release-report/ReleaseReportModule";
 import { TestDataModule } from "./features/test-data/TestDataModule";
+import { DatabaseWorkbenchModule } from "./features/database-workbench/DatabaseWorkbenchModule";
 import { HandbookModule } from "./features/handbook/HandbookModule";
 import { DocumentationModule } from "./features/documentation/DocumentationModule";
 import { SettingsModule } from "./features/settings/SettingsModule";
@@ -45,6 +46,7 @@ const NAV_ICONS: Record<Module, ReactNode> = {
   automation: <Terminal className="w-4 h-4" />,
   "release-report": <BarChart2 className="w-4 h-4" />,
   "test-data": <Database className="w-4 h-4" />,
+  "database-workbench": <Database className="w-4 h-4" />,
   handbook: <BookOpen className="w-4 h-4" />,
   documentation: <FileText className="w-4 h-4" />,
   settings: <Settings className="w-4 h-4" />,
@@ -158,6 +160,7 @@ export default function App() {
       case "automation": return <AutomationModule />;
       case "release-report": return <ReleaseReportModule />;
       case "test-data": return <TestDataModule />;
+      case "database-workbench": return <DatabaseWorkbenchModule />;
       case "handbook": return <HandbookModule />;
       case "documentation": return <DocumentationModule />;
       case "settings": return <SettingsModule />;
