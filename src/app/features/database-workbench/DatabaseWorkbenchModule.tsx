@@ -60,9 +60,9 @@ function splitIdentifiers(value: string) {
 }
 
 function quote(value: string, dialect: Dialect) {
-  return dialect === "mysql" ? "\`" + value + "\`" : '"' + value + '"';
+  const delimiter = dialect === "mysql" ? String.fromCharCode(96) : '"';
+  return delimiter + value + delimiter;
 }
-
 function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
   const table = form.table.trim();
   if (!validIdentifier(table)) return { sql: "", params: [], error: "Укажи имя таблицы латиницей: users, order_items." };
