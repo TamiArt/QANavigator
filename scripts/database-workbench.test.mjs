@@ -15,10 +15,19 @@ test("database workbench keeps destructive statements behind a WHERE guard", () 
   assert.ok(source.includes('if (!form.filterColumn.trim()) return { sql: "", params, error: "DELETE без WHERE заблокирован конструктором. Укажи поле фильтра." }'));
 });
 
-test("database workbench uses bound parameters and validates SQL identifiers", () => {
+test("database workbench validates identifiers and previews literal parameter values", () => {
   assert.ok(source.includes("function validIdentifier(value: string)"));
-  assert.ok(source.includes('dialect === "postgres" ? "$" + params.length : "?"'));
-  assert.ok(source.includes("values.map(placeholder)"));
+  assert.ok(source.includes("function sqlLiteral(value: string)"));
+  assert.ok(source.includes('value.replace(/'/g, "''")'), "string values must escape single quotes");
+  assert.ok(source.includes('const q = (name: string) => name;'), "identifiers must be shown without quotes");
+  assert.ok(source.includes('placeholder(form.filterValue)'), "filter value must be included in the SQL preview");
+  assert.ok(source.includes('"\\nFROM " + tableSql'), "SELECT preview must use readable multiline formatting");
+});
+
+test("database workbench uses the requested Russian field labels", () => {
+  assert.ok(source.includes("Название таблицы"));
+  assert.ok(source.includes("Столбцы, которые нужно вывести через запятую"));
+  assert.ok(source.includes("Значение будет безопасно экранировано и показано непосредственно в готовом SQL."));
 });
 
 test("database workbench handles PostgreSQL and MySQL syntax differences", () => {
