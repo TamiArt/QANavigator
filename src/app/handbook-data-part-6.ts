@@ -108,7 +108,7 @@ pm.test("Cannot access other user data", () => {
     title: "SQL для тестировщика: от SELECT до JOIN",
     category: "Работа с базами данных",
     level: "beginner",
-    tags: ["SQL", "SELECT", "JOIN", "WHERE", "PostgreSQL", "MySQL"],
+    tags: ["SQL", "SELECT", "JOIN", "WHERE", "AND", "OR", "приоритет операторов", "PostgreSQL", "MySQL"],
     content: `## SQL для тестировщика
 
 ### Зачем QA нужен SQL?
@@ -139,6 +139,19 @@ WHERE status = 'pending'
 
 -- OR условие
 SELECT * FROM users WHERE role = 'admin' OR role = 'moderator';
+
+-- Приоритет операторов: AND выполняется раньше OR
+-- Этот запрос читается как: status = 'paid' OR (status = 'shipped' AND total > 1000)
+SELECT * FROM orders
+WHERE status = 'paid'
+   OR status = 'shipped'
+  AND total > 1000;
+
+-- Если нужна другая группировка, используй скобки:
+-- Сначала объединить статусы через OR, затем применить AND к общей группе
+SELECT * FROM orders
+WHERE (status = 'paid' OR status = 'shipped')
+  AND total > 1000;
 
 -- NOT
 SELECT * FROM users WHERE status != 'deleted';
