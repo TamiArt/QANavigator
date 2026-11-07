@@ -61,7 +61,7 @@ function splitIdentifiers(value: string) {
 
 function sqlLiteral(value: string) {
   const trimmed = value.trim();
-  if (/^-?\\d+(\\.\\d+)?$/.test(trimmed) || /^(NULL|TRUE|FALSE)$/i.test(trimmed)) return trimmed;
+  if (/^-?\d+(\.\d+)?$/.test(trimmed) || /^(NULL|TRUE|FALSE)$/i.test(trimmed)) return trimmed;
   return "'" + value.replace(/'/g, "''") + "'";
 }
 function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
@@ -94,7 +94,7 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
       }
       return (index === 0 ? "" : condition.connector + " ") + expression;
     });
-    return "\\nWHERE " + clauses.join("\\n  ");
+    return "\nWHERE " + clauses.join("\n  ");
   };
   try {
     switch (operation) {
