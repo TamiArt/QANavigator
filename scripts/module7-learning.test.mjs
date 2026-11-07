@@ -39,7 +39,7 @@ test("Module 7 contains the SQL and database concepts in curriculum order", () =
     "Прямой доступ к БД",
     "Тестирование через API",
     "Тестирование через фронтенд",
-    "Реляционные базы данных и структура",
+    "Реляционная база данных (РБД)",
     "INTEGER / INT / INT4",
     "VARCHAR(n)",
     "BOOLEAN",
