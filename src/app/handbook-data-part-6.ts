@@ -286,7 +286,8 @@ WHERE status = 'pending'
 | Создать таблицу | CREATE TABLE users (id INT PRIMARY KEY, name VARCHAR(100), email VARCHAR(255)); |
 | Добавить столбец | ALTER TABLE users ADD COLUMN status VARCHAR(20); |
 | Изменить тип столбца (MySQL) | ALTER TABLE users MODIFY COLUMN status VARCHAR(50); |
-| Переименовать столбец | ALTER TABLE users RENAME COLUMN old_name TO new_name; |
+| Переименовать столбец в самой БД | ALTER TABLE users RENAME COLUMN old_name TO new_name; |
+| Переименовать таблицу в самой БД | ALTER TABLE users RENAME TO customers; |
 | Удалить столбец | ALTER TABLE users DROP COLUMN status; |
 | Удалить таблицу вместе с данными | DROP TABLE users; |
 | Удалить все строки, сохранив таблицу | TRUNCATE TABLE users; |
@@ -310,6 +311,19 @@ WHERE status = 'pending'
 | Сортировать по нескольким полям | SELECT * FROM orders ORDER BY status ASC, created_at DESC; |
 | Ограничить результат 10 строками | SELECT * FROM users LIMIT 10; |
 | Пропустить строки (пагинация) | SELECT * FROM users LIMIT 10 OFFSET 20; |
+
+**Важно различать AS и ALTER TABLE:** **AS** задаёт временный псевдоним только внутри запроса и не меняет структуру БД. **ALTER TABLE ... RENAME COLUMN** действительно переименовывает столбец в таблице. Например:
+
+\`\`\`sql
+-- Псевдоним только в результате SELECT
+SELECT first_name AS name FROM users;
+
+-- Реальное изменение имени столбца в таблице
+ALTER TABLE users RENAME COLUMN first_name TO name;
+
+-- Псевдоним таблицы в запросе
+SELECT u.email FROM users AS u;
+\`\`\`
 
 #### 4. Условия фильтрации — WHERE
 

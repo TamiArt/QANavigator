@@ -14,6 +14,7 @@ export const APP_NAVIGATION: readonly AppNavigationItem[] = [
   { id: "automation", label: "Автотесты" },
   { id: "release-report", label: "Релизный отчёт" },
   { id: "test-data", label: "Генератор данных" },
+  { id: "database-workbench", label: "Работа с БД" },
   { id: "handbook", label: "База знаний QA" },
   { id: "documentation", label: "Документация" },
   { id: "settings", label: "Настройки" },

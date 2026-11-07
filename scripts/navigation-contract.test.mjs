@@ -20,7 +20,7 @@ const navigation = await loadModule("src/app/domain/navigation.ts");
 
 test("navigation contract contains every application module exactly once", () => {
   const ids = navigation.APP_NAVIGATION_IDS;
-  assert.equal(ids.length, 11);
+  assert.equal(ids.length, 12);
   assert.equal(new Set(ids).size, ids.length);
   assert.deepEqual(JSON.parse(JSON.stringify(ids)), [
     "workspace",
@@ -31,6 +31,7 @@ test("navigation contract contains every application module exactly once", () =>
     "automation",
     "release-report",
     "test-data",
+    "database-workbench",
     "handbook",
     "documentation",
     "settings",

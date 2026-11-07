@@ -5,7 +5,7 @@ import type { QAProject } from "./project";
 export type Theme = "light" | "dark";
 export type Module =
   | "workspace" | "beginner-wizard" | "requirements" | "test-design" | "test-execution"
-  | "automation" | "release-report" | "test-data" | "handbook" | "documentation" | "settings";
+  | "automation" | "release-report" | "test-data" | "database-workbench" | "handbook" | "documentation" | "settings";
 export type TestStatus = "pending" | "passed" | "failed" | "blocked";
 export type Severity = "critical" | "high" | "medium" | "low";
 export type AutoStack =
