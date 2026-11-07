@@ -1984,3 +1984,14 @@ Verification: run `npm run test:module7-learning` and the full `npm run verify` 
 - added focused regression assertions for the required CAP terminology and examples.
 
 Validation: source-level changes committed. Focused tests and full `npm run verify` still need to be executed before this item is considered fully verified.
+
+
+### 7.1.68 Module 7 lessons 1–3 expanded and reordered — 2026-11-07
+
+- rebuilt lesson 1 around database fundamentals: DB and DBMS definitions, frontend/backend/database architecture, why QA tests stored data, three testing approaches (direct DB access, API/Postman, frontend end-to-end), and relational vs NoSQL models;
+- expanded lesson 2 with relational table terminology, SQL data types (INTEGER/INT/INT4, VARCHAR, BOOLEAN, TIMESTAMP), SQL literal notation, 1:1 / 1:N / M:N relationships, DBMS purpose and common products;
+- reorganized lesson 3 so it begins with NoSQL purpose and seven storage categories, followed by SQL-vs-NoSQL comparison and the CAP/CP/AP glossary;
+- clarified the distinction between analytical columnar databases and wide-column stores, and qualified technology guarantees as product/configuration-dependent;
+- refreshed all three lesson infographics and added regression assertions for the requested terms and sections.
+
+Validation: source and regression assertions updated. Run the focused Module 7 test and full `npm run verify` before treating the work as fully verified.
