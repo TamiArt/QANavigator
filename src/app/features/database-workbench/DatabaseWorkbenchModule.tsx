@@ -9,6 +9,7 @@ type Operation = "select" | "join" | "insert" | "update" | "delete" | "rename" |
 type BuilderState = {
   table: string;
   columns: string;
+  insertValues: string;
   filterColumn: string;
   filterOperator: string;
   filterValue: string;
@@ -27,7 +28,7 @@ type BuilderState = {
 };
 
 const initial: BuilderState = {
-  table: "users", columns: "id, email, created_at", filterColumn: "id",
+  table: "users", columns: "id, email, created_at", insertValues: "101 | qa@example.com | 2026-11-07", filterColumn: "id",
   filterOperator: "=", filterValue: "10", orderColumn: "", orderDirection: "DESC",
   limit: "50", secondTable: "orders", joinType: "LEFT",
   leftKey: "users.id", rightKey: "orders.user_id",
@@ -110,7 +111,9 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
       }
       case "insert": {
         if (!columns) return { sql: "", params, error: "Укажи столбцы для INSERT через запятую." };
-        const values = columns.map((column) => placeholder("значение для " + column));
+        const enteredValues = form.insertValues.split("|").map((value) => value.trim());
+        if (enteredValues.length !== columns.length || enteredValues.some((value) => !value)) return { sql: "", params, error: "Количество значений должно совпадать с количеством столбцов. Разделяй значения символом |." };
+        const values = enteredValues.map((value) => placeholder(value));
         return { sql: "INSERT INTO " + tableSql + " (" + columns.map(q).join(", ") + ") VALUES (" + values.join(", ") + ");", params, error: "" };
       }
       case "update": {
@@ -201,6 +204,7 @@ export function DatabaseWorkbenchModule() {
               <div className="flex items-center justify-between gap-2"><p className="text-sm font-semibold">2. Параметры запроса</p><select aria-label="Диалект SQL" value={dialect} onChange={(event) => setDialect(event.target.value as Dialect)} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs"><option value="postgres">PostgreSQL</option><option value="mysql">MySQL</option></select></div>
               <div><label className={labelClass}>Таблица</label><input value={form.table} onChange={(event) => update("table", event.target.value)} className={fieldClass} placeholder="users" /></div>
               {(operation === "select" || operation === "insert" || operation === "alias") && <div><label className={labelClass}>Столбцы через запятую</label><input value={form.columns} onChange={(event) => update("columns", event.target.value)} className={fieldClass} placeholder="id, email, created_at" /><p className="mt-1 text-[11px] text-muted-foreground">Для SELECT можно указать * — все столбцы.</p></div>}
+              {operation === "insert" && <div><label className={labelClass}>Значения в том же порядке (разделитель |)</label><input value={form.insertValues} onChange={(event) => update("insertValues", event.target.value)} className={fieldClass} placeholder="101 | qa@example.com | Anna" /><p className="mt-1 text-[11px] text-muted-foreground">Значения попадут в список параметров отдельно от SQL. Текстовые кавычки вручную добавлять не нужно.</p></div>}
               {(operation === "select" || operation === "update" || operation === "delete") && (
                 <div className="space-y-2 rounded-lg bg-muted/40 p-3">
                   <p className="text-xs font-semibold">Условие WHERE</p>
