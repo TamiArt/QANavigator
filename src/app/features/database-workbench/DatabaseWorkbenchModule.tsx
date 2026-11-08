@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { buildNestedScalarSubquery } from "./nested-subquery-builder.mjs";
+import { buildNestedScalarSubquery, buildCorrelatedExistsSubquery } from "./nested-subquery-builder.mjs";
 import {
   AlertTriangle, BookOpen, CheckCircle2, Code2, Copy,
   Database, Info, Search, ShieldCheck, WandSparkles,
@@ -10,6 +10,7 @@ type Operation = "select" | "aggregate" | "join" | "subquery" | "cte" | "createT
 type SubqueryMode = "SCALAR" | "IN" | "NOT IN" | "EXISTS" | "NOT EXISTS";
 type AggregateFunction = "COUNT" | "COUNT_DISTINCT" | "SUM" | "AVG" | "MIN" | "MAX";
 type AggregateMetric = { id: number; fn: AggregateFunction; column: string; alias: string };
+type CorrelatedSubqueryLevel = { id: number; table: string; alias: string; innerColumn: string; outerDepth: number; outerColumn: string; filterEnabled: boolean; filterColumn: string; filterOperator: "=" | "<>" | ">" | ">=" | "<" | "<=" | "LIKE"; filterValue: string };
 type SubqueryLevel = { id: number; table: string; selectKind: "aggregate" | "column"; aggregate: "AVG" | "SUM" | "MIN" | "MAX"; column: string; filterEnabled: boolean; filterColumn: string; filterOperator: "=" | "<>" | ">" | ">=" | "<" | "<="; filterValue: string };
 type FilterCondition = { id: number; column: string; operator: string; value: string; connector: "AND" | "OR"; openGroups: number; closeGroups: number; negate: boolean; subqueryTable: string; subquerySelectColumn: string; subqueryFilterColumn: string; subqueryFilterOperator: string; subqueryFilterValue: string };
 type BuilderState = {
@@ -81,7 +82,7 @@ const initial: BuilderState = {
   limit: "50", offset: "", distinct: false, havingAlias: "", havingOperator: ">", havingValue: "",
   secondTable: "orders", joinType: "LEFT",
   leftKey: "users.id", rightKey: "orders.user_id",
-  subqueryMode: "EXISTS", subqueryColumn: "id", subqueryOperator: "=",
+  subqueryMode: "EXISTS", subqueryOuterAlias: "u", correlatedLevels: [{ id: 1, table: "orders", alias: "o", innerColumn: "user_id", outerDepth: 1, outerColumn: "id", filterEnabled: true, filterColumn: "status", filterOperator: "=", filterValue: "paid" }], subqueryColumn: "id", subqueryOperator: "=",
   subqueryTable: "orders", subquerySelectColumn: "user_id",
   subqueryFilterColumn: "status", subqueryFilterOperator: "=", subqueryFilterValue: "paid",
   cteName: "filtered_orders", cteSourceTable: "orders", cteColumns: "id, user_id, total, status", cteResultColumns: "id, user_id, total, status",
@@ -270,14 +271,23 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
           : "";
         let predicate = "";
         if (form.subqueryMode === "EXISTS" || form.subqueryMode === "NOT EXISTS") {
-          predicate = form.subqueryMode + " (SELECT 1 FROM " + q(innerTable) + " WHERE " + q(innerTable) + "." + q(innerColumn) + " = " + q(table) + "." + q(outerColumn)
-            + (innerFilter ? " AND " + innerFilter.slice(7) : "") + ")";
+          const outerAlias = form.subqueryOuterAlias.trim();
+          if (!validIdentifier(outerAlias)) return { sql: "", params, error: "Укажи корректный псевдоним внешней таблицы для корреляции." };
+          try {
+            predicate = buildCorrelatedExistsSubquery({
+              mode: form.subqueryMode,
+              outer: { table, alias: outerAlias },
+              levels: form.correlatedLevels,
+            }, (name) => aliasSql(name), placeholder);
+          } catch (error) {
+            return { sql: "", params, error: error instanceof Error ? error.message : "Не удалось построить коррелированный подзапрос." };
+          }
         } else if (form.subqueryMode === "IN" || form.subqueryMode === "NOT IN") {
           predicate = q(outerColumn) + " " + form.subqueryMode + " (SELECT " + q(innerColumn) + " FROM " + q(innerTable) + innerFilter + ")";
         } else {
           predicate = q(outerColumn) + " " + form.subqueryOperator + " (SELECT " + q(innerColumn) + " FROM " + q(innerTable) + innerFilter + ")";
         }
-        return { sql: "SELECT " + (columns ? (form.columns.trim() === "*" ? "*" : columns.map(q).join(", ")) : "*") + "\nFROM " + tableSql + "\nWHERE " + predicate + ";", params, error: "" };
+        return { sql: "SELECT " + (columns ? (form.columns.trim() === "*" ? "*" : columns.map(q).join(", ")) : "*") + "\nFROM " + tableSql + ((form.subqueryMode === "EXISTS" || form.subqueryMode === "NOT EXISTS") ? " AS " + aliasSql(form.subqueryOuterAlias.trim()) : "") + "\nWHERE " + predicate + ";", params, error: "" };
       }
       case "cte": {
         const cteName = form.cteName.trim();
@@ -496,6 +506,17 @@ export function DatabaseWorkbenchModule() {
               {operation === "subquery" && <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
                 <div><label className={labelClass}>Тип подзапроса</label><select value={form.subqueryMode} onChange={(event) => update("subqueryMode", event.target.value)} className={fieldClass}><option value="SCALAR">Скалярный — сравнение с одним значением</option><option value="IN">IN — значение входит в результат</option><option value="NOT IN">NOT IN — значения нет в результате</option><option value="EXISTS">EXISTS — связанная запись существует</option><option value="NOT EXISTS">NOT EXISTS — связанной записи нет</option></select></div>
                 <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Внешняя таблица</label><input value={form.table} onChange={(event) => update("table", event.target.value)} className={fieldClass} /></div><div><label className={labelClass}>Внешний столбец</label><input value={form.subqueryColumn} onChange={(event) => update("subqueryColumn", event.target.value)} className={fieldClass} placeholder="id" /></div></div>
+                {form.subqueryMode.includes("EXISTS") && <div className="space-y-3 rounded-lg border border-primary/20 bg-card p-3">
+                  <div><label className={labelClass}>Псевдоним внешней таблицы</label><input value={form.subqueryOuterAlias} onChange={(event) => update("subqueryOuterAlias", event.target.value)} className={fieldClass} placeholder="u" /></div>
+                  <p className="text-xs text-muted-foreground">Каждый уровень может ссылаться на непосредственный внешний запрос или на любой более высокий уровень по его псевдониму.</p>
+                  {form.correlatedLevels.map((level, index) => <div key={level.id} className="space-y-2 rounded-lg border border-border p-3">
+                    <div className="flex items-center justify-between"><p className="text-xs font-semibold">Уровень корреляции {index + 1}</p><button type="button" disabled={form.correlatedLevels.length === 1} onClick={() => update("correlatedLevels", form.correlatedLevels.filter((item) => item.id !== level.id))} className="text-xs text-destructive disabled:opacity-40">Удалить</button></div>
+                    <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Внутренняя таблица</label><input value={level.table} onChange={(event) => update("correlatedLevels", form.correlatedLevels.map((item) => item.id === level.id ? { ...item, table: event.target.value } : item))} className={fieldClass} placeholder="orders" /></div><div><label className={labelClass}>Псевдоним</label><input value={level.alias} onChange={(event) => update("correlatedLevels", form.correlatedLevels.map((item) => item.id === level.id ? { ...item, alias: event.target.value } : item))} className={fieldClass} placeholder="o" /></div><div><label className={labelClass}>Столбец связи внутри</label><input value={level.innerColumn} onChange={(event) => update("correlatedLevels", form.correlatedLevels.map((item) => item.id === level.id ? { ...item, innerColumn: event.target.value } : item))} className={fieldClass} placeholder="user_id" /></div><div><label className={labelClass}>Уровень внешней ссылки</label><select value={String(level.outerDepth)} onChange={(event) => update("correlatedLevels", form.correlatedLevels.map((item) => item.id === level.id ? { ...item, outerDepth: Number(event.target.value) } : item))} className={fieldClass}>{Array.from({ length: index + 1 }, (_, depth) => <option key={depth + 1} value={depth + 1}>{depth === 0 ? "Непосредственный внешний" : "На " + (depth + 1) + " уровня выше"}</option>)}</select></div><div className="col-span-2"><label className={labelClass}>Столбец внешней таблицы для связи</label><input value={level.outerColumn} onChange={(event) => update("correlatedLevels", form.correlatedLevels.map((item) => item.id === level.id ? { ...item, outerColumn: event.target.value } : item))} className={fieldClass} placeholder="id / order_id" /></div></div>
+                    <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={level.filterEnabled} onChange={(event) => update("correlatedLevels", form.correlatedLevels.map((item) => item.id === level.id ? { ...item, filterEnabled: event.target.checked } : item))} />Дополнительный локальный WHERE</label>
+                    {level.filterEnabled && <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Столбец фильтра</label><input value={level.filterColumn} onChange={(event) => update("correlatedLevels", form.correlatedLevels.map((item) => item.id === level.id ? { ...item, filterColumn: event.target.value } : item))} className={fieldClass} /></div><div><label className={labelClass}>Оператор</label><select value={level.filterOperator} onChange={(event) => update("correlatedLevels", form.correlatedLevels.map((item) => item.id === level.id ? { ...item, filterOperator: event.target.value } : item))} className={fieldClass}>{["=", "<>", ">", ">=", "<", "<=", "LIKE"].map((op) => <option key={op}>{op}</option>)}</select></div><div className="col-span-2"><label className={labelClass}>Значение</label><input value={level.filterValue} onChange={(event) => update("correlatedLevels", form.correlatedLevels.map((item) => item.id === level.id ? { ...item, filterValue: event.target.value } : item))} className={fieldClass} /></div></div>}
+                  </div>)}
+                  <button type="button" onClick={() => update("correlatedLevels", [...form.correlatedLevels, { id: Math.max(0, ...form.correlatedLevels.map((item) => item.id)) + 1, table: "payments", alias: "p", innerColumn: "order_id", outerDepth: 1, outerColumn: "id", filterEnabled: false, filterColumn: "status", filterOperator: "=", filterValue: "paid" }])} className="rounded-md border border-border px-3 py-2 text-xs font-medium">Добавить вложенный уровень</button>
+                </div>}
                 {form.subqueryMode === "SCALAR" && <div><label className={labelClass}>Оператор сравнения</label><select value={form.subqueryOperator} onChange={(event) => update("subqueryOperator", event.target.value)} className={fieldClass}>{["=", "<>", ">", ">=", "<", "<="].map((op) => <option key={op}>{op}</option>)}</select></div>}
                 <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Таблица подзапроса</label><input value={form.subqueryTable} onChange={(event) => update("subqueryTable", event.target.value)} className={fieldClass} placeholder="orders" /></div><div><label className={labelClass}>{form.subqueryMode.includes("EXISTS") ? "Столбец связи внутри" : "Столбец результата"}</label><input value={form.subquerySelectColumn} onChange={(event) => update("subquerySelectColumn", event.target.value)} className={fieldClass} placeholder="user_id" /></div></div>
                 {form.subqueryMode.includes("EXISTS") && <p className="text-[11px] text-muted-foreground">Для EXISTS строится коррелированный подзапрос: внутренний столбец сравнивается с внешним. Дополнительный фильтр добавляется через AND.</p>}
