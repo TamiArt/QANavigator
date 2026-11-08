@@ -5,7 +5,8 @@ import {
 } from "lucide-react";
 
 type Dialect = "postgres" | "mysql";
-type Operation = "select" | "aggregate" | "join" | "insert" | "update" | "delete" | "rename" | "alias";
+type Operation = "select" | "aggregate" | "join" | "subquery" | "insert" | "update" | "delete" | "rename" | "alias";
+type SubqueryMode = "SCALAR" | "IN" | "NOT IN" | "EXISTS" | "NOT EXISTS";
 type AggregateFunction = "COUNT" | "COUNT_DISTINCT" | "SUM" | "AVG" | "MIN" | "MAX";
 type AggregateMetric = { id: number; fn: AggregateFunction; column: string; alias: string };
 type FilterCondition = { id: number; column: string; operator: string; value: string; connector: "AND" | "OR" };
@@ -29,6 +30,14 @@ type BuilderState = {
   joinType: "INNER" | "LEFT" | "RIGHT" | "FULL OUTER";
   leftKey: string;
   rightKey: string;
+  subqueryMode: SubqueryMode;
+  subqueryColumn: string;
+  subqueryOperator: "=" | "<>" | ">" | ">=" | "<" | "<=";
+  subqueryTable: string;
+  subquerySelectColumn: string;
+  subqueryFilterColumn: string;
+  subqueryFilterOperator: "=" | "<>" | ">" | ">=" | "<" | "<=" | "LIKE";
+  subqueryFilterValue: string;
   setColumn: string;
   setValue: string;
   newColumn: string;
@@ -46,6 +55,9 @@ const initial: BuilderState = {
   limit: "50", offset: "", distinct: false, havingAlias: "", havingOperator: ">", havingValue: "",
   secondTable: "orders", joinType: "LEFT",
   leftKey: "users.id", rightKey: "orders.user_id",
+  subqueryMode: "EXISTS", subqueryColumn: "id", subqueryOperator: "=",
+  subqueryTable: "orders", subquerySelectColumn: "user_id",
+  subqueryFilterColumn: "status", subqueryFilterOperator: "=", subqueryFilterValue: "paid",
   setColumn: "status", setValue: "active", newColumn: "display_name",
   oldColumn: "name", alias: "u",
 };
@@ -190,6 +202,30 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         const joins = joinedTables.map((joinedTable, index) => "\n" + form.joinType + " JOIN " + q(joinedTable) + " ON " + leftKeys[index].split(".").map(q).join(".") + " = " + rightKeys[index].split(".").map(q).join(".")).join("");
         return { sql: "SELECT *\nFROM " + tableSql + joins + where() + ";", params, error: "" };
       }
+      case "subquery": {
+        const innerTable = form.subqueryTable.trim();
+        const outerColumn = form.subqueryColumn.trim();
+        const innerColumn = form.subquerySelectColumn.trim();
+        if (!validIdentifier(innerTable) || !validIdentifier(outerColumn) || !validIdentifier(innerColumn)) {
+          return { sql: "", params, error: "Укажи корректные имена внешнего столбца, внутренней таблицы и столбца подзапроса." };
+        }
+        const filterColumn = form.subqueryFilterColumn.trim();
+        if (filterColumn && !validIdentifier(filterColumn)) return { sql: "", params, error: "Проверь имя столбца дополнительного фильтра подзапроса." };
+        if (filterColumn && !form.subqueryFilterValue.trim()) return { sql: "", params, error: "Укажи значение дополнительного фильтра подзапроса." };
+        const innerFilter = filterColumn
+          ? " WHERE " + q(filterColumn) + " " + form.subqueryFilterOperator + " " + placeholder(form.subqueryFilterValue)
+          : "";
+        let predicate = "";
+        if (form.subqueryMode === "EXISTS" || form.subqueryMode === "NOT EXISTS") {
+          predicate = form.subqueryMode + " (SELECT 1 FROM " + q(innerTable) + " WHERE " + q(innerTable) + "." + q(innerColumn) + " = " + q(table) + "." + q(outerColumn)
+            + (innerFilter ? " AND " + innerFilter.slice(7) : "") + ")";
+        } else if (form.subqueryMode === "IN" || form.subqueryMode === "NOT IN") {
+          predicate = q(outerColumn) + " " + form.subqueryMode + " (SELECT " + q(innerColumn) + " FROM " + q(innerTable) + innerFilter + ")";
+        } else {
+          predicate = q(outerColumn) + " " + form.subqueryOperator + " (SELECT " + q(innerColumn) + " FROM " + q(innerTable) + innerFilter + ")";
+        }
+        return { sql: "SELECT " + (columns ? (form.columns.trim() === "*" ? "*" : columns.map(q).join(", ")) : "*") + "\\nFROM " + tableSql + "\\nWHERE " + predicate + ";", params, error: "" };
+      }
       case "insert": {
         if (!columns) return { sql: "", params, error: "Укажи столбцы для INSERT через запятую." };
         const enteredValues = form.insertValues.split("|").map((value) => value.trim());
@@ -281,6 +317,7 @@ export function DatabaseWorkbenchModule() {
               <option value="select">Получить данные — SELECT</option>
               <option value="aggregate">Сгруппировать и посчитать — GROUP BY</option>
               <option value="join">Объединить таблицы — JOIN</option>
+              <option value="subquery">Подзапросы — IN / EXISTS / SELECT</option>
               <option value="insert">Добавить запись — INSERT</option>
               <option value="update">Изменить запись — UPDATE</option>
               <option value="delete">Удалить запись — DELETE</option>
@@ -293,7 +330,7 @@ export function DatabaseWorkbenchModule() {
             <div className="space-y-4 rounded-xl border border-border bg-card p-4">
               <div className="flex items-center justify-between gap-2"><p className="text-sm font-semibold">2. Параметры запроса</p><select aria-label="Диалект SQL" value={dialect} onChange={(event) => setDialect(event.target.value as Dialect)} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs"><option value="postgres">PostgreSQL</option><option value="mysql">MySQL</option></select></div>
               <div><label className={labelClass}>Название таблицы</label><input value={form.table} onChange={(event) => update("table", event.target.value)} className={fieldClass} placeholder="users" /></div>
-              {(operation === "select" || operation === "insert" || operation === "alias") && <div><label className={labelClass}>Столбцы, которые нужно вывести через запятую</label><input value={form.columns} onChange={(event) => update("columns", event.target.value)} className={fieldClass} placeholder="id, email, created_at" /><p className="mt-1 text-[11px] text-muted-foreground">Для SELECT можно указать * — все столбцы.</p></div>}
+              {(operation === "select" || operation === "subquery" || operation === "insert" || operation === "alias") && <div><label className={labelClass}>Столбцы, которые нужно вывести через запятую</label><input value={form.columns} onChange={(event) => update("columns", event.target.value)} className={fieldClass} placeholder="id, email, created_at" /><p className="mt-1 text-[11px] text-muted-foreground">Для SELECT можно указать * — все столбцы.</p></div>}
               {operation === "aggregate" && <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
                 <div><label className={labelClass}>Группировать по (один или несколько столбцов)</label><input value={form.groupBy} onChange={(event) => update("groupBy", event.target.value)} className={fieldClass} placeholder="status, department" /><label className={labelClass + " mt-2"}>Псевдонимы столбцов группировки (необязательно)</label><input value={form.groupAliases} onChange={(event) => update("groupAliases", event.target.value)} className={fieldClass} placeholder="Статус, Отдел" /><p className="mt-1 text-[11px] text-muted-foreground">Можно группировать по любым полям текущей таблицы. Перечисли несколько столбцов через запятую. Если псевдонимы не нужны, оставь поле пустым.</p></div>
                 <div className="flex items-center justify-between gap-2"><p className="text-xs font-semibold">Агрегатные показатели</p><button type="button" onClick={() => setForm((current) => ({ ...current, aggregates: [...current.aggregates, { id: Math.max(0, ...current.aggregates.map((metric) => metric.id)) + 1, fn: "COUNT", column: "*", alias: "total" }] }))} className="rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-background">+ Добавить показатель</button></div>
@@ -319,6 +356,14 @@ export function DatabaseWorkbenchModule() {
               )}
               {operation === "select" && <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3"><label className="flex items-center gap-2 text-xs font-medium text-muted-foreground"><input type="checkbox" checked={form.distinct} onChange={(event) => update("distinct", event.target.checked)} />Убрать повторяющиеся строки (DISTINCT)</label><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Сортировать по</label><input value={form.orderColumn} onChange={(event) => update("orderColumn", event.target.value)} className={fieldClass} placeholder="created_at" /></div><div><label className={labelClass}>Порядок</label><select value={form.orderDirection} onChange={(event) => update("orderDirection", event.target.value)} className={fieldClass}><option>DESC</option><option>ASC</option></select></div><div><label className={labelClass}>LIMIT</label><input value={form.limit} onChange={(event) => update("limit", event.target.value)} className={fieldClass} placeholder="50" /></div><div><label className={labelClass}>OFFSET</label><input value={form.offset} onChange={(event) => update("offset", event.target.value)} className={fieldClass} placeholder="0" /></div></div><p className="text-[11px] text-muted-foreground">DISTINCT удаляет дубликаты строк результата. LIMIT ограничивает число строк, OFFSET пропускает указанное число строк.</p></div>}
               {operation === "aggregate" && <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3"><p className="text-xs font-semibold">Фильтрация групп и сортировка</p><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>HAVING: псевдоним агрегата</label><input value={form.havingAlias} onChange={(event) => update("havingAlias", event.target.value)} className={fieldClass} placeholder="total" /></div><div><label className={labelClass}>Оператор</label><select value={form.havingOperator} onChange={(event) => update("havingOperator", event.target.value)} className={fieldClass}>{[">", ">=", "=", "<>", "<=", "<"].map((item) => <option key={item}>{item}</option>)}</select></div><div><label className={labelClass}>Значение HAVING</label><input value={form.havingValue} onChange={(event) => update("havingValue", event.target.value)} className={fieldClass} placeholder="5" /></div><div><label className={labelClass}>ORDER BY</label><input value={form.orderColumn} onChange={(event) => update("orderColumn", event.target.value)} className={fieldClass} placeholder="total или status" /></div><div><label className={labelClass}>LIMIT</label><input value={form.limit} onChange={(event) => update("limit", event.target.value)} className={fieldClass} placeholder="50" /></div><div><label className={labelClass}>OFFSET</label><input value={form.offset} onChange={(event) => update("offset", event.target.value)} className={fieldClass} placeholder="0" /></div><div><label className={labelClass}>Направление сортировки</label><select value={form.orderDirection} onChange={(event) => update("orderDirection", event.target.value)} className={fieldClass}><option>DESC</option><option>ASC</option></select></div></div><p className="text-[11px] text-muted-foreground">WHERE фильтрует строки до группировки; HAVING — уже сформированные группы. В HAVING указывай псевдоним одного из агрегатов.</p></div>}
+              {operation === "subquery" && <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
+                <div><label className={labelClass}>Тип подзапроса</label><select value={form.subqueryMode} onChange={(event) => update("subqueryMode", event.target.value)} className={fieldClass}><option value="SCALAR">Скалярный — сравнение с одним значением</option><option value="IN">IN — значение входит в результат</option><option value="NOT IN">NOT IN — значения нет в результате</option><option value="EXISTS">EXISTS — связанная запись существует</option><option value="NOT EXISTS">NOT EXISTS — связанной записи нет</option></select></div>
+                <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Внешняя таблица</label><input value={form.table} onChange={(event) => update("table", event.target.value)} className={fieldClass} /></div><div><label className={labelClass}>Внешний столбец</label><input value={form.subqueryColumn} onChange={(event) => update("subqueryColumn", event.target.value)} className={fieldClass} placeholder="id" /></div></div>
+                {form.subqueryMode === "SCALAR" && <div><label className={labelClass}>Оператор сравнения</label><select value={form.subqueryOperator} onChange={(event) => update("subqueryOperator", event.target.value)} className={fieldClass}>{["=", "<>", ">", ">=", "<", "<="].map((op) => <option key={op}>{op}</option>)}</select></div>}
+                <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Таблица подзапроса</label><input value={form.subqueryTable} onChange={(event) => update("subqueryTable", event.target.value)} className={fieldClass} placeholder="orders" /></div><div><label className={labelClass}>{form.subqueryMode.includes("EXISTS") ? "Столбец связи внутри" : "Столбец результата"}</label><input value={form.subquerySelectColumn} onChange={(event) => update("subquerySelectColumn", event.target.value)} className={fieldClass} placeholder="user_id" /></div></div>
+                {form.subqueryMode.includes("EXISTS") && <p className="text-[11px] text-muted-foreground">Для EXISTS строится коррелированный подзапрос: внутренний столбец сравнивается с внешним. Дополнительный фильтр добавляется через AND.</p>}
+                <div className="rounded-lg border border-border bg-card p-3"><p className="mb-2 text-xs font-semibold">Необязательный фильтр внутри подзапроса</p><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Столбец</label><input value={form.subqueryFilterColumn} onChange={(event) => update("subqueryFilterColumn", event.target.value)} className={fieldClass} placeholder="status" /></div><div><label className={labelClass}>Оператор</label><select value={form.subqueryFilterOperator} onChange={(event) => update("subqueryFilterOperator", event.target.value)} className={fieldClass}>{["=", "<>", ">", ">=", "<", "<=", "LIKE"].map((op) => <option key={op}>{op}</option>)}</select></div><div className="col-span-2"><label className={labelClass}>Значение</label><input value={form.subqueryFilterValue} onChange={(event) => update("subqueryFilterValue", event.target.value)} className={fieldClass} placeholder="paid" /></div></div></div>
+              </div>}
               {operation === "join" && <div className="space-y-2"><div><label className={labelClass}>Дополнительные таблицы (через запятую)</label><input value={form.secondTable} onChange={(event) => update("secondTable", event.target.value)} className={fieldClass} placeholder="orders, payments" /></div><div><label className={labelClass}>Тип JOIN</label><select value={form.joinType} onChange={(event) => update("joinType", event.target.value)} className={fieldClass}>{["INNER", "LEFT", "RIGHT", "FULL OUTER"].map((type) => <option key={type}>{type}</option>)}</select></div><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Левые ключи (через запятую)</label><input value={form.leftKey} onChange={(event) => update("leftKey", event.target.value)} className={fieldClass} placeholder="users.id, orders.id" /></div><div><label className={labelClass}>Правые ключи (через запятую)</label><input value={form.rightKey} onChange={(event) => update("rightKey", event.target.value)} className={fieldClass} placeholder="orders.user_id, payments.order_id" /></div></div></div>}
               {operation === "update" && <div><label className={labelClass}>Какой столбец изменить?</label><input value={form.setColumn} onChange={(event) => update("setColumn", event.target.value)} className={fieldClass} /><label className={labelClass + " mt-2"}>Новое значение</label><input value={form.setValue} onChange={(event) => update("setValue", event.target.value)} className={fieldClass} /></div>}
               {operation === "rename" && <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Старое имя</label><input value={form.oldColumn} onChange={(event) => update("oldColumn", event.target.value)} className={fieldClass} /></div><div><label className={labelClass}>Новое имя</label><input value={form.newColumn} onChange={(event) => update("newColumn", event.target.value)} className={fieldClass} /></div></div>}
