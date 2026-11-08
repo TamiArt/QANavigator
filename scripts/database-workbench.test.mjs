@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import { buildNestedScalarSubquery } from "../src/app/features/database-workbench/nested-subquery-builder.mjs";
 
 const source = await readFile("src/app/features/database-workbench/DatabaseWorkbenchModule.tsx", "utf8");
+const nestedBuilderSource = await readFile("src/app/features/database-workbench/nested-subquery-builder.mjs", "utf8");
 
 test("database workbench exposes practical SQL operations", () => {
   for (const operation of ["SELECT", "JOIN", "INSERT", "UPDATE", "DELETE", "RENAME", "AS"]) {
@@ -196,7 +197,7 @@ test("CREATE TABLE AS scalar subqueries use a dynamic independently configurable
   assert.ok(source.includes("type SubqueryLevel ="));
   assert.ok(source.includes("ctasSubqueryLevels: SubqueryLevel[]"));
   assert.ok(source.includes("form.ctasSubqueryLevels"));
-  assert.ok(source.includes("for (let levelIndex = levels.length - 1; levelIndex >= 0; levelIndex -= 1)"), "SQL generation must fold any configured number of levels from deepest to outermost");
+  assert.ok(nestedBuilderSource.includes("for (let index = levels.length - 1; index >= 0; index -= 1)"), "SQL generation must fold any configured number of levels from deepest to outermost");
   assert.ok(source.includes("ctasSubqueryLevels: [...current.ctasSubqueryLevels"), "the UI must allow adding levels dynamically");
   assert.ok(source.includes("ctasSubqueryLevels.filter((item) => item.id !== level.id)"), "the UI must allow removing an individual level");
   assert.ok(source.includes("Каждый уровень имеет собственные SELECT, FROM и WHERE"), "the UI must explain independent configuration at every level");
@@ -206,11 +207,11 @@ test("CREATE TABLE AS scalar subqueries use a dynamic independently configurable
 
 
 test("dynamic scalar subquery levels validate their own tables, columns and WHERE operators", () => {
-  assert.ok(source.includes("Проверь таблицу и столбец результата во вложенном SELECT уровня"));
-  assert.ok(source.includes("Укажи корректный столбец WHERE уровня"));
-  assert.ok(source.includes("Недопустимый оператор WHERE уровня"));
-  assert.ok(source.includes("Чтобы вложить следующий уровень, включи WHERE на уровне"));
-  assert.ok(source.includes("const rightSide = nested || placeholder(level.filterValue)"), "each level must either compare with a literal parameter or the next nested SELECT");
+  assert.ok(nestedBuilderSource.includes("Проверь таблицу и столбец результата во вложенном SELECT"));
+  assert.ok(nestedBuilderSource.includes("Укажи корректный столбец WHERE"));
+  assert.ok(nestedBuilderSource.includes("Недопустимый оператор WHERE"));
+  assert.ok(nestedBuilderSource.includes("Чтобы вложить следующий уровень, включи WHERE"));
+  assert.ok(nestedBuilderSource.includes("const rightSide = nested || toSqlValue"), "each level must either compare with a literal value or the next nested SELECT");
 });
 
 const level = (id, overrides = {}) => ({
@@ -232,7 +233,7 @@ test("universal nested builder generates three and four independent SELECT level
   const fourLevels = [
     level(2, { filterEnabled: true, filterColumn: "amount", filterOperator: ">", filterValue: "" }),
     level(3, { filterEnabled: true, filterColumn: "amount", filterOperator: "<", filterValue: "" }),
-    level(4, { filterEnabled: true, filterColumn: "author_id", filterOperator: "=", filterValue: "" }),
+    level(4, { filterEnabled: true, filterColumn: "author_id", filterOperator: "=", filterValue: "0" }),
   ];
   const fourSql = buildNestedScalarSubquery(fourLevels, quoteIdentifier, toSqlValue);
   assert.equal((fourSql.match(/SELECT/g) ?? []).length, 3);
