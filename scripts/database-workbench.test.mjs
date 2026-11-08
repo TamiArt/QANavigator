@@ -42,7 +42,9 @@ test("database workbench supports multiple WHERE conditions with AND and OR", ()
   assert.ok(source.includes("Заполни столбец во всех добавленных условиях или удали пустое условие."));
   assert.ok(source.includes("AND имеет более высокий приоритет, чем OR"), "SQL builder must explain AND precedence over OR");
   assert.ok(source.includes("A OR B AND C читается как A OR (B AND C)"), "SQL builder must show the default logical grouping");
-  assert.ok(source.includes("openGroups: number; closeGroups: number"), "each condition must support nested groups");
+  assert.ok(source.includes("openGroups: number; closeGroups: number; negate: boolean"), "each condition must support nested groups and NOT");
+  assert.ok(source.includes('condition.negate ? "NOT " : ""'), "the WHERE builder must generate NOT for selected conditions");
+  assert.ok(source.includes("Применить NOT к этому условию"), "the UI must expose per-condition NOT");
   assert.ok(source.includes("depth !== 0"), "unbalanced groups must be rejected");
   assert.ok(source.includes("Открыть скобки перед условием") && source.includes("Закрыть скобки после условия"), "the UI must expose nested group controls");
   assert.ok(source.includes('"BETWEEN"'), "SQL builder must offer BETWEEN");
