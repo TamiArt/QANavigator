@@ -34,6 +34,8 @@ type BuilderState = {
   leftKey: string;
   rightKey: string;
   subqueryMode: SubqueryMode;
+  subqueryOuterAlias: string;
+  correlatedLevels: CorrelatedSubqueryLevel[];
   subqueryColumn: string;
   subqueryOperator: "=" | "<>" | ">" | ">=" | "<" | "<=";
   subqueryTable: string;
