@@ -61,14 +61,6 @@ type BuilderState = {
   ctasScalarFilterEnabled: boolean;
   ctasScalarFilterColumn: string;
   ctasScalarFilterOperator: "=" | "<>" | ">" | ">=" | "<" | "<=";
-  ctasNestedTable: string;
-  ctasNestedSelectKind: "aggregate" | "column";
-  ctasNestedAggregate: "AVG" | "SUM" | "MIN" | "MAX";
-  ctasNestedColumn: string;
-  ctasNestedFilterEnabled: boolean;
-  ctasNestedFilterColumn: string;
-  ctasNestedFilterOperator: "=" | "<>" | ">" | ">=" | "<" | "<=";
-  ctasNestedFilterValue: string;
   ctasSubqueryLevels: SubqueryLevel[];
   ctasAppendSelect: boolean;
   setColumn: string;
@@ -97,9 +89,7 @@ const initial: BuilderState = {
   ctasTable: "ordering", ctasSourceTable: "book", ctasColumns: "author, title",
   ctasSelectKind: "aggregate", ctasAggregate: "AVG", ctasAggregateColumn: "amount", ctasSelectAlias: "amount",
   ctasWhereColumn: "amount", ctasWhereOperator: "<", ctasScalarFilterEnabled: true,
-  ctasScalarFilterColumn: "amount", ctasScalarFilterOperator: "<", ctasNestedTable: "book",
-  ctasNestedSelectKind: "aggregate", ctasNestedAggregate: "AVG", ctasNestedColumn: "amount",
-  ctasNestedFilterEnabled: false, ctasNestedFilterColumn: "amount", ctasNestedFilterOperator: ">", ctasNestedFilterValue: "0",
+  ctasScalarFilterColumn: "amount", ctasScalarFilterOperator: "<",
   ctasSubqueryLevels: [{ id: 2, table: "book", selectKind: "aggregate", aggregate: "AVG", column: "amount", filterEnabled: false, filterColumn: "amount", filterOperator: ">", filterValue: "0" }], ctasAppendSelect: true,
   setColumn: "status", setValue: "active", newColumn: "display_name",
   oldColumn: "name", alias: "u",
@@ -327,12 +317,14 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
           return { sql: "", params, error: "Выбери допустимый оператор сравнения для WHERE." };
         }
         if (!validIdentifier(aggregateColumn)) return { sql: "", params, error: "Укажи корректный столбец скалярного SELECT." };
+        if (form.ctasSelectKind === "aggregate" && !["AVG", "SUM", "MIN", "MAX"].includes(form.ctasAggregate)) return { sql: "", params, error: "Выбери допустимую агрегатную функцию скалярного SELECT." };
+        if (![ "aggregate", "column" ].includes(form.ctasSelectKind)) return { sql: "", params, error: "Выбери допустимый тип результата скалярного SELECT." };
         const scalarSelect = form.ctasSelectKind === "aggregate"
           ? form.ctasAggregate + "(" + q(aggregateColumn) + ")"
           : q(aggregateColumn);
         let scalarFilter = "";
         if (form.ctasScalarFilterEnabled) {
-          if (!validIdentifier(form.ctasScalarFilterColumn) || !validIdentifier(form.ctasNestedTable) || !validIdentifier(form.ctasNestedColumn)) return { sql: "", params, error: "Проверь столбец фильтра, таблицу и столбец вложенного SELECT." };
+          if (!validIdentifier(form.ctasScalarFilterColumn)) return { sql: "", params, error: "Укажи корректный столбец WHERE для скалярного подзапроса." };
           if (!["=", "<>", ">", ">=", "<", "<="].includes(form.ctasScalarFilterOperator)) return { sql: "", params, error: "Выбери допустимый оператор для вложенного подзапроса." };
           let nested = "";
           const levels = form.ctasSubqueryLevels;
@@ -342,6 +334,8 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
             if (!validIdentifier(level.table) || !validIdentifier(level.column)) {
               throw new Error("Проверь таблицу и столбец результата во вложенном SELECT уровня " + (levelIndex + 2) + ".");
             }
+            if (![ "aggregate", "column" ].includes(level.selectKind)) throw new Error("Выбери допустимый тип результата вложенного SELECT уровня " + (levelIndex + 2) + ".");
+            if (level.selectKind === "aggregate" && !["AVG", "SUM", "MIN", "MAX"].includes(level.aggregate)) throw new Error("Выбери допустимую агрегатную функцию уровня " + (levelIndex + 2) + ".");
             const selected = level.selectKind === "aggregate"
               ? level.aggregate + "(" + q(level.column) + ")"
               : q(level.column);
@@ -483,7 +477,7 @@ export function DatabaseWorkbenchModule() {
                 <div className="rounded-lg border border-border bg-card p-3 space-y-2"><p className="text-xs font-semibold">Скалярный подзапрос в WHERE</p><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Столбец внешней таблицы</label><input value={form.ctasWhereColumn} onChange={(event) => update("ctasWhereColumn", event.target.value)} className={fieldClass} placeholder="amount" /></div><div><label className={labelClass}>Оператор</label><select value={form.ctasWhereOperator} onChange={(event) => update("ctasWhereOperator", event.target.value)} className={fieldClass}>{["<", "<=", "=", "<>", ">=", ">"].map((op) => <option key={op}>{op}</option>)}</select></div></div><p className="text-[11px] text-muted-foreground">Подзапрос возвращает одно значение — например, AVG(amount) по всей исходной таблице. Оно сравнивается со значением каждой строки.</p>
                   <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={form.ctasScalarFilterEnabled} onChange={(event) => update("ctasScalarFilterEnabled", event.target.checked)} />Добавить ещё один уровень вложенности внутрь скалярного подзапроса</label>
                   {form.ctasScalarFilterEnabled && <div className="space-y-3 rounded-md border border-dashed border-border p-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-semibold">Динамические уровни вложенного SELECT</p><button type="button" onClick={() => setForm((current) => ({ ...current, ctasSubqueryLevels: [...current.ctasSubqueryLevels, { id: Math.max(1, ...current.ctasSubqueryLevels.map((level) => level.id)) + 1, table: "book", selectKind: "aggregate", aggregate: "AVG", column: "amount", filterEnabled: false, filterColumn: "amount", filterOperator: ">", filterValue: "0" }] }))} className="rounded-md border border-primary px-2 py-1 text-xs text-primary">+ Добавить уровень</button></div>
+                    <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-semibold">Динамические уровни вложенного SELECT</p><button type="button" onClick={() => setForm((current) => ({ ...current, ctasSubqueryLevels: [...current.ctasSubqueryLevels.map((level, index) => index === current.ctasSubqueryLevels.length - 1 ? { ...level, filterEnabled: true } : level), { id: Math.max(1, ...current.ctasSubqueryLevels.map((level) => level.id)) + 1, table: "book", selectKind: "aggregate", aggregate: "AVG", column: "amount", filterEnabled: false, filterColumn: "amount", filterOperator: ">", filterValue: "0" }] }))} className="rounded-md border border-primary px-2 py-1 text-xs text-primary">+ Добавить уровень</button></div>
                     {form.ctasSubqueryLevels.map((level, index) => <div key={level.id} className="space-y-2 rounded-md border border-border bg-card p-3">
                       <div className="flex items-center justify-between gap-2"><p className="text-xs font-semibold">Уровень {index + 2}</p>{form.ctasSubqueryLevels.length > 1 && <button type="button" onClick={() => setForm((current) => ({ ...current, ctasSubqueryLevels: current.ctasSubqueryLevels.filter((item) => item.id !== level.id) }))} className="text-xs text-destructive">Удалить уровень</button>}</div>
                       <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Таблица</label><input value={level.table} onChange={(event) => setForm((current) => ({ ...current, ctasSubqueryLevels: current.ctasSubqueryLevels.map((item) => item.id === level.id ? { ...item, table: event.target.value } : item) }))} className={fieldClass} /></div><div><label className={labelClass}>Что вернуть</label><select value={level.selectKind} onChange={(event) => setForm((current) => ({ ...current, ctasSubqueryLevels: current.ctasSubqueryLevels.map((item) => item.id === level.id ? { ...item, selectKind: event.target.value as SubqueryLevel["selectKind"] } : item) }))} className={fieldClass}><option value="aggregate">Агрегат</option><option value="column">Обычный столбец</option></select></div>
