@@ -160,6 +160,10 @@ function validIdentifier(value: string) {
   return /^[A-Za-z_][A-Za-z0-9_]*$/.test(value.trim());
 }
 
+function validColumnReference(value: string) {
+  return value.trim().split(".").length <= 2 && value.trim().split(".").every(validIdentifier);
+}
+
 function splitIdentifiers(value: string) {
   const parts = value.split(",").map((part) => part.trim()).filter(Boolean);
   return parts.length > 0 && parts.every(validIdentifier) ? parts : null;
@@ -189,7 +193,7 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
     const conditions = form.conditions;
     if (!conditions.length) return "";
     const clauses = conditions.map((condition, index) => {
-      if (!validIdentifier(condition.column.trim())) throw new Error("Имя поля условия №" + (index + 1) + " должно быть SQL-идентификатором.");
+      if (!validColumnReference(condition.column.trim())) throw new Error("Поле условия №" + (index + 1) + " должно быть именем столбца или ссылкой table.column.");
       const operator = ["=", "<>", ">", ">=", "<", "<=", "LIKE", "IN", "BETWEEN", "IS NULL", "IS NOT NULL"].includes(condition.operator) ? condition.operator : "=";
       let expression: string;
       if (operator === "IS NULL" || operator === "IS NOT NULL") expression = q(condition.column.trim()) + " " + operator;
