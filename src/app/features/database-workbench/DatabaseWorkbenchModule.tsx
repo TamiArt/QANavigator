@@ -20,6 +20,11 @@ type BuilderState = {
   orderColumn: string;
   orderDirection: "ASC" | "DESC";
   limit: string;
+  offset: string;
+  distinct: boolean;
+  havingAlias: string;
+  havingOperator: ">" | ">=" | "=" | "<>" | "<=" | "<";
+  havingValue: string;
   secondTable: string;
   joinType: "INNER" | "LEFT" | "RIGHT" | "FULL OUTER";
   leftKey: string;
@@ -38,7 +43,8 @@ const initial: BuilderState = {
   ],
   insertValues: "101 | qa@example.com | 2026-11-07",
   conditions: [{ id: 1, column: "id", operator: "=", value: "10", connector: "AND" }], orderColumn: "", orderDirection: "DESC",
-  limit: "50", secondTable: "orders", joinType: "LEFT",
+  limit: "50", offset: "", distinct: false, havingAlias: "", havingOperator: ">", havingValue: "",
+  secondTable: "orders", joinType: "LEFT",
   leftKey: "users.id", rightKey: "orders.user_id",
   setColumn: "status", setValue: "active", newColumn: "display_name",
   oldColumn: "name", alias: "u",
@@ -118,12 +124,13 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
       case "select": {
         if (!columns) return { sql: "", params, error: "Перечисли столбцы через запятую или укажи *." };
         const selected = form.columns.trim() === "*" ? "*" : columns.map(q).join(", ");
-        const sorting = form.orderColumn.trim()
-          ? validIdentifier(form.orderColumn.trim()) ? " ORDER BY " + q(form.orderColumn.trim()) + " " + form.orderDirection : ""
-          : "";
-        if (form.orderColumn.trim() && !sorting) return { sql: "", params, error: "Проверь имя столбца сортировки." };
-        const limit = form.limit.trim() && /^\d+$/.test(form.limit.trim()) ? " LIMIT " + Math.min(Number(form.limit), 10000) : "";
-        return { sql: "SELECT " + selected + "\nFROM " + tableSql + where() + sorting.replace(" ORDER BY ", "\nORDER BY ") + limit.replace(" LIMIT ", "\nLIMIT ") + ";", params, error: "" };
+        if (form.orderColumn.trim() && !validIdentifier(form.orderColumn.trim())) return { sql: "", params, error: "Проверь имя столбца сортировки." };
+        if (form.limit.trim() && (!/^\d+$/.test(form.limit.trim()) || Number(form.limit) > 10000)) return { sql: "", params, error: "LIMIT должен быть целым числом от 0 до 10000." };
+        if (form.offset.trim() && (!/^\d+$/.test(form.offset.trim()) || Number(form.offset) > 1000000)) return { sql: "", params, error: "OFFSET должен быть целым числом от 0 до 1000000." };
+        const sorting = form.orderColumn.trim() ? "\nORDER BY " + q(form.orderColumn.trim()) + " " + form.orderDirection : "";
+        const limit = form.limit.trim() ? "\nLIMIT " + Number(form.limit) : "";
+        const offset = form.offset.trim() ? "\nOFFSET " + Number(form.offset) : "";
+        return { sql: "SELECT " + (form.distinct ? "DISTINCT " : "") + selected + "\nFROM " + tableSql + where() + sorting + limit + offset + ";", params, error: "" };
       }
       case "aggregate": {
         const groupColumns = splitIdentifiers(form.groupBy);
@@ -142,7 +149,18 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
             : metric.fn + "(" + q(column) + ")";
           return expression + " AS " + aliasSql(alias);
         });
-        return { sql: "SELECT " + groupColumns.map((column, index) => groupAliases.length ? q(column) + " AS " + aliasSql(groupAliases[index]) : q(column)).join(", ") + ",\n       " + expressions.join(",\n       ") + "\nFROM " + tableSql + where() + "\nGROUP BY " + groupColumns.map(q).join(", ") + ";", params, error: "" };
+        if (form.havingAlias.trim() && !validIdentifier(form.havingAlias.trim())) return { sql: "", params, error: "HAVING должен ссылаться на корректный псевдоним агрегатного показателя." };
+        if (form.havingAlias.trim() && !form.havingValue.trim()) return { sql: "", params, error: "Укажи значение для условия HAVING." };
+        if (form.orderColumn.trim() && !validIdentifier(form.orderColumn.trim())) return { sql: "", params, error: "Проверь поле или псевдоним для сортировки агрегатов." };
+        if (form.limit.trim() && (!/^\d+$/.test(form.limit.trim()) || Number(form.limit) > 10000)) return { sql: "", params, error: "LIMIT должен быть целым числом от 0 до 10000." };
+        if (form.offset.trim() && (!/^\d+$/.test(form.offset.trim()) || Number(form.offset) > 1000000)) return { sql: "", params, error: "OFFSET должен быть целым числом от 0 до 1000000." };
+        const having = form.havingAlias.trim()
+          ? "\nHAVING " + q(form.havingAlias.trim()) + " " + form.havingOperator + " " + placeholder(form.havingValue)
+          : "";
+        const sorting = form.orderColumn.trim() ? "\nORDER BY " + q(form.orderColumn.trim()) + " " + form.orderDirection : "";
+        const limit = form.limit.trim() ? "\nLIMIT " + Number(form.limit) : "";
+        const offset = form.offset.trim() ? "\nOFFSET " + Number(form.offset) : "";
+        return { sql: "SELECT " + groupColumns.map((column, index) => groupAliases.length ? q(column) + " AS " + aliasSql(groupAliases[index]) : q(column)).join(", ") + ",\n       " + expressions.join(",\n       ") + "\nFROM " + tableSql + where() + "\nGROUP BY " + groupColumns.map(q).join(", ") + having + sorting + limit + offset + ";", params, error: "" };
       }
       case "join": {
         if (!validIdentifier(form.secondTable.trim()) || !/^[A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*$/.test(form.leftKey.trim()) || !/^[A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*$/.test(form.rightKey.trim())) {
@@ -197,7 +215,7 @@ export function DatabaseWorkbenchModule() {
   const [search, setSearch] = useState("");
   const [copied, setCopied] = useState(false);
   const generated = useMemo(() => buildSql(operation, dialect, form), [operation, dialect, form]);
-  const update = (key: keyof BuilderState, value: string) => setForm((current) => ({ ...current, [key]: value }));
+  const update = (key: keyof BuilderState, value: string | boolean) => setForm((current) => ({ ...current, [key]: value } as BuilderState));
   const updateCondition = (id: number, key: keyof Omit<FilterCondition, "id">, value: string) => setForm((current) => ({ ...current, conditions: current.conditions.map((condition) => condition.id === id ? { ...condition, [key]: value } : condition) }));
   const addCondition = () => setForm((current) => ({ ...current, conditions: [...current.conditions, { id: Math.max(0, ...current.conditions.map((condition) => condition.id)) + 1, column: "", operator: "=", value: "", connector: "AND" }] }));
   const removeCondition = (id: number) => setForm((current) => ({ ...current, conditions: current.conditions.filter((condition) => condition.id !== id) }));
@@ -275,7 +293,8 @@ export function DatabaseWorkbenchModule() {
                   <p className="text-[11px] text-muted-foreground">Значения будут безопасно экранированы и показаны непосредственно в готовом SQL. Для BETWEEN укажи две границы через запятую; обе границы включаются в диапазон. Для IN перечисли значения через запятую. Для LIKE используй шаблон: % означает ноль или более любых символов, _ — ровно один любой символ. Например, «Ан%» — начинается с «Ан», «%ов» — заканчивается на «ов», «а_я» — три символа, где средний любой. BETWEEN и IN имеют тот же приоритет, что и операторы сравнения: они выполняются раньше NOT, AND и OR. AND требует выполнения обоих условий, OR — хотя бы одного. В SQL AND имеет более высокий приоритет, чем OR: A OR B AND C читается как A OR (B AND C). Если нужна группировка (A OR B) AND C, добавь скобки в SQL вручную после копирования.</p>{(operation === "update" || operation === "delete") && form.conditions.some((condition, index) => index > 0 && condition.connector === "OR") && <p className="text-[11px] font-medium text-amber-600">Внимание: OR может расширить набор изменяемых или удаляемых записей. Проверь итоговый WHERE особенно внимательно.</p>}
                 </div>
               )}
-              {operation === "select" && <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Сортировать по</label><input value={form.orderColumn} onChange={(event) => update("orderColumn", event.target.value)} className={fieldClass} placeholder="created_at" /></div><div><label className={labelClass}>Порядок</label><select value={form.orderDirection} onChange={(event) => update("orderDirection", event.target.value)} className={fieldClass}><option>DESC</option><option>ASC</option></select></div><div className="col-span-2"><label className={labelClass}>Лимит строк</label><input value={form.limit} onChange={(event) => update("limit", event.target.value)} className={fieldClass} placeholder="50" /></div></div>}
+              {operation === "select" && <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3"><label className="flex items-center gap-2 text-xs font-medium text-muted-foreground"><input type="checkbox" checked={form.distinct} onChange={(event) => update("distinct", event.target.checked as unknown as string)} />Убрать повторяющиеся строки (DISTINCT)</label><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Сортировать по</label><input value={form.orderColumn} onChange={(event) => update("orderColumn", event.target.value)} className={fieldClass} placeholder="created_at" /></div><div><label className={labelClass}>Порядок</label><select value={form.orderDirection} onChange={(event) => update("orderDirection", event.target.value)} className={fieldClass}><option>DESC</option><option>ASC</option></select></div><div><label className={labelClass}>LIMIT</label><input value={form.limit} onChange={(event) => update("limit", event.target.value)} className={fieldClass} placeholder="50" /></div><div><label className={labelClass}>OFFSET</label><input value={form.offset} onChange={(event) => update("offset", event.target.value)} className={fieldClass} placeholder="0" /></div></div><p className="text-[11px] text-muted-foreground">DISTINCT удаляет дубликаты строк результата. LIMIT ограничивает число строк, OFFSET пропускает указанное число строк.</p></div>}
+              {operation === "aggregate" && <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3"><p className="text-xs font-semibold">Фильтрация групп и сортировка</p><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>HAVING: псевдоним агрегата</label><input value={form.havingAlias} onChange={(event) => update("havingAlias", event.target.value)} className={fieldClass} placeholder="total" /></div><div><label className={labelClass}>Оператор</label><select value={form.havingOperator} onChange={(event) => update("havingOperator", event.target.value)} className={fieldClass}>{[">", ">=", "=", "<>", "<=", "<"].map((item) => <option key={item}>{item}</option>)}</select></div><div><label className={labelClass}>Значение HAVING</label><input value={form.havingValue} onChange={(event) => update("havingValue", event.target.value)} className={fieldClass} placeholder="5" /></div><div><label className={labelClass}>ORDER BY</label><input value={form.orderColumn} onChange={(event) => update("orderColumn", event.target.value)} className={fieldClass} placeholder="total или status" /></div><div><label className={labelClass}>LIMIT</label><input value={form.limit} onChange={(event) => update("limit", event.target.value)} className={fieldClass} placeholder="50" /></div><div><label className={labelClass}>OFFSET</label><input value={form.offset} onChange={(event) => update("offset", event.target.value)} className={fieldClass} placeholder="0" /></div><div><label className={labelClass}>Направление сортировки</label><select value={form.orderDirection} onChange={(event) => update("orderDirection", event.target.value)} className={fieldClass}><option>DESC</option><option>ASC</option></select></div></div><p className="text-[11px] text-muted-foreground">WHERE фильтрует строки до группировки; HAVING — уже сформированные группы. В HAVING указывай псевдоним одного из агрегатов.</p></div>}
               {operation === "join" && <div className="space-y-2"><div><label className={labelClass}>Вторая таблица</label><input value={form.secondTable} onChange={(event) => update("secondTable", event.target.value)} className={fieldClass} /></div><div><label className={labelClass}>Тип JOIN</label><select value={form.joinType} onChange={(event) => update("joinType", event.target.value)} className={fieldClass}>{["INNER", "LEFT", "RIGHT", "FULL OUTER"].map((type) => <option key={type}>{type}</option>)}</select></div><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Левый ключ</label><input value={form.leftKey} onChange={(event) => update("leftKey", event.target.value)} className={fieldClass} /></div><div><label className={labelClass}>Правый ключ</label><input value={form.rightKey} onChange={(event) => update("rightKey", event.target.value)} className={fieldClass} /></div></div></div>}
               {operation === "update" && <div><label className={labelClass}>Какой столбец изменить?</label><input value={form.setColumn} onChange={(event) => update("setColumn", event.target.value)} className={fieldClass} /><label className={labelClass + " mt-2"}>Новое значение</label><input value={form.setValue} onChange={(event) => update("setValue", event.target.value)} className={fieldClass} /></div>}
               {operation === "rename" && <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Старое имя</label><input value={form.oldColumn} onChange={(event) => update("oldColumn", event.target.value)} className={fieldClass} /></div><div><label className={labelClass}>Новое имя</label><input value={form.newColumn} onChange={(event) => update("newColumn", event.target.value)} className={fieldClass} /></div></div>}
