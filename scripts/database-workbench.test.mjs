@@ -31,6 +31,10 @@ test("database workbench uses the requested Russian field labels", () => {
 });
 
 
+test("new WHERE conditions initialize every required FilterCondition field", () => {
+  assert.ok(source.includes('closeGroups: 0, negate: false }] }));'), "new conditions must initialize negate to satisfy FilterCondition");
+});
+
 test("database workbench supports multiple WHERE conditions with AND and OR", () => {
   assert.ok(source.includes("type FilterCondition ="));
   assert.ok(source.includes("conditions: FilterCondition[]"));
