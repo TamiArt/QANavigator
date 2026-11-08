@@ -108,3 +108,16 @@ test("SQL trainer includes guided practice and advanced SQL reference examples",
     assert.ok(source.includes(keyword), "SQL reference is missing " + keyword);
   }
 });
+
+test("JOIN supports multiple related tables and WHERE filtering", () => {
+  assert.ok(source.includes("const joinedTables = splitIdentifiers(form.secondTable)"), "JOIN must accept multiple table names");
+  assert.ok(source.includes("leftKeys.length !== joinedTables.length"), "JOIN must validate matching key pairs");
+  assert.ok(source.includes('joins + where() + ";"'), "JOIN must support filtering after ON clauses");
+  assert.ok(source.includes('operation === "join" || operation === "update"'), "JOIN must expose WHERE conditions in the UI");
+  assert.ok(source.includes("Дополнительные таблицы (через запятую)"), "UI must explain multi-table input");
+});
+
+test("HAVING can only target a configured aggregate alias", () => {
+  assert.ok(source.includes("form.aggregates.some((metric) => metric.alias.trim() === form.havingAlias.trim())"));
+  assert.ok(source.includes("Псевдоним HAVING должен совпадать"), "HAVING must reject unknown aliases");
+});
