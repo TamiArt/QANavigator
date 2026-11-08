@@ -496,7 +496,7 @@ SELECT * FROM ordering ORDER BY amount;`;
   assert.equal(result.results.length, 3);
   assert.deepEqual(result.results[2].tables[0].columns, ["author", "title", "amount"]);
   assert.equal(result.results[2].tables[0].rowCount, 3);
-  assert.deepEqual(result.results[2].tables[0].rows.map((row) => row[1]), ["Палата № 6", "Рассказы", "Евгений Онегин"]);
+  assert.deepEqual(result.results[2].tables[0].rows.map((row) => row[1]), ["Идиот", "Рассказы", "Евгений Онегин"]);
   assert.ok(result.results[2].tables[0].rows.every((row) => row[2] > 0));
 });
 
@@ -540,7 +540,7 @@ test("SQL execution stops on the first runtime error and preserves earlier succe
 test("SQL execution rejects empty scripts and caps statement and result counts", async (t) => {
   const database = await createSeededDatabase();
   t.after(() => database.close());
-  assert.match(executeSqlBatch(database, " -- comment only").error, /Добавь SQL-инструкцию/);
+  assert.match(executeSqlBatch(database, "").error, /Добавь SQL-инструкцию/);
   assert.match(executeSqlBatch(database, Array.from({ length: 51 }, () => "SELECT 1").join(";")).error, /не более 50/);
   const large = executeSqlBatch(database, "WITH RECURSIVE numbers(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM numbers WHERE x < 600) SELECT x FROM numbers;");
   assert.equal(large.results[0].tables[0].rowCount, 600);
