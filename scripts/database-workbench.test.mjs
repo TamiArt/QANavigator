@@ -225,10 +225,10 @@ const toSqlValue = (value) => "'" + value.replace(/'/g, "''") + "'";
 test("universal nested builder generates three and four independent SELECT levels", () => {
   const threeLevels = [
     level(2, { filterEnabled: true, filterColumn: "amount", filterOperator: ">", filterValue: "" }),
-    level(3, { selectKind: "column", column: "amount", filterEnabled: true, filterColumn: "author_id", filterOperator: "=", filterValue: "7" }),
+    level(3, { table: "authors", selectKind: "column", column: "id", filterEnabled: true, filterColumn: "country", filterOperator: "=", filterValue: "7" }),
   ];
   const threeSql = buildNestedScalarSubquery(threeLevels, quoteIdentifier, toSqlValue);
-  assert.equal(threeSql, '(SELECT AVG("amount") FROM "book" WHERE "amount" > (SELECT "amount" FROM "book" WHERE "author_id" = \'7\'))');
+  assert.equal(threeSql, '(SELECT AVG("amount") FROM "book" WHERE "amount" > (SELECT "id" FROM "authors" WHERE "country" = \'7\'))');
 
   const fourLevels = [
     level(2, { filterEnabled: true, filterColumn: "amount", filterOperator: ">", filterValue: "" }),
