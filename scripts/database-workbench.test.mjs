@@ -31,6 +31,10 @@ test("database workbench uses the requested Russian field labels", () => {
 });
 
 
+test("new WHERE conditions initialize every required FilterCondition field", () => {
+  assert.ok(source.includes('closeGroups: 0, negate: false }] }));'), "new conditions must initialize negate to satisfy FilterCondition");
+});
+
 test("database workbench supports multiple WHERE conditions with AND and OR", () => {
   assert.ok(source.includes("type FilterCondition ="));
   assert.ok(source.includes("conditions: FilterCondition[]"));
@@ -42,6 +46,11 @@ test("database workbench supports multiple WHERE conditions with AND and OR", ()
   assert.ok(source.includes("Заполни столбец во всех добавленных условиях или удали пустое условие."));
   assert.ok(source.includes("AND имеет более высокий приоритет, чем OR"), "SQL builder must explain AND precedence over OR");
   assert.ok(source.includes("A OR B AND C читается как A OR (B AND C)"), "SQL builder must show the default logical grouping");
+  assert.ok(source.includes("openGroups: number; closeGroups: number; negate: boolean"), "each condition must support nested groups and NOT");
+  assert.ok(source.includes('condition.negate ? "NOT " : ""'), "the WHERE builder must generate NOT for selected conditions");
+  assert.ok(source.includes("Применить NOT к этому условию"), "the UI must expose per-condition NOT");
+  assert.ok(source.includes("depth !== 0"), "unbalanced groups must be rejected");
+  assert.ok(source.includes("Открыть скобки перед условием") && source.includes("Закрыть скобки после условия"), "the UI must expose nested group controls");
   assert.ok(source.includes('"BETWEEN"'), "SQL builder must offer BETWEEN");
   assert.ok(source.includes('operator === "BETWEEN"'), "SQL builder must generate a BETWEEN expression");
   assert.ok(source.includes("укажи две границы через запятую"), "BETWEEN must validate both range boundaries");
@@ -70,7 +79,7 @@ test("database workbench builds grouped aggregate queries with distinct counts a
   assert.ok(source.includes('case "aggregate":'), "aggregate operation must generate SQL");
   assert.ok(source.includes('"COUNT(DISTINCT " + q(column) + ")"'), "distinct book counting must use a unique book identifier");
   assert.ok(source.includes('"COUNT(*) AS " + aliasSql(alias)'), "COUNT(*) must support counting physical-copy rows");
-  assert.ok(source.includes('" + groupColumns.map(q).join(", ") + ";"'), "aggregate queries must group by the selected author column");
+  assert.ok(source.includes('" + groupColumns.map(q).join(", ") + having + sorting + limit + offset + ";"'), "aggregate queries must retain GROUP BY before optional HAVING, sorting and pagination");
   assert.ok(source.includes("groupAliases") && source.includes("aliasSql"), "grouped and aggregate output columns must support aliases");
   assert.ok(source.includes('groupBy: "", groupAliases: ""'), "GROUP BY must not default to a domain-specific column");
   assert.ok(source.includes('{ id: 1, fn: "COUNT", column: "*", alias: "total" }'), "aggregate metrics must start with a neutral COUNT(*) example");
@@ -81,4 +90,78 @@ test("database workbench builds grouped aggregate queries with distinct counts a
   assert.ok(source.includes('title: "Различные книги и экземпляры по авторам"'));
   assert.ok(source.includes("если в строке хранится количество в поле quantity, используй SUM(quantity)"), "the reference must explain the alternative quantity-column schema");
   assert.ok(source.includes('dialect === "mysql"'), "aliases must be quoted according to the SQL dialect");
+});
+
+test("SELECT supports DISTINCT and validated pagination", () => {
+  assert.ok(source.includes('form.distinct ? "DISTINCT " : ""'), "SELECT must support DISTINCT");
+  assert.ok(source.includes('offset: "", distinct: false'), "pagination and DISTINCT state must be initialized");
+  assert.ok(source.includes("OFFSET должен быть"), "OFFSET must be validated");
+  assert.ok(source.includes("LIMIT должен быть"), "LIMIT must be validated instead of silently ignored");
+  assert.ok(source.includes('update("distinct", event.target.checked)'), "DISTINCT checkbox must store a boolean");
+});
+
+test("aggregate queries support HAVING, ORDER BY and pagination", () => {
+  assert.ok(source.includes('havingAlias: string'));
+  assert.ok(source.includes('"\\nHAVING " + (dialect === "mysql" ? q(form.havingAlias.trim()) : havingTarget)'), "HAVING must filter grouped results with dialect-aware expressions");
+  assert.ok(source.includes('havingMetric.fn === "COUNT_DISTINCT"'), "PostgreSQL HAVING must use the aggregate expression rather than a SELECT alias");
+  assert.ok(source.includes('"\\nORDER BY " + q(form.orderColumn.trim())'), "aggregate results must be sortable");
+  assert.ok(source.includes('"\\nLIMIT " + Number(form.limit)'), "aggregate results must support LIMIT");
+  assert.ok(source.includes('"\\nOFFSET " + Number(form.offset)'), "aggregate results must support OFFSET");
+  assert.ok(source.includes("const whereClause = where();"), "WHERE parameters must be registered before HAVING parameters");
+});
+
+
+test("JOIN supports multiple related tables and WHERE filtering", () => {
+  assert.ok(source.includes("const joinedTables = splitIdentifiers(form.secondTable)"), "JOIN must accept multiple table names");
+  assert.ok(source.includes("leftKeys.length !== joinedTables.length"), "JOIN must validate matching key pairs");
+  assert.ok(source.includes('joins + where() + ";"'), "JOIN must support filtering after ON clauses");
+  assert.ok(source.includes('operation === "join" || operation === "update"'), "JOIN must expose WHERE conditions in the UI");
+  assert.ok(source.includes("Дополнительные таблицы (через запятую)"), "UI must explain multi-table input");
+});
+
+test("HAVING can only target a configured aggregate alias", () => {
+  assert.ok(source.includes("form.aggregates.some((metric) => metric.alias.trim() === form.havingAlias.trim())"));
+  assert.ok(source.includes("Псевдоним HAVING должен совпадать"), "HAVING must reject unknown aliases");
+});
+
+test("SQL workbench provides a validated subquery builder", () => {
+  assert.ok(source.includes('type SubqueryMode = "SCALAR" | "IN" | "NOT IN" | "EXISTS" | "NOT EXISTS"'));
+  assert.ok(source.includes('case "subquery":'), "subquery operation must generate SQL");
+  assert.ok(source.includes('form.subqueryMode === "EXISTS" || form.subqueryMode === "NOT EXISTS"'), "EXISTS variants must be correlated to the outer query");
+  assert.ok(source.includes('form.subqueryMode === "IN" || form.subqueryMode === "NOT IN"'), "IN variants must select values from the inner query");
+  assert.ok(source.includes("innerFilter.slice(7)"), "optional inner filters must be combined with the correlation condition");
+  assert.ok(source.includes("Подзапросы — IN / EXISTS / SELECT"), "subquery builder must be selectable in the UI");
+});
+
+test("SQL workbench provides a configurable CTE builder", () => {
+  assert.ok(source.includes('case "cte":'), "CTE operation must generate SQL");
+  assert.ok(source.includes('type Operation = "select" | "aggregate" | "join" | "subquery" | "cte"'), "CTE must be a distinct builder operation");
+  assert.ok(source.includes("cteResultColumns.map(q).join"), "outer SELECT must choose from the CTE output columns");
+  assert.ok(source.includes("cteFilterColumn") && source.includes("cteOuterFilterColumn"), "CTE and outer SELECT filters must be independent");
+  assert.ok(source.includes("Именованный набор — CTE / WITH"), "CTE builder must be available in the operation selector");
+});
+
+test("CTE builder validates the scope of selected and filtered columns", () => {
+  assert.ok(source.includes("cteResultColumns.some((column) => !cteColumns.includes(column))"), "outer SELECT must not request columns missing from the CTE");
+  assert.ok(source.includes("!cteColumns.includes(outerFilterColumn)"), "outer WHERE must only reference columns exposed by the CTE");
+});
+
+
+test("WHERE filters can disambiguate columns in joined tables", () => {
+  assert.ok(source.includes("function validColumnReference(value: string)"), "qualified column validation must be available");
+  assert.ok(source.includes("!validColumnReference(condition.column.trim())"), "WHERE must accept table.column and reject malformed references");
+  assert.ok(source.includes("ссылкой table.column"), "the validation message must explain qualified columns");
+});
+
+test("SQL workbench excludes the standalone practice mode and its answer checker", () => {
+  assert.equal(source.includes('title: "Практика SQL"'), false);
+  assert.equal(source.includes('Проверить ответ'), false);
+  assert.equal(source.includes("const practiceTasks = ["), false);
+  assert.equal(source.includes("practiceTasks[practiceIndex]"), false);
+});
+
+test("SQL reference omits the removed advanced example set", () => {
+  for (const title of ["Постраничный вывод агрегатов", "Записи выше среднего", "Проверка наличия связанной записи", "Временный именованный набор", "Условное значение через CASE"]) {
+    assert.equal(source.includes('title: "' + title + '"'), false, "removed SQL reference entry remains: " + title);
+  }
 });
