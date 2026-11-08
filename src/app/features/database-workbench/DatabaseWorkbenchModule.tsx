@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 
 type Dialect = "postgres" | "mysql";
-type Operation = "select" | "aggregate" | "join" | "subquery" | "cte" | "insert" | "update" | "delete" | "rename" | "alias";
+type Operation = "select" | "aggregate" | "join" | "subquery" | "cte" | "createTableAs" | "insert" | "update" | "delete" | "rename" | "alias";
 type SubqueryMode = "SCALAR" | "IN" | "NOT IN" | "EXISTS" | "NOT EXISTS";
 type AggregateFunction = "COUNT" | "COUNT_DISTINCT" | "SUM" | "AVG" | "MIN" | "MAX";
 type AggregateMetric = { id: number; fn: AggregateFunction; column: string; alias: string };
@@ -48,6 +48,21 @@ type BuilderState = {
   cteOuterFilterColumn: string;
   cteOuterFilterOperator: "=" | "<>" | ">" | ">=" | "<" | "<=" | "LIKE";
   cteOuterFilterValue: string;
+  ctasTable: string;
+  ctasSourceTable: string;
+  ctasColumns: string;
+  ctasAggregate: "AVG" | "SUM" | "MIN" | "MAX";
+  ctasAggregateColumn: string;
+  ctasSelectAlias: string;
+  ctasWhereColumn: string;
+  ctasWhereOperator: "=" | "<>" | ">" | ">=" | "<" | "<=";
+  ctasScalarFilterEnabled: boolean;
+  ctasScalarFilterColumn: string;
+  ctasScalarFilterOperator: "=" | "<>" | ">" | ">=" | "<" | "<=";
+  ctasNestedTable: string;
+  ctasNestedAggregate: "AVG" | "SUM" | "MIN" | "MAX";
+  ctasNestedColumn: string;
+  ctasAppendSelect: boolean;
   setColumn: string;
   setValue: string;
   newColumn: string;
@@ -71,6 +86,11 @@ const initial: BuilderState = {
   cteName: "filtered_orders", cteSourceTable: "orders", cteColumns: "id, user_id, total, status", cteResultColumns: "id, user_id, total, status",
   cteFilterColumn: "status", cteFilterOperator: "=", cteFilterValue: "paid",
   cteOuterFilterColumn: "total", cteOuterFilterOperator: ">=", cteOuterFilterValue: "100",
+  ctasTable: "ordering", ctasSourceTable: "book", ctasColumns: "author, title",
+  ctasAggregate: "AVG", ctasAggregateColumn: "amount", ctasSelectAlias: "amount",
+  ctasWhereColumn: "amount", ctasWhereOperator: "<", ctasScalarFilterEnabled: true,
+  ctasScalarFilterColumn: "amount", ctasScalarFilterOperator: "<", ctasNestedTable: "book",
+  ctasNestedAggregate: "AVG", ctasNestedColumn: "amount", ctasAppendSelect: true,
   setColumn: "status", setValue: "active", newColumn: "display_name",
   oldColumn: "name", alias: "u",
 };
@@ -113,7 +133,7 @@ function sqlLiteral(value: string) {
 }
 function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
   const table = form.table.trim();
-  if (!validIdentifier(table)) return { sql: "", params: [], error: "Укажи имя таблицы латиницей: users, order_items." };
+  if (operation !== "createTableAs" && !validIdentifier(table)) return { sql: "", params: [], error: "Укажи имя таблицы латиницей: users, order_items." };
   const q = (name: string) => name;
   const aliasSql = (name: string) => dialect === "mysql"
     ? "`" + name.replace(/`/g, "``") + "`"
@@ -279,6 +299,38 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         const limit = form.limit.trim() ? "\nLIMIT " + Number(form.limit) : "";
         return { sql: "WITH " + q(cteName) + " AS (\n  SELECT " + cteColumns.map(q).join(", ") + "\n  FROM " + q(sourceTable) + cteWhere + "\n)\nSELECT " + cteResultColumns.map(q).join(", ") + "\nFROM " + q(cteName) + outerWhere + sorting + limit + ";", params, error: "" };
       }
+      case "createTableAs": {
+        const targetTable = form.ctasTable.trim();
+        const sourceTable = form.ctasSourceTable.trim();
+        const selectedColumns = splitIdentifiers(form.ctasColumns);
+        const aggregateColumn = form.ctasAggregateColumn.trim();
+        const selectAlias = form.ctasSelectAlias.trim();
+        const whereColumn = form.ctasWhereColumn.trim();
+        if (!validIdentifier(targetTable) || !validIdentifier(sourceTable) || !selectedColumns) {
+          return { sql: "", params, error: "Укажи корректные имена создаваемой и исходной таблиц, а также обычные столбцы SELECT." };
+        }
+        if (!validIdentifier(aggregateColumn) || !validIdentifier(selectAlias)) {
+          return { sql: "", params, error: "Укажи корректный столбец для агрегата и псевдоним вычисляемого столбца." };
+        }
+        if (!validIdentifier(whereColumn)) return { sql: "", params, error: "Укажи корректный столбец для сравнения в WHERE." };
+        if (!["=", "<>", ">", ">=", "<", "<="].includes(form.ctasWhereOperator)) {
+          return { sql: "", params, error: "Выбери допустимый оператор сравнения для WHERE." };
+        }
+        let scalarFilter = "";
+        if (form.ctasScalarFilterEnabled) {
+          if (!validIdentifier(form.ctasScalarFilterColumn) || !validIdentifier(form.ctasNestedTable) || !validIdentifier(form.ctasNestedColumn)) {
+            return { sql: "", params, error: "Проверь столбец фильтра, таблицу и столбец вложенного скалярного подзапроса." };
+          }
+          if (!["=", "<>", ">", ">=", "<", "<="].includes(form.ctasScalarFilterOperator)) {
+            return { sql: "", params, error: "Выбери допустимый оператор для вложенного подзапроса." };
+          }
+          const nested = "(SELECT " + form.ctasNestedAggregate + "(" + q(form.ctasNestedColumn) + ") FROM " + q(form.ctasNestedTable) + ")";
+          scalarFilter = " WHERE " + q(form.ctasScalarFilterColumn) + " " + form.ctasScalarFilterOperator + " " + nested;
+        }
+        const scalar = "(SELECT " + form.ctasAggregate + "(" + q(aggregateColumn) + ") FROM " + q(sourceTable) + scalarFilter + ")";
+        const create = "CREATE TABLE " + q(targetTable) + " AS\nSELECT " + selectedColumns.map(q).join(", ") + ",\n       " + scalar + " AS " + q(selectAlias) + "\nFROM " + q(sourceTable) + "\nWHERE " + q(whereColumn) + " " + form.ctasWhereOperator + " " + scalar + ";";
+        return { sql: create + (form.ctasAppendSelect ? "\n\nSELECT * FROM " + q(targetTable) + ";" : ""), params, error: "" };
+      }
       case "insert": {
         if (!columns) return { sql: "", params, error: "Укажи столбцы для INSERT через запятую." };
         const enteredValues = form.insertValues.split("|").map((value) => value.trim());
@@ -367,6 +419,7 @@ export function DatabaseWorkbenchModule() {
               <option value="join">Объединить таблицы — JOIN</option>
               <option value="subquery">Подзапросы — IN / EXISTS / SELECT</option>
               <option value="cte">Именованный набор — CTE / WITH</option>
+              <option value="createTableAs">Создать таблицу из SELECT — CREATE TABLE AS</option>
               <option value="insert">Добавить запись — INSERT</option>
               <option value="update">Изменить запись — UPDATE</option>
               <option value="delete">Удалить запись — DELETE</option>
@@ -378,7 +431,7 @@ export function DatabaseWorkbenchModule() {
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <div className="space-y-4 rounded-xl border border-border bg-card p-4">
               <div className="flex items-center justify-between gap-2"><p className="text-sm font-semibold">2. Параметры запроса</p><select aria-label="Диалект SQL" value={dialect} onChange={(event) => setDialect(event.target.value as Dialect)} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs"><option value="postgres">PostgreSQL</option><option value="mysql">MySQL</option></select></div>
-              <div><label className={labelClass}>Название таблицы</label><input value={form.table} onChange={(event) => update("table", event.target.value)} className={fieldClass} placeholder="users" /></div>
+              {operation !== "createTableAs" && <div><label className={labelClass}>Название таблицы</label><input value={form.table} onChange={(event) => update("table", event.target.value)} className={fieldClass} placeholder="users" /></div>}
               {(operation === "select" || operation === "subquery" || operation === "cte" || operation === "insert" || operation === "alias") && <div><label className={labelClass}>Столбцы, которые нужно вывести через запятую</label><input value={form.columns} onChange={(event) => update("columns", event.target.value)} className={fieldClass} placeholder="id, email, created_at" /><p className="mt-1 text-[11px] text-muted-foreground">Для SELECT можно указать * — все столбцы.</p></div>}
               {operation === "aggregate" && <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
                 <div><label className={labelClass}>Группировать по (один или несколько столбцов)</label><input value={form.groupBy} onChange={(event) => update("groupBy", event.target.value)} className={fieldClass} placeholder="status, department" /><label className={labelClass + " mt-2"}>Псевдонимы столбцов группировки (необязательно)</label><input value={form.groupAliases} onChange={(event) => update("groupAliases", event.target.value)} className={fieldClass} placeholder="Статус, Отдел" /><p className="mt-1 text-[11px] text-muted-foreground">Можно группировать по любым полям текущей таблицы. Перечисли несколько столбцов через запятую. Если псевдонимы не нужны, оставь поле пустым.</p></div>
@@ -389,6 +442,17 @@ export function DatabaseWorkbenchModule() {
                   <div><label className={labelClass}>Название столбца в результате (AS)</label><input value={metric.alias} onChange={(event) => setForm((current) => ({ ...current, aggregates: current.aggregates.map((item) => item.id === metric.id ? { ...item, alias: event.target.value } : item) }))} className={fieldClass} placeholder="Количество_экземпляров" /></div>
                 </div>)}
                 <p className="text-[11px] leading-relaxed text-muted-foreground">Выбирай агрегатные функции и столбцы под свою задачу: COUNT(*) считает строки, COUNT(column) — непустые значения, COUNT(DISTINCT column) — уникальные значения, SUM — сумму, AVG — среднее, MIN и MAX — минимум и максимум. COUNT(column) и COUNT(DISTINCT column) не учитывают NULL.</p>
+              </div>}
+              {operation === "createTableAs" && <div className="space-y-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                <p className="text-xs text-muted-foreground">CREATE TABLE AS создаёт физическую таблицу из результата SELECT. Скалярный подзапрос можно использовать как вычисляемый столбец в SELECT и как правую часть сравнения в WHERE.</p>
+                <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Новая таблица</label><input value={form.ctasTable} onChange={(event) => update("ctasTable", event.target.value)} className={fieldClass} placeholder="ordering" /></div><div><label className={labelClass}>Исходная таблица</label><input value={form.ctasSourceTable} onChange={(event) => update("ctasSourceTable", event.target.value)} className={fieldClass} placeholder="book" /></div></div>
+                <div><label className={labelClass}>Обычные столбцы SELECT</label><input value={form.ctasColumns} onChange={(event) => update("ctasColumns", event.target.value)} className={fieldClass} placeholder="author, title" /></div>
+                <div className="rounded-lg border border-border bg-card p-3 space-y-2"><p className="text-xs font-semibold">Скалярный подзапрос в SELECT</p><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Агрегатная функция</label><select value={form.ctasAggregate} onChange={(event) => update("ctasAggregate", event.target.value)} className={fieldClass}>{["AVG", "SUM", "MIN", "MAX"].map((fn) => <option key={fn}>{fn}</option>)}</select></div><div><label className={labelClass}>Столбец</label><input value={form.ctasAggregateColumn} onChange={(event) => update("ctasAggregateColumn", event.target.value)} className={fieldClass} placeholder="amount" /></div><div className="col-span-2"><label className={labelClass}>Псевдоним вычисляемого столбца</label><input value={form.ctasSelectAlias} onChange={(event) => update("ctasSelectAlias", event.target.value)} className={fieldClass} placeholder="amount" /></div></div></div>
+                <div className="rounded-lg border border-border bg-card p-3 space-y-2"><p className="text-xs font-semibold">Скалярный подзапрос в WHERE</p><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Столбец внешней таблицы</label><input value={form.ctasWhereColumn} onChange={(event) => update("ctasWhereColumn", event.target.value)} className={fieldClass} placeholder="amount" /></div><div><label className={labelClass}>Оператор</label><select value={form.ctasWhereOperator} onChange={(event) => update("ctasWhereOperator", event.target.value)} className={fieldClass}>{["<", "<=", "=", "<>", ">=", ">"].map((op) => <option key={op}>{op}</option>)}</select></div></div><p className="text-[11px] text-muted-foreground">Подзапрос возвращает одно значение — например, AVG(amount) по всей исходной таблице. Оно сравнивается со значением каждой строки.</p>
+                  <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={form.ctasScalarFilterEnabled} onChange={(event) => update("ctasScalarFilterEnabled", event.target.checked)} />Добавить ещё один уровень вложенности внутрь скалярного подзапроса</label>
+                  {form.ctasScalarFilterEnabled && <div className="rounded-md border border-dashed border-border p-3 space-y-2"><p className="text-xs font-semibold">Вложенный подзапрос (уровень 2)</p><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Столбец фильтра внутреннего SELECT</label><input value={form.ctasScalarFilterColumn} onChange={(event) => update("ctasScalarFilterColumn", event.target.value)} className={fieldClass} placeholder="amount" /></div><div><label className={labelClass}>Оператор</label><select value={form.ctasScalarFilterOperator} onChange={(event) => update("ctasScalarFilterOperator", event.target.value)} className={fieldClass}>{["<", "<=", "=", "<>", ">=", ">"].map((op) => <option key={op}>{op}</option>)}</select></div><div><label className={labelClass}>Таблица вложенного SELECT</label><input value={form.ctasNestedTable} onChange={(event) => update("ctasNestedTable", event.target.value)} className={fieldClass} placeholder="book" /></div><div><label className={labelClass}>Агрегат вложенного SELECT</label><select value={form.ctasNestedAggregate} onChange={(event) => update("ctasNestedAggregate", event.target.value)} className={fieldClass}>{["AVG", "SUM", "MIN", "MAX"].map((fn) => <option key={fn}>{fn}</option>)}</select></div><div className="col-span-2"><label className={labelClass}>Столбец вложенного агрегата</label><input value={form.ctasNestedColumn} onChange={(event) => update("ctasNestedColumn", event.target.value)} className={fieldClass} placeholder="amount" /></div></div><p className="text-[11px] text-muted-foreground">Внутренний SELECT вычисляет значение, которое используется условием WHERE внешнего скалярного SELECT.</p></div>}
+                </div>
+                <label className="flex items-center gap-2 text-xs text-muted-foreground"><input type="checkbox" checked={form.ctasAppendSelect} onChange={(event) => update("ctasAppendSelect", event.target.checked)} />После создания сразу добавить SELECT * из новой таблицы</label>
               </div>}
               {operation === "insert" && <div><label className={labelClass}>Значения в том же порядке (разделитель |)</label><input value={form.insertValues} onChange={(event) => update("insertValues", event.target.value)} className={fieldClass} placeholder="101 | qa@example.com | Anna" /><p className="mt-1 text-[11px] text-muted-foreground">Значения попадут в список параметров отдельно от SQL. Текстовые кавычки вручную добавлять не нужно.</p></div>}
               {(operation === "select" || operation === "aggregate" || operation === "join" || operation === "update" || operation === "delete") && (
