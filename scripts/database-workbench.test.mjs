@@ -1,8 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { buildNestedScalarSubquery } from "../src/app/features/database-workbench/nested-subquery-builder.mjs";
 
 const source = await readFile("src/app/features/database-workbench/DatabaseWorkbenchModule.tsx", "utf8");
+const nestedBuilderSource = await readFile("src/app/features/database-workbench/nested-subquery-builder.mjs", "utf8");
 
 test("database workbench exposes practical SQL operations", () => {
   for (const operation of ["SELECT", "JOIN", "INSERT", "UPDATE", "DELETE", "RENAME", "AS"]) {
@@ -186,24 +188,84 @@ test("SQL trainer builds CREATE TABLE AS with scalar subqueries in SELECT and WH
   assert.ok(source.includes('form.ctasAppendSelect ? "\\n\\nSELECT * FROM "'), "the builder must optionally append a follow-up SELECT from the created table");
   assert.ok(source.includes("Скалярный подзапрос в SELECT") && source.includes("Скалярный подзапрос в WHERE"), "the UI must expose both scalar-subquery positions");
   assert.ok(source.includes("CREATE TABLE AS создаёт физическую таблицу"), "the UI must distinguish a created table from a CTE");
-  assert.ok(source.includes("ctasScalarFilterEnabled") && source.includes("ctasNestedTable"), "the scalar subquery must support another nested SELECT level");
-  assert.ok(source.includes("Добавить ещё один уровень вложенности внутрь скалярного подзапроса"), "the UI must explain the nested level control");
-  assert.ok(source.includes('form.ctasNestedSelectKind === "aggregate"'), "the nested SELECT must choose between an aggregate and a plain column");
-  assert.ok(source.includes("ctasNestedFilterEnabled") && source.includes("ctasNestedFilterValue"), "the deepest SELECT must have its own independently configurable WHERE filter");
-  assert.ok(source.includes('nestedWhere = " WHERE "'), "the deepest WHERE must be generated independently from the level-one comparison");
+  assert.ok(source.includes("ctasScalarFilterEnabled") && source.includes("ctasSubqueryLevels"), "the scalar subquery must support dynamically configured nested SELECT levels");
   assert.ok(source.includes("Обычный столбец") && source.includes("не более одной строки"), "the UI must explain plain scalar-column selection and its single-row requirement");
 });
 
 
-test("CREATE TABLE AS scalar subquery levels have independent SELECT modes and WHERE filters", () => {
-  assert.ok(source.includes('ctasSelectKind: "aggregate" | "column"'));
-  assert.ok(source.includes('ctasNestedSelectKind: "aggregate" | "column"'));
-  assert.ok(source.includes('ctasNestedFilterEnabled: boolean'));
-  assert.ok(source.includes('ctasNestedFilterColumn: string'));
-  assert.ok(source.includes('ctasNestedFilterOperator: "=" | "<>" | ">" | ">=" | "<" | "<="'));
-  assert.ok(source.includes('ctasNestedFilterValue: string'));
-  assert.ok(source.includes('update("ctasSelectKind", event.target.value)'));
-  assert.ok(source.includes('update("ctasNestedSelectKind", event.target.value)'));
-  assert.ok(source.includes('update("ctasNestedFilterEnabled", event.target.checked)'));
-  assert.ok(source.includes('update("ctasNestedFilterValue", event.target.value)'));
+test("CREATE TABLE AS scalar subqueries use a dynamic independently configurable level collection", () => {
+  assert.ok(source.includes("type SubqueryLevel ="));
+  assert.ok(source.includes("ctasSubqueryLevels: SubqueryLevel[]"));
+  assert.ok(source.includes("form.ctasSubqueryLevels"));
+  assert.ok(nestedBuilderSource.includes("for (let index = levels.length - 1; index >= 0; index -= 1)"), "SQL generation must fold any configured number of levels from deepest to outermost");
+  assert.ok(source.includes("ctasSubqueryLevels: [...current.ctasSubqueryLevels"), "the UI must allow adding levels dynamically");
+  assert.ok(source.includes("ctasSubqueryLevels.filter((item) => item.id !== level.id)"), "the UI must allow removing an individual level");
+  assert.ok(source.includes("Каждый уровень имеет собственные SELECT, FROM и WHERE"), "the UI must explain independent configuration at every level");
+  assert.ok(source.includes("index === current.ctasSubqueryLevels.length - 1 ? { ...level, filterEnabled: true } : level"), "adding a deeper level must automatically connect it through the previous level WHERE");
+  assert.equal(/ctasNested(?:Table|SelectKind|Aggregate|Column|Filter)/.test(source), false, "fixed second-level state must be removed completely");
+});
+
+
+test("dynamic scalar subquery levels validate their own tables, columns and WHERE operators", () => {
+  assert.ok(nestedBuilderSource.includes("Проверь таблицу и столбец результата во вложенном SELECT"));
+  assert.ok(nestedBuilderSource.includes("Укажи корректный столбец WHERE"));
+  assert.ok(nestedBuilderSource.includes("Недопустимый оператор WHERE"));
+  assert.ok(nestedBuilderSource.includes("Чтобы вложить следующий уровень, включи WHERE"));
+  assert.ok(nestedBuilderSource.includes("const rightSide = nested || toSqlValue"), "each level must either compare with a literal value or the next nested SELECT");
+});
+
+const level = (id, overrides = {}) => ({
+  id, table: "book", selectKind: "aggregate", aggregate: "AVG", column: "amount",
+  filterEnabled: false, filterColumn: "amount", filterOperator: ">", filterValue: "0",
+  ...overrides,
+});
+const quoteIdentifier = (value) => '"' + value + '"';
+const toSqlValue = (value) => "'" + value.replace(/'/g, "''") + "'";
+
+test("universal nested builder generates three and four independent SELECT levels", () => {
+  const threeLevels = [
+    level(2, { filterEnabled: true, filterColumn: "amount", filterOperator: ">", filterValue: "" }),
+    level(3, { table: "authors", selectKind: "column", column: "id", filterEnabled: true, filterColumn: "country", filterOperator: "=", filterValue: "7" }),
+  ];
+  const threeSql = buildNestedScalarSubquery(threeLevels, quoteIdentifier, toSqlValue);
+  assert.equal(threeSql, '(SELECT AVG("amount") FROM "book" WHERE "amount" > (SELECT "id" FROM "authors" WHERE "country" = \'7\'))');
+
+  const fourLevels = [
+    level(2, { filterEnabled: true, filterColumn: "amount", filterOperator: ">", filterValue: "" }),
+    level(3, { filterEnabled: true, filterColumn: "amount", filterOperator: "<", filterValue: "" }),
+    level(4, { filterEnabled: true, filterColumn: "author_id", filterOperator: "=", filterValue: "0" }),
+  ];
+  const fourSql = buildNestedScalarSubquery(fourLevels, quoteIdentifier, toSqlValue);
+  assert.equal((fourSql.match(/SELECT/g) ?? []).length, 3);
+  assert.match(fourSql, /WHERE "amount" > \(SELECT AVG/);
+  assert.match(fourSql, /WHERE "amount" < \(SELECT AVG/);
+  assert.match(fourSql, /WHERE "author_id" = '0'\)/);
+});
+
+test("universal nested builder supports aggregate and plain-column result modes at every depth", () => {
+  const sql = buildNestedScalarSubquery([
+    level(2, { selectKind: "column", column: "title", filterEnabled: true, filterValue: "" }),
+    level(3, { selectKind: "aggregate", aggregate: "MAX", column: "amount" }),
+  ], quoteIdentifier, toSqlValue);
+  assert.match(sql, /^\(SELECT "title" FROM "book" WHERE "amount" > \(SELECT MAX\("amount"\) FROM "book"\)\)$/);
+});
+
+test("universal nested builder rejects invalid or disconnected levels", () => {
+  assert.throws(() => buildNestedScalarSubquery([], quoteIdentifier, toSqlValue), /Добавь хотя бы один уровень/);
+  assert.throws(() => buildNestedScalarSubquery([level(2, { table: "book; DROP TABLE users" })], quoteIdentifier, toSqlValue), /Проверь таблицу и столбец/);
+  assert.throws(() => buildNestedScalarSubquery([level(2, { aggregate: "COUNT" })], quoteIdentifier, toSqlValue), /допустимую агрегатную функцию/);
+  assert.throws(() => buildNestedScalarSubquery([
+    level(2, { filterEnabled: false }),
+    level(3),
+  ], quoteIdentifier, toSqlValue), /включи WHERE уровня 2/);
+  assert.throws(() => buildNestedScalarSubquery([
+    level(2, { filterEnabled: true, filterValue: "" }),
+  ], quoteIdentifier, toSqlValue), /Укажи значение WHERE уровня 2/);
+});
+
+test("universal nested builder escapes values through the supplied SQL dialect formatter", () => {
+  const sql = buildNestedScalarSubquery([
+    level(2, { filterEnabled: true, filterColumn: "author", filterOperator: "=", filterValue: "O'Reilly" }),
+  ], quoteIdentifier, toSqlValue);
+  assert.match(sql, /WHERE "author" = 'O''Reilly'/);
 });
