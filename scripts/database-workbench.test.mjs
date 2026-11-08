@@ -192,16 +192,13 @@ test("SQL trainer builds CREATE TABLE AS with scalar subqueries in SELECT and WH
 
 
 test("CREATE TABLE AS scalar subqueries use a dynamic independently configurable level collection", () => {
-  assert.ok(source.includes('ctasSelectKind: "aggregate" | "column"'));
-  assert.ok(source.includes('ctasNestedSelectKind: "aggregate" | "column"'));
-  assert.ok(source.includes('ctasNestedFilterEnabled: boolean'));
-  assert.ok(source.includes('ctasNestedFilterColumn: string'));
-  assert.ok(source.includes('ctasNestedFilterOperator: "=" | "<>" | ">" | ">=" | "<" | "<="'));
-  assert.ok(source.includes('ctasNestedFilterValue: string'));
-  assert.ok(source.includes('update("ctasSelectKind", event.target.value)'));
-  assert.ok(source.includes('update("ctasNestedSelectKind", event.target.value)'));
-  assert.ok(source.includes('update("ctasNestedFilterEnabled", event.target.checked)'));
-  assert.ok(source.includes('update("ctasNestedFilterValue", event.target.value)'));
+  assert.ok(source.includes("type SubqueryLevel ="));
+  assert.ok(source.includes("ctasSubqueryLevels: SubqueryLevel[]"));
+  assert.ok(source.includes("form.ctasSubqueryLevels"));
+  assert.ok(source.includes("for (let levelIndex = levels.length - 1; levelIndex >= 0; levelIndex -= 1)"), "SQL generation must fold any configured number of levels from deepest to outermost");
+  assert.ok(source.includes("ctasSubqueryLevels: [...current.ctasSubqueryLevels"), "the UI must allow adding levels dynamically");
+  assert.ok(source.includes("ctasSubqueryLevels.filter((item) => item.id !== level.id)"), "the UI must allow removing an individual level");
+  assert.ok(source.includes("Каждый уровень имеет собственные SELECT, FROM и WHERE"), "the UI must explain independent configuration at every level");
 });
 
 
