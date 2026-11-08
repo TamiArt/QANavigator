@@ -46,15 +46,13 @@ export function buildAdvancedSelect(config) {
   const having = (config.having || "").split("\n").map((item) => item.trim()).filter(Boolean).map(parseHaving);
   const order = (config.orderBy || "").split(",").map((item) => item.trim()).filter(Boolean).map(parseOrder);
   const joinSql = joins.map(parseJoin);
-  if (config.limit && (!/^\\d+$/.test(config.limit) || Number(config.limit) > 10000)) fail("LIMIT должен быть целым числом от 0 до 10000.");
-  if (config.offset && (!/^\\d+$/.test(config.offset) || Number(config.offset) > 1000000)) fail("OFFSET должен быть целым числом от 0 до 1000000.");
-  if (config.limit && (!/^\\d+$/.test(config.limit) || Number(config.limit) > 10000)) fail("LIMIT должен быть целым числом от 0 до 10000.");
-  if (config.offset && (!/^\\d+$/.test(config.offset) || Number(config.offset) > 1000000)) fail("OFFSET должен быть целым числом от 0 до 1000000.");
+  if (config.limit && (!/^\d+$/.test(config.limit) || Number(config.limit) > 10000)) fail("LIMIT должен быть целым числом от 0 до 10000.");
+  if (config.offset && (!/^\d+$/.test(config.offset) || Number(config.offset) > 1000000)) fail("OFFSET должен быть целым числом от 0 до 1000000.");
   const sql = "SELECT " + (config.distinct ? "DISTINCT " : "") + items.map(validateSelectItem).join(",\n       ")
     + "\nFROM " + table + (joinSql.length ? "\n" + joinSql.join("\n") : "")
     + (config.whereClause || "")
     + (groups.length ? "\nGROUP BY " + groups.join(", ") : "")
-    + (having.length ? "\nHAVING " + having.join("\n  AND ") : "")
+    + (having.length ? "\nHAVING " + having.map((item, index) => (index ? item.connector + " " : "") + item.expression).join("\n  ") : "")
     + (order.length ? "\nORDER BY " + order.join(", ") : "")
     + (config.limit ? "\nLIMIT " + config.limit : "")
     + (config.offset ? "\nOFFSET " + config.offset : "") + ";";
