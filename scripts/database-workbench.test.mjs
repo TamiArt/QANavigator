@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { buildNestedScalarSubquery, buildCorrelatedExistsSubquery } from "../src/app/features/database-workbench/nested-subquery-builder.mjs";
+import { buildAdvancedSelect } from "../src/app/features/database-workbench/advanced-select-builder.mjs";
 
 const source = await readFile("src/app/features/database-workbench/DatabaseWorkbenchModule.tsx", "utf8");
 const nestedBuilderSource = await readFile("src/app/features/database-workbench/nested-subquery-builder.mjs", "utf8");
@@ -304,4 +305,65 @@ test("SQL workbench exposes configurable correlated scopes and nested EXISTS lev
   assert.ok(source.includes("Уровень внешней ссылки"));
   assert.ok(source.includes("Добавить вложенный уровень"));
   assert.ok(source.includes("buildCorrelatedExistsSubquery"));
+});
+
+
+test("advanced SELECT combines multiple joins, CASE, arithmetic aggregates, grouping, HAVING and ordering", () => {
+  const result = buildAdvancedSelect({
+    table: "users",
+    distinct: true,
+    selectItems: "u.id AS user_id\nu.email\nCOUNT(DISTINCT o.id) AS orders_count\nSUM(o.quantity * o.price) AS gross\nCASE WHEN COUNT(o.id) > 0 THEN 1 ELSE 0 END AS has_orders",
+    joins: "LEFT JOIN orders AS o ON o.user_id = u.id\nLEFT JOIN payments AS p ON p.order_id = o.id",
+    whereClause: "\nWHERE u.active = TRUE",
+    groupBy: "u.id, u.email",
+    having: "COUNT(o.id) > 1\nOR SUM(o.quantity * o.price) >= 100",
+    orderBy: "orders_count DESC, u.email ASC",
+    limit: "25",
+    offset: "10",
+  });
+  assert.match(result.sql, /^SELECT DISTINCT u\.id AS user_id,/);
+  assert.match(result.sql, /LEFT JOIN orders AS o ON o\.user_id = u\.id/);
+  assert.match(result.sql, /LEFT JOIN payments AS p ON p\.order_id = o\.id/);
+  assert.match(result.sql, /CASE WHEN COUNT\(o\.id\) > 0 THEN 1 ELSE 0 END AS has_orders/);
+  assert.match(result.sql, /GROUP BY u\.id, u\.email/);
+  assert.match(result.sql, /HAVING COUNT\(o\.id\) > 1\s+OR SUM\(o\.quantity \* o\.price\) >= 100/);
+  assert.match(result.sql, /ORDER BY orders_count DESC, u\.email ASC/);
+  assert.match(result.sql, /LIMIT 25\s+OFFSET 10;$/);
+  assert.deepEqual(
+    { joins: result.joinCount, groups: result.groupCount, having: result.havingCount, order: result.orderCount },
+    { joins: 2, groups: 2, having: 2, order: 2 },
+  );
+});
+
+test("advanced SELECT supports INNER, RIGHT and FULL OUTER joins in a multi-join chain", () => {
+  const sql = buildAdvancedSelect({
+    table: "authors",
+    selectItems: "a.id, b.title",
+    joins: "INNER JOIN books AS b ON b.author_id = a.id\nRIGHT JOIN stock AS s ON s.book_id = b.id\nFULL OUTER JOIN publishers AS p ON p.id = b.publisher_id",
+  }).sql;
+  assert.match(sql, /INNER JOIN books AS b/);
+  assert.match(sql, /RIGHT JOIN stock AS s/);
+  assert.match(sql, /FULL OUTER JOIN publishers AS p/);
+});
+
+test("advanced SELECT rejects unsafe expressions, malformed joins, invalid grouping and unsafe pagination", () => {
+  const base = { table: "users", selectItems: "id" };
+  assert.throws(() => buildAdvancedSelect({ ...base, selectItems: "id; DROP TABLE users" }), /Недопустимое SELECT-выражение/);
+  assert.throws(() => buildAdvancedSelect({ ...base, joins: "LEFT JOIN orders ON 1 = 1" }), /JOIN №1/);
+  assert.throws(() => buildAdvancedSelect({ ...base, groupBy: "id; DROP TABLE users" }), /GROUP BY/);
+  assert.throws(() => buildAdvancedSelect({ ...base, having: "id > 1" }), /должен содержать агрегатную функцию/);
+  assert.throws(() => buildAdvancedSelect({ ...base, limit: "1; DROP TABLE users" }), /LIMIT/);
+  assert.throws(() => buildAdvancedSelect({ ...base, offset: "-1" }), /OFFSET/);
+});
+
+test("advanced SELECT mode is integrated with the shared WHERE editor and SQL preview", () => {
+  assert.ok(source.includes('type Operation = "advancedSelect" |'));
+  assert.ok(source.includes('case "advancedSelect":'));
+  assert.ok(source.includes('value="advancedSelect"'));
+  assert.ok(source.includes("form.advancedSelectItems"));
+  assert.ok(source.includes("form.advancedJoins"));
+  assert.ok(source.includes("form.advancedGroupBy"));
+  assert.ok(source.includes("form.advancedHaving"));
+  assert.ok(source.includes("form.advancedOrderBy"));
+  assert.ok(source.includes('operation === "select" || operation === "advancedSelect" || operation === "aggregate"'));
 });
