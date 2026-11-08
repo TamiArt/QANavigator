@@ -57,6 +57,15 @@ test("database workbench supports multiple WHERE conditions with AND and OR", ()
   assert.ok(source.includes("BETWEEN и IN имеют тот же приоритет"), "SQL builder must explain BETWEEN and IN precedence");
 });
 
+test("WHERE conditions can compose multiple IN and NOT IN subqueries", () => {
+  assert.ok(source.includes('"IN (подзапрос)", "NOT IN (подзапрос)"'), "WHERE must offer subquery-backed IN operators");
+  assert.ok(source.includes('operator === "IN (подзапрос)" || operator === "NOT IN (подзапрос)"'), "the SQL builder must generate subqueries as individual WHERE predicates");
+  assert.ok(source.includes('condition.subqueryTable.trim()') && source.includes('condition.subquerySelectColumn.trim()'), "each nested predicate must configure its own inner table and result column");
+  assert.ok(source.includes('condition.subqueryFilterColumn.trim()'), "each nested predicate must support its own optional inner filter");
+  assert.ok(source.includes('condition.operator === "IN (подзапрос)" || condition.operator === "NOT IN (подзапрос)"'), "the UI must expose per-condition subquery fields");
+  assert.ok(source.includes("Можно добавить несколько таких условий и объединить их через AND/OR и скобки."), "subquery predicates must compose with normal filters and nested groups");
+});
+
 test("database workbench explains LIKE wildcard characters", () => {
   assert.ok(source.includes('condition.operator === "LIKE" ? "Шаблон LIKE"'), "LIKE should have a dedicated field label");
   assert.ok(source.includes("Например: Ан%, %ов, а_я"), "LIKE should show wildcard examples");
