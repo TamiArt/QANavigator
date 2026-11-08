@@ -313,7 +313,7 @@ export function DatabaseWorkbenchModule() {
   const generated = useMemo(() => buildSql(operation, dialect, form), [operation, dialect, form]);
   const update = (key: keyof BuilderState, value: string | boolean) => setForm((current) => ({ ...current, [key]: value } as BuilderState));
   const updateCondition = (id: number, key: keyof Omit<FilterCondition, "id">, value: string | number | boolean) => setForm((current) => ({ ...current, conditions: current.conditions.map((condition) => condition.id === id ? { ...condition, [key]: value } : condition) }));
-  const addCondition = () => setForm((current) => ({ ...current, conditions: [...current.conditions, { id: Math.max(0, ...current.conditions.map((condition) => condition.id)) + 1, column: "", operator: "=", value: "", connector: "AND", openGroups: 0, closeGroups: 0 }] }));
+  const addCondition = () => setForm((current) => ({ ...current, conditions: [...current.conditions, { id: Math.max(0, ...current.conditions.map((condition) => condition.id)) + 1, column: "", operator: "=", value: "", connector: "AND", openGroups: 0, closeGroups: 0, negate: false }] }));
   const removeCondition = (id: number) => setForm((current) => ({ ...current, conditions: current.conditions.filter((condition) => condition.id !== id) }));
   const copy = async (value: string) => {
     await navigator.clipboard.writeText(value);
