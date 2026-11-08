@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 
 type Dialect = "postgres" | "mysql";
-type Operation = "select" | "aggregate" | "join" | "subquery" | "cte" | "insert" | "update" | "delete" | "rename" | "alias";
+type Operation = "select" | "aggregate" | "join" | "subquery" | "cte" | "createTableAs" | "insert" | "update" | "delete" | "rename" | "alias";
 type SubqueryMode = "SCALAR" | "IN" | "NOT IN" | "EXISTS" | "NOT EXISTS";
 type AggregateFunction = "COUNT" | "COUNT_DISTINCT" | "SUM" | "AVG" | "MIN" | "MAX";
 type AggregateMetric = { id: number; fn: AggregateFunction; column: string; alias: string };
