@@ -471,7 +471,7 @@ test("SQL statement splitter respects quoted semicolons and SQL comments", () =>
 SELECT 2; /* ; ignored */ SELECT '[x;y]' AS value;`;
   assert.deepEqual(splitSqlStatements(script), [
     "SELECT ';' AS value",
-    "-- ; ignored\\nSELECT 2",
+    "-- ; ignored\nSELECT 2",
     "/* ; ignored */ SELECT '[x;y]' AS value",
   ]);
   assert.throws(() => splitSqlStatements("SELECT 'unfinished"), /незакрытую строку/);
