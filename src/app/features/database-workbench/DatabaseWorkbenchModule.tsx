@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 
 type Dialect = "postgres" | "mysql";
-type Operation = "select" | "aggregate" | "join" | "subquery" | "insert" | "update" | "delete" | "rename" | "alias";
+type Operation = "select" | "aggregate" | "join" | "subquery" | "cte" | "insert" | "update" | "delete" | "rename" | "alias";
 type SubqueryMode = "SCALAR" | "IN" | "NOT IN" | "EXISTS" | "NOT EXISTS";
 type AggregateFunction = "COUNT" | "COUNT_DISTINCT" | "SUM" | "AVG" | "MIN" | "MAX";
 type AggregateMetric = { id: number; fn: AggregateFunction; column: string; alias: string };
@@ -38,6 +38,15 @@ type BuilderState = {
   subqueryFilterColumn: string;
   subqueryFilterOperator: "=" | "<>" | ">" | ">=" | "<" | "<=" | "LIKE";
   subqueryFilterValue: string;
+  cteName: string;
+  cteSourceTable: string;
+  cteColumns: string;
+  cteFilterColumn: string;
+  cteFilterOperator: "=" | "<>" | ">" | ">=" | "<" | "<=" | "LIKE";
+  cteFilterValue: string;
+  cteOuterFilterColumn: string;
+  cteOuterFilterOperator: "=" | "<>" | ">" | ">=" | "<" | "<=" | "LIKE";
+  cteOuterFilterValue: string;
   setColumn: string;
   setValue: string;
   newColumn: string;
@@ -58,6 +67,9 @@ const initial: BuilderState = {
   subqueryMode: "EXISTS", subqueryColumn: "id", subqueryOperator: "=",
   subqueryTable: "orders", subquerySelectColumn: "user_id",
   subqueryFilterColumn: "status", subqueryFilterOperator: "=", subqueryFilterValue: "paid",
+  cteName: "filtered_orders", cteSourceTable: "orders", cteColumns: "id, user_id, total, status",
+  cteFilterColumn: "status", cteFilterOperator: "=", cteFilterValue: "paid",
+  cteOuterFilterColumn: "total", cteOuterFilterOperator: ">=", cteOuterFilterValue: "100",
   setColumn: "status", setValue: "active", newColumn: "display_name",
   oldColumn: "name", alias: "u",
 };
@@ -226,6 +238,25 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         }
         return { sql: "SELECT " + (columns ? (form.columns.trim() === "*" ? "*" : columns.map(q).join(", ")) : "*") + "\\nFROM " + tableSql + "\\nWHERE " + predicate + ";", params, error: "" };
       }
+      case "cte": {
+        const cteName = form.cteName.trim();
+        const sourceTable = form.cteSourceTable.trim();
+        const cteColumns = splitIdentifiers(form.cteColumns);
+        if (!validIdentifier(cteName) || !validIdentifier(sourceTable) || !cteColumns) {
+          return { sql: "", params, error: "Укажи корректное имя CTE, исходную таблицу и список столбцов через запятую." };
+        }
+        const cteFilterColumn = form.cteFilterColumn.trim();
+        const outerFilterColumn = form.cteOuterFilterColumn.trim();
+        if (cteFilterColumn && (!validIdentifier(cteFilterColumn) || !form.cteFilterValue.trim())) return { sql: "", params, error: "Проверь столбец и значение фильтра внутри CTE." };
+        if (outerFilterColumn && (!validIdentifier(outerFilterColumn) || !form.cteOuterFilterValue.trim())) return { sql: "", params, error: "Проверь столбец и значение фильтра внешнего запроса." };
+        const cteWhere = cteFilterColumn ? "\\n  WHERE " + q(cteFilterColumn) + " " + form.cteFilterOperator + " " + placeholder(form.cteFilterValue) : "";
+        const outerWhere = outerFilterColumn ? "\\nWHERE " + q(outerFilterColumn) + " " + form.cteOuterFilterOperator + " " + placeholder(form.cteOuterFilterValue) : "";
+        const sorting = form.orderColumn.trim() ? validIdentifier(form.orderColumn.trim()) ? "\\nORDER BY " + q(form.orderColumn.trim()) + " " + form.orderDirection : "" : "";
+        if (form.orderColumn.trim() && !sorting) return { sql: "", params, error: "Проверь столбец сортировки результата CTE." };
+        if (form.limit.trim() && (!/^\\d+$/.test(form.limit.trim()) || Number(form.limit) > 10000)) return { sql: "", params, error: "LIMIT должен быть целым числом от 0 до 10000." };
+        const limit = form.limit.trim() ? "\\nLIMIT " + Number(form.limit) : "";
+        return { sql: "WITH " + q(cteName) + " AS (\\n  SELECT " + cteColumns.map(q).join(", ") + "\\n  FROM " + q(sourceTable) + cteWhere + "\\n)\\nSELECT " + (columns ? (form.columns.trim() === "*" ? "*" : columns.map(q).join(", ")) : "*") + "\\nFROM " + q(cteName) + outerWhere + sorting + limit + ";", params, error: "" };
+      }
       case "insert": {
         if (!columns) return { sql: "", params, error: "Укажи столбцы для INSERT через запятую." };
         const enteredValues = form.insertValues.split("|").map((value) => value.trim());
@@ -318,6 +349,7 @@ export function DatabaseWorkbenchModule() {
               <option value="aggregate">Сгруппировать и посчитать — GROUP BY</option>
               <option value="join">Объединить таблицы — JOIN</option>
               <option value="subquery">Подзапросы — IN / EXISTS / SELECT</option>
+              <option value="cte">Именованный набор — CTE / WITH</option>
               <option value="insert">Добавить запись — INSERT</option>
               <option value="update">Изменить запись — UPDATE</option>
               <option value="delete">Удалить запись — DELETE</option>
@@ -330,7 +362,7 @@ export function DatabaseWorkbenchModule() {
             <div className="space-y-4 rounded-xl border border-border bg-card p-4">
               <div className="flex items-center justify-between gap-2"><p className="text-sm font-semibold">2. Параметры запроса</p><select aria-label="Диалект SQL" value={dialect} onChange={(event) => setDialect(event.target.value as Dialect)} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs"><option value="postgres">PostgreSQL</option><option value="mysql">MySQL</option></select></div>
               <div><label className={labelClass}>Название таблицы</label><input value={form.table} onChange={(event) => update("table", event.target.value)} className={fieldClass} placeholder="users" /></div>
-              {(operation === "select" || operation === "subquery" || operation === "insert" || operation === "alias") && <div><label className={labelClass}>Столбцы, которые нужно вывести через запятую</label><input value={form.columns} onChange={(event) => update("columns", event.target.value)} className={fieldClass} placeholder="id, email, created_at" /><p className="mt-1 text-[11px] text-muted-foreground">Для SELECT можно указать * — все столбцы.</p></div>}
+              {(operation === "select" || operation === "subquery" || operation === "cte" || operation === "insert" || operation === "alias") && <div><label className={labelClass}>Столбцы, которые нужно вывести через запятую</label><input value={form.columns} onChange={(event) => update("columns", event.target.value)} className={fieldClass} placeholder="id, email, created_at" /><p className="mt-1 text-[11px] text-muted-foreground">Для SELECT можно указать * — все столбцы.</p></div>}
               {operation === "aggregate" && <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
                 <div><label className={labelClass}>Группировать по (один или несколько столбцов)</label><input value={form.groupBy} onChange={(event) => update("groupBy", event.target.value)} className={fieldClass} placeholder="status, department" /><label className={labelClass + " mt-2"}>Псевдонимы столбцов группировки (необязательно)</label><input value={form.groupAliases} onChange={(event) => update("groupAliases", event.target.value)} className={fieldClass} placeholder="Статус, Отдел" /><p className="mt-1 text-[11px] text-muted-foreground">Можно группировать по любым полям текущей таблицы. Перечисли несколько столбцов через запятую. Если псевдонимы не нужны, оставь поле пустым.</p></div>
                 <div className="flex items-center justify-between gap-2"><p className="text-xs font-semibold">Агрегатные показатели</p><button type="button" onClick={() => setForm((current) => ({ ...current, aggregates: [...current.aggregates, { id: Math.max(0, ...current.aggregates.map((metric) => metric.id)) + 1, fn: "COUNT", column: "*", alias: "total" }] }))} className="rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-background">+ Добавить показатель</button></div>
@@ -356,6 +388,13 @@ export function DatabaseWorkbenchModule() {
               )}
               {operation === "select" && <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3"><label className="flex items-center gap-2 text-xs font-medium text-muted-foreground"><input type="checkbox" checked={form.distinct} onChange={(event) => update("distinct", event.target.checked)} />Убрать повторяющиеся строки (DISTINCT)</label><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Сортировать по</label><input value={form.orderColumn} onChange={(event) => update("orderColumn", event.target.value)} className={fieldClass} placeholder="created_at" /></div><div><label className={labelClass}>Порядок</label><select value={form.orderDirection} onChange={(event) => update("orderDirection", event.target.value)} className={fieldClass}><option>DESC</option><option>ASC</option></select></div><div><label className={labelClass}>LIMIT</label><input value={form.limit} onChange={(event) => update("limit", event.target.value)} className={fieldClass} placeholder="50" /></div><div><label className={labelClass}>OFFSET</label><input value={form.offset} onChange={(event) => update("offset", event.target.value)} className={fieldClass} placeholder="0" /></div></div><p className="text-[11px] text-muted-foreground">DISTINCT удаляет дубликаты строк результата. LIMIT ограничивает число строк, OFFSET пропускает указанное число строк.</p></div>}
               {operation === "aggregate" && <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3"><p className="text-xs font-semibold">Фильтрация групп и сортировка</p><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>HAVING: псевдоним агрегата</label><input value={form.havingAlias} onChange={(event) => update("havingAlias", event.target.value)} className={fieldClass} placeholder="total" /></div><div><label className={labelClass}>Оператор</label><select value={form.havingOperator} onChange={(event) => update("havingOperator", event.target.value)} className={fieldClass}>{[">", ">=", "=", "<>", "<=", "<"].map((item) => <option key={item}>{item}</option>)}</select></div><div><label className={labelClass}>Значение HAVING</label><input value={form.havingValue} onChange={(event) => update("havingValue", event.target.value)} className={fieldClass} placeholder="5" /></div><div><label className={labelClass}>ORDER BY</label><input value={form.orderColumn} onChange={(event) => update("orderColumn", event.target.value)} className={fieldClass} placeholder="total или status" /></div><div><label className={labelClass}>LIMIT</label><input value={form.limit} onChange={(event) => update("limit", event.target.value)} className={fieldClass} placeholder="50" /></div><div><label className={labelClass}>OFFSET</label><input value={form.offset} onChange={(event) => update("offset", event.target.value)} className={fieldClass} placeholder="0" /></div><div><label className={labelClass}>Направление сортировки</label><select value={form.orderDirection} onChange={(event) => update("orderDirection", event.target.value)} className={fieldClass}><option>DESC</option><option>ASC</option></select></div></div><p className="text-[11px] text-muted-foreground">WHERE фильтрует строки до группировки; HAVING — уже сформированные группы. В HAVING указывай псевдоним одного из агрегатов.</p></div>}
+              {operation === "cte" && <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
+                <p className="text-xs text-muted-foreground">CTE создаёт именованный временный результат в рамках одного SQL-запроса. Сначала формируется выборка внутри WITH, затем внешний SELECT обращается к её имени.</p>
+                <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Имя CTE</label><input value={form.cteName} onChange={(event) => update("cteName", event.target.value)} className={fieldClass} placeholder="filtered_orders" /></div><div><label className={labelClass}>Исходная таблица</label><input value={form.cteSourceTable} onChange={(event) => update("cteSourceTable", event.target.value)} className={fieldClass} placeholder="orders" /></div></div>
+                <div><label className={labelClass}>Столбцы внутри CTE</label><input value={form.cteColumns} onChange={(event) => update("cteColumns", event.target.value)} className={fieldClass} placeholder="id, user_id, total" /></div>
+                <div className="rounded-lg border border-border bg-card p-3"><p className="mb-2 text-xs font-semibold">Фильтр внутри WITH (необязательно)</p><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Столбец</label><input value={form.cteFilterColumn} onChange={(event) => update("cteFilterColumn", event.target.value)} className={fieldClass} placeholder="status" /></div><div><label className={labelClass}>Оператор</label><select value={form.cteFilterOperator} onChange={(event) => update("cteFilterOperator", event.target.value)} className={fieldClass}>{["=", "<>", ">", ">=", "<", "<=", "LIKE"].map((op) => <option key={op}>{op}</option>)}</select></div><div className="col-span-2"><label className={labelClass}>Значение</label><input value={form.cteFilterValue} onChange={(event) => update("cteFilterValue", event.target.value)} className={fieldClass} placeholder="paid" /></div></div></div>
+                <div className="rounded-lg border border-border bg-card p-3"><p className="mb-2 text-xs font-semibold">Фильтр внешнего SELECT (необязательно)</p><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Столбец</label><input value={form.cteOuterFilterColumn} onChange={(event) => update("cteOuterFilterColumn", event.target.value)} className={fieldClass} placeholder="total" /></div><div><label className={labelClass}>Оператор</label><select value={form.cteOuterFilterOperator} onChange={(event) => update("cteOuterFilterOperator", event.target.value)} className={fieldClass}>{["=", "<>", ">", ">=", "<", "<=", "LIKE"].map((op) => <option key={op}>{op}</option>)}</select></div><div className="col-span-2"><label className={labelClass}>Значение</label><input value={form.cteOuterFilterValue} onChange={(event) => update("cteOuterFilterValue", event.target.value)} className={fieldClass} placeholder="100" /></div></div></div>
+              </div>}
               {operation === "subquery" && <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
                 <div><label className={labelClass}>Тип подзапроса</label><select value={form.subqueryMode} onChange={(event) => update("subqueryMode", event.target.value)} className={fieldClass}><option value="SCALAR">Скалярный — сравнение с одним значением</option><option value="IN">IN — значение входит в результат</option><option value="NOT IN">NOT IN — значения нет в результате</option><option value="EXISTS">EXISTS — связанная запись существует</option><option value="NOT EXISTS">NOT EXISTS — связанной записи нет</option></select></div>
                 <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Внешняя таблица</label><input value={form.table} onChange={(event) => update("table", event.target.value)} className={fieldClass} /></div><div><label className={labelClass}>Внешний столбец</label><input value={form.subqueryColumn} onChange={(event) => update("subqueryColumn", event.target.value)} className={fieldClass} placeholder="id" /></div></div>
