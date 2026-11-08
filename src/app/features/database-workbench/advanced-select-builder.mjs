@@ -20,7 +20,14 @@ function validateSelectItem(item, index) {
 function parseJoin(line, index) {
   const match = line.trim().match(/^(INNER|LEFT|RIGHT|FULL(?: OUTER)?)\s+JOIN\s+([A-Za-z_][A-Za-z0-9_]*)(?:\s+(?:AS\s+)?([A-Za-z_][A-Za-z0-9_]*))?\s+ON\s+([A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*)\s*(=|<>|!=|>=|<=|>|<)\s*([A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*)$/i);
   if (!match) fail("JOIN №" + (index + 1) + ": используй формат LEFT JOIN orders AS o ON o.user_id = u.id.");
-  return match[1].toUpperCase().replace(/\s+/g, " ") + " JOIN " + match[2] + (match[3] ? " AS " + match[3] : "") + " ON " + match[4] + " " + match[5] + " " + match[6];
+  const alias = match[3] || match[2];
+  return {
+    type: match[1].toUpperCase().replace(/\s+/g, " "),
+    table: match[2],
+    alias,
+    references: [match[4].split(".")[0], match[6].split(".")[0]],
+    sql: match[1].toUpperCase().replace(/\s+/g, " ") + " JOIN " + match[2] + (match[3] ? " AS " + match[3] : "") + " ON " + match[4] + " " + match[5] + " " + match[6],
+  };
 }
 function parseHaving(line, index) {
   const match = line.trim().match(/^(?:(AND|OR)\s+)?(.+?)\s*(>=|<=|<>|!=|=|>|<)\s*(.+)$/i);
@@ -47,7 +54,15 @@ export function buildAdvancedSelect(config) {
   if (groups.some((item) => !column.test(item))) fail("GROUP BY: укажи имена столбцов через запятую.");
   const having = (config.having || "").split("\n").map((item) => item.trim()).filter(Boolean).map(parseHaving);
   const order = (config.orderBy || "").split(",").map((item) => item.trim()).filter(Boolean).map(parseOrder);
-  const joinSql = joins.map(parseJoin);
+  const parsedJoins = joins.map(parseJoin);
+  const availableAliases = new Set([fromAlias || table]);
+  for (const [index, join] of parsedJoins.entries()) {
+    if (availableAliases.has(join.alias)) fail("Псевдоним JOIN №" + (index + 1) + " уже используется.");
+    if (join.references.some((reference) => reference !== join.alias && !availableAliases.has(reference))) fail("JOIN №" + (index + 1) + " ссылается на неизвестный псевдоним таблицы в ON.");
+    availableAliases.add(join.alias);
+  }
+  if (config.dialect === "mysql" && parsedJoins.some((join) => join.type.startsWith("FULL"))) fail("MySQL не поддерживает FULL OUTER JOIN напрямую. Используй UNION из LEFT и RIGHT JOIN.");
+  const joinSql = parsedJoins.map((join) => join.sql);
   if (config.limit && (!/^\d+$/.test(config.limit) || Number(config.limit) > 10000)) fail("LIMIT должен быть целым числом от 0 до 10000.");
   if (config.offset && (!/^\d+$/.test(config.offset) || Number(config.offset) > 1000000)) fail("OFFSET должен быть целым числом от 0 до 1000000.");
   const sql = "SELECT " + (config.distinct ? "DISTINCT " : "") + items.map(validateSelectItem).join(",\n       ")
