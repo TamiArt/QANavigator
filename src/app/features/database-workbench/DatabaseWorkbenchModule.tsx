@@ -245,12 +245,13 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         const cteColumns = splitIdentifiers(form.cteColumns);
         const cteResultColumns = splitIdentifiers(form.cteResultColumns);
         if (!validIdentifier(cteName) || !validIdentifier(sourceTable) || !cteColumns || !cteResultColumns) {
-          return { sql: "", params, error: "Укажи корректное имя CTE, исходную таблицу и список столбцов через запятую." };
+          return { sql: "", params, error: "Укажи корректное имя CTE, исходную таблицу и списки столбцов через запятую." };
         }
+        if (cteResultColumns.some((column) => !cteColumns.includes(column))) return { sql: "", params, error: "Внешний SELECT может выбирать только столбцы, объявленные внутри CTE." };
         const cteFilterColumn = form.cteFilterColumn.trim();
         const outerFilterColumn = form.cteOuterFilterColumn.trim();
         if (cteFilterColumn && (!validIdentifier(cteFilterColumn) || !form.cteFilterValue.trim())) return { sql: "", params, error: "Проверь столбец и значение фильтра внутри CTE." };
-        if (outerFilterColumn && (!validIdentifier(outerFilterColumn) || !form.cteOuterFilterValue.trim())) return { sql: "", params, error: "Проверь столбец и значение фильтра внешнего запроса." };
+        if (outerFilterColumn && (!validIdentifier(outerFilterColumn) || !form.cteOuterFilterValue.trim() || !cteColumns.includes(outerFilterColumn))) return { sql: "", params, error: "Внешний фильтр должен использовать столбец, объявленный внутри CTE, и иметь значение." };
         const cteWhere = cteFilterColumn ? "\n  WHERE " + q(cteFilterColumn) + " " + form.cteFilterOperator + " " + placeholder(form.cteFilterValue) : "";
         const outerWhere = outerFilterColumn ? "\nWHERE " + q(outerFilterColumn) + " " + form.cteOuterFilterOperator + " " + placeholder(form.cteOuterFilterValue) : "";
         const sorting = form.orderColumn.trim() ? validIdentifier(form.orderColumn.trim()) ? "\nORDER BY " + q(form.orderColumn.trim()) + " " + form.orderDirection : "" : "";
