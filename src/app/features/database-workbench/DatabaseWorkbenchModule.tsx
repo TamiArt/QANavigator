@@ -9,7 +9,7 @@ type Operation = "select" | "aggregate" | "join" | "subquery" | "cte" | "insert"
 type SubqueryMode = "SCALAR" | "IN" | "NOT IN" | "EXISTS" | "NOT EXISTS";
 type AggregateFunction = "COUNT" | "COUNT_DISTINCT" | "SUM" | "AVG" | "MIN" | "MAX";
 type AggregateMetric = { id: number; fn: AggregateFunction; column: string; alias: string };
-type FilterCondition = { id: number; column: string; operator: string; value: string; connector: "AND" | "OR" };
+type FilterCondition = { id: number; column: string; operator: string; value: string; connector: "AND" | "OR"; openGroups: number; closeGroups: number };
 type BuilderState = {
   table: string;
   columns: string;
@@ -61,7 +61,7 @@ const initial: BuilderState = {
     { id: 1, fn: "COUNT", column: "*", alias: "total" },
   ],
   insertValues: "101 | qa@example.com | 2026-11-07",
-  conditions: [{ id: 1, column: "id", operator: "=", value: "10", connector: "AND" }], orderColumn: "", orderDirection: "DESC",
+  conditions: [{ id: 1, column: "id", operator: "=", value: "10", connector: "AND", openGroups: 0, closeGroups: 0 }], orderColumn: "", orderDirection: "DESC",
   limit: "50", offset: "", distinct: false, havingAlias: "", havingOperator: ">", havingValue: "",
   secondTable: "orders", joinType: "LEFT",
   leftKey: "users.id", rightKey: "orders.user_id",
@@ -129,6 +129,7 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
     if (form.conditions.some((condition) => !condition.column.trim())) throw new Error("Заполни столбец во всех добавленных условиях или удали пустое условие.");
     const conditions = form.conditions;
     if (!conditions.length) return "";
+    let depth = 0;
     const clauses = conditions.map((condition, index) => {
       if (!validColumnReference(condition.column.trim())) throw new Error("Поле условия №" + (index + 1) + " должно быть именем столбца или ссылкой table.column.");
       const operator = ["=", "<>", ">", ">=", "<", "<=", "LIKE", "IN", "BETWEEN", "IS NULL", "IS NOT NULL"].includes(condition.operator) ? condition.operator : "=";
@@ -146,8 +147,14 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         if (!condition.value.trim()) throw new Error("Укажи значение для условия №" + (index + 1) + ".");
         expression = q(condition.column.trim()) + " " + operator + " " + placeholder(condition.value);
       }
-      return (index === 0 ? "" : condition.connector + " ") + expression;
+      if (!Number.isInteger(condition.openGroups) || !Number.isInteger(condition.closeGroups) || condition.openGroups < 0 || condition.closeGroups < 0 || condition.openGroups > 4 || condition.closeGroups > 4) throw new Error("Число скобок должно быть от 0 до 4.");
+      depth += condition.openGroups;
+      const clause = (index === 0 ? "" : condition.connector + " ") + "(".repeat(condition.openGroups) + expression + ")".repeat(condition.closeGroups);
+      depth -= condition.closeGroups;
+      if (depth < 0) throw new Error("Закрывающих скобок больше, чем открывающих. Проверь группировку условий.");
+      return clause;
     });
+    if (depth !== 0) throw new Error("Не все группы условий закрыты. Добавь закрывающие скобки.");
     return "\nWHERE " + clauses.join("\n  ");
   };
   try {
@@ -305,8 +312,8 @@ export function DatabaseWorkbenchModule() {
   const [copied, setCopied] = useState(false);
   const generated = useMemo(() => buildSql(operation, dialect, form), [operation, dialect, form]);
   const update = (key: keyof BuilderState, value: string | boolean) => setForm((current) => ({ ...current, [key]: value } as BuilderState));
-  const updateCondition = (id: number, key: keyof Omit<FilterCondition, "id">, value: string) => setForm((current) => ({ ...current, conditions: current.conditions.map((condition) => condition.id === id ? { ...condition, [key]: value } : condition) }));
-  const addCondition = () => setForm((current) => ({ ...current, conditions: [...current.conditions, { id: Math.max(0, ...current.conditions.map((condition) => condition.id)) + 1, column: "", operator: "=", value: "", connector: "AND" }] }));
+  const updateCondition = (id: number, key: keyof Omit<FilterCondition, "id">, value: string | number) => setForm((current) => ({ ...current, conditions: current.conditions.map((condition) => condition.id === id ? { ...condition, [key]: value } : condition) }));
+  const addCondition = () => setForm((current) => ({ ...current, conditions: [...current.conditions, { id: Math.max(0, ...current.conditions.map((condition) => condition.id)) + 1, column: "", operator: "=", value: "", connector: "AND", openGroups: 0, closeGroups: 0 }] }));
   const removeCondition = (id: number) => setForm((current) => ({ ...current, conditions: current.conditions.filter((condition) => condition.id !== id) }));
   const copy = async (value: string) => {
     await navigator.clipboard.writeText(value);
@@ -378,10 +385,11 @@ export function DatabaseWorkbenchModule() {
                   {form.conditions.map((condition, index) => <div key={condition.id} className="space-y-2 rounded-lg border border-border bg-card p-3">
                     <div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold">Условие {index + 1}</span>{form.conditions.length > 1 && <button type="button" onClick={() => removeCondition(condition.id)} className="text-xs text-destructive hover:underline">Удалить</button>}</div>
                     {index > 0 && <select aria-label={"Связка перед условием " + (index + 1)} value={condition.connector} onChange={(event) => updateCondition(condition.id, "connector", event.target.value)} className={fieldClass}><option value="AND">AND — должны выполняться оба условия</option><option value="OR">OR — достаточно одного условия</option></select>}
+                    <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Открыть скобки перед условием</label><select aria-label={"Открывающие скобки перед условием " + (index + 1)} value={condition.openGroups} onChange={(event) => updateCondition(condition.id, "openGroups", Number(event.target.value))} className={fieldClass}>{[0,1,2,3,4].map((count) => <option key={count} value={count}>{count === 0 ? "Без скобки" : "(".repeat(count) + " — " + count}</option>)}</select></div><div><label className={labelClass}>Закрыть скобки после условия</label><select aria-label={"Закрывающие скобки после условия " + (index + 1)} value={condition.closeGroups} onChange={(event) => updateCondition(condition.id, "closeGroups", Number(event.target.value))} className={fieldClass}>{[0,1,2,3,4].map((count) => <option key={count} value={count}>{count === 0 ? "Без скобки" : ")".repeat(count) + " — " + count}</option>)}</select></div></div>
                     <div className="grid grid-cols-[1fr_auto] gap-2"><input aria-label={"Столбец условия " + (index + 1)} value={condition.column} onChange={(event) => updateCondition(condition.id, "column", event.target.value)} className={fieldClass} placeholder="Например, status или orders.status" /><select aria-label={"Оператор условия " + (index + 1)} value={condition.operator} onChange={(event) => updateCondition(condition.id, "operator", event.target.value)} className={fieldClass + " w-auto"}>{["=", "<>", ">", ">=", "<", "<=", "LIKE", "IN", "BETWEEN", "IS NULL", "IS NOT NULL"].map((operator) => <option key={operator}>{operator}</option>)}</select></div>
                     {![ "IS NULL", "IS NOT NULL" ].includes(condition.operator) && <div><label className={labelClass}>{condition.operator === "BETWEEN" ? "Границы диапазона (от, до)" : condition.operator === "IN" ? "Список значений" : condition.operator === "LIKE" ? "Шаблон LIKE" : "Значение параметра"}</label><input aria-label={"Значение условия " + (index + 1)} value={condition.value} onChange={(event) => updateCondition(condition.id, "value", event.target.value)} className={fieldClass} placeholder={condition.operator === "IN" ? "Например: new, active, pending" : condition.operator === "BETWEEN" ? "Например: 100, 500" : condition.operator === "LIKE" ? "Например: Ан%, %ов, а_я" : "Например, 42 или active"} /></div>}
                   </div>)}
-                  <p className="text-[11px] text-muted-foreground">Значения будут безопасно экранированы и показаны непосредственно в готовом SQL. Для BETWEEN укажи две границы через запятую; обе границы включаются в диапазон. Для IN перечисли значения через запятую. Для LIKE используй шаблон: % означает ноль или более любых символов, _ — ровно один любой символ. Например, «Ан%» — начинается с «Ан», «%ов» — заканчивается на «ов», «а_я» — три символа, где средний любой. BETWEEN и IN имеют тот же приоритет, что и операторы сравнения: они выполняются раньше NOT, AND и OR. AND требует выполнения обоих условий, OR — хотя бы одного. В SQL AND имеет более высокий приоритет, чем OR: A OR B AND C читается как A OR (B AND C). Если нужна группировка (A OR B) AND C, добавь скобки в SQL вручную после копирования.</p>{(operation === "update" || operation === "delete") && form.conditions.some((condition, index) => index > 0 && condition.connector === "OR") && <p className="text-[11px] font-medium text-amber-600">Внимание: OR может расширить набор изменяемых или удаляемых записей. Проверь итоговый WHERE особенно внимательно.</p>}
+                  <p className="text-[11px] text-muted-foreground">Значения будут безопасно экранированы и показаны непосредственно в готовом SQL. Для BETWEEN укажи две границы через запятую; обе границы включаются в диапазон. Для IN перечисли значения через запятую. Для LIKE используй шаблон: % означает ноль или более любых символов, _ — ровно один любой символ. Например, «Ан%» — начинается с «Ан», «%ов» — заканчивается на «ов», «а_я» — три символа, где средний любой. BETWEEN и IN имеют тот же приоритет, что и операторы сравнения: они выполняются раньше NOT, AND и OR. AND требует выполнения обоих условий, OR — хотя бы одного. В SQL AND имеет более высокий приоритет, чем OR: A OR B AND C читается как A OR (B AND C). Для группировки условий используй поля открытия и закрытия скобок у нужных строк. Можно создавать несколько уровней вложенности; конструктор проверит баланс скобок.</p>{(operation === "update" || operation === "delete") && form.conditions.some((condition, index) => index > 0 && condition.connector === "OR") && <p className="text-[11px] font-medium text-amber-600">Внимание: OR может расширить набор изменяемых или удаляемых записей. Проверь итоговый WHERE особенно внимательно.</p>}
                 </div>
               )}
               {operation === "select" && <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3"><label className="flex items-center gap-2 text-xs font-medium text-muted-foreground"><input type="checkbox" checked={form.distinct} onChange={(event) => update("distinct", event.target.checked)} />Убрать повторяющиеся строки (DISTINCT)</label><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Сортировать по</label><input value={form.orderColumn} onChange={(event) => update("orderColumn", event.target.value)} className={fieldClass} placeholder="created_at" /></div><div><label className={labelClass}>Порядок</label><select value={form.orderDirection} onChange={(event) => update("orderDirection", event.target.value)} className={fieldClass}><option>DESC</option><option>ASC</option></select></div><div><label className={labelClass}>LIMIT</label><input value={form.limit} onChange={(event) => update("limit", event.target.value)} className={fieldClass} placeholder="50" /></div><div><label className={labelClass}>OFFSET</label><input value={form.offset} onChange={(event) => update("offset", event.target.value)} className={fieldClass} placeholder="0" /></div></div><p className="text-[11px] text-muted-foreground">DISTINCT удаляет дубликаты строк результата. LIMIT ограничивает число строк, OFFSET пропускает указанное число строк.</p></div>}
