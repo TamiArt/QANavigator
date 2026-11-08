@@ -84,7 +84,7 @@ export function buildAlterTable(config) {
 export function buildDropTable(config) {
   const table = identifier(config.table, "имя таблицы");
   if (config.confirmName !== table) fail("Для DROP TABLE повтори имя таблицы в поле подтверждения.");
-  return { sql: "DROP TABLE " + quote(table, config.dialect || "postgres") + (config.ifExists ? " IF EXISTS" : "") + ";" };
+  return { sql: "DROP TABLE " + (config.ifExists ? "IF EXISTS " : "") + quote(table, config.dialect || "postgres") + ";" };
 }
 export function buildTruncateTable(config) {
   const table = identifier(config.table, "имя таблицы");
