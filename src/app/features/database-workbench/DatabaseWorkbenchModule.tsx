@@ -327,7 +327,7 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         if (form.ctasScalarFilterEnabled) {
           if (!validIdentifier(form.ctasScalarFilterColumn)) return { sql: "", params, error: "Укажи корректный столбец WHERE для скалярного подзапроса." };
           if (!["=", "<>", ">", ">=", "<", "<="].includes(form.ctasScalarFilterOperator)) return { sql: "", params, error: "Выбери допустимый оператор для вложенного подзапроса." };
-          const nested = buildNestedScalarSubquery(levels, q, placeholder);
+          const nested = buildNestedScalarSubquery(form.ctasSubqueryLevels, q, placeholder);
           scalarFilter = " WHERE " + q(form.ctasScalarFilterColumn) + " " + form.ctasScalarFilterOperator + " " + nested;
         }
         const scalar = "(SELECT " + scalarSelect + " FROM " + q(sourceTable) + scalarFilter + ")";
