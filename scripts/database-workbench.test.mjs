@@ -311,6 +311,7 @@ test("SQL workbench exposes configurable correlated scopes and nested EXISTS lev
 test("advanced SELECT combines multiple joins, CASE, arithmetic aggregates, grouping, HAVING and ordering", () => {
   const result = buildAdvancedSelect({
     table: "users",
+    fromAlias: "u",
     distinct: true,
     selectItems: "u.id AS user_id\nu.email\nCOUNT(DISTINCT o.id) AS orders_count\nSUM(o.quantity * o.price) AS gross\nCASE WHEN COUNT(o.id) > 0 THEN 1 ELSE 0 END AS has_orders",
     joins: "LEFT JOIN orders AS o ON o.user_id = u.id\nLEFT JOIN payments AS p ON p.order_id = o.id",
