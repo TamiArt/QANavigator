@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { buildNestedScalarSubquery, buildCorrelatedExistsSubquery } from "../src/app/features/database-workbench/nested-subquery-builder.mjs";
 import { buildAdvancedSelect } from "../src/app/features/database-workbench/advanced-select-builder.mjs";
+import { buildCreateTable, buildAlterTable, buildDropTable, buildTruncateTable, buildInsert, buildUpdate, buildDelete } from "../src/app/features/database-workbench/ddl-dml-builder.mjs";
 
 const source = await readFile("src/app/features/database-workbench/DatabaseWorkbenchModule.tsx", "utf8");
 const nestedBuilderSource = await readFile("src/app/features/database-workbench/nested-subquery-builder.mjs", "utf8");
@@ -377,4 +378,75 @@ test("advanced SELECT validates join alias scope and rejects unsupported MySQL F
   assert.throws(() => buildAdvancedSelect({ ...base, joins: "LEFT JOIN orders AS u ON u.user_id = u.id" }), /уже используется/);
   assert.throws(() => buildAdvancedSelect({ ...base, dialect: "mysql", joins: "FULL OUTER JOIN orders AS o ON o.user_id = u.id" }), /MySQL не поддерживает FULL OUTER JOIN/);
   assert.match(buildAdvancedSelect({ ...base, dialect: "postgres", joins: "FULL OUTER JOIN orders AS o ON o.user_id = u.id" }).sql, /FULL OUTER JOIN/);
+});
+
+
+test("DDL CREATE TABLE supports typed columns and common constraints", () => {
+  const result = buildCreateTable({
+    dialect: "postgres",
+    table: "orders",
+    columns: "id BIGINT PRIMARY KEY\nuser_id BIGINT NOT NULL REFERENCES users(id)\namount DECIMAL(10,2) NOT NULL CHECK (amount > 0)\nstatus VARCHAR(30) DEFAULT 'new'\ncreated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+  });
+  assert.equal(result.columnCount, 5);
+  assert.match(result.sql, /CREATE TABLE "orders"/);
+  assert.match(result.sql, /"user_id" BIGINT NOT NULL REFERENCES "users" \("id"\)/);
+  assert.match(result.sql, /DECIMAL\(10,2\) NOT NULL CHECK \(amount > 0\)/);
+  assert.match(result.sql, /DEFAULT 'new'/);
+  assert.throws(() => buildCreateTable({ table: "orders", columns: "id BOGUS" }), /неподдерживаемый тип данных/);
+  assert.throws(() => buildCreateTable({ table: "orders", columns: "id INT\nid TEXT" }), /уникальными/);
+  assert.throws(() => buildCreateTable({ table: "orders", columns: "id INT; DROP TABLE users" }), /недопустимые символы|не удалось разобрать/);
+});
+
+test("DDL ALTER TABLE supports add, drop, rename and dialect-specific type changes", () => {
+  assert.match(buildAlterTable({ table: "users", action: "add", column: "phone", definition: "phone VARCHAR(30) NOT NULL" }).sql, /ADD COLUMN "phone" VARCHAR\(30\) NOT NULL/);
+  assert.match(buildAlterTable({ table: "users", action: "drop", column: "phone" }).sql, /DROP COLUMN "phone"/);
+  assert.match(buildAlterTable({ table: "users", action: "rename", column: "name", newName: "display_name" }).sql, /RENAME COLUMN "name" TO "display_name"/);
+  assert.match(buildAlterTable({ dialect: "mysql", table: "users", action: "type", column: "name", dataType: "VARCHAR", typeSize: "255" }).sql, /MODIFY COLUMN .name. VARCHAR\(255\)/);
+  assert.match(buildAlterTable({ dialect: "postgres", table: "users", action: "type", column: "name", dataType: "TEXT" }).sql, /ALTER COLUMN "name" TYPE TEXT/);
+  assert.throws(() => buildAlterTable({ table: "users", action: "type", column: "name", dataType: "UNSAFE" }), /поддерживаемый тип/);
+});
+
+test("destructive DDL requires exact table-name confirmation", () => {
+  assert.equal(buildDropTable({ table: "old_users", confirmName: "old_users", ifExists: true }).sql, 'DROP TABLE IF EXISTS "old_users";');
+  assert.match(buildTruncateTable({ dialect: "mysql", table: "logs", confirmName: "logs" }).sql, /TRUNCATE TABLE .logs./);
+  assert.throws(() => buildDropTable({ table: "users", confirmName: "" }), /повтори имя таблицы/);
+  assert.throws(() => buildTruncateTable({ table: "users", confirmName: "user" }), /повтори имя таблицы/);
+});
+
+test("DML INSERT supports multiple rows, escaped strings and INSERT SELECT", () => {
+  const result = buildInsert({ table: "users", columns: "id, email", rows: "1 | qa@example.com\n2 | O'Neil@example.com" });
+  assert.equal(result.rowCount, 2);
+  assert.match(result.sql, /VALUES\n  \(1, 'qa@example.com'\),\n  \(2, 'O''Neil@example.com'\);/);
+  assert.match(buildInsert({ dialect: "mysql", table: "archive", columns: "id, email", selectSql: "SELECT id, email FROM users WHERE active = TRUE" }).sql, /INSERT INTO .archive. .id., .email.\nSELECT id, email FROM users/);
+  assert.throws(() => buildInsert({ table: "users", columns: "id,email", rows: "1|qa\n2" }), /строка INSERT №2/);
+  assert.throws(() => buildInsert({ table: "users", columns: "id", selectSql: "SELECT 1; DROP TABLE users" }), /один SELECT/);
+});
+
+test("DML UPDATE supports multiple assignments and enforces WHERE", () => {
+  const sql = buildUpdate({ table: "users", assignments: "status = active\nupdated_at = CURRENT_TIMESTAMP\nscore = 12", where: "id = 7 AND is_active = TRUE" }).sql;
+  assert.match(sql, /SET "status" = 'active',\n    "updated_at" = CURRENT_TIMESTAMP,\n    "score" = 12/);
+  assert.match(sql, /WHERE id = 7 AND is_active = TRUE;/);
+  assert.throws(() => buildUpdate({ table: "users", assignments: "status = active", where: "" }), /обязательно задай WHERE/);
+  assert.throws(() => buildUpdate({ table: "users", assignments: "status = active\nstatus = blocked", where: "id = 1" }), /повторяется в SET/);
+  assert.throws(() => buildUpdate({ table: "users", assignments: "status = active", where: "id = 1; DROP TABLE users" }), /Недопустимое условие/);
+});
+
+test("DML DELETE refuses missing WHERE and destructive SQL fragments", () => {
+  assert.equal(buildDelete({ table: "users", where: "id = 7" }).sql, 'DELETE FROM "users"\nWHERE id = 7;');
+  assert.throws(() => buildDelete({ table: "users", where: "" }), /DELETE без WHERE/);
+  assert.throws(() => buildDelete({ table: "users", where: "1 = 1 OR DROP = 1" }), /Недопустимое условие/);
+});
+
+test("DDL and expanded DML operations are wired to the interactive workbench", () => {
+  for (const operation of ["createTable", "alterTable", "dropTable", "truncateTable"]) {
+    assert.ok(source.includes('value="' + operation + '"'), "missing UI operation " + operation);
+    assert.ok(source.includes('case "' + operation + '"'), "missing builder case " + operation);
+  }
+  assert.ok(source.includes("form.ddlColumns"));
+  assert.ok(source.includes("form.alterAction"));
+  assert.ok(source.includes("form.confirmTable"));
+  assert.ok(source.includes("form.insertSelectSql"));
+  assert.ok(source.includes("form.updateAssignments"));
+  assert.ok(source.includes("buildInsert({ dialect, table, columns: form.columns, rows: form.insertValues, selectSql: form.insertSelectSql })"));
+  assert.ok(source.includes("buildUpdate({ dialect, table, assignments: form.updateAssignments"));
 });
