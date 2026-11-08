@@ -420,7 +420,9 @@ test("DML INSERT supports multiple rows, escaped strings and INSERT SELECT", () 
   const result = buildInsert({ table: "users", columns: "id, email", rows: "1 | qa@example.com\n2 | O'Neil@example.com" });
   assert.equal(result.rowCount, 2);
   assert.match(result.sql, /VALUES\n  \(1, 'qa@example.com'\),\n  \(2, 'O''Neil@example.com'\);/);
-  assert.match(buildInsert({ dialect: "mysql", table: "archive", columns: "id, email", selectSql: "SELECT id, email FROM users WHERE active = TRUE" }).sql, /INSERT INTO .archive. .id., .email.\nSELECT id, email FROM users/);
+  const insertSelect = buildInsert({ dialect: "mysql", table: "archive", columns: "id, email", selectSql: "SELECT id, email FROM users WHERE active = TRUE" }).sql;
+  assert.ok(insertSelect.includes("INSERT INTO \`archive\` (\`id\`, \`email\`)"));
+  assert.match(insertSelect, /\nSELECT id, email FROM users WHERE active = TRUE;/);
   assert.throws(() => buildInsert({ table: "users", columns: "id,email", rows: "1|qa\n2" }), /строка INSERT №2/);
   assert.throws(() => buildInsert({ table: "users", columns: "id", selectSql: "SELECT 1; DROP TABLE users" }), /один SELECT/);
 });
