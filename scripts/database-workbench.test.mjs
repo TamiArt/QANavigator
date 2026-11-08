@@ -4,6 +4,9 @@ import { readFile } from "node:fs/promises";
 import { buildNestedScalarSubquery, buildCorrelatedExistsSubquery } from "../src/app/features/database-workbench/nested-subquery-builder.mjs";
 import { buildAdvancedSelect } from "../src/app/features/database-workbench/advanced-select-builder.mjs";
 import { buildCreateTable, buildAlterTable, buildDropTable, buildTruncateTable, buildInsert, buildUpdate, buildDelete } from "../src/app/features/database-workbench/ddl-dml-builder.mjs";
+import initSqlJs from "sql.js";
+import { executeSqlBatch, splitSqlStatements } from "../src/app/features/database-workbench/sql-execution.mjs";
+import { SQL_TRAINER_SEED_SQL } from "../src/app/features/database-workbench/sql-seed.mjs";
 
 const source = await readFile("src/app/features/database-workbench/DatabaseWorkbenchModule.tsx", "utf8");
 const nestedBuilderSource = await readFile("src/app/features/database-workbench/nested-subquery-builder.mjs", "utf8");
@@ -457,4 +460,99 @@ test("DDL and expanded DML operations are wired to the interactive workbench", (
   assert.ok(source.includes("form.updateAssignments"));
   assert.ok(source.includes("buildInsert({ dialect, table, columns: form.columns, rows: form.insertValues, selectSql: form.insertSelectSql })"));
   assert.ok(source.includes("buildUpdate({ dialect, table, assignments: form.updateAssignments"));
+});
+
+
+test("SQL statement splitter respects quoted semicolons and SQL comments", () => {
+  assert.deepEqual(splitSqlStatements("SELECT ';' AS value; -- ; ignored\\nSELECT 2; /* ; ignored */ SELECT '[x;y]' AS value;"), [
+    "SELECT ';' AS value",
+    "-- ; ignored\\nSELECT 2",
+    "/* ; ignored */ SELECT '[x;y]' AS value",
+  ]);
+  assert.throws(() => splitSqlStatements("SELECT 'unfinished"), /незакрытую строку/);
+  assert.throws(() => splitSqlStatements("SELECT 1; /* unfinished"), /незакрытый комментарий/);
+});
+
+async function createSeededDatabase() {
+  const SQL = await initSqlJs();
+  const database = new SQL.Database();
+  database.run(SQL_TRAINER_SEED_SQL);
+  return database;
+}
+
+test("SQL execution runs CREATE TABLE AS with nested scalar subqueries and returns actual rows", async (t) => {
+  const database = await createSeededDatabase();
+  t.after(() => database.close());
+  const sql = `DROP TABLE IF EXISTS ordering;
+CREATE TABLE ordering AS
+SELECT author, title,
+       (SELECT AVG(amount) FROM book) AS amount
+FROM book
+WHERE amount < (SELECT AVG(amount) FROM book);
+SELECT * FROM ordering ORDER BY amount;`;
+  const result = executeSqlBatch(database, sql);
+  assert.equal(result.ok, true);
+  assert.equal(result.statementCount, 3);
+  assert.equal(result.results.length, 3);
+  assert.deepEqual(result.results[2].tables[0].columns, ["author", "title", "amount"]);
+  assert.equal(result.results[2].tables[0].rowCount, 3);
+  assert.deepEqual(result.results[2].tables[0].rows.map((row) => row[1]), ["Палата № 6", "Рассказы", "Евгений Онегин"]);
+  assert.ok(result.results[2].tables[0].rows.every((row) => row[2] > 0));
+});
+
+test("SQL execution preserves NULL values and SQLite three-valued logic", async (t) => {
+  const database = await createSeededDatabase();
+  t.after(() => database.close());
+  const result = executeSqlBatch(database, "SELECT id, last_name, last_name IS NULL AS is_missing FROM users WHERE last_name IS NULL ORDER BY id;");
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.results[0].tables[0].rows, [[3, null, 1], [5, null, 1]]);
+  const aggregate = executeSqlBatch(database, "SELECT COUNT(*) AS all_orders, COUNT(total) AS priced_orders, AVG(total) AS average_total FROM orders;");
+  assert.deepEqual(aggregate.results[0].tables[0].rows, [[6, 5, 102.1]]);
+});
+
+test("SQL execution applies DDL and DML changes between instructions and reports affected rows", async (t) => {
+  const database = await createSeededDatabase();
+  t.after(() => database.close());
+  const result = executeSqlBatch(database, `CREATE TABLE task_log (id INTEGER PRIMARY KEY, note TEXT);
+INSERT INTO task_log (id, note) VALUES (1, 'created'), (2, NULL);
+UPDATE task_log SET note = 'updated' WHERE id = 1;
+DELETE FROM task_log WHERE id = 2;
+SELECT * FROM task_log;`);
+  assert.equal(result.ok, true);
+  assert.equal(result.results[1].affectedRows, 2);
+  assert.equal(result.results[2].affectedRows, 1);
+  assert.equal(result.results[3].affectedRows, 1);
+  assert.deepEqual(result.results[4].tables[0].rows, [[1, "updated"]]);
+});
+
+test("SQL execution stops on the first runtime error and preserves earlier successful statements", async (t) => {
+  const database = await createSeededDatabase();
+  t.after(() => database.close());
+  const result = executeSqlBatch(database, "CREATE TABLE before_error (id INTEGER); INSERT INTO before_error VALUES (7); SELECT * FROM missing_table; SELECT 99;");
+  assert.equal(result.ok, false);
+  assert.equal(result.failedStatement, 3);
+  assert.equal(result.completedCount, 2);
+  assert.match(result.error, /no such table/i);
+  const persisted = database.exec("SELECT id FROM before_error;");
+  assert.deepEqual(persisted[0].values, [[7]]);
+});
+
+test("SQL execution rejects empty scripts and caps statement and result counts", async (t) => {
+  const database = await createSeededDatabase();
+  t.after(() => database.close());
+  assert.match(executeSqlBatch(database, " -- comment only").error, /Добавь SQL-инструкцию/);
+  assert.match(executeSqlBatch(database, Array.from({ length: 51 }, () => "SELECT 1").join(";")).error, /не более 50/);
+  const large = executeSqlBatch(database, "WITH RECURSIVE numbers(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM numbers WHERE x < 600) SELECT x FROM numbers;");
+  assert.equal(large.results[0].tables[0].rowCount, 600);
+  assert.equal(large.results[0].tables[0].rows.length, 500);
+  assert.equal(large.results[0].tables[0].truncated, true);
+});
+
+test("SQL workbench integrates a local execution console and explicit SQLite isolation notice", async () => {
+  const consoleSource = await readFile("src/app/features/database-workbench/SqlExecutionConsole.tsx", "utf8");
+  assert.ok(source.includes("SqlExecutionConsole"));
+  assert.ok(consoleSource.includes("Выполнить SQL"));
+  assert.ok(consoleSource.includes("Подставить собранный SQL"));
+  assert.ok(consoleSource.includes("локальной временной БД"));
+  assert.ok(consoleSource.includes("SQLite в WebAssembly"));
 });
