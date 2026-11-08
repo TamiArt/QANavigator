@@ -93,7 +93,8 @@ test("SELECT supports DISTINCT and validated pagination", () => {
 
 test("aggregate queries support HAVING, ORDER BY and pagination", () => {
   assert.ok(source.includes('havingAlias: string'));
-  assert.ok(source.includes('"\\nHAVING " + q(form.havingAlias.trim())'), "HAVING must filter grouped results");
+  assert.ok(source.includes('"\\nHAVING " + (dialect === "mysql" ? q(form.havingAlias.trim()) : havingTarget)'), "HAVING must filter grouped results with dialect-aware expressions");
+  assert.ok(source.includes('havingMetric.fn === "COUNT_DISTINCT"'), "PostgreSQL HAVING must use the aggregate expression rather than a SELECT alias");
   assert.ok(source.includes('"\\nORDER BY " + q(form.orderColumn.trim())'), "aggregate results must be sortable");
   assert.ok(source.includes('"\\nLIMIT " + Number(form.limit)'), "aggregate results must support LIMIT");
   assert.ok(source.includes('"\\nOFFSET " + Number(form.offset)'), "aggregate results must support OFFSET");
