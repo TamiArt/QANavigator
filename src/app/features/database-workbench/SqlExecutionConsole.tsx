@@ -90,7 +90,7 @@ export function SqlExecutionConsole({ generatedSql, generatedError }: Props) {
         <div className="space-y-3" aria-live="polite">
           <div className={`rounded-lg border p-3 text-xs ${batch.ok ? "border-emerald-500/30 bg-emerald-500/5" : "border-destructive/30 bg-destructive/5"}`}>
             {batch.ok ? `Успешно выполнено инструкций: ${batch.completedCount}.` : `Ошибка в инструкции №${batch.failedStatement ?? "—"}: ${batch.error}`}
-            {!batch.ok && batch.completedCount > 0 && <p className="mt-1 text-muted-foreground">До ошибки успешно выполнено: {batch.completedCount}. Изменения этих инструкций уже применены к учебной БД.</p>}
+            {!batch.ok && (batch.completedCount ?? 0) > 0 && <p className="mt-1 text-muted-foreground">До ошибки успешно выполнено: {batch.completedCount}. Изменения этих инструкций уже применены к учебной БД.</p>}
           </div>
           {batch.results.map((result) => (
             <article key={result.index} className="overflow-hidden rounded-lg border border-border">
