@@ -57,14 +57,14 @@ test("database workbench supports multiple WHERE conditions with AND and OR", ()
   assert.ok(source.includes("BETWEEN и IN имеют тот же приоритет"), "SQL builder must explain BETWEEN and IN precedence");
 });
 
-test("WHERE conditions can compose multiple IN and NOT IN subqueries", () => {
+test("WHERE conditions can compose IN, NOT IN and correlated EXISTS subqueries", () => {
   assert.ok(source.includes('"IN (подзапрос)", "NOT IN (подзапрос)", "EXISTS (подзапрос)", "NOT EXISTS (подзапрос)"'), "WHERE must offer IN and correlated EXISTS subquery operators");
   assert.ok(source.includes('operator === "IN (подзапрос)" || operator === "NOT IN (подзапрос)"'), "the SQL builder must generate subqueries as individual WHERE predicates");
   assert.ok(source.includes('condition.subqueryTable.trim()') && source.includes('condition.subquerySelectColumn.trim()'), "each nested predicate must configure its own inner table and result column");
   assert.ok(source.includes('condition.subqueryFilterColumn.trim()'), "each nested predicate must support its own optional inner filter");
   assert.ok(source.includes('operator === "EXISTS (подзапрос)" ? "EXISTS" : "NOT EXISTS"'), "correlated EXISTS predicates must link the inner key to the outer condition column");
   assert.ok(source.includes('["IN (подзапрос)", "NOT IN (подзапрос)", "EXISTS (подзапрос)", "NOT EXISTS (подзапрос)"].includes(condition.operator)'), "the UI must expose per-condition subquery fields");
-  assert.ok(source.includes("Можно добавить несколько таких условий и объединить их через AND/OR и скобки."), "subquery predicates must compose with normal filters and nested groups");
+  assert.ok(source.includes("Подзапрос встраивается в WHERE, поэтому несколько таких условий можно объединять с обычными через AND/OR и скобки."), "subquery predicates must compose with normal filters and nested groups");
 });
 
 test("database workbench explains LIKE wildcard characters", () => {
