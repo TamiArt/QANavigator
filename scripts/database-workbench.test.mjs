@@ -15,7 +15,9 @@ test("database workbench exposes practical SQL operations", () => {
 });
 
 test("database workbench keeps destructive statements behind a WHERE guard", () => {
-  assert.ok(source.includes('if (!form.conditions.some((condition) => condition.column.trim()))'), "UPDATE and DELETE must require at least one WHERE condition");
+  assert.ok(source.includes("buildUpdate({ dialect, table, assignments: form.updateAssignments"), "UPDATE must delegate to the guarded DML builder");
+  assert.ok(source.includes("buildDelete({ dialect, table, where:"), "DELETE must delegate to the guarded DML builder");
+  assert.ok(source.includes("Для безопасности UPDATE обязательно задай WHERE"), "UPDATE must reject an empty WHERE");
   assert.ok(source.includes("DELETE без WHERE заблокирован конструктором"), "DELETE must stay protected without WHERE");
 });
 
