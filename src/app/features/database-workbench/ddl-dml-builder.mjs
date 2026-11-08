@@ -76,6 +76,9 @@ export function buildAlterTable(config) {
     if (!TYPES.has(type)) fail("Выбери поддерживаемый тип данных.");
     const size = String(config.typeSize || "").trim();
     if (size && !/^\d+(?:,\d+)?$/.test(size)) fail("Проверь размер типа.");
+    if (size && !["CHAR","VARCHAR","BINARY","VARBINARY","DECIMAL","NUMERIC"].includes(type)) fail("Размер можно указать только для CHAR/VARCHAR/BINARY/VARBINARY/DECIMAL/NUMERIC.");
+    const dimensions = size ? size.split(",").map(Number) : [];
+    if (dimensions.some((part) => !Number.isInteger(part) || part < 1 || part > 1000000) || (dimensions.length === 2 && (dimensions[0] > 1000000 || dimensions[1] > 30 || dimensions[1] > dimensions[0]))) fail("Недопустимая длина или точность типа.");
     if (dialect === "mysql") return { sql: "ALTER TABLE " + table + " MODIFY COLUMN " + quote(column, dialect) + " " + type + (size ? "(" + size + ")" : "") + ";" };
     return { sql: "ALTER TABLE " + table + " ALTER COLUMN " + quote(column, dialect) + " TYPE " + type + (size ? "(" + size + ")" : "") + ";" };
   }
