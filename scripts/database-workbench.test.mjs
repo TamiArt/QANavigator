@@ -7,6 +7,7 @@ import { buildCreateTable, buildAlterTable, buildDropTable, buildTruncateTable, 
 
 const source = await readFile("src/app/features/database-workbench/DatabaseWorkbenchModule.tsx", "utf8");
 const nestedBuilderSource = await readFile("src/app/features/database-workbench/nested-subquery-builder.mjs", "utf8");
+const ddlDmlBuilderSource = await readFile("src/app/features/database-workbench/ddl-dml-builder.mjs", "utf8");
 
 test("database workbench exposes practical SQL operations", () => {
   for (const operation of ["SELECT", "JOIN", "INSERT", "UPDATE", "DELETE", "RENAME", "AS"]) {
@@ -17,8 +18,8 @@ test("database workbench exposes practical SQL operations", () => {
 test("database workbench keeps destructive statements behind a WHERE guard", () => {
   assert.ok(source.includes("buildUpdate({ dialect, table, assignments: form.updateAssignments"), "UPDATE must delegate to the guarded DML builder");
   assert.ok(source.includes("buildDelete({ dialect, table, where:"), "DELETE must delegate to the guarded DML builder");
-  assert.ok(source.includes("Для безопасности UPDATE обязательно задай WHERE"), "UPDATE must reject an empty WHERE");
-  assert.ok(source.includes("DELETE без WHERE заблокирован конструктором"), "DELETE must stay protected without WHERE");
+  assert.ok(ddlDmlBuilderSource.includes("Для безопасности UPDATE обязательно задай WHERE"), "UPDATE must reject an empty WHERE");
+  assert.ok(ddlDmlBuilderSource.includes("DELETE без WHERE заблокирован конструктором"), "DELETE must stay protected without WHERE");
 });
 
 test("database workbench validates identifiers and previews literal parameter values", () => {
