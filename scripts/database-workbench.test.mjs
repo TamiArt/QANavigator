@@ -339,6 +339,7 @@ test("advanced SELECT combines multiple joins, CASE, arithmetic aggregates, grou
 test("advanced SELECT supports INNER, RIGHT and FULL OUTER joins in a multi-join chain", () => {
   const sql = buildAdvancedSelect({
     table: "authors",
+    fromAlias: "a",
     selectItems: "a.id, b.title",
     joins: "INNER JOIN books AS b ON b.author_id = a.id\nRIGHT JOIN stock AS s ON s.book_id = b.id\nFULL OUTER JOIN publishers AS p ON p.id = b.publisher_id",
   }).sql;
