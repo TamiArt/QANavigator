@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { buildNestedScalarSubquery } from "../src/app/features/database-workbench/nested-subquery-builder.mjs";
+import { buildNestedScalarSubquery, buildCorrelatedExistsSubquery } from "../src/app/features/database-workbench/nested-subquery-builder.mjs";
 
 const source = await readFile("src/app/features/database-workbench/DatabaseWorkbenchModule.tsx", "utf8");
 const nestedBuilderSource = await readFile("src/app/features/database-workbench/nested-subquery-builder.mjs", "utf8");
@@ -268,4 +268,40 @@ test("universal nested builder escapes values through the supplied SQL dialect f
     level(2, { filterEnabled: true, filterColumn: "author", filterOperator: "=", filterValue: "O'Reilly" }),
   ], quoteIdentifier, toSqlValue);
   assert.match(sql, /WHERE "author" = 'O''Reilly'/);
+});
+
+const quoteCorrelated = (value) => '"' + value.replace(/"/g, '""') + '"';
+test("correlated EXISTS resolves immediate and outer lexical scopes across nested levels", () => {
+  const sql = buildCorrelatedExistsSubquery({
+    outer: { table: "users", alias: "u" },
+    levels: [
+      { table: "orders", alias: "o", innerColumn: "user_id", outerDepth: 1, outerColumn: "id", filterEnabled: true, filterColumn: "status", filterOperator: "=", filterValue: "paid" },
+      { table: "payments", alias: "p", innerColumn: "order_id", outerDepth: 1, outerColumn: "id", filterEnabled: true, filterColumn: "state", filterOperator: "=", filterValue: "settled" },
+      { table: "audit", alias: "a", innerColumn: "user_id", outerDepth: 3, outerColumn: "id" },
+    ],
+  }, quoteCorrelated, toSqlValue);
+  assert.equal(sql, 'EXISTS (SELECT 1 FROM "orders" AS "o" WHERE "o"."user_id" = "u"."id" AND "o"."status" = \'paid\' AND EXISTS (SELECT 1 FROM "payments" AS "p" WHERE "p"."order_id" = "o"."id" AND "p"."state" = \'settled\' AND EXISTS (SELECT 1 FROM "audit" AS "a" WHERE "a"."user_id" = "u"."id")))');
+});
+test("correlated NOT EXISTS is generated as a negated correlated predicate", () => {
+  const sql = buildCorrelatedExistsSubquery({ mode: "NOT EXISTS", outer: { table: "users", alias: "u" }, levels: [{ table: "orders", alias: "o", innerColumn: "user_id", outerDepth: 1, outerColumn: "id" }] }, quoteCorrelated, toSqlValue);
+  assert.equal(sql, 'NOT EXISTS (SELECT 1 FROM "orders" AS "o" WHERE "o"."user_id" = "u"."id")');
+});
+test("correlated builder rejects unknown scopes, duplicate aliases, and unsafe identifiers", () => {
+  const base = { outer: { table: "users", alias: "u" }, levels: [{ table: "orders", alias: "o", innerColumn: "user_id", outerDepth: 1, outerColumn: "id" }] };
+  assert.throws(() => buildCorrelatedExistsSubquery({ ...base, levels: [{ ...base.levels[0], outerDepth: 2 }] }, quoteCorrelated, toSqlValue), /недоступная внешняя область/);
+  assert.throws(() => buildCorrelatedExistsSubquery({ ...base, levels: [{ ...base.levels[0], alias: "u" }] }, quoteCorrelated, toSqlValue), /уже используется/);
+  assert.throws(() => buildCorrelatedExistsSubquery({ ...base, levels: [{ ...base.levels[0], innerColumn: "id; DROP" }] }, quoteCorrelated, toSqlValue), /Проверь таблицу/);
+});
+test("correlated builder validates local filters and supports escaped values", () => {
+  const sql = buildCorrelatedExistsSubquery({ outer: { table: "users", alias: "u" }, levels: [{ table: "orders", alias: "o", innerColumn: "user_id", outerDepth: 1, outerColumn: "id", filterEnabled: true, filterColumn: "status", filterOperator: "=", filterValue: "O'Reilly" }] }, quoteCorrelated, toSqlValue);
+  assert.match(sql, /'O''Reilly'/);
+  assert.throws(() => buildCorrelatedExistsSubquery({ outer: { table: "users", alias: "u" }, levels: [{ table: "orders", alias: "o", innerColumn: "user_id", outerDepth: 1, outerColumn: "id", filterEnabled: true, filterColumn: "status", filterValue: "" }] }, quoteCorrelated, toSqlValue), /Укажи значение локального WHERE/);
+});
+test("SQL workbench exposes configurable correlated scopes and nested EXISTS levels", () => {
+  assert.ok(source.includes("correlatedLevels: CorrelatedSubqueryLevel[]"));
+  assert.ok(source.includes("form.correlatedLevels.map"));
+  assert.ok(source.includes("Псевдоним внешней таблицы"));
+  assert.ok(source.includes("Уровень внешней ссылки"));
+  assert.ok(source.includes("Добавить вложенный уровень"));
+  assert.ok(source.includes("buildCorrelatedExistsSubquery"));
 });
