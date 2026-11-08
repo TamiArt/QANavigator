@@ -1,13 +1,14 @@
 import { useMemo, useState } from "react";
 import { buildNestedScalarSubquery, buildCorrelatedExistsSubquery } from "./nested-subquery-builder.mjs";
 import { buildAdvancedSelect } from "./advanced-select-builder.mjs";
+import { buildCreateTable, buildAlterTable, buildDropTable, buildTruncateTable, buildInsert, buildUpdate, buildDelete } from "./ddl-dml-builder.mjs";
 import {
   AlertTriangle, BookOpen, CheckCircle2, Code2, Copy,
   Database, Info, Search, ShieldCheck, WandSparkles,
 } from "lucide-react";
 
 type Dialect = "postgres" | "mysql";
-type Operation = "select" | "aggregate" | "join" | "subquery" | "cte" | "createTableAs" | "insert" | "update" | "delete" | "rename" | "alias" | "advancedSelect";
+type Operation = "select" | "aggregate" | "join" | "subquery" | "cte" | "createTableAs" | "createTable" | "alterTable" | "dropTable" | "truncateTable" | "insert" | "update" | "delete" | "rename" | "alias" | "advancedSelect";
 type SubqueryMode = "SCALAR" | "IN" | "NOT IN" | "EXISTS" | "NOT EXISTS";
 type AggregateFunction = "COUNT" | "COUNT_DISTINCT" | "SUM" | "AVG" | "MIN" | "MAX";
 type AggregateMetric = { id: number; fn: AggregateFunction; column: string; alias: string };
@@ -79,6 +80,17 @@ type BuilderState = {
   advancedGroupBy: string;
   advancedHaving: string;
   advancedOrderBy: string;
+  ddlColumns: string;
+  alterAction: "add" | "drop" | "rename" | "type";
+  alterColumn: string;
+  alterDefinition: string;
+  alterDataType: string;
+  alterTypeSize: string;
+  alterNewName: string;
+  confirmTable: string;
+  ifExists: boolean;
+  insertSelectSql: string;
+  updateAssignments: string;
 };
 
 const initial: BuilderState = {
@@ -107,6 +119,9 @@ const initial: BuilderState = {
   advancedFromAlias: "u", advancedSelectItems: "u.id AS user_id\nu.email\nCOUNT(o.id) AS orders_count",
   advancedJoins: "LEFT JOIN orders AS o ON o.user_id = u.id",
   advancedGroupBy: "u.id, u.email", advancedHaving: "COUNT(o.id) > 1", advancedOrderBy: "orders_count DESC, u.email ASC",
+  ddlColumns: "id BIGINT PRIMARY KEY\nemail VARCHAR(255) NOT NULL UNIQUE\nstatus VARCHAR(30) DEFAULT 'active'\ncreated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+  alterAction: "add", alterColumn: "phone", alterDefinition: "phone VARCHAR(30)", alterDataType: "VARCHAR", alterTypeSize: "255", alterNewName: "display_name",
+  confirmTable: "", ifExists: true, insertSelectSql: "", updateAssignments: "status = active\nupdated_at = CURRENT_TIMESTAMP",
 };
 
 const snippets = [
