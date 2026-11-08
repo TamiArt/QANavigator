@@ -23,15 +23,17 @@ function parseJoin(line, index) {
   return match[1].toUpperCase().replace(/\s+/g, " ") + " JOIN " + match[2] + (match[3] ? " AS " + match[3] : "") + " ON " + match[4] + " " + match[5] + " " + match[6];
 }
 function parseHaving(line, index) {
-  const match = line.trim().match(/^(.+?)\s*(>=|<=|<>|!=|=|>|<)\s*(.+)$/);
-  if (!match || !validExpression(match[1]) || !validExpression(match[3])) fail("HAVING №" + (index + 1) + ": укажи агрегатное выражение, оператор и значение, например COUNT(*) > 1.");
-  if (!/\b(?:COUNT|SUM|AVG|MIN|MAX)\s*\(/i.test(match[1])) fail("HAVING должен содержать агрегатную функцию COUNT, SUM, AVG, MIN или MAX.");
-  return match[1].trim() + " " + match[2] + " " + match[3].trim();
+  const match = line.trim().match(/^(?:(AND|OR)\s+)?(.+?)\s*(>=|<=|<>|!=|=|>|<)\s*(.+)$/i);
+  if (!match || !validExpression(match[2]) || !validExpression(match[4])) fail("HAVING №" + (index + 1) + ": укажи агрегатное выражение, оператор и значение, например COUNT(*) > 1.");
+  if (!/\b(?:COUNT|SUM|AVG|MIN|MAX)\s*\(/i.test(match[2])) fail("HAVING должен содержать агрегатную функцию COUNT, SUM, AVG, MIN или MAX.");
+  return { connector: match[1] ? match[1].toUpperCase() : "AND", expression: match[2].trim() + " " + match[3] + " " + match[4].trim() };
 }
 function parseOrder(line, index) {
-  const match = line.trim().match(/^(.+?)(?:\s+(ASC|DESC))?$/i);
-  if (!match || !validExpression(match[1])) fail("Проверь выражение ORDER BY №" + (index + 1) + ".");
-  return match[1].trim() + (match[2] ? " " + match[2].toUpperCase() : "");
+  const trimmed = line.trim();
+  const direction = trimmed.match(/\s+(ASC|DESC)$/i);
+  const expression = direction ? trimmed.slice(0, direction.index).trim() : trimmed;
+  if (!expression || !validExpression(expression)) fail("Проверь выражение ORDER BY №" + (index + 1) + ".");
+  return expression + (direction ? " " + direction[1].toUpperCase() : "");
 }
 export function buildAdvancedSelect(config) {
   const table = (config.table || "").trim();
@@ -44,6 +46,8 @@ export function buildAdvancedSelect(config) {
   const having = (config.having || "").split("\n").map((item) => item.trim()).filter(Boolean).map(parseHaving);
   const order = (config.orderBy || "").split(",").map((item) => item.trim()).filter(Boolean).map(parseOrder);
   const joinSql = joins.map(parseJoin);
+  if (config.limit && (!/^\\d+$/.test(config.limit) || Number(config.limit) > 10000)) fail("LIMIT должен быть целым числом от 0 до 10000.");
+  if (config.offset && (!/^\\d+$/.test(config.offset) || Number(config.offset) > 1000000)) fail("OFFSET должен быть целым числом от 0 до 1000000.");
   if (config.limit && (!/^\\d+$/.test(config.limit) || Number(config.limit) > 10000)) fail("LIMIT должен быть целым числом от 0 до 10000.");
   if (config.offset && (!/^\\d+$/.test(config.offset) || Number(config.offset) > 1000000)) fail("OFFSET должен быть целым числом от 0 до 1000000.");
   const sql = "SELECT " + (config.distinct ? "DISTINCT " : "") + items.map(validateSelectItem).join(",\n       ")
