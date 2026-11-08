@@ -291,6 +291,27 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         const limit = form.limit.trim() ? "\nLIMIT " + Number(form.limit) : "";
         return { sql: "WITH " + q(cteName) + " AS (\n  SELECT " + cteColumns.map(q).join(", ") + "\n  FROM " + q(sourceTable) + cteWhere + "\n)\nSELECT " + cteResultColumns.map(q).join(", ") + "\nFROM " + q(cteName) + outerWhere + sorting + limit + ";", params, error: "" };
       }
+      case "createTableAs": {
+        const targetTable = form.ctasTable.trim();
+        const sourceTable = form.ctasSourceTable.trim();
+        const selectedColumns = splitIdentifiers(form.ctasColumns);
+        const aggregateColumn = form.ctasAggregateColumn.trim();
+        const selectAlias = form.ctasSelectAlias.trim();
+        const whereColumn = form.ctasWhereColumn.trim();
+        if (!validIdentifier(targetTable) || !validIdentifier(sourceTable) || !selectedColumns) {
+          return { sql: "", params, error: "Укажи корректные имена создаваемой и исходной таблиц, а также обычные столбцы SELECT." };
+        }
+        if (!validIdentifier(aggregateColumn) || !validIdentifier(selectAlias)) {
+          return { sql: "", params, error: "Укажи корректный столбец для агрегата и псевдоним вычисляемого столбца." };
+        }
+        if (!validIdentifier(whereColumn)) return { sql: "", params, error: "Укажи корректный столбец для сравнения в WHERE." };
+        if (!["=", "<>", ">", ">=", "<", "<="].includes(form.ctasWhereOperator)) {
+          return { sql: "", params, error: "Выбери допустимый оператор сравнения для WHERE." };
+        }
+        const scalar = "(SELECT " + form.ctasAggregate + "(" + q(aggregateColumn) + ") FROM " + q(sourceTable) + ")";
+        const create = "CREATE TABLE " + q(targetTable) + " AS\nSELECT " + selectedColumns.map(q).join(", ") + ",\n       " + scalar + " AS " + q(selectAlias) + "\nFROM " + q(sourceTable) + "\nWHERE " + q(whereColumn) + " " + form.ctasWhereOperator + " " + scalar + ";";
+        return { sql: create + (form.ctasAppendSelect ? "\n\nSELECT * FROM " + q(targetTable) + ";" : ""), params, error: "" };
+      }
       case "insert": {
         if (!columns) return { sql: "", params, error: "Укажи столбцы для INSERT через запятую." };
         const enteredValues = form.insertValues.split("|").map((value) => value.trim());
