@@ -125,7 +125,7 @@ function sqlLiteral(value: string) {
 }
 function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
   const table = form.table.trim();
-  if (!validIdentifier(table)) return { sql: "", params: [], error: "Укажи имя таблицы латиницей: users, order_items." };
+  if (operation !== "createTableAs" && !validIdentifier(table)) return { sql: "", params: [], error: "Укажи имя таблицы латиницей: users, order_items." };
   const q = (name: string) => name;
   const aliasSql = (name: string) => dialect === "mysql"
     ? "`" + name.replace(/`/g, "``") + "`"
@@ -412,7 +412,7 @@ export function DatabaseWorkbenchModule() {
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <div className="space-y-4 rounded-xl border border-border bg-card p-4">
               <div className="flex items-center justify-between gap-2"><p className="text-sm font-semibold">2. Параметры запроса</p><select aria-label="Диалект SQL" value={dialect} onChange={(event) => setDialect(event.target.value as Dialect)} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs"><option value="postgres">PostgreSQL</option><option value="mysql">MySQL</option></select></div>
-              <div><label className={labelClass}>Название таблицы</label><input value={form.table} onChange={(event) => update("table", event.target.value)} className={fieldClass} placeholder="users" /></div>
+              {operation !== "createTableAs" && <div><label className={labelClass}>Название таблицы</label><input value={form.table} onChange={(event) => update("table", event.target.value)} className={fieldClass} placeholder="users" /></div>}
               {(operation === "select" || operation === "subquery" || operation === "cte" || operation === "insert" || operation === "alias") && <div><label className={labelClass}>Столбцы, которые нужно вывести через запятую</label><input value={form.columns} onChange={(event) => update("columns", event.target.value)} className={fieldClass} placeholder="id, email, created_at" /><p className="mt-1 text-[11px] text-muted-foreground">Для SELECT можно указать * — все столбцы.</p></div>}
               {operation === "aggregate" && <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
                 <div><label className={labelClass}>Группировать по (один или несколько столбцов)</label><input value={form.groupBy} onChange={(event) => update("groupBy", event.target.value)} className={fieldClass} placeholder="status, department" /><label className={labelClass + " mt-2"}>Псевдонимы столбцов группировки (необязательно)</label><input value={form.groupAliases} onChange={(event) => update("groupAliases", event.target.value)} className={fieldClass} placeholder="Статус, Отдел" /><p className="mt-1 text-[11px] text-muted-foreground">Можно группировать по любым полям текущей таблицы. Перечисли несколько столбцов через запятую. Если псевдонимы не нужны, оставь поле пустым.</p></div>
