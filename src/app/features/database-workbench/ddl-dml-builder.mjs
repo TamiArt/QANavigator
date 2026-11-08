@@ -124,7 +124,7 @@ export function buildUpdate(config) {
   });
   const where = String(config.where || "").trim();
   if (!where) fail("Для безопасности UPDATE обязательно задай WHERE.");
-  if (/[;]|--|\/\*|\*\/|\\b(?:UPDATE|DELETE|DROP|ALTER|INSERT|EXEC|CALL)\\b/i.test(where)) fail("Недопустимое условие WHERE.");
+  if (/[;]|--|\/\*|\*\/|\b(?:UPDATE|DELETE|DROP|ALTER|INSERT|EXEC|CALL)\b/i.test(where)) fail("Недопустимое условие WHERE.");
   return { sql: "UPDATE " + table + "\nSET " + setSql.join(",\n    ") + "\nWHERE " + where + ";" };
 }
 export function buildDelete(config) {
@@ -132,6 +132,6 @@ export function buildDelete(config) {
   const table = quote(config.table, dialect);
   const where = String(config.where || "").trim();
   if (!where) fail("DELETE без WHERE заблокирован конструктором. Добавь хотя бы одно условие.");
-  if (/[;]|--|\/\*|\*\/|\\b(?:UPDATE|DELETE|DROP|ALTER|INSERT|EXEC|CALL)\\b/i.test(where)) fail("Недопустимое условие WHERE.");
+  if (/[;]|--|\/\*|\*\/|\b(?:UPDATE|DELETE|DROP|ALTER|INSERT|EXEC|CALL)\b/i.test(where)) fail("Недопустимое условие WHERE.");
   return { sql: "DELETE FROM " + table + "\nWHERE " + where + ";" };
 }
