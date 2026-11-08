@@ -358,7 +358,7 @@ test("advanced SELECT rejects unsafe expressions, malformed joins, invalid group
 });
 
 test("advanced SELECT mode is integrated with the shared WHERE editor and SQL preview", () => {
-  assert.ok(source.includes('type Operation = "advancedSelect" |'));
+  assert.ok(source.includes('type Operation = "select" | "aggregate" | "join"') && source.includes('"advancedSelect"'));
   assert.ok(source.includes('case "advancedSelect":'));
   assert.ok(source.includes('value="advancedSelect"'));
   assert.ok(source.includes("form.advancedSelectItems"));
