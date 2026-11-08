@@ -52,13 +52,14 @@ export function buildCorrelatedExistsSubquery(config, quoteIdentifier, toSqlValu
     if (!Number.isInteger(outerDepth) || outerDepth < 1 || outerDepth > scopes.length) throw new Error("На уровне " + (index + 1) + " выбрана недоступная внешняя область видимости.");
     const filterEnabled = Boolean(level.filterEnabled);
     const filterColumn = String(level.filterColumn ?? "").trim();
+    const filterOperator = level.filterOperator ?? "=";
     if (filterEnabled) {
       if (!valid(filterColumn)) throw new Error("Проверь столбец локального WHERE на уровне " + (index + 1) + ".");
-      if (!OPERATORS.has(level.filterOperator) && level.filterOperator !== "LIKE") throw new Error("Недопустимый оператор локального WHERE на уровне " + (index + 1) + ".");
+      if (!OPERATORS.has(filterOperator) && filterOperator !== "LIKE") throw new Error("Недопустимый оператор локального WHERE на уровне " + (index + 1) + ".");
       if (!String(level.filterValue ?? "").trim()) throw new Error("Укажи значение локального WHERE на уровне " + (index + 1) + ".");
     }
     const target = scopes[scopes.length - outerDepth];
-    const result = { ...level, table, alias, innerColumn, outerColumn, filterEnabled, filterColumn, targetAlias: target.alias };
+    const result = { ...level, table, alias, innerColumn, outerColumn, filterEnabled, filterColumn, filterOperator, targetAlias: target.alias };
     scopes.push({ table, alias });
     return result;
   });
