@@ -281,7 +281,8 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
               mode: form.subqueryMode,
               outer: { table, alias: outerAlias },
               levels: form.correlatedLevels,
-            }, (name) => aliasSql(name), placeholder);
+            }, (name) => aliasSql(name), sqlLiteral);
+            params.push(...form.correlatedLevels.filter((level) => level.filterEnabled).map((level) => level.filterValue));
           } catch (error) {
             return { sql: "", params, error: error instanceof Error ? error.message : "Не удалось построить коррелированный подзапрос." };
           }
