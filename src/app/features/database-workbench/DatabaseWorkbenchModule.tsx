@@ -103,56 +103,56 @@ const practiceTasks = [
     prompt: "Найди email, которые встречаются в таблице users больше одного раза. Выведи email и количество повторений.",
     hint: "GROUP BY группирует одинаковые email, HAVING фильтрует уже посчитанные группы.",
     requirements: ["select", "email", "count(", "group by", "having", "> 1"],
-    solution: "SELECT email, COUNT(*) AS duplicate_count\\nFROM users\\nGROUP BY email\\nHAVING COUNT(*) > 1;"
+    solution: "SELECT email, COUNT(*) AS duplicate_count\nFROM users\nGROUP BY email\nHAVING COUNT(*) > 1;"
   },
   {
     title: "Записи без связей",
     prompt: "Найди пользователей, у которых нет ни одного заказа. Используй LEFT JOIN.",
     hint: "LEFT JOIN сохраняет всех пользователей; у тех, кому не нашлась пара, поле заказа будет NULL.",
     requirements: ["select", "left join", "on", "where", "is null"],
-    solution: "SELECT u.id, u.email\\nFROM users AS u\\nLEFT JOIN orders AS o ON o.user_id = u.id\\nWHERE o.id IS NULL;"
+    solution: "SELECT u.id, u.email\nFROM users AS u\nLEFT JOIN orders AS o ON o.user_id = u.id\nWHERE o.id IS NULL;"
   },
   {
     title: "Агрегация по статусам",
     prompt: "Посчитай количество заказов по каждому статусу. Оставь только группы, где больше пяти заказов, отсортируй по убыванию количества.",
     hint: "Используй COUNT(*), GROUP BY status, HAVING и ORDER BY с DESC.",
     requirements: ["select", "count(", "group by", "having", "> 5", "order by", "desc"],
-    solution: "SELECT status, COUNT(*) AS total\\nFROM orders\\nGROUP BY status\\nHAVING COUNT(*) > 5\\nORDER BY total DESC;"
+    solution: "SELECT status, COUNT(*) AS total\nFROM orders\nGROUP BY status\nHAVING COUNT(*) > 5\nORDER BY total DESC;"
   },
   {
     title: "Фильтр по условиям",
     prompt: "Выведи заказы со статусом paid или shipped, созданные начиная с 1 января 2026 года. Покажи id, status и created_at.",
     hint: "Объедини статусы через IN (...) и добавь нижнюю границу для created_at.",
     requirements: ["select", "from", "where", "paid", "shipped", "created_at", ">="],
-    solution: "SELECT id, status, created_at\\nFROM orders\\nWHERE status IN ('paid', 'shipped') AND created_at >= '2026-01-01';"
+    solution: "SELECT id, status, created_at\nFROM orders\nWHERE status IN ('paid', 'shipped') AND created_at >= '2026-01-01';"
   },
   {
     title: "Скалярный подзапрос",
     prompt: "Найди заказы, сумма которых выше средней суммы всех заказов. Выведи id и total.",
     hint: "В WHERE сравни total с результатом подзапроса SELECT AVG(total) FROM orders.",
     requirements: ["select", "from orders", "where", "avg(", "total", ">"],
-    solution: "SELECT id, total\\nFROM orders\\nWHERE total > (SELECT AVG(total) FROM orders);"
+    solution: "SELECT id, total\nFROM orders\nWHERE total > (SELECT AVG(total) FROM orders);"
   },
   {
     title: "CTE — именованный набор",
     prompt: "Через WITH создай набор paid_orders из оплаченных заказов (id, user_id, total), затем выведи из него заказы дороже 100.",
     hint: "Сначала объяви CTE: имя AS (SELECT ... FROM orders WHERE status = 'paid'), затем выполни внешний SELECT.",
     requirements: ["with", "as", "select", "from orders", "where", "paid", "from paid_orders", "total", "> 100"],
-    solution: "WITH paid_orders AS (\\n  SELECT id, user_id, total\\n  FROM orders\\n  WHERE status = 'paid'\\n)\\nSELECT id, user_id, total\\nFROM paid_orders\\nWHERE total > 100;"
+    solution: "WITH paid_orders AS (\n  SELECT id, user_id, total\n  FROM orders\n  WHERE status = 'paid'\n)\nSELECT id, user_id, total\nFROM paid_orders\nWHERE total > 100;"
   },
   {
     title: "EXISTS — связанные записи",
     prompt: "Выведи пользователей, у которых есть хотя бы один заказ. Используй EXISTS.",
     hint: "Коррелируй orders.user_id с users.id внутри EXISTS (SELECT 1 ...).",
     requirements: ["select", "from users", "exists", "select 1", "from orders", "user_id", "u.id"],
-    solution: "SELECT u.id, u.email\\nFROM users AS u\\nWHERE EXISTS (\\n  SELECT 1 FROM orders AS o\\n  WHERE o.user_id = u.id\\n);"
+    solution: "SELECT u.id, u.email\nFROM users AS u\nWHERE EXISTS (\n  SELECT 1 FROM orders AS o\n  WHERE o.user_id = u.id\n);"
   },
   {
     title: "NOT EXISTS — отсутствие связанных записей",
     prompt: "Найди товары, которые ни разу не встречались в order_items. Используй NOT EXISTS.",
     hint: "Свяжи order_items.product_id с products.id внутри коррелированного подзапроса.",
     requirements: ["select", "from products", "not exists", "select 1", "from order_items", "product_id", "p.id"],
-    solution: "SELECT p.id, p.name\\nFROM products AS p\\nWHERE NOT EXISTS (\\n  SELECT 1 FROM order_items AS oi\\n  WHERE oi.product_id = p.id\\n);"
+    solution: "SELECT p.id, p.name\nFROM products AS p\nWHERE NOT EXISTS (\n  SELECT 1 FROM order_items AS oi\n  WHERE oi.product_id = p.id\n);"
   }
 ];
 
