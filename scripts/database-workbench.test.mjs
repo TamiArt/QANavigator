@@ -155,3 +155,9 @@ test("SQL practice covers subqueries and CTEs with reusable answer keys", () => 
   assert.ok(source.includes("Вставить в редактор"), "learner must be able to try the revealed solution in the editor");
   assert.ok(source.includes("practiceTasks[practiceIndex].requirements"), "answer checks must use task-specific requirements");
 });
+
+test("WHERE filters can disambiguate columns in joined tables", () => {
+  assert.ok(source.includes("function validColumnReference(value: string)"), "qualified column validation must be available");
+  assert.ok(source.includes("!validColumnReference(condition.column.trim())"), "WHERE must accept table.column and reject malformed references");
+  assert.ok(source.includes("ссылкой table.column"), "the validation message must explain qualified columns");
+});
