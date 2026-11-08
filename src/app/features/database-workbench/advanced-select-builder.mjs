@@ -38,6 +38,8 @@ function parseOrder(line, index) {
 export function buildAdvancedSelect(config) {
   const table = (config.table || "").trim();
   if (!identifier.test(table)) fail("Укажи корректное имя основной таблицы.");
+  const fromAlias = (config.fromAlias || "").trim();
+  if (fromAlias && !identifier.test(fromAlias)) fail("Проверь псевдоним основной таблицы.");
   const items = (config.selectItems || "").split("\n").map((item) => item.trim()).filter(Boolean);
   if (!items.length) fail("Добавь хотя бы одно SELECT-выражение — по одному на строку.");
   const joins = (config.joins || "").split("\n").map((item) => item.trim()).filter(Boolean);
@@ -49,7 +51,7 @@ export function buildAdvancedSelect(config) {
   if (config.limit && (!/^\d+$/.test(config.limit) || Number(config.limit) > 10000)) fail("LIMIT должен быть целым числом от 0 до 10000.");
   if (config.offset && (!/^\d+$/.test(config.offset) || Number(config.offset) > 1000000)) fail("OFFSET должен быть целым числом от 0 до 1000000.");
   const sql = "SELECT " + (config.distinct ? "DISTINCT " : "") + items.map(validateSelectItem).join(",\n       ")
-    + "\nFROM " + table + (joinSql.length ? "\n" + joinSql.join("\n") : "")
+    + "\nFROM " + table + (fromAlias ? " AS " + fromAlias : "") + (joinSql.length ? "\n" + joinSql.join("\n") : "")
     + (config.whereClause || "")
     + (groups.length ? "\nGROUP BY " + groups.join(", ") : "")
     + (having.length ? "\nHAVING " + having.map((item, index) => (index ? item.connector + " " : "") + item.expression).join("\n  ") : "")
