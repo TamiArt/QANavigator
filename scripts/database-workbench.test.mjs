@@ -144,3 +144,14 @@ test("CTE builder validates the scope of selected and filtered columns", () => {
   assert.ok(source.includes("cteResultColumns.some((column) => !cteColumns.includes(column))"), "outer SELECT must not request columns missing from the CTE");
   assert.ok(source.includes("!cteColumns.includes(outerFilterColumn)"), "outer WHERE must only reference columns exposed by the CTE");
 });
+
+test("SQL practice covers subqueries and CTEs with reusable answer keys", () => {
+  assert.ok(source.includes("const practiceTasks = ["), "practice exercises must be data-driven");
+  assert.ok(source.includes("practiceTasks.length"), "exercise counter must reflect the task bank size");
+  for (const title of ["Скалярный подзапрос", "CTE — именованный набор", "EXISTS — связанные записи", "NOT EXISTS — отсутствие связанных записей"]) {
+    assert.ok(source.includes(title), "practice task is missing: " + title);
+  }
+  assert.ok(source.includes("Показать решение"), "learner must be able to reveal an example solution");
+  assert.ok(source.includes("Вставить в редактор"), "learner must be able to try the revealed solution in the editor");
+  assert.ok(source.includes("practiceTasks[practiceIndex].requirements"), "answer checks must use task-specific requirements");
+});
