@@ -122,3 +122,20 @@ test("HAVING can only target a configured aggregate alias", () => {
   assert.ok(source.includes("form.aggregates.some((metric) => metric.alias.trim() === form.havingAlias.trim())"));
   assert.ok(source.includes("Псевдоним HAVING должен совпадать"), "HAVING must reject unknown aliases");
 });
+
+test("SQL workbench provides a validated subquery builder", () => {
+  assert.ok(source.includes('type SubqueryMode = "SCALAR" | "IN" | "NOT IN" | "EXISTS" | "NOT EXISTS"'));
+  assert.ok(source.includes('case "subquery":'), "subquery operation must generate SQL");
+  assert.ok(source.includes('form.subqueryMode === "EXISTS" || form.subqueryMode === "NOT EXISTS"'), "EXISTS variants must be correlated to the outer query");
+  assert.ok(source.includes('form.subqueryMode === "IN" || form.subqueryMode === "NOT IN"'), "IN variants must select values from the inner query");
+  assert.ok(source.includes("innerFilter.slice(7)"), "optional inner filters must be combined with the correlation condition");
+  assert.ok(source.includes("Подзапросы — IN / EXISTS / SELECT"), "subquery builder must be selectable in the UI");
+});
+
+test("SQL workbench provides a configurable CTE builder", () => {
+  assert.ok(source.includes('case "cte":'), "CTE operation must generate SQL");
+  assert.ok(source.includes('type Operation = "select" | "aggregate" | "join" | "subquery" | "cte"'), "CTE must be a distinct builder operation");
+  assert.ok(source.includes("cteResultColumns.map(q).join"), "outer SELECT must choose from the CTE output columns");
+  assert.ok(source.includes("cteFilterColumn") && source.includes("cteOuterFilterColumn"), "CTE and outer SELECT filters must be independent");
+  assert.ok(source.includes("Именованный набор — CTE / WITH"), "CTE builder must be available in the operation selector");
+});
