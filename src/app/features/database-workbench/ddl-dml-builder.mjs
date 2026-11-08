@@ -100,7 +100,7 @@ export function buildInsert(config) {
   const columns = String(config.columns || "").split(",").map((x) => identifier(x, "имя столбца"));
   if (!columns.length || new Set(columns).size !== columns.length) fail("Укажи уникальные столбцы для INSERT.");
   if (config.selectSql) {
-    if (!/^SELECT\b/i.test(config.selectSql.trim()) || /;|--|\/\*|\*\//.test(config.selectSql)) fail("INSERT ... SELECT принимает один SELECT без завершающей точки с запятой и комментариев.");
+    if (!/^SELECT\b/i.test(config.selectSql.trim()) || /;|--|\/\*|\*\/|\b(?:OUTFILE|DUMPFILE|LOAD_FILE|SLEEP|BENCHMARK|EXEC|CALL)\b/i.test(config.selectSql)) fail("INSERT ... SELECT принимает один безопасный SELECT без точек с запятой, комментариев и команд файлового доступа/выполнения.");
     return { sql: "INSERT INTO " + table + " (" + columns.map((x) => quote(x, dialect)).join(", ") + ")\n" + config.selectSql.trim().replace(/;$/, "") + ";" };
   }
   const rows = String(config.rows || "").split("\n").map((x) => x.trim()).filter(Boolean).map((row, index) => {
