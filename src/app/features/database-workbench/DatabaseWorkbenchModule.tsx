@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { buildNestedScalarSubquery } from "./nested-subquery-builder.mjs";
 import {
   AlertTriangle, BookOpen, CheckCircle2, Code2, Copy,
   Database, Info, Search, ShieldCheck, WandSparkles,
@@ -326,31 +327,7 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         if (form.ctasScalarFilterEnabled) {
           if (!validIdentifier(form.ctasScalarFilterColumn)) return { sql: "", params, error: "Укажи корректный столбец WHERE для скалярного подзапроса." };
           if (!["=", "<>", ">", ">=", "<", "<="].includes(form.ctasScalarFilterOperator)) return { sql: "", params, error: "Выбери допустимый оператор для вложенного подзапроса." };
-          let nested = "";
-          const levels = form.ctasSubqueryLevels;
-          if (!levels.length) throw new Error("Добавь хотя бы один уровень вложенного SELECT.");
-          for (let levelIndex = levels.length - 1; levelIndex >= 0; levelIndex -= 1) {
-            const level = levels[levelIndex];
-            if (!validIdentifier(level.table) || !validIdentifier(level.column)) {
-              throw new Error("Проверь таблицу и столбец результата во вложенном SELECT уровня " + (levelIndex + 2) + ".");
-            }
-            if (![ "aggregate", "column" ].includes(level.selectKind)) throw new Error("Выбери допустимый тип результата вложенного SELECT уровня " + (levelIndex + 2) + ".");
-            if (level.selectKind === "aggregate" && !["AVG", "SUM", "MIN", "MAX"].includes(level.aggregate)) throw new Error("Выбери допустимую агрегатную функцию уровня " + (levelIndex + 2) + ".");
-            const selected = level.selectKind === "aggregate"
-              ? level.aggregate + "(" + q(level.column) + ")"
-              : q(level.column);
-            let levelWhere = "";
-            if (level.filterEnabled) {
-              if (!validIdentifier(level.filterColumn)) throw new Error("Укажи корректный столбец WHERE уровня " + (levelIndex + 2) + ".");
-              if (![ "=", "<>", ">", ">=", "<", "<=" ].includes(level.filterOperator)) throw new Error("Недопустимый оператор WHERE уровня " + (levelIndex + 2) + ".");
-              const rightSide = nested || placeholder(level.filterValue);
-              if (!nested && !level.filterValue.trim()) throw new Error("Укажи значение WHERE уровня " + (levelIndex + 2) + ".");
-              levelWhere = " WHERE " + q(level.filterColumn) + " " + level.filterOperator + " " + rightSide;
-            } else if (nested) {
-              throw new Error("Чтобы вложить следующий уровень, включи WHERE на уровне " + (levelIndex + 2) + ".");
-            }
-            nested = "(SELECT " + selected + " FROM " + q(level.table) + levelWhere + ")";
-          }
+          const nested = buildNestedScalarSubquery(levels, q, placeholder);
           scalarFilter = " WHERE " + q(form.ctasScalarFilterColumn) + " " + form.ctasScalarFilterOperator + " " + nested;
         }
         const scalar = "(SELECT " + scalarSelect + " FROM " + q(sourceTable) + scalarFilter + ")";
