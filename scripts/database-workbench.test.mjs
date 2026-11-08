@@ -175,3 +175,15 @@ test("SQL reference omits the removed advanced example set", () => {
     assert.equal(source.includes('title: "' + title + '"'), false, "removed SQL reference entry remains: " + title);
   }
 });
+
+test("SQL trainer builds CREATE TABLE AS with scalar subqueries in SELECT and WHERE", () => {
+  assert.ok(source.includes('type Operation = "select" | "aggregate" | "join" | "subquery" | "cte" | "createTableAs"'), "CREATE TABLE AS must be a selectable operation");
+  assert.ok(source.includes('case "createTableAs":'), "the operation must generate SQL");
+  assert.ok(source.includes('ctasTable: "ordering"') && source.includes('ctasSourceTable: "book"'), "the builder must configure target and source tables");
+  assert.ok(source.includes('const scalar = "(SELECT " + form.ctasAggregate + "(" + q(aggregateColumn) + ") FROM " + q(sourceTable) + ")"'), "the scalar aggregate subquery must be reusable in SELECT and WHERE");
+  assert.ok(source.includes('scalar + " AS " + q(selectAlias)'), "SELECT must expose the scalar subquery under a configurable alias");
+  assert.ok(source.includes('q(whereColumn) + " " + form.ctasWhereOperator + " " + scalar'), "WHERE must compare an outer column with the scalar subquery");
+  assert.ok(source.includes('form.ctasAppendSelect ? "\\n\\nSELECT * FROM "'), "the builder must optionally append a follow-up SELECT from the created table");
+  assert.ok(source.includes("Скалярный подзапрос в SELECT") && source.includes("Скалярный подзапрос в WHERE"), "the UI must expose both scalar-subquery positions");
+  assert.ok(source.includes("CREATE TABLE AS создаёт физическую таблицу"), "the UI must distinguish a created table from a CTE");
+});
