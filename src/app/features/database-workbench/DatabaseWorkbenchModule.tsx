@@ -208,7 +208,7 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
       case "advancedSelect": {
         if (form.limit.trim() && (!/^\\d+$/.test(form.limit.trim()) || Number(form.limit) > 10000)) return { sql: "", params, error: "LIMIT должен быть целым числом от 0 до 10000." };
         if (form.offset.trim() && (!/^\\d+$/.test(form.offset.trim()) || Number(form.offset) > 1000000)) return { sql: "", params, error: "OFFSET должен быть целым числом от 0 до 1000000." };
-        const advanced = buildAdvancedSelect({ table, fromAlias: form.advancedFromAlias, selectItems: form.advancedSelectItems, joins: form.advancedJoins, whereClause: where(), groupBy: form.advancedGroupBy, having: form.advancedHaving, orderBy: form.advancedOrderBy, distinct: form.distinct, limit: form.limit.trim() ? String(Number(form.limit)) : "", offset: form.offset.trim() ? String(Number(form.offset)) : "" });
+        const advanced = buildAdvancedSelect({ table, fromAlias: form.advancedFromAlias, dialect, selectItems: form.advancedSelectItems, joins: form.advancedJoins, whereClause: where(), groupBy: form.advancedGroupBy, having: form.advancedHaving, orderBy: form.advancedOrderBy, distinct: form.distinct, limit: form.limit.trim() ? String(Number(form.limit)) : "", offset: form.offset.trim() ? String(Number(form.offset)) : "" });
         return { sql: advanced.sql, params, error: "" };
       }
       case "select": {
