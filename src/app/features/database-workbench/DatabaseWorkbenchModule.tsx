@@ -41,6 +41,7 @@ type BuilderState = {
   cteName: string;
   cteSourceTable: string;
   cteColumns: string;
+  cteResultColumns: string;
   cteFilterColumn: string;
   cteFilterOperator: "=" | "<>" | ">" | ">=" | "<" | "<=" | "LIKE";
   cteFilterValue: string;
@@ -67,7 +68,7 @@ const initial: BuilderState = {
   subqueryMode: "EXISTS", subqueryColumn: "id", subqueryOperator: "=",
   subqueryTable: "orders", subquerySelectColumn: "user_id",
   subqueryFilterColumn: "status", subqueryFilterOperator: "=", subqueryFilterValue: "paid",
-  cteName: "filtered_orders", cteSourceTable: "orders", cteColumns: "id, user_id, total, status",
+  cteName: "filtered_orders", cteSourceTable: "orders", cteColumns: "id, user_id, total, status", cteResultColumns: "id, user_id, total, status",
   cteFilterColumn: "status", cteFilterOperator: "=", cteFilterValue: "paid",
   cteOuterFilterColumn: "total", cteOuterFilterOperator: ">=", cteOuterFilterValue: "100",
   setColumn: "status", setValue: "active", newColumn: "display_name",
@@ -236,26 +237,27 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         } else {
           predicate = q(outerColumn) + " " + form.subqueryOperator + " (SELECT " + q(innerColumn) + " FROM " + q(innerTable) + innerFilter + ")";
         }
-        return { sql: "SELECT " + (columns ? (form.columns.trim() === "*" ? "*" : columns.map(q).join(", ")) : "*") + "\\nFROM " + tableSql + "\\nWHERE " + predicate + ";", params, error: "" };
+        return { sql: "SELECT " + cteResultColumns.map(q).join(", ") + "\nFROM " + tableSql + "\nWHERE " + predicate + ";", params, error: "" };
       }
       case "cte": {
         const cteName = form.cteName.trim();
         const sourceTable = form.cteSourceTable.trim();
         const cteColumns = splitIdentifiers(form.cteColumns);
-        if (!validIdentifier(cteName) || !validIdentifier(sourceTable) || !cteColumns) {
+        const cteResultColumns = splitIdentifiers(form.cteResultColumns);
+        if (!validIdentifier(cteName) || !validIdentifier(sourceTable) || !cteColumns || !cteResultColumns) {
           return { sql: "", params, error: "Укажи корректное имя CTE, исходную таблицу и список столбцов через запятую." };
         }
         const cteFilterColumn = form.cteFilterColumn.trim();
         const outerFilterColumn = form.cteOuterFilterColumn.trim();
         if (cteFilterColumn && (!validIdentifier(cteFilterColumn) || !form.cteFilterValue.trim())) return { sql: "", params, error: "Проверь столбец и значение фильтра внутри CTE." };
         if (outerFilterColumn && (!validIdentifier(outerFilterColumn) || !form.cteOuterFilterValue.trim())) return { sql: "", params, error: "Проверь столбец и значение фильтра внешнего запроса." };
-        const cteWhere = cteFilterColumn ? "\\n  WHERE " + q(cteFilterColumn) + " " + form.cteFilterOperator + " " + placeholder(form.cteFilterValue) : "";
-        const outerWhere = outerFilterColumn ? "\\nWHERE " + q(outerFilterColumn) + " " + form.cteOuterFilterOperator + " " + placeholder(form.cteOuterFilterValue) : "";
-        const sorting = form.orderColumn.trim() ? validIdentifier(form.orderColumn.trim()) ? "\\nORDER BY " + q(form.orderColumn.trim()) + " " + form.orderDirection : "" : "";
+        const cteWhere = cteFilterColumn ? "\n  WHERE " + q(cteFilterColumn) + " " + form.cteFilterOperator + " " + placeholder(form.cteFilterValue) : "";
+        const outerWhere = outerFilterColumn ? "\nWHERE " + q(outerFilterColumn) + " " + form.cteOuterFilterOperator + " " + placeholder(form.cteOuterFilterValue) : "";
+        const sorting = form.orderColumn.trim() ? validIdentifier(form.orderColumn.trim()) ? "\nORDER BY " + q(form.orderColumn.trim()) + " " + form.orderDirection : "" : "";
         if (form.orderColumn.trim() && !sorting) return { sql: "", params, error: "Проверь столбец сортировки результата CTE." };
         if (form.limit.trim() && (!/^\\d+$/.test(form.limit.trim()) || Number(form.limit) > 10000)) return { sql: "", params, error: "LIMIT должен быть целым числом от 0 до 10000." };
-        const limit = form.limit.trim() ? "\\nLIMIT " + Number(form.limit) : "";
-        return { sql: "WITH " + q(cteName) + " AS (\\n  SELECT " + cteColumns.map(q).join(", ") + "\\n  FROM " + q(sourceTable) + cteWhere + "\\n)\\nSELECT " + (columns ? (form.columns.trim() === "*" ? "*" : columns.map(q).join(", ")) : "*") + "\\nFROM " + q(cteName) + outerWhere + sorting + limit + ";", params, error: "" };
+        const limit = form.limit.trim() ? "\nLIMIT " + Number(form.limit) : "";
+        return { sql: "WITH " + q(cteName) + " AS (\n  SELECT " + cteColumns.map(q).join(", ") + "\n  FROM " + q(sourceTable) + cteWhere + "\n)\nSELECT " + (columns ? (form.columns.trim() === "*" ? "*" : columns.map(q).join(", ")) : "*") + "\nFROM " + q(cteName) + outerWhere + sorting + limit + ";", params, error: "" };
       }
       case "insert": {
         if (!columns) return { sql: "", params, error: "Укажи столбцы для INSERT через запятую." };
@@ -392,6 +394,7 @@ export function DatabaseWorkbenchModule() {
                 <p className="text-xs text-muted-foreground">CTE создаёт именованный временный результат в рамках одного SQL-запроса. Сначала формируется выборка внутри WITH, затем внешний SELECT обращается к её имени.</p>
                 <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Имя CTE</label><input value={form.cteName} onChange={(event) => update("cteName", event.target.value)} className={fieldClass} placeholder="filtered_orders" /></div><div><label className={labelClass}>Исходная таблица</label><input value={form.cteSourceTable} onChange={(event) => update("cteSourceTable", event.target.value)} className={fieldClass} placeholder="orders" /></div></div>
                 <div><label className={labelClass}>Столбцы внутри CTE</label><input value={form.cteColumns} onChange={(event) => update("cteColumns", event.target.value)} className={fieldClass} placeholder="id, user_id, total" /></div>
+                <div><label className={labelClass}>Столбцы внешнего SELECT</label><input value={form.cteResultColumns} onChange={(event) => update("cteResultColumns", event.target.value)} className={fieldClass} placeholder="id, total" /><p className="mt-1 text-[11px] text-muted-foreground">Выбирай только поля, которые включены в столбцы CTE выше.</p></div>
                 <div className="rounded-lg border border-border bg-card p-3"><p className="mb-2 text-xs font-semibold">Фильтр внутри WITH (необязательно)</p><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Столбец</label><input value={form.cteFilterColumn} onChange={(event) => update("cteFilterColumn", event.target.value)} className={fieldClass} placeholder="status" /></div><div><label className={labelClass}>Оператор</label><select value={form.cteFilterOperator} onChange={(event) => update("cteFilterOperator", event.target.value)} className={fieldClass}>{["=", "<>", ">", ">=", "<", "<=", "LIKE"].map((op) => <option key={op}>{op}</option>)}</select></div><div className="col-span-2"><label className={labelClass}>Значение</label><input value={form.cteFilterValue} onChange={(event) => update("cteFilterValue", event.target.value)} className={fieldClass} placeholder="paid" /></div></div></div>
                 <div className="rounded-lg border border-border bg-card p-3"><p className="mb-2 text-xs font-semibold">Фильтр внешнего SELECT (необязательно)</p><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Столбец</label><input value={form.cteOuterFilterColumn} onChange={(event) => update("cteOuterFilterColumn", event.target.value)} className={fieldClass} placeholder="total" /></div><div><label className={labelClass}>Оператор</label><select value={form.cteOuterFilterOperator} onChange={(event) => update("cteOuterFilterOperator", event.target.value)} className={fieldClass}>{["=", "<>", ">", ">=", "<", "<=", "LIKE"].map((op) => <option key={op}>{op}</option>)}</select></div><div className="col-span-2"><label className={labelClass}>Значение</label><input value={form.cteOuterFilterValue} onChange={(event) => update("cteOuterFilterValue", event.target.value)} className={fieldClass} placeholder="100" /></div></div></div>
               </div>}
