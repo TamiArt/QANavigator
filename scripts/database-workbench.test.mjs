@@ -467,7 +467,9 @@ test("DDL and expanded DML operations are wired to the interactive workbench", (
 
 
 test("SQL statement splitter respects quoted semicolons and SQL comments", () => {
-  assert.deepEqual(splitSqlStatements("SELECT ';' AS value; -- ; ignored\\nSELECT 2; /* ; ignored */ SELECT '[x;y]' AS value;"), [
+  const script = `SELECT ';' AS value; -- ; ignored
+SELECT 2; /* ; ignored */ SELECT '[x;y]' AS value;`;
+  assert.deepEqual(splitSqlStatements(script), [
     "SELECT ';' AS value",
     "-- ; ignored\\nSELECT 2",
     "/* ; ignored */ SELECT '[x;y]' AS value",
@@ -556,6 +558,6 @@ test("SQL workbench integrates a local execution console and explicit SQLite iso
   assert.ok(source.includes("SqlExecutionConsole"));
   assert.ok(consoleSource.includes("Выполнить SQL"));
   assert.ok(consoleSource.includes("Подставить собранный SQL"));
-  assert.ok(consoleSource.includes("локальной временной БД"));
+  assert.ok(consoleSource.includes("SQLite-базе прямо в браузере"));
   assert.ok(consoleSource.includes("SQLite в WebAssembly"));
 });
