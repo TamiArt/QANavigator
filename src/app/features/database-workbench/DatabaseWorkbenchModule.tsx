@@ -162,8 +162,16 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         if (form.limit.trim() && (!/^\d+$/.test(form.limit.trim()) || Number(form.limit) > 10000)) return { sql: "", params, error: "LIMIT должен быть целым числом от 0 до 10000." };
         if (form.offset.trim() && (!/^\d+$/.test(form.offset.trim()) || Number(form.offset) > 1000000)) return { sql: "", params, error: "OFFSET должен быть целым числом от 0 до 1000000." };
         const whereClause = where();
+        const havingMetric = form.aggregates.find((metric) => metric.alias.trim() === form.havingAlias.trim());
+        const havingTarget = havingMetric
+          ? havingMetric.fn === "COUNT" && havingMetric.column.trim() === "*"
+            ? "COUNT(*)"
+            : havingMetric.fn === "COUNT_DISTINCT"
+              ? "COUNT(DISTINCT " + q(havingMetric.column.trim()) + ")"
+              : havingMetric.fn + "(" + q(havingMetric.column.trim()) + ")"
+          : "";
         const having = form.havingAlias.trim()
-          ? "\nHAVING " + q(form.havingAlias.trim()) + " " + form.havingOperator + " " + placeholder(form.havingValue)
+          ? "\nHAVING " + (dialect === "mysql" ? q(form.havingAlias.trim()) : havingTarget) + " " + form.havingOperator + " " + placeholder(form.havingValue)
           : "";
         const sorting = form.orderColumn.trim() ? "\nORDER BY " + q(form.orderColumn.trim()) + " " + form.orderDirection : "";
         const limit = form.limit.trim() ? "\nLIMIT " + Number(form.limit) : "";
@@ -350,7 +358,7 @@ export function DatabaseWorkbenchModule() {
             <textarea value={practiceAnswer} onChange={(event) => { setPracticeAnswer(event.target.value); setPracticeFeedback(""); }} rows={8} className={fieldClass + " mt-3 font-mono text-xs"} placeholder="Напиши SQL-запрос здесь..." spellCheck={false} />
             <div className="mt-3 flex flex-wrap gap-2">
               <button onClick={() => {
-                const normalized = practiceAnswer.toLowerCase().replace(/\s+/g, " ").replace(/;$/, "").trim();
+                const normalized = practiceAnswer.toLowerCase().replace(/\s*(>=|<=|<>|!=|=|>|<)\s*/g, " $1 ").replace(/\s+/g, " ").replace(/;$/, "").trim();
                 const requirements = [
                   ["select", "email", "count(", "group by", "having", "> 1"],
                   ["select", "left join", "on", "where", "is null"],
