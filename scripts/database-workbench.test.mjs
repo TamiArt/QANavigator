@@ -139,3 +139,8 @@ test("SQL workbench provides a configurable CTE builder", () => {
   assert.ok(source.includes("cteFilterColumn") && source.includes("cteOuterFilterColumn"), "CTE and outer SELECT filters must be independent");
   assert.ok(source.includes("Именованный набор — CTE / WITH"), "CTE builder must be available in the operation selector");
 });
+
+test("CTE builder validates the scope of selected and filtered columns", () => {
+  assert.ok(source.includes("cteResultColumns.some((column) => !cteColumns.includes(column))"), "outer SELECT must not request columns missing from the CTE");
+  assert.ok(source.includes("!cteColumns.includes(outerFilterColumn)"), "outer WHERE must only reference columns exposed by the CTE");
+});
