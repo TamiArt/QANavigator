@@ -101,14 +101,6 @@ test("aggregate queries support HAVING, ORDER BY and pagination", () => {
   assert.ok(source.includes("const whereClause = where();"), "WHERE parameters must be registered before HAVING parameters");
 });
 
-test("SQL trainer includes guided practice and advanced SQL reference examples", () => {
-  assert.ok(source.includes('id: "practice" as const'), "practice must be available as a separate workbench tab");
-  assert.ok(source.includes("Проверить ответ"), "practice must provide answer feedback");
-  assert.ok(source.includes("не заменяет выполнение запроса"), "practice feedback must disclose its limits");
-  for (const keyword of ["EXISTS", "WITH order_totals", "CASE WHEN", "SELECT DISTINCT"]) {
-    assert.ok(source.includes(keyword), "SQL reference is missing " + keyword);
-  }
-});
 
 test("JOIN supports multiple related tables and WHERE filtering", () => {
   assert.ok(source.includes("const joinedTables = splitIdentifiers(form.secondTable)"), "JOIN must accept multiple table names");
@@ -145,19 +137,22 @@ test("CTE builder validates the scope of selected and filtered columns", () => {
   assert.ok(source.includes("!cteColumns.includes(outerFilterColumn)"), "outer WHERE must only reference columns exposed by the CTE");
 });
 
-test("SQL practice covers subqueries and CTEs with reusable answer keys", () => {
-  assert.ok(source.includes("const practiceTasks = ["), "practice exercises must be data-driven");
-  assert.ok(source.includes("practiceTasks.length"), "exercise counter must reflect the task bank size");
-  for (const title of ["Скалярный подзапрос", "CTE — именованный набор", "EXISTS — связанные записи", "NOT EXISTS — отсутствие связанных записей"]) {
-    assert.ok(source.includes(title), "practice task is missing: " + title);
-  }
-  assert.ok(source.includes("Показать решение"), "learner must be able to reveal an example solution");
-  assert.ok(source.includes("Вставить в редактор"), "learner must be able to try the revealed solution in the editor");
-  assert.ok(source.includes("practiceTasks[practiceIndex].requirements"), "answer checks must use task-specific requirements");
-});
 
 test("WHERE filters can disambiguate columns in joined tables", () => {
   assert.ok(source.includes("function validColumnReference(value: string)"), "qualified column validation must be available");
   assert.ok(source.includes("!validColumnReference(condition.column.trim())"), "WHERE must accept table.column and reject malformed references");
   assert.ok(source.includes("ссылкой table.column"), "the validation message must explain qualified columns");
+});
+
+test("SQL workbench excludes the standalone practice mode and its answer checker", () => {
+  assert.equal(source.includes('title: "Практика SQL"'), false);
+  assert.equal(source.includes('Проверить ответ'), false);
+  assert.equal(source.includes("const practiceTasks = ["), false);
+  assert.equal(source.includes("practiceTasks[practiceIndex]"), false);
+});
+
+test("SQL reference omits the removed advanced example set", () => {
+  for (const title of ["Постраничный вывод агрегатов", "Записи выше среднего", "Проверка наличия связанной записи", "Временный именованный набор", "Условное значение через CASE"]) {
+    assert.equal(source.includes('title: "' + title + '"'), false, "removed SQL reference entry remains: " + title);
+  }
 });
