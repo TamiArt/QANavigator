@@ -144,14 +144,14 @@ const practiceTasks = [
     title: "EXISTS — связанные записи",
     prompt: "Выведи пользователей, у которых есть хотя бы один заказ. Используй EXISTS.",
     hint: "Коррелируй orders.user_id с users.id внутри EXISTS (SELECT 1 ...).",
-    requirements: ["select", "from users", "exists", "select 1", "from orders", "user_id", "users.id"],
+    requirements: ["select", "from users", "exists", "select 1", "from orders", "user_id", "u.id"],
     solution: "SELECT u.id, u.email\\nFROM users AS u\\nWHERE EXISTS (\\n  SELECT 1 FROM orders AS o\\n  WHERE o.user_id = u.id\\n);"
   },
   {
     title: "NOT EXISTS — отсутствие связанных записей",
     prompt: "Найди товары, которые ни разу не встречались в order_items. Используй NOT EXISTS.",
     hint: "Свяжи order_items.product_id с products.id внутри коррелированного подзапроса.",
-    requirements: ["select", "from products", "not exists", "select 1", "from order_items", "product_id", "products.id"],
+    requirements: ["select", "from products", "not exists", "select 1", "from order_items", "product_id", "p.id"],
     solution: "SELECT p.id, p.name\\nFROM products AS p\\nWHERE NOT EXISTS (\\n  SELECT 1 FROM order_items AS oi\\n  WHERE oi.product_id = p.id\\n);"
   }
 ];
