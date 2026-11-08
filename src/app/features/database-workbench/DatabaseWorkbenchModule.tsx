@@ -56,6 +56,12 @@ type BuilderState = {
   ctasSelectAlias: string;
   ctasWhereColumn: string;
   ctasWhereOperator: "=" | "<>" | ">" | ">=" | "<" | "<=";
+  ctasScalarFilterEnabled: boolean;
+  ctasScalarFilterColumn: string;
+  ctasScalarFilterOperator: "=" | "<>" | ">" | ">=" | "<" | "<=";
+  ctasNestedTable: string;
+  ctasNestedAggregate: "AVG" | "SUM" | "MIN" | "MAX";
+  ctasNestedColumn: string;
   ctasAppendSelect: boolean;
   setColumn: string;
   setValue: string;
@@ -82,7 +88,9 @@ const initial: BuilderState = {
   cteOuterFilterColumn: "total", cteOuterFilterOperator: ">=", cteOuterFilterValue: "100",
   ctasTable: "ordering", ctasSourceTable: "book", ctasColumns: "author, title",
   ctasAggregate: "AVG", ctasAggregateColumn: "amount", ctasSelectAlias: "amount",
-  ctasWhereColumn: "amount", ctasWhereOperator: "<", ctasAppendSelect: true,
+  ctasWhereColumn: "amount", ctasWhereOperator: "<", ctasScalarFilterEnabled: true,
+  ctasScalarFilterColumn: "amount", ctasScalarFilterOperator: "<", ctasNestedTable: "book",
+  ctasNestedAggregate: "AVG", ctasNestedColumn: "amount", ctasAppendSelect: true,
   setColumn: "status", setValue: "active", newColumn: "display_name",
   oldColumn: "name", alias: "u",
 };
@@ -308,7 +316,18 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         if (!["=", "<>", ">", ">=", "<", "<="].includes(form.ctasWhereOperator)) {
           return { sql: "", params, error: "Выбери допустимый оператор сравнения для WHERE." };
         }
-        const scalar = "(SELECT " + form.ctasAggregate + "(" + q(aggregateColumn) + ") FROM " + q(sourceTable) + ")";
+        let scalarFilter = "";
+        if (form.ctasScalarFilterEnabled) {
+          if (!validIdentifier(form.ctasScalarFilterColumn) || !validIdentifier(form.ctasNestedTable) || !validIdentifier(form.ctasNestedColumn)) {
+            return { sql: "", params, error: "Проверь столбец фильтра, таблицу и столбец вложенного скалярного подзапроса." };
+          }
+          if (!["=", "<>", ">", ">=", "<", "<="].includes(form.ctasScalarFilterOperator)) {
+            return { sql: "", params, error: "Выбери допустимый оператор для вложенного подзапроса." };
+          }
+          const nested = "(SELECT " + form.ctasNestedAggregate + "(" + q(form.ctasNestedColumn) + ") FROM " + q(form.ctasNestedTable) + ")";
+          scalarFilter = " WHERE " + q(form.ctasScalarFilterColumn) + " " + form.ctasScalarFilterOperator + " " + nested;
+        }
+        const scalar = "(SELECT " + form.ctasAggregate + "(" + q(aggregateColumn) + ") FROM " + q(sourceTable) + scalarFilter + ")";
         const create = "CREATE TABLE " + q(targetTable) + " AS\nSELECT " + selectedColumns.map(q).join(", ") + ",\n       " + scalar + " AS " + q(selectAlias) + "\nFROM " + q(sourceTable) + "\nWHERE " + q(whereColumn) + " " + form.ctasWhereOperator + " " + scalar + ";";
         return { sql: create + (form.ctasAppendSelect ? "\n\nSELECT * FROM " + q(targetTable) + ";" : ""), params, error: "" };
       }
