@@ -187,15 +187,11 @@ test("SQL trainer builds CREATE TABLE AS with scalar subqueries in SELECT and WH
   assert.ok(source.includes("Скалярный подзапрос в SELECT") && source.includes("Скалярный подзапрос в WHERE"), "the UI must expose both scalar-subquery positions");
   assert.ok(source.includes("CREATE TABLE AS создаёт физическую таблицу"), "the UI must distinguish a created table from a CTE");
   assert.ok(source.includes("ctasScalarFilterEnabled") && source.includes("ctasNestedTable"), "the scalar subquery must support another nested SELECT level");
-  assert.ok(source.includes("Добавить ещё один уровень вложенности внутрь скалярного подзапроса"), "the UI must explain the nested level control");
-  assert.ok(source.includes('form.ctasNestedSelectKind === "aggregate"'), "the nested SELECT must choose between an aggregate and a plain column");
-  assert.ok(source.includes("ctasNestedFilterEnabled") && source.includes("ctasNestedFilterValue"), "the deepest SELECT must have its own independently configurable WHERE filter");
-  assert.ok(source.includes('nestedWhere = " WHERE "'), "the deepest WHERE must be generated independently from the level-one comparison");
   assert.ok(source.includes("Обычный столбец") && source.includes("не более одной строки"), "the UI must explain plain scalar-column selection and its single-row requirement");
 });
 
 
-test("CREATE TABLE AS scalar subquery levels have independent SELECT modes and WHERE filters", () => {
+test("CREATE TABLE AS scalar subqueries use a dynamic independently configurable level collection", () => {
   assert.ok(source.includes('ctasSelectKind: "aggregate" | "column"'));
   assert.ok(source.includes('ctasNestedSelectKind: "aggregate" | "column"'));
   assert.ok(source.includes('ctasNestedFilterEnabled: boolean'));
@@ -206,4 +202,13 @@ test("CREATE TABLE AS scalar subquery levels have independent SELECT modes and W
   assert.ok(source.includes('update("ctasNestedSelectKind", event.target.value)'));
   assert.ok(source.includes('update("ctasNestedFilterEnabled", event.target.checked)'));
   assert.ok(source.includes('update("ctasNestedFilterValue", event.target.value)'));
+});
+
+
+test("dynamic scalar subquery levels validate their own tables, columns and WHERE operators", () => {
+  assert.ok(source.includes("Проверь таблицу и столбец результата во вложенном SELECT уровня"));
+  assert.ok(source.includes("Укажи корректный столбец WHERE уровня"));
+  assert.ok(source.includes("Недопустимый оператор WHERE уровня"));
+  assert.ok(source.includes("Чтобы вложить следующий уровень, включи WHERE на уровне"));
+  assert.ok(source.includes("const rightSide = nested || placeholder(level.filterValue)"), "each level must either compare with a literal parameter or the next nested SELECT");
 });
