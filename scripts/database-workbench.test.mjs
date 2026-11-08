@@ -180,7 +180,7 @@ test("SQL trainer builds CREATE TABLE AS with scalar subqueries in SELECT and WH
   assert.ok(source.includes('type Operation = "select" | "aggregate" | "join" | "subquery" | "cte" | "createTableAs"'), "CREATE TABLE AS must be a selectable operation");
   assert.ok(source.includes('case "createTableAs":'), "the operation must generate SQL");
   assert.ok(source.includes('ctasTable: "ordering"') && source.includes('ctasSourceTable: "book"'), "the builder must configure target and source tables");
-  assert.ok(source.includes('const scalar = "(SELECT " + form.ctasAggregate + "(" + q(aggregateColumn) + ") FROM " + q(sourceTable) + scalarFilter + ")"'), "the scalar aggregate subquery must support an optional nested filter");
+  assert.ok(source.includes('const scalar = "(SELECT " + scalarSelect + " FROM " + q(sourceTable) + scalarFilter + ")"'), "the scalar subquery must support either an aggregate or a plain selected column");
   assert.ok(source.includes('scalar + " AS " + q(selectAlias)'), "SELECT must expose the scalar subquery under a configurable alias");
   assert.ok(source.includes('q(whereColumn) + " " + form.ctasWhereOperator + " " + scalar'), "WHERE must compare an outer column with the scalar subquery");
   assert.ok(source.includes('form.ctasAppendSelect ? "\\n\\nSELECT * FROM "'), "the builder must optionally append a follow-up SELECT from the created table");
@@ -188,5 +188,22 @@ test("SQL trainer builds CREATE TABLE AS with scalar subqueries in SELECT and WH
   assert.ok(source.includes("CREATE TABLE AS создаёт физическую таблицу"), "the UI must distinguish a created table from a CTE");
   assert.ok(source.includes("ctasScalarFilterEnabled") && source.includes("ctasNestedTable"), "the scalar subquery must support another nested SELECT level");
   assert.ok(source.includes("Добавить ещё один уровень вложенности внутрь скалярного подзапроса"), "the UI must explain the nested level control");
-  assert.ok(source.includes('const nested = "(SELECT " + form.ctasNestedAggregate + "(" + q(form.ctasNestedColumn) + ") FROM " + q(form.ctasNestedTable) + ")"'), "the nested scalar SELECT must be generated from its own settings");
+  assert.ok(source.includes('form.ctasNestedSelectKind === "aggregate"'), "the nested SELECT must choose between an aggregate and a plain column");
+  assert.ok(source.includes("ctasNestedFilterEnabled") && source.includes("ctasNestedFilterValue"), "the deepest SELECT must have its own independently configurable WHERE filter");
+  assert.ok(source.includes('nestedWhere = " WHERE "'), "the deepest WHERE must be generated independently from the level-one comparison");
+  assert.ok(source.includes("Обычный столбец") && source.includes("не более одной строки"), "the UI must explain plain scalar-column selection and its single-row requirement");
+});
+
+
+test("CREATE TABLE AS scalar subquery levels have independent SELECT modes and WHERE filters", () => {
+  assert.ok(source.includes('ctasSelectKind: "aggregate" | "column"'));
+  assert.ok(source.includes('ctasNestedSelectKind: "aggregate" | "column"'));
+  assert.ok(source.includes('ctasNestedFilterEnabled: boolean'));
+  assert.ok(source.includes('ctasNestedFilterColumn: string'));
+  assert.ok(source.includes('ctasNestedFilterOperator: "=" | "<>" | ">" | ">=" | "<" | "<="'));
+  assert.ok(source.includes('ctasNestedFilterValue: string'));
+  assert.ok(source.includes('update("ctasSelectKind", event.target.value)'));
+  assert.ok(source.includes('update("ctasNestedSelectKind", event.target.value)'));
+  assert.ok(source.includes('update("ctasNestedFilterEnabled", event.target.checked)'));
+  assert.ok(source.includes('update("ctasNestedFilterValue", event.target.value)'));
 });

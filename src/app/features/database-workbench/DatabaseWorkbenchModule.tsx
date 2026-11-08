@@ -51,6 +51,7 @@ type BuilderState = {
   ctasTable: string;
   ctasSourceTable: string;
   ctasColumns: string;
+  ctasSelectKind: "aggregate" | "column";
   ctasAggregate: "AVG" | "SUM" | "MIN" | "MAX";
   ctasAggregateColumn: string;
   ctasSelectAlias: string;
@@ -60,8 +61,13 @@ type BuilderState = {
   ctasScalarFilterColumn: string;
   ctasScalarFilterOperator: "=" | "<>" | ">" | ">=" | "<" | "<=";
   ctasNestedTable: string;
+  ctasNestedSelectKind: "aggregate" | "column";
   ctasNestedAggregate: "AVG" | "SUM" | "MIN" | "MAX";
   ctasNestedColumn: string;
+  ctasNestedFilterEnabled: boolean;
+  ctasNestedFilterColumn: string;
+  ctasNestedFilterOperator: "=" | "<>" | ">" | ">=" | "<" | "<=";
+  ctasNestedFilterValue: string;
   ctasAppendSelect: boolean;
   setColumn: string;
   setValue: string;
@@ -87,10 +93,11 @@ const initial: BuilderState = {
   cteFilterColumn: "status", cteFilterOperator: "=", cteFilterValue: "paid",
   cteOuterFilterColumn: "total", cteOuterFilterOperator: ">=", cteOuterFilterValue: "100",
   ctasTable: "ordering", ctasSourceTable: "book", ctasColumns: "author, title",
-  ctasAggregate: "AVG", ctasAggregateColumn: "amount", ctasSelectAlias: "amount",
+  ctasSelectKind: "aggregate", ctasAggregate: "AVG", ctasAggregateColumn: "amount", ctasSelectAlias: "amount",
   ctasWhereColumn: "amount", ctasWhereOperator: "<", ctasScalarFilterEnabled: true,
   ctasScalarFilterColumn: "amount", ctasScalarFilterOperator: "<", ctasNestedTable: "book",
-  ctasNestedAggregate: "AVG", ctasNestedColumn: "amount", ctasAppendSelect: true,
+  ctasNestedSelectKind: "aggregate", ctasNestedAggregate: "AVG", ctasNestedColumn: "amount",
+  ctasNestedFilterEnabled: false, ctasNestedFilterColumn: "amount", ctasNestedFilterOperator: ">", ctasNestedFilterValue: "0", ctasAppendSelect: true,
   setColumn: "status", setValue: "active", newColumn: "display_name",
   oldColumn: "name", alias: "u",
 };
@@ -316,18 +323,25 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         if (!["=", "<>", ">", ">=", "<", "<="].includes(form.ctasWhereOperator)) {
           return { sql: "", params, error: "Выбери допустимый оператор сравнения для WHERE." };
         }
+        if (!validIdentifier(aggregateColumn)) return { sql: "", params, error: "Укажи корректный столбец скалярного SELECT." };
+        const scalarSelect = form.ctasSelectKind === "aggregate"
+          ? form.ctasAggregate + "(" + q(aggregateColumn) + ")"
+          : q(aggregateColumn);
         let scalarFilter = "";
         if (form.ctasScalarFilterEnabled) {
-          if (!validIdentifier(form.ctasScalarFilterColumn) || !validIdentifier(form.ctasNestedTable) || !validIdentifier(form.ctasNestedColumn)) {
-            return { sql: "", params, error: "Проверь столбец фильтра, таблицу и столбец вложенного скалярного подзапроса." };
+          if (!validIdentifier(form.ctasScalarFilterColumn) || !validIdentifier(form.ctasNestedTable) || !validIdentifier(form.ctasNestedColumn)) return { sql: "", params, error: "Проверь столбец фильтра, таблицу и столбец вложенного SELECT." };
+          if (!["=", "<>", ">", ">=", "<", "<="].includes(form.ctasScalarFilterOperator)) return { sql: "", params, error: "Выбери допустимый оператор для вложенного подзапроса." };
+          const nestedSelect = form.ctasNestedSelectKind === "aggregate" ? form.ctasNestedAggregate + "(" + q(form.ctasNestedColumn) + ")" : q(form.ctasNestedColumn);
+          let nestedWhere = "";
+          if (form.ctasNestedFilterEnabled) {
+            if (!validIdentifier(form.ctasNestedFilterColumn) || !form.ctasNestedFilterValue.trim()) return { sql: "", params, error: "Для отдельного WHERE самого глубокого SELECT укажи столбец и значение." };
+            if (!["=", "<>", ">", ">=", "<", "<="].includes(form.ctasNestedFilterOperator)) return { sql: "", params, error: "Выбери допустимый оператор фильтра самого глубокого SELECT." };
+            nestedWhere = " WHERE " + q(form.ctasNestedFilterColumn) + " " + form.ctasNestedFilterOperator + " " + placeholder(form.ctasNestedFilterValue);
           }
-          if (!["=", "<>", ">", ">=", "<", "<="].includes(form.ctasScalarFilterOperator)) {
-            return { sql: "", params, error: "Выбери допустимый оператор для вложенного подзапроса." };
-          }
-          const nested = "(SELECT " + form.ctasNestedAggregate + "(" + q(form.ctasNestedColumn) + ") FROM " + q(form.ctasNestedTable) + ")";
+          const nested = "(SELECT " + nestedSelect + " FROM " + q(form.ctasNestedTable) + nestedWhere + ")";
           scalarFilter = " WHERE " + q(form.ctasScalarFilterColumn) + " " + form.ctasScalarFilterOperator + " " + nested;
         }
-        const scalar = "(SELECT " + form.ctasAggregate + "(" + q(aggregateColumn) + ") FROM " + q(sourceTable) + scalarFilter + ")";
+        const scalar = "(SELECT " + scalarSelect + " FROM " + q(sourceTable) + scalarFilter + ")";
         const create = "CREATE TABLE " + q(targetTable) + " AS\nSELECT " + selectedColumns.map(q).join(", ") + ",\n       " + scalar + " AS " + q(selectAlias) + "\nFROM " + q(sourceTable) + "\nWHERE " + q(whereColumn) + " " + form.ctasWhereOperator + " " + scalar + ";";
         return { sql: create + (form.ctasAppendSelect ? "\n\nSELECT * FROM " + q(targetTable) + ";" : ""), params, error: "" };
       }
@@ -447,10 +461,10 @@ export function DatabaseWorkbenchModule() {
                 <p className="text-xs text-muted-foreground">CREATE TABLE AS создаёт физическую таблицу из результата SELECT. Скалярный подзапрос можно использовать как вычисляемый столбец в SELECT и как правую часть сравнения в WHERE.</p>
                 <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Новая таблица</label><input value={form.ctasTable} onChange={(event) => update("ctasTable", event.target.value)} className={fieldClass} placeholder="ordering" /></div><div><label className={labelClass}>Исходная таблица</label><input value={form.ctasSourceTable} onChange={(event) => update("ctasSourceTable", event.target.value)} className={fieldClass} placeholder="book" /></div></div>
                 <div><label className={labelClass}>Обычные столбцы SELECT</label><input value={form.ctasColumns} onChange={(event) => update("ctasColumns", event.target.value)} className={fieldClass} placeholder="author, title" /></div>
-                <div className="rounded-lg border border-border bg-card p-3 space-y-2"><p className="text-xs font-semibold">Скалярный подзапрос в SELECT</p><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Агрегатная функция</label><select value={form.ctasAggregate} onChange={(event) => update("ctasAggregate", event.target.value)} className={fieldClass}>{["AVG", "SUM", "MIN", "MAX"].map((fn) => <option key={fn}>{fn}</option>)}</select></div><div><label className={labelClass}>Столбец</label><input value={form.ctasAggregateColumn} onChange={(event) => update("ctasAggregateColumn", event.target.value)} className={fieldClass} placeholder="amount" /></div><div className="col-span-2"><label className={labelClass}>Псевдоним вычисляемого столбца</label><input value={form.ctasSelectAlias} onChange={(event) => update("ctasSelectAlias", event.target.value)} className={fieldClass} placeholder="amount" /></div></div></div>
+                <div className="rounded-lg border border-border bg-card p-3 space-y-2"><p className="text-xs font-semibold">Скалярный подзапрос в SELECT</p><div className="grid grid-cols-2 gap-2"><div className="col-span-2"><label className={labelClass}>Результат SELECT</label><select value={form.ctasSelectKind} onChange={(event) => update("ctasSelectKind", event.target.value)} className={fieldClass}><option value="aggregate">Агрегатная функция</option><option value="column">Обычный столбец</option></select></div>{form.ctasSelectKind === "aggregate" && <div><label className={labelClass}>Агрегатная функция</label><select value={form.ctasAggregate} onChange={(event) => update("ctasAggregate", event.target.value)} className={fieldClass}>{["AVG", "SUM", "MIN", "MAX"].map((fn) => <option key={fn}>{fn}</option>)}</select></div>}<div className={form.ctasSelectKind === "column" ? "col-span-2" : ""}><label className={labelClass}>Столбец</label><input value={form.ctasAggregateColumn} onChange={(event) => update("ctasAggregateColumn", event.target.value)} className={fieldClass} placeholder="amount" /></div><div className="col-span-2"><label className={labelClass}>Псевдоним вычисляемого столбца</label><input value={form.ctasSelectAlias} onChange={(event) => update("ctasSelectAlias", event.target.value)} className={fieldClass} placeholder="amount" /></div></div></div>
                 <div className="rounded-lg border border-border bg-card p-3 space-y-2"><p className="text-xs font-semibold">Скалярный подзапрос в WHERE</p><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Столбец внешней таблицы</label><input value={form.ctasWhereColumn} onChange={(event) => update("ctasWhereColumn", event.target.value)} className={fieldClass} placeholder="amount" /></div><div><label className={labelClass}>Оператор</label><select value={form.ctasWhereOperator} onChange={(event) => update("ctasWhereOperator", event.target.value)} className={fieldClass}>{["<", "<=", "=", "<>", ">=", ">"].map((op) => <option key={op}>{op}</option>)}</select></div></div><p className="text-[11px] text-muted-foreground">Подзапрос возвращает одно значение — например, AVG(amount) по всей исходной таблице. Оно сравнивается со значением каждой строки.</p>
                   <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={form.ctasScalarFilterEnabled} onChange={(event) => update("ctasScalarFilterEnabled", event.target.checked)} />Добавить ещё один уровень вложенности внутрь скалярного подзапроса</label>
-                  {form.ctasScalarFilterEnabled && <div className="rounded-md border border-dashed border-border p-3 space-y-2"><p className="text-xs font-semibold">Вложенный подзапрос (уровень 2)</p><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Столбец фильтра внутреннего SELECT</label><input value={form.ctasScalarFilterColumn} onChange={(event) => update("ctasScalarFilterColumn", event.target.value)} className={fieldClass} placeholder="amount" /></div><div><label className={labelClass}>Оператор</label><select value={form.ctasScalarFilterOperator} onChange={(event) => update("ctasScalarFilterOperator", event.target.value)} className={fieldClass}>{["<", "<=", "=", "<>", ">=", ">"].map((op) => <option key={op}>{op}</option>)}</select></div><div><label className={labelClass}>Таблица вложенного SELECT</label><input value={form.ctasNestedTable} onChange={(event) => update("ctasNestedTable", event.target.value)} className={fieldClass} placeholder="book" /></div><div><label className={labelClass}>Агрегат вложенного SELECT</label><select value={form.ctasNestedAggregate} onChange={(event) => update("ctasNestedAggregate", event.target.value)} className={fieldClass}>{["AVG", "SUM", "MIN", "MAX"].map((fn) => <option key={fn}>{fn}</option>)}</select></div><div className="col-span-2"><label className={labelClass}>Столбец вложенного агрегата</label><input value={form.ctasNestedColumn} onChange={(event) => update("ctasNestedColumn", event.target.value)} className={fieldClass} placeholder="amount" /></div></div><p className="text-[11px] text-muted-foreground">Внутренний SELECT вычисляет значение, которое используется условием WHERE внешнего скалярного SELECT.</p></div>}
+                  {form.ctasScalarFilterEnabled && <div className="rounded-md border border-dashed border-border p-3 space-y-2"><p className="text-xs font-semibold">Вложенный подзапрос (уровень 2)</p><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Столбец фильтра внутреннего SELECT</label><input value={form.ctasScalarFilterColumn} onChange={(event) => update("ctasScalarFilterColumn", event.target.value)} className={fieldClass} placeholder="amount" /></div><div><label className={labelClass}>Оператор</label><select value={form.ctasScalarFilterOperator} onChange={(event) => update("ctasScalarFilterOperator", event.target.value)} className={fieldClass}>{["<", "<=", "=", "<>", ">=", ">"].map((op) => <option key={op}>{op}</option>)}</select></div><div><label className={labelClass}>Таблица вложенного SELECT</label><input value={form.ctasNestedTable} onChange={(event) => update("ctasNestedTable", event.target.value)} className={fieldClass} placeholder="book" /></div><div><label className={labelClass}>Что вернуть во вложенном SELECT</label><select value={form.ctasNestedSelectKind} onChange={(event) => update("ctasNestedSelectKind", event.target.value)} className={fieldClass}><option value="aggregate">Агрегат</option><option value="column">Обычный столбец</option></select></div>{form.ctasNestedSelectKind === "aggregate" && <div><label className={labelClass}>Агрегат вложенного SELECT</label><select value={form.ctasNestedAggregate} onChange={(event) => update("ctasNestedAggregate", event.target.value)} className={fieldClass}>{["AVG", "SUM", "MIN", "MAX"].map((fn) => <option key={fn}>{fn}</option>)}</select></div>}<div className={form.ctasNestedSelectKind === "column" ? "col-span-2" : ""}><label className={labelClass}>Столбец результата вложенного SELECT</label><input value={form.ctasNestedColumn} onChange={(event) => update("ctasNestedColumn", event.target.value)} className={fieldClass} placeholder="amount" /></div></div><label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={form.ctasNestedFilterEnabled} onChange={(event) => update("ctasNestedFilterEnabled", event.target.checked)} />Добавить независимое условие WHERE в этот SELECT</label>{form.ctasNestedFilterEnabled && <div className="grid grid-cols-3 gap-2"><div><label className={labelClass}>Столбец фильтра</label><input value={form.ctasNestedFilterColumn} onChange={(event) => update("ctasNestedFilterColumn", event.target.value)} className={fieldClass} /></div><div><label className={labelClass}>Оператор</label><select value={form.ctasNestedFilterOperator} onChange={(event) => update("ctasNestedFilterOperator", event.target.value)} className={fieldClass}>{["=", "<>", ">", ">=", "<", "<="].map((op) => <option key={op}>{op}</option>)}</select></div><div><label className={labelClass}>Значение</label><input value={form.ctasNestedFilterValue} onChange={(event) => update("ctasNestedFilterValue", event.target.value)} className={fieldClass} /></div></div>}<p className="text-[11px] text-muted-foreground">Фильтр уровня 2 независим от сравнения уровня 1. Обычный столбец в скалярном SELECT должен возвращать не более одной строки.</p></div>}
                 </div>
                 <label className="flex items-center gap-2 text-xs text-muted-foreground"><input type="checkbox" checked={form.ctasAppendSelect} onChange={(event) => update("ctasAppendSelect", event.target.checked)} />После создания сразу добавить SELECT * из новой таблицы</label>
               </div>}
