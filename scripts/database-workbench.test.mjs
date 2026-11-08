@@ -419,12 +419,15 @@ test("destructive DDL requires exact table-name confirmation", () => {
 test("DML INSERT supports multiple rows, escaped strings and INSERT SELECT", () => {
   const result = buildInsert({ table: "users", columns: "id, email", rows: "1 | qa@example.com\n2 | O'Neil@example.com" });
   assert.equal(result.rowCount, 2);
+  const injected = buildInsert({ table: "users", columns: "email", rows: "x' OR '1'='1" }).sql;
+  assert.ok(injected.includes("'x'' OR ''1''=''1'"), "untrusted values must remain escaped string literals");
   assert.match(result.sql, /VALUES\n  \(1, 'qa@example.com'\),\n  \(2, 'O''Neil@example.com'\);/);
   const insertSelect = buildInsert({ dialect: "mysql", table: "archive", columns: "id, email", selectSql: "SELECT id, email FROM users WHERE active = TRUE" }).sql;
   assert.ok(insertSelect.includes("INSERT INTO \`archive\` (\`id\`, \`email\`)"));
   assert.match(insertSelect, /\nSELECT id, email FROM users WHERE active = TRUE;/);
   assert.throws(() => buildInsert({ table: "users", columns: "id,email", rows: "1|qa\n2" }), /Строка INSERT №2/);
-  assert.throws(() => buildInsert({ table: "users", columns: "id", selectSql: "SELECT 1; DROP TABLE users" }), /один SELECT/);
+  assert.throws(() => buildInsert({ table: "users", columns: "id", selectSql: "SELECT 1; DROP TABLE users" }), /один безопасный SELECT/);
+  assert.throws(() => buildInsert({ dialect: "mysql", table: "users", columns: "id", selectSql: "SELECT LOAD_FILE('/etc/passwd')" }), /один безопасный SELECT/);
 });
 
 test("DML UPDATE supports multiple assignments and enforces WHERE", () => {
