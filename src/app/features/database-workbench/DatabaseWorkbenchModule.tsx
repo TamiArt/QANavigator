@@ -454,7 +454,7 @@ export function DatabaseWorkbenchModule() {
           <div className="rounded-xl bg-primary/10 p-2 text-primary"><Database className="h-5 w-5" /></div>
           <h2 className="text-xl font-semibold">Работа с базами данных</h2>
         </div>
-        <p className="text-sm text-muted-foreground">Инструмент для QA: собери SQL-запрос и скопируй его в свой SQL-клиент.</p>
+        <p className="text-sm text-muted-foreground">Инструмент для QA: собери SQL-запрос, выполни его на учебных данных и проверь результат.</p>
       </header>
 
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
@@ -593,12 +593,14 @@ export function DatabaseWorkbenchModule() {
                 {generated.params.length > 0 && <div className="mt-3 rounded-lg bg-muted/40 p-3"><p className="text-xs text-muted-foreground">Значения уже подставлены в предпросмотр запроса. Проверь их перед копированием.</p></div>}
                 <button disabled={!generated.sql} onClick={() => copy(generated.sql)} className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2.5 text-sm font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-40">{copied ? <CheckCircle2 className="h-4 w-4" /> : <Copy className="h-4 w-4" />}{copied ? "Скопировано" : "Скопировать SQL"}</button>
               </div>
-              <div className="flex gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs leading-relaxed text-muted-foreground"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" /><p>Перед запуском проверь SQL и выбранную учебную среду. UPDATE и DELETE требуют WHERE. Выполнение ниже происходит только в локальной временной БД.</p></div>
-              <SqlExecutionConsole generatedSql={generated.sql} generatedError={generated.error} />
             </div>
           </div>
         </section>
       )}
+
+      <div className={tab === "builder" ? "block" : "hidden"}>
+        <SqlExecutionConsole generatedSql={generated.sql} generatedError={generated.error} />
+      </div>
 
       {tab === "reference" && (
         <section className="space-y-3">
