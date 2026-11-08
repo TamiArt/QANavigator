@@ -156,6 +156,7 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
           return expression + " AS " + aliasSql(alias);
         });
         if (form.havingAlias.trim() && !validIdentifier(form.havingAlias.trim())) return { sql: "", params, error: "HAVING должен ссылаться на корректный псевдоним агрегатного показателя." };
+        if (form.havingAlias.trim() && !form.aggregates.some((metric) => metric.alias.trim() === form.havingAlias.trim())) return { sql: "", params, error: "Псевдоним HAVING должен совпадать с псевдонимом одного из агрегатных показателей." };
         if (form.havingAlias.trim() && !form.havingValue.trim()) return { sql: "", params, error: "Укажи значение для условия HAVING." };
         if (form.orderColumn.trim() && !validIdentifier(form.orderColumn.trim())) return { sql: "", params, error: "Проверь поле или псевдоним для сортировки агрегатов." };
         if (form.limit.trim() && (!/^\d+$/.test(form.limit.trim()) || Number(form.limit) > 10000)) return { sql: "", params, error: "LIMIT должен быть целым числом от 0 до 10000." };
