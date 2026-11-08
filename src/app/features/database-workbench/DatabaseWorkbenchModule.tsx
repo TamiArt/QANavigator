@@ -90,70 +90,7 @@ const snippets = [
   { group: "Псевдонимы", title: "Переименовать столбец только в выдаче", sql: "SELECT first_name AS name\nFROM users;", note: "AS задаёт псевдоним только для результата SELECT, а не переименовывает столбец в БД." },
   { group: "Псевдонимы", title: "Псевдоним таблицы", sql: "SELECT u.email, o.total\nFROM users AS u\nJOIN orders AS o ON o.user_id = u.id;", note: "Псевдонимы таблиц сокращают запрос и помогают различать одинаковые имена столбцов." },
   { group: "Чтение данных", title: "Только уникальные значения", sql: "SELECT DISTINCT status\nFROM orders\nORDER BY status;", note: "DISTINCT удаляет повторяющиеся строки результата; применяется ко всему набору выбранных столбцов." },
-  { group: "Агрегация", title: "Постраничный вывод агрегатов", sql: "SELECT status, COUNT(*) AS total\nFROM orders\nGROUP BY status\nHAVING COUNT(*) > 1\nORDER BY total DESC\nLIMIT 20 OFFSET 40;", note: "OFFSET пропускает строки результата. Для стабильной пагинации сортируй по уникальному или устойчивому набору столбцов." },
-  { group: "Подзапросы", title: "Записи выше среднего", sql: "SELECT id, total\nFROM orders\nWHERE total > (SELECT AVG(total) FROM orders);", note: "Скалярный подзапрос возвращает одно значение и может использоваться в сравнении." },
-  { group: "Подзапросы", title: "Проверка наличия связанной записи", sql: "SELECT u.id, u.email\nFROM users AS u\nWHERE EXISTS (SELECT 1 FROM orders AS o WHERE o.user_id = u.id);", note: "EXISTS проверяет, вернул ли подзапрос хотя бы одну строку." },
-  { group: "CTE", title: "Временный именованный набор", sql: "WITH order_totals AS (\n  SELECT user_id, SUM(total) AS amount\n  FROM orders\n  GROUP BY user_id\n)\nSELECT user_id, amount\nFROM order_totals\nWHERE amount > 1000;", note: "CTE через WITH делает сложный запрос понятнее и позволяет ссылаться на именованный результат." },
-  { group: "Выражения", title: "Условное значение через CASE", sql: "SELECT id,\n  CASE WHEN total >= 1000 THEN 'large'\n       WHEN total >= 100 THEN 'medium'\n       ELSE 'small' END AS order_size\nFROM orders;", note: "CASE возвращает значение по первому истинному условию; проверь все ветви и ELSE." },
-];
 
-const practiceTasks = [
-  {
-    title: "Поиск дубликатов",
-    prompt: "Найди email, которые встречаются в таблице users больше одного раза. Выведи email и количество повторений.",
-    hint: "GROUP BY группирует одинаковые email, HAVING фильтрует уже посчитанные группы.",
-    requirements: ["select", "email", "count(", "group by", "having", "> 1"],
-    solution: "SELECT email, COUNT(*) AS duplicate_count\nFROM users\nGROUP BY email\nHAVING COUNT(*) > 1;"
-  },
-  {
-    title: "Записи без связей",
-    prompt: "Найди пользователей, у которых нет ни одного заказа. Используй LEFT JOIN.",
-    hint: "LEFT JOIN сохраняет всех пользователей; у тех, кому не нашлась пара, поле заказа будет NULL.",
-    requirements: ["select", "left join", "on", "where", "is null"],
-    solution: "SELECT u.id, u.email\nFROM users AS u\nLEFT JOIN orders AS o ON o.user_id = u.id\nWHERE o.id IS NULL;"
-  },
-  {
-    title: "Агрегация по статусам",
-    prompt: "Посчитай количество заказов по каждому статусу. Оставь только группы, где больше пяти заказов, отсортируй по убыванию количества.",
-    hint: "Используй COUNT(*), GROUP BY status, HAVING и ORDER BY с DESC.",
-    requirements: ["select", "count(", "group by", "having", "> 5", "order by", "desc"],
-    solution: "SELECT status, COUNT(*) AS total\nFROM orders\nGROUP BY status\nHAVING COUNT(*) > 5\nORDER BY total DESC;"
-  },
-  {
-    title: "Фильтр по условиям",
-    prompt: "Выведи заказы со статусом paid или shipped, созданные начиная с 1 января 2026 года. Покажи id, status и created_at.",
-    hint: "Объедини статусы через IN (...) и добавь нижнюю границу для created_at.",
-    requirements: ["select", "from", "where", "paid", "shipped", "created_at", ">="],
-    solution: "SELECT id, status, created_at\nFROM orders\nWHERE status IN ('paid', 'shipped') AND created_at >= '2026-01-01';"
-  },
-  {
-    title: "Скалярный подзапрос",
-    prompt: "Найди заказы, сумма которых выше средней суммы всех заказов. Выведи id и total.",
-    hint: "В WHERE сравни total с результатом подзапроса SELECT AVG(total) FROM orders.",
-    requirements: ["select", "from orders", "where", "avg(", "total", ">"],
-    solution: "SELECT id, total\nFROM orders\nWHERE total > (SELECT AVG(total) FROM orders);"
-  },
-  {
-    title: "CTE — именованный набор",
-    prompt: "Через WITH создай набор paid_orders из оплаченных заказов (id, user_id, total), затем выведи из него заказы дороже 100.",
-    hint: "Сначала объяви CTE: имя AS (SELECT ... FROM orders WHERE status = 'paid'), затем выполни внешний SELECT.",
-    requirements: ["with", "as", "select", "from orders", "where", "paid", "from paid_orders", "total", "> 100"],
-    solution: "WITH paid_orders AS (\n  SELECT id, user_id, total\n  FROM orders\n  WHERE status = 'paid'\n)\nSELECT id, user_id, total\nFROM paid_orders\nWHERE total > 100;"
-  },
-  {
-    title: "EXISTS — связанные записи",
-    prompt: "Выведи пользователей, у которых есть хотя бы один заказ. Используй EXISTS.",
-    hint: "Коррелируй orders.user_id с users.id внутри EXISTS (SELECT 1 ...).",
-    requirements: ["select", "from users", "exists", "select 1", "from orders", "user_id", "u.id"],
-    solution: "SELECT u.id, u.email\nFROM users AS u\nWHERE EXISTS (\n  SELECT 1 FROM orders AS o\n  WHERE o.user_id = u.id\n);"
-  },
-  {
-    title: "NOT EXISTS — отсутствие связанных записей",
-    prompt: "Найди товары, которые ни разу не встречались в order_items. Используй NOT EXISTS.",
-    hint: "Свяжи order_items.product_id с products.id внутри коррелированного подзапроса.",
-    requirements: ["select", "from products", "not exists", "select 1", "from order_items", "product_id", "p.id"],
-    solution: "SELECT p.id, p.name\nFROM products AS p\nWHERE NOT EXISTS (\n  SELECT 1 FROM order_items AS oi\n  WHERE oi.product_id = p.id\n);"
-  }
 ];
 
 function validIdentifier(value: string) {
@@ -360,12 +297,7 @@ const fieldClass = "w-full rounded-lg border border-border bg-background px-3 py
 const labelClass = "mb-1.5 block text-xs font-medium text-muted-foreground";
 
 export function DatabaseWorkbenchModule() {
-  const [tab, setTab] = useState<"builder" | "reference" | "checks" | "practice">("builder");
-  const [practiceIndex, setPracticeIndex] = useState(0);
-  const [practiceAnswer, setPracticeAnswer] = useState("");
-  const [practiceFeedback, setPracticeFeedback] = useState("");
-  const [practiceHint, setPracticeHint] = useState(false);
-  const [practiceShowSolution, setPracticeShowSolution] = useState(false);
+  const [tab, setTab] = useState<"builder" | "reference" | "checks">("builder");
   const [dialect, setDialect] = useState<Dialect>("postgres");
   const [operation, setOperation] = useState<Operation>("select");
   const [form, setForm] = useState<BuilderState>(initial);
@@ -390,13 +322,12 @@ export function DatabaseWorkbenchModule() {
           <div className="rounded-xl bg-primary/10 p-2 text-primary"><Database className="h-5 w-5" /></div>
           <h2 className="text-xl font-semibold">Работа с базами данных</h2>
         </div>
-        <p className="text-sm text-muted-foreground">Практический SQL-помощник для QA: собери запрос, проверь его логику и скопируй в свой SQL-клиент.</p>
+        <p className="text-sm text-muted-foreground">Инструмент для QA: собери SQL-запрос и скопируй его в свой SQL-клиент.</p>
       </header>
 
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
         {[
           { id: "builder" as const, title: "Конструктор запросов", desc: "Собрать SQL по полям", icon: <WandSparkles className="h-4 w-4" /> },
-          { id: "practice" as const, title: "Практика SQL", desc: "Решить задачу самостоятельно", icon: <Code2 className="h-4 w-4" /> },
           { id: "reference" as const, title: "Шпаргалка SQL", desc: "Команды и примеры", icon: <BookOpen className="h-4 w-4" /> },
           { id: "checks" as const, title: "Проверки QA", desc: "Готовые запросы для тестов", icon: <ShieldCheck className="h-4 w-4" /> },
         ].map((item) => (
@@ -486,38 +417,6 @@ export function DatabaseWorkbenchModule() {
               </div>
               <div className="flex gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs leading-relaxed text-muted-foreground"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" /><p>Конструктор только формирует текст SQL — он не подключается к БД и ничего не выполняет. Перед запуском проверь схему, параметры и среду. UPDATE и DELETE требуют WHERE.</p></div>
             </div>
-          </div>
-        </section>
-      )}
-
-      {tab === "practice" && (
-        <section className="space-y-4">
-          <div className="rounded-xl border border-border bg-card p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div><p className="text-sm font-semibold">Практическое задание {practiceIndex + 1} из {practiceTasks.length}</p><p className="text-xs text-muted-foreground">Напиши запрос самостоятельно, затем проверь ключевые конструкции.</p></div>
-              <select aria-label="Выбрать SQL-задание" value={practiceIndex} onChange={(event) => { setPracticeIndex(Number(event.target.value)); setPracticeAnswer(""); setPracticeFeedback(""); setPracticeHint(false); setPracticeShowSolution(false); }} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs">
-                {practiceTasks.map((task, index) => <option key={task.title} value={index}>{task.title}</option>)}
-              </select>
-            </div>
-            <div className="mt-3 rounded-lg bg-muted/40 p-3">
-              <p className="text-sm font-medium">{practiceTasks[practiceIndex].prompt}</p>
-            </div>
-            <textarea value={practiceAnswer} onChange={(event) => { setPracticeAnswer(event.target.value); setPracticeFeedback(""); }} rows={8} className={fieldClass + " mt-3 font-mono text-xs"} placeholder="Напиши SQL-запрос здесь..." spellCheck={false} />
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button onClick={() => {
-                const normalized = practiceAnswer.toLowerCase().replace(/\s*(>=|<=|<>|!=|=|>|<)\s*/g, " $1 ").replace(/\s+/g, " ").replace(/;$/, "").trim();
-                const requirements = practiceTasks[practiceIndex].requirements;
-                const missing = requirements.filter((part) => !normalized.includes(part));
-                setPracticeFeedback(!normalized ? "Сначала напиши запрос." : missing.length ? "Пока не хватает конструкций: " + missing.join(", ") + ". Это предварительная проверка ключевых фрагментов, а не полноценный SQL-парсер." : "Ключевые конструкции найдены. Проверь синтаксис и логику запроса в учебной БД: эта проверка не исполняет SQL.");
-              }} className="rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground">Проверить ответ</button>
-              <button onClick={() => setPracticeHint((value) => !value)} className="rounded-lg border border-border px-3 py-2 text-xs">Подсказка</button>
-              <button onClick={() => setPracticeShowSolution((value) => !value)} className="rounded-lg border border-border px-3 py-2 text-xs">{practiceShowSolution ? "Скрыть решение" : "Показать решение"}</button>
-              <button onClick={() => { setPracticeAnswer(""); setPracticeFeedback(""); setPracticeHint(false); setPracticeShowSolution(false); }} className="rounded-lg border border-border px-3 py-2 text-xs">Очистить</button>
-            </div>
-            {practiceHint && <p className="mt-3 rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">Подсказка: {practiceTasks[practiceIndex].hint}</p>}
-            {practiceFeedback && <p role="status" className="mt-3 rounded-lg border border-border p-3 text-xs">{practiceFeedback}</p>}
-            {practiceShowSolution && <div className="mt-3 space-y-2 rounded-lg border border-primary/30 bg-primary/5 p-3"><p className="text-xs font-semibold">Один из корректных вариантов</p><pre className="overflow-x-auto whitespace-pre-wrap text-xs leading-5">{practiceTasks[practiceIndex].solution}</pre><button onClick={() => setPracticeAnswer(practiceTasks[practiceIndex].solution)} className="rounded-md border border-border px-2 py-1 text-xs">Вставить в редактор</button></div>}
-            <p className="mt-3 text-[11px] text-muted-foreground">Проверка ищет обязательные ключевые конструкции и не заменяет выполнение запроса в тестовой базе. В SQL могут существовать несколько корректных решений.</p>
           </div>
         </section>
       )}
