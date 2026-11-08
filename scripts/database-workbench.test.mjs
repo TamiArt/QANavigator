@@ -89,9 +89,12 @@ test("database workbench handles PostgreSQL and MySQL syntax differences", () =>
   assert.ok(source.includes("MySQL не поддерживает FULL OUTER JOIN напрямую"));
 });
 
-test("database workbench never executes SQL or connects to a database", () => {
-  assert.ok(source.includes("он не подключается к БД и ничего не выполняет"));
-  assert.equal(/\b(mysql2|pg|sequelize|prisma|knex)\b/.test(source), false);
+test("database workbench executes SQL only in an isolated in-browser database", async () => {
+  const consoleSource = await readFile("src/app/features/database-workbench/SqlExecutionConsole.tsx", "utf8");
+  assert.ok(source.includes("SqlExecutionConsole"));
+  assert.ok(consoleSource.includes("SQLite в WebAssembly"));
+  assert.ok(consoleSource.includes("отдельной SQLite-базе прямо в браузере"));
+  assert.equal(/\b(mysql2|pg|sequelize|prisma|knex)\b/.test(source + consoleSource), false);
 });
 
 test("database workbench builds grouped aggregate queries with distinct counts and aliases", () => {
