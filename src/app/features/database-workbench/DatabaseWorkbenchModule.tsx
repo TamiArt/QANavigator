@@ -237,7 +237,7 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         } else {
           predicate = q(outerColumn) + " " + form.subqueryOperator + " (SELECT " + q(innerColumn) + " FROM " + q(innerTable) + innerFilter + ")";
         }
-        return { sql: "SELECT " + cteResultColumns.map(q).join(", ") + "\nFROM " + tableSql + "\nWHERE " + predicate + ";", params, error: "" };
+        return { sql: "SELECT " + (columns ? (form.columns.trim() === "*" ? "*" : columns.map(q).join(", ")) : "*") + "\nFROM " + tableSql + "\nWHERE " + predicate + ";", params, error: "" };
       }
       case "cte": {
         const cteName = form.cteName.trim();
@@ -258,7 +258,7 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         if (form.orderColumn.trim() && !sorting) return { sql: "", params, error: "Проверь столбец сортировки результата CTE." };
         if (form.limit.trim() && (!/^\\d+$/.test(form.limit.trim()) || Number(form.limit) > 10000)) return { sql: "", params, error: "LIMIT должен быть целым числом от 0 до 10000." };
         const limit = form.limit.trim() ? "\nLIMIT " + Number(form.limit) : "";
-        return { sql: "WITH " + q(cteName) + " AS (\n  SELECT " + cteColumns.map(q).join(", ") + "\n  FROM " + q(sourceTable) + cteWhere + "\n)\nSELECT " + (columns ? (form.columns.trim() === "*" ? "*" : columns.map(q).join(", ")) : "*") + "\nFROM " + q(cteName) + outerWhere + sorting + limit + ";", params, error: "" };
+        return { sql: "WITH " + q(cteName) + " AS (\n  SELECT " + cteColumns.map(q).join(", ") + "\n  FROM " + q(sourceTable) + cteWhere + "\n)\nSELECT " + cteResultColumns.map(q).join(", ") + "\nFROM " + q(cteName) + outerWhere + sorting + limit + ";", params, error: "" };
       }
       case "insert": {
         if (!columns) return { sql: "", params, error: "Укажи столбцы для INSERT через запятую." };
