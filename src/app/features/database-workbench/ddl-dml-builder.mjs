@@ -16,7 +16,7 @@ function literal(value) {
   const input = String(value ?? "").trim();
   if (!input) fail("Значение не может быть пустым.");
   if (/^-?\d+(?:\.\d+)?$/.test(input) || /^(?:NULL|TRUE|FALSE|DEFAULT|CURRENT_DATE|CURRENT_TIMESTAMP)$/i.test(input)) return input;
-  if (/^'.*(?:''.*)*'$/.test(input)) return input;
+  if (/^'(?:[^']|'')*'$/.test(input)) return input;
   if (/^[A-Za-z_][A-Za-z0-9_]*\s*\(/.test(input) && /^(?:CURRENT_TIMESTAMP|CURRENT_DATE|NOW|UUID)\s*\(\s*\)$/i.test(input)) return input;
   return "'" + input.replace(/'/g, "''") + "'";
 }
