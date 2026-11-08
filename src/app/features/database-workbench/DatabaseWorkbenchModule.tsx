@@ -64,6 +64,12 @@ const snippets = [
   { group: "Структура БД", title: "Переименовать столбец в таблице", sql: "ALTER TABLE users RENAME COLUMN old_name TO new_name;", note: "Меняет структуру таблицы. Синтаксис и транзакционность зависят от СУБД." },
   { group: "Псевдонимы", title: "Переименовать столбец только в выдаче", sql: "SELECT first_name AS name\nFROM users;", note: "AS задаёт псевдоним только для результата SELECT, а не переименовывает столбец в БД." },
   { group: "Псевдонимы", title: "Псевдоним таблицы", sql: "SELECT u.email, o.total\nFROM users AS u\nJOIN orders AS o ON o.user_id = u.id;", note: "Псевдонимы таблиц сокращают запрос и помогают различать одинаковые имена столбцов." },
+  { group: "Чтение данных", title: "Только уникальные значения", sql: "SELECT DISTINCT status\nFROM orders\nORDER BY status;", note: "DISTINCT удаляет повторяющиеся строки результата; применяется ко всему набору выбранных столбцов." },
+  { group: "Агрегация", title: "Постраничный вывод агрегатов", sql: "SELECT status, COUNT(*) AS total\nFROM orders\nGROUP BY status\nHAVING COUNT(*) > 1\nORDER BY total DESC\nLIMIT 20 OFFSET 40;", note: "OFFSET пропускает строки результата. Для стабильной пагинации сортируй по уникальному или устойчивому набору столбцов." },
+  { group: "Подзапросы", title: "Записи выше среднего", sql: "SELECT id, total\nFROM orders\nWHERE total > (SELECT AVG(total) FROM orders);", note: "Скалярный подзапрос возвращает одно значение и может использоваться в сравнении." },
+  { group: "Подзапросы", title: "Проверка наличия связанной записи", sql: "SELECT u.id, u.email\nFROM users AS u\nWHERE EXISTS (SELECT 1 FROM orders AS o WHERE o.user_id = u.id);", note: "EXISTS проверяет, вернул ли подзапрос хотя бы одну строку." },
+  { group: "CTE", title: "Временный именованный набор", sql: "WITH order_totals AS (\n  SELECT user_id, SUM(total) AS amount\n  FROM orders\n  GROUP BY user_id\n)\nSELECT user_id, amount\nFROM order_totals\nWHERE amount > 1000;", note: "CTE через WITH делает сложный запрос понятнее и позволяет ссылаться на именованный результат." },
+  { group: "Выражения", title: "Условное значение через CASE", sql: "SELECT id,\n  CASE WHEN total >= 1000 THEN 'large'\n       WHEN total >= 100 THEN 'medium'\n       ELSE 'small' END AS order_size\nFROM orders;", note: "CASE возвращает значение по первому истинному условию; проверь все ветви и ELSE." },
 ];
 
 function validIdentifier(value: string) {
@@ -209,7 +215,11 @@ const fieldClass = "w-full rounded-lg border border-border bg-background px-3 py
 const labelClass = "mb-1.5 block text-xs font-medium text-muted-foreground";
 
 export function DatabaseWorkbenchModule() {
-  const [tab, setTab] = useState<"builder" | "reference" | "checks">("builder");
+  const [tab, setTab] = useState<"builder" | "reference" | "checks" | "practice">("builder");
+  const [practiceIndex, setPracticeIndex] = useState(0);
+  const [practiceAnswer, setPracticeAnswer] = useState("");
+  const [practiceFeedback, setPracticeFeedback] = useState("");
+  const [practiceHint, setPracticeHint] = useState(false);
   const [dialect, setDialect] = useState<Dialect>("postgres");
   const [operation, setOperation] = useState<Operation>("select");
   const [form, setForm] = useState<BuilderState>(initial);
@@ -237,9 +247,10 @@ export function DatabaseWorkbenchModule() {
         <p className="text-sm text-muted-foreground">Практический SQL-помощник для QA: собери запрос, проверь его логику и скопируй в свой SQL-клиент.</p>
       </header>
 
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
         {[
           { id: "builder" as const, title: "Конструктор запросов", desc: "Собрать SQL по полям", icon: <WandSparkles className="h-4 w-4" /> },
+          { id: "practice" as const, title: "Практика SQL", desc: "Решить задачу самостоятельно", icon: <Code2 className="h-4 w-4" /> },
           { id: "reference" as const, title: "Шпаргалка SQL", desc: "Команды и примеры", icon: <BookOpen className="h-4 w-4" /> },
           { id: "checks" as const, title: "Проверки QA", desc: "Готовые запросы для тестов", icon: <ShieldCheck className="h-4 w-4" /> },
         ].map((item) => (
@@ -311,6 +322,51 @@ export function DatabaseWorkbenchModule() {
               </div>
               <div className="flex gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs leading-relaxed text-muted-foreground"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" /><p>Конструктор только формирует текст SQL — он не подключается к БД и ничего не выполняет. Перед запуском проверь схему, параметры и среду. UPDATE и DELETE требуют WHERE.</p></div>
             </div>
+          </div>
+        </section>
+      )}
+
+      {tab === "practice" && (
+        <section className="space-y-4">
+          <div className="rounded-xl border border-border bg-card p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div><p className="text-sm font-semibold">Практическое задание {practiceIndex + 1} из 4</p><p className="text-xs text-muted-foreground">Напиши запрос самостоятельно, затем проверь ключевые конструкции.</p></div>
+              <select aria-label="Выбрать SQL-задание" value={practiceIndex} onChange={(event) => { setPracticeIndex(Number(event.target.value)); setPracticeAnswer(""); setPracticeFeedback(""); setPracticeHint(false); }} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs">
+                <option value={0}>Поиск дубликатов</option><option value={1}>Записи без связей</option><option value={2}>Агрегация по статусам</option><option value={3}>Фильтр по условиям</option>
+              </select>
+            </div>
+            <div className="mt-3 rounded-lg bg-muted/40 p-3">
+              <p className="text-sm font-medium">{[
+                "Найди email, которые встречаются в таблице users больше одного раза. Выведи email и количество повторений.",
+                "Найди пользователей, у которых нет ни одного заказа. Используй LEFT JOIN.",
+                "Посчитай количество заказов по каждому статусу. Оставь только группы, где больше пяти заказов, отсортируй по убыванию количества.",
+                "Выведи заказы со статусом paid или shipped, созданные начиная с 1 января 2026 года. Покажи id, status и created_at."
+              ][practiceIndex]}</p>
+            </div>
+            <textarea value={practiceAnswer} onChange={(event) => { setPracticeAnswer(event.target.value); setPracticeFeedback(""); }} rows={8} className={fieldClass + " mt-3 font-mono text-xs"} placeholder="Напиши SQL-запрос здесь..." spellCheck={false} />
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button onClick={() => {
+                const normalized = practiceAnswer.toLowerCase().replace(/\s+/g, " ").replace(/;$/, "").trim();
+                const requirements = [
+                  ["select", "email", "count(", "group by", "having", "> 1"],
+                  ["select", "left join", "on", "where", "is null"],
+                  ["select", "count(", "group by", "having", "> 5", "order by", "desc"],
+                  ["select", "from", "where", "paid", "shipped", "created_at", ">="]
+                ][practiceIndex];
+                const missing = requirements.filter((part) => !normalized.includes(part));
+                setPracticeFeedback(!normalized ? "Сначала напиши запрос." : missing.length ? "Пока не хватает конструкций: " + missing.join(", ") + ". Это предварительная проверка ключевых фрагментов, а не полноценный SQL-парсер." : "Ключевые конструкции найдены. Проверь синтаксис и логику запроса в учебной БД: эта проверка не исполняет SQL.");
+              }} className="rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground">Проверить ответ</button>
+              <button onClick={() => setPracticeHint((value) => !value)} className="rounded-lg border border-border px-3 py-2 text-xs">Подсказка</button>
+              <button onClick={() => { setPracticeAnswer(""); setPracticeFeedback(""); setPracticeHint(false); }} className="rounded-lg border border-border px-3 py-2 text-xs">Очистить</button>
+            </div>
+            {practiceHint && <p className="mt-3 rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">{[
+              "Подсказка: GROUP BY группирует одинаковые email, HAVING фильтрует уже посчитанные группы.",
+              "Подсказка: LEFT JOIN сохраняет всех пользователей; у тех, кому не нашлась пара, поле заказа будет NULL.",
+              "Подсказка: используй COUNT(*), GROUP BY status, HAVING и ORDER BY с DESC.",
+              "Подсказка: объедини статусы через IN (...) и добавь нижнюю границу для created_at."
+            ][practiceIndex]}</p>}
+            {practiceFeedback && <p role="status" className="mt-3 rounded-lg border border-border p-3 text-xs">{practiceFeedback}</p>}
+            <p className="mt-3 text-[11px] text-muted-foreground">Проверка ищет обязательные ключевые конструкции и не заменяет выполнение запроса в тестовой базе. В SQL могут существовать несколько корректных решений.</p>
           </div>
         </section>
       )}
