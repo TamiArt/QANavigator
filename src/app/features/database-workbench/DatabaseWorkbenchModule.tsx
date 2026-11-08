@@ -379,23 +379,35 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         const create = "CREATE TABLE " + q(targetTable) + " AS\nSELECT " + selectedColumns.map(q).join(", ") + ",\n       " + scalar + " AS " + q(selectAlias) + "\nFROM " + q(sourceTable) + "\nWHERE " + q(whereColumn) + " " + form.ctasWhereOperator + " " + scalar + ";";
         return { sql: create + (form.ctasAppendSelect ? "\n\nSELECT * FROM " + q(targetTable) + ";" : ""), params, error: "" };
       }
+      case "createTable": {
+        const result = buildCreateTable({ dialect, table, columns: form.ddlColumns });
+        return { sql: result.sql, params, error: "" };
+      }
+      case "alterTable": {
+        const result = buildAlterTable({ dialect, table, action: form.alterAction, column: form.alterColumn, definition: form.alterDefinition, dataType: form.alterDataType, typeSize: form.alterTypeSize, newName: form.alterNewName });
+        return { sql: result.sql, params, error: "" };
+      }
+      case "dropTable": {
+        const result = buildDropTable({ dialect, table, confirmName: form.confirmTable, ifExists: form.ifExists });
+        return { sql: result.sql, params, error: "" };
+      }
+      case "truncateTable": {
+        const result = buildTruncateTable({ dialect, table, confirmName: form.confirmTable });
+        return { sql: result.sql, params, error: "" };
+      }
       case "insert": {
-        if (!columns) return { sql: "", params, error: "Укажи столбцы для INSERT через запятую." };
-        const enteredValues = form.insertValues.split("|").map((value) => value.trim());
-        if (enteredValues.length !== columns.length || enteredValues.some((value) => !value)) return { sql: "", params, error: "Количество значений должно совпадать с количеством столбцов. Разделяй значения символом |." };
-        const values = enteredValues.map((value) => placeholder(value));
-        return { sql: "INSERT INTO " + tableSql + " (" + columns.map(q).join(", ") + ")\nVALUES (" + values.join(", ") + ");", params, error: "" };
+        const result = buildInsert({ dialect, table, columns: form.columns, rows: form.insertValues, selectSql: form.insertSelectSql });
+        return { sql: result.sql, params, error: "" };
       }
       case "update": {
-        if (!validIdentifier(form.setColumn.trim())) return { sql: "", params, error: "Укажи корректное имя столбца для изменения." };
-        if (!form.conditions.some((condition) => condition.column.trim())) return { sql: "", params, error: "Для безопасности UPDATE обязательно задай хотя бы одно условие WHERE." };
-        const value = placeholder(form.setValue);
         const condition = where();
-        return { sql: "UPDATE " + tableSql + "\nSET " + q(form.setColumn.trim()) + " = " + value + condition + ";", params, error: "" };
+        const result = buildUpdate({ dialect, table, assignments: form.updateAssignments, where: condition.replace(/^\nWHERE\s+/i, "") });
+        return { sql: result.sql, params, error: "" };
       }
       case "delete": {
-        if (!form.conditions.some((condition) => condition.column.trim())) return { sql: "", params, error: "DELETE без WHERE заблокирован конструктором. Добавь хотя бы одно условие." };
-        return { sql: "DELETE FROM " + tableSql + where() + ";", params, error: "" };
+        const condition = where();
+        const result = buildDelete({ dialect, table, where: condition.replace(/^\nWHERE\s+/i, "") });
+        return { sql: result.sql, params, error: "" };
       }
       case "rename":
         if (!validIdentifier(form.oldColumn.trim()) || !validIdentifier(form.newColumn.trim())) return { sql: "", params, error: "Проверь старое и новое имя столбца." };
