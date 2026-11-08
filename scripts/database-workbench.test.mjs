@@ -86,8 +86,8 @@ test("database workbench builds grouped aggregate queries with distinct counts a
 test("SELECT supports DISTINCT and validated pagination", () => {
   assert.ok(source.includes('form.distinct ? "DISTINCT " : ""'), "SELECT must support DISTINCT");
   assert.ok(source.includes('offset: "", distinct: false'), "pagination and DISTINCT state must be initialized");
-  assert.ok(source.includes("OFFSET must be"), "OFFSET must be validated");
-  assert.ok(source.includes("LIMIT must be"), "LIMIT must be validated instead of silently ignored");
+  assert.ok(source.includes("OFFSET должен быть"), "OFFSET must be validated");
+  assert.ok(source.includes("LIMIT должен быть"), "LIMIT must be validated instead of silently ignored");
   assert.ok(source.includes('update("distinct", event.target.checked)'), "DISTINCT checkbox must store a boolean");
 });
 
