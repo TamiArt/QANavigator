@@ -82,3 +82,29 @@ test("database workbench builds grouped aggregate queries with distinct counts a
   assert.ok(source.includes("если в строке хранится количество в поле quantity, используй SUM(quantity)"), "the reference must explain the alternative quantity-column schema");
   assert.ok(source.includes('dialect === "mysql"'), "aliases must be quoted according to the SQL dialect");
 });
+
+test("SELECT supports DISTINCT and validated pagination", () => {
+  assert.ok(source.includes('form.distinct ? "DISTINCT " : ""'), "SELECT must support DISTINCT");
+  assert.ok(source.includes('offset: "", distinct: false'), "pagination and DISTINCT state must be initialized");
+  assert.ok(source.includes("OFFSET must be"), "OFFSET must be validated");
+  assert.ok(source.includes("LIMIT must be"), "LIMIT must be validated instead of silently ignored");
+  assert.ok(source.includes('update("distinct", event.target.checked)'), "DISTINCT checkbox must store a boolean");
+});
+
+test("aggregate queries support HAVING, ORDER BY and pagination", () => {
+  assert.ok(source.includes('havingAlias: string'));
+  assert.ok(source.includes('"\\nHAVING " + q(form.havingAlias.trim())'), "HAVING must filter grouped results");
+  assert.ok(source.includes('"\\nORDER BY " + q(form.orderColumn.trim())'), "aggregate results must be sortable");
+  assert.ok(source.includes('"\\nLIMIT " + Number(form.limit)'), "aggregate results must support LIMIT");
+  assert.ok(source.includes('"\\nOFFSET " + Number(form.offset)'), "aggregate results must support OFFSET");
+  assert.ok(source.includes("const whereClause = where();"), "WHERE parameters must be registered before HAVING parameters");
+});
+
+test("SQL trainer includes guided practice and advanced SQL reference examples", () => {
+  assert.ok(source.includes('id: "practice" as const'), "practice must be available as a separate workbench tab");
+  assert.ok(source.includes("Проверить ответ"), "practice must provide answer feedback");
+  assert.ok(source.includes("не заменяет выполнение запроса"), "practice feedback must disclose its limits");
+  for (const keyword of ["EXISTS", "WITH order_totals", "CASE WHEN", "SELECT DISTINCT"]) {
+    assert.ok(source.includes(keyword), "SQL reference is missing " + keyword);
+  }
+});
