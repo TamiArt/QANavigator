@@ -48,6 +48,15 @@ type BuilderState = {
   cteOuterFilterColumn: string;
   cteOuterFilterOperator: "=" | "<>" | ">" | ">=" | "<" | "<=" | "LIKE";
   cteOuterFilterValue: string;
+  ctasTable: string;
+  ctasSourceTable: string;
+  ctasColumns: string;
+  ctasAggregate: "AVG" | "SUM" | "MIN" | "MAX";
+  ctasAggregateColumn: string;
+  ctasSelectAlias: string;
+  ctasWhereColumn: string;
+  ctasWhereOperator: "=" | "<>" | ">" | ">=" | "<" | "<=";
+  ctasAppendSelect: boolean;
   setColumn: string;
   setValue: string;
   newColumn: string;
@@ -71,6 +80,9 @@ const initial: BuilderState = {
   cteName: "filtered_orders", cteSourceTable: "orders", cteColumns: "id, user_id, total, status", cteResultColumns: "id, user_id, total, status",
   cteFilterColumn: "status", cteFilterOperator: "=", cteFilterValue: "paid",
   cteOuterFilterColumn: "total", cteOuterFilterOperator: ">=", cteOuterFilterValue: "100",
+  ctasTable: "ordering", ctasSourceTable: "book", ctasColumns: "author, title",
+  ctasAggregate: "AVG", ctasAggregateColumn: "amount", ctasSelectAlias: "amount",
+  ctasWhereColumn: "amount", ctasWhereOperator: "<", ctasAppendSelect: true,
   setColumn: "status", setValue: "active", newColumn: "display_name",
   oldColumn: "name", alias: "u",
 };
