@@ -368,3 +368,12 @@ test("advanced SELECT mode is integrated with the shared WHERE editor and SQL pr
   assert.ok(source.includes("form.advancedOrderBy"));
   assert.ok(source.includes('operation === "select" || operation === "advancedSelect" || operation === "aggregate"'));
 });
+
+
+test("advanced SELECT validates join alias scope and rejects unsupported MySQL FULL OUTER JOIN", () => {
+  const base = { table: "users", fromAlias: "u", selectItems: "u.id" };
+  assert.throws(() => buildAdvancedSelect({ ...base, joins: "LEFT JOIN orders AS o ON o.user_id = missing.id" }), /неизвестный псевдоним/);
+  assert.throws(() => buildAdvancedSelect({ ...base, joins: "LEFT JOIN orders AS u ON u.user_id = u.id" }), /уже используется/);
+  assert.throws(() => buildAdvancedSelect({ ...base, dialect: "mysql", joins: "FULL OUTER JOIN orders AS o ON o.user_id = u.id" }), /MySQL не поддерживает FULL OUTER JOIN/);
+  assert.match(buildAdvancedSelect({ ...base, dialect: "postgres", joins: "FULL OUTER JOIN orders AS o ON o.user_id = u.id" }).sql, /FULL OUTER JOIN/);
+});
