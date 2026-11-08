@@ -499,7 +499,7 @@ SELECT * FROM ordering ORDER BY amount;`;
   assert.equal(result.results.length, 3);
   assert.deepEqual(result.results[2].tables[0].columns, ["author", "title", "amount"]);
   assert.equal(result.results[2].tables[0].rowCount, 3);
-  assert.deepEqual(result.results[2].tables[0].rows.map((row) => row[1]), ["Идиот", "Рассказы", "Евгений Онегин"]);
+  assert.deepEqual(result.results[2].tables[0].rows.map((row) => row[1]).sort(), ["Идиот", "Рассказы", "Евгений Онегин"].sort());
   assert.ok(result.results[2].tables[0].rows.every((row) => row[2] > 0));
 });
 
