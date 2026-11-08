@@ -446,7 +446,7 @@ export function DatabaseWorkbenchModule() {
         <section className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-3">
             <div><p className="text-sm font-semibold">1. Что нужно сделать?</p><p className="text-xs text-muted-foreground">Выбери тип SQL-запроса.</p></div>
-            <select value={operation} onChange={(event) => { const next = event.target.value as Operation; setOperation(next); if (next === "aggregate") setForm((current) => ({ ...current, conditions: [] })); }} className={fieldClass + " max-w-xs"}>
+            <select value={operation} onChange={(event) => { const next = event.target.value as Operation; setOperation(next); if (next === "aggregate" || next === "advancedSelect") setForm((current) => ({ ...current, conditions: [] })); }} className={fieldClass + " max-w-xs"}>
               <option value="advancedSelect">Расширенный SELECT — JOIN / CASE / GROUP BY / HAVING / ORDER BY</option>\n              <option value="select">Получить данные — SELECT</option>
               <option value="aggregate">Сгруппировать и посчитать — GROUP BY</option>
               <option value="join">Объединить таблицы — JOIN</option>
