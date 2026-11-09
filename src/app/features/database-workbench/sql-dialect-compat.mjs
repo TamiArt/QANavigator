@@ -70,8 +70,8 @@ function transformCodeSegments(sql, transform) {
 function adaptPostgres(code) {
   let result = code;
   result = result.replace(new RegExp("(" + IDENTIFIER + ")\s*::\s*(" + TYPE_NAME + ")", "gi"), "CAST($1 AS $2)");
-  result = result.replace(new RegExp("(" + IDENTIFIER + "|\d+(?:\.\d+)?|'(?:''|[^'])*')\s+ILIKE\s+(" + IDENTIFIER + "|'[^']*'|\?)", "gi"), "LOWER($1) LIKE LOWER($2)");
-  result = result.replace(/\bSERIAL\s+PRIMARY\s+KEY\b/gi, "INTEGER PRIMARY KEY AUTOINCREMENT");
+  result = result.replace(new RegExp(String.raw`(${IDENTIFIER})\s*::\s*(${TYPE_NAME})`, "gi"), "CAST($1 AS $2)");
+  result = result.replace(new RegExp(String.raw`(${IDENTIFIER}|\d+(?:\.\d+)?|\x27(?:\x27\x27|[^\x27])*\x27)\s+ILIKE\s+(${IDENTIFIER}|\x27[^\x27]*\x27|\?)`, "gi"), "LOWER($1) LIKE LOWER($2)");
   result = result.replace(/\bBIGSERIAL\s+PRIMARY\s+KEY\b/gi, "INTEGER PRIMARY KEY AUTOINCREMENT");
   result = result.replace(/\bSMALLSERIAL\s+PRIMARY\s+KEY\b/gi, "INTEGER PRIMARY KEY AUTOINCREMENT");
   result = result.replace(/\b(?:SERIAL|BIGSERIAL|SMALLSERIAL)\b/gi, "INTEGER");
