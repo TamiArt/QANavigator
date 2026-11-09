@@ -599,6 +599,23 @@ test("PostgreSQL and MySQL compatible functions execute in the isolated SQLite d
   assert.deepEqual(mysql.results[0].tables[0].rows[2], ["Елена ", 1]);
 });
 
+test("dialect-specific DDL and upsert statements execute against the local SQLite engine", async (t) => {
+  const database = await createSeededDatabase();
+  registerSqlCompatibilityFunctions(database);
+  t.after(() => database.close());
+
+  const mysql = executeSqlBatch(database, `CREATE TABLE mysql_items (id INT AUTO_INCREMENT PRIMARY KEY, label VARCHAR(30), active TINYINT(1)) ENGINE=InnoDB;
+INSERT INTO mysql_items (label, active) VALUES ('first', 1);
+INSERT INTO mysql_items (id, label, active) VALUES (1, 'updated', 0) ON DUPLICATE KEY UPDATE label = VALUES(label), active = VALUES(active);
+SELECT id, label, active FROM mysql_items;`, "mysql");
+  assert.equal(mysql.ok, true, mysql.error ?? "MySQL-compatible script should execute");
+  assert.deepEqual(mysql.results[3].tables[0].rows, [[1, "updated", 0]]);
+
+  const postgres = executeSqlBatch(database, "CREATE TABLE pg_items (id SERIAL PRIMARY KEY, label JSONB); INSERT INTO pg_items (label) VALUES ('{\\\"ok\\\":true}'); SELECT id, label FROM pg_items;", "postgres");
+  assert.equal(postgres.ok, true, postgres.error ?? "PostgreSQL-compatible script should execute");
+  assert.deepEqual(postgres.results[2].tables[0].rows, [[1, '{"ok":true}']]);
+});
+
 test("dialect adapter leaves quoted identifiers, strings and comments intact", () => {
   const sql = "SELECT `ILIKE`, 'name::INT NOW()' AS literal /* AUTO_INCREMENT */ FROM users -- SERIAL";
   assert.equal(adaptSqlForSqlite(sql, "postgres"), sql);
