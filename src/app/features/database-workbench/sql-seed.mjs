@@ -16,6 +16,21 @@ INSERT INTO users (id, email, first_name, last_name, status, created_at) VALUES
   (4, 'dmitry@example.com', 'Дмитрий', 'Сидоров', 'active', '2026-03-01'),
   (5, 'qa@example.com', 'QA', NULL, 'pending', NULL);
 
+CREATE TABLE Student (
+  student_id INTEGER PRIMARY KEY,
+  first_name TEXT,
+  last_name TEXT,
+  score NUMERIC,
+  is_active INTEGER
+);
+INSERT INTO Student (student_id, first_name, last_name, score, is_active) VALUES
+  (1, 'Anna', 'Smith', 90, 1),
+  (2, 'Anna', 'Brown', 85, 1),
+  (3, 'John', 'Taylor', 78, 0),
+  (4, 'Maria', 'Jones', 92, 1),
+  (5, NULL, 'Unknown', NULL, NULL),
+  (6, 'Anna', 'Wilson', 88, 0);
+
 CREATE TABLE orders (
   id INTEGER PRIMARY KEY,
   user_id INTEGER REFERENCES users(id),
