@@ -591,7 +591,7 @@ test("PostgreSQL and MySQL compatible functions execute in the isolated SQLite d
   t.after(() => database.close());
 
   const pg = executeSqlBatch(database, "SELECT email::TEXT AS address FROM users WHERE email ILIKE '%EXAMPLE%' ORDER BY id;", "postgres");
-  assert.equal(pg.ok, true);
+  assert.equal(pg.ok, true, pg.error ?? "PostgreSQL-compatible SELECT should execute");
   assert.equal(pg.results[0].tables[0].rowCount, 5);
 
   const mysql = executeSqlBatch(database, "SELECT CONCAT(first_name, ' ', IFNULL(last_name, '')) AS full_name, IF(last_name IS NULL, 1, 0) AS missing FROM users ORDER BY id;", "mysql");
@@ -611,7 +611,7 @@ SELECT id, label, active FROM mysql_items;`, "mysql");
   assert.equal(mysql.ok, true, mysql.error ?? "MySQL-compatible script should execute");
   assert.deepEqual(mysql.results[3].tables[0].rows, [[1, "updated", 0]]);
 
-  const postgres = executeSqlBatch(database, "CREATE TABLE pg_items (id SERIAL PRIMARY KEY, label JSONB); INSERT INTO pg_items (label) VALUES ('{\\\"ok\\\":true}'); SELECT id, label FROM pg_items;", "postgres");
+  const postgres = executeSqlBatch(database, `CREATE TABLE pg_items (id SERIAL PRIMARY KEY, label JSONB); INSERT INTO pg_items (label) VALUES ('{"ok":true}'); SELECT id, label FROM pg_items;`, "postgres");
   assert.equal(postgres.ok, true, postgres.error ?? "PostgreSQL-compatible script should execute");
   assert.deepEqual(postgres.results[2].tables[0].rows, [[1, '{"ok":true}']]);
 });
