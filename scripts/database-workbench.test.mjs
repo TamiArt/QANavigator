@@ -632,6 +632,9 @@ test("Student sample supports COUNT(column) with a WHERE filter and returns the 
   assert.equal(result.ok, true, result.error ?? "Filtered COUNT should execute");
   assert.deepEqual(result.results[0].tables[0].columns, ["count"]);
   assert.deepEqual(result.results[0].tables[0].rows, [[3]]);
+  const jsonb = executeSqlBatch(database, "SELECT JSONB_OBJECTAGG(student_id, first_name) AS students FROM Student;", "postgres");
+  assert.equal(jsonb.ok, true, jsonb.error ?? "JSONB_OBJECTAGG should execute");
+  assert.equal(JSON.parse(jsonb.results[0].tables[0].rows[0][0])["5"], null);
 });
 
 test("SQL trainer executes common PostgreSQL and MySQL aggregate function families", async (t) => {
