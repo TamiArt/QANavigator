@@ -599,7 +599,7 @@ export function DatabaseWorkbenchModule() {
       )}
 
       <div className={tab === "builder" ? "block" : "hidden"}>
-        <SqlExecutionConsole generatedSql={generated.sql} generatedError={generated.error} />
+        <SqlExecutionConsole generatedSql={generated.sql} generatedError={generated.error} dialect={dialect} />
       </div>
 
       {tab === "reference" && (
