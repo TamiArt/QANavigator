@@ -11,7 +11,7 @@ import {
 type Dialect = "postgres" | "mysql";
 type Operation = "select" | "aggregate" | "join" | "subquery" | "cte" | "createTableAs" | "createTable" | "alterTable" | "dropTable" | "truncateTable" | "insert" | "update" | "delete" | "rename" | "alias" | "advancedSelect";
 type SubqueryMode = "SCALAR" | "IN" | "NOT IN" | "EXISTS" | "NOT EXISTS";
-type AggregateFunction = "COUNT" | "COUNT_DISTINCT" | "SUM" | "AVG" | "MIN" | "MAX";
+type AggregateFunction = "COUNT" | "COUNT_DISTINCT" | "SUM" | "AVG" | "MIN" | "MAX" | "GROUP_CONCAT" | "STRING_AGG" | "ARRAY_AGG" | "JSON_AGG" | "JSON_ARRAYAGG" | "JSON_OBJECTAGG" | "BOOL_AND" | "BOOL_OR" | "EVERY" | "BIT_AND" | "BIT_OR" | "BIT_XOR" | "STDDEV" | "STDDEV_POP" | "STDDEV_SAMP" | "VARIANCE" | "VAR_POP" | "VAR_SAMP" | "MEDIAN" | "TOTAL" | "ANY_VALUE";
 type AggregateMetric = { id: number; fn: AggregateFunction; column: string; alias: string };
 type CorrelatedSubqueryLevel = { id: number; table: string; alias: string; innerColumn: string; outerDepth: number; outerColumn: string; filterEnabled: boolean; filterColumn: string; filterOperator: "=" | "<>" | ">" | ">=" | "<" | "<=" | "LIKE"; filterValue: string };
 type SubqueryLevel = { id: number; table: string; selectKind: "aggregate" | "column"; aggregate: "AVG" | "SUM" | "MIN" | "MAX"; column: string; filterEnabled: boolean; filterColumn: string; filterOperator: "=" | "<>" | ">" | ">=" | "<" | "<="; filterValue: string };
@@ -161,6 +161,20 @@ function sqlLiteral(value: string) {
   if (/^-?\d+(\.\d+)?$/.test(trimmed) || /^(NULL|TRUE|FALSE)$/i.test(trimmed)) return trimmed;
   return "'" + value.replace(/'/g, "''") + "'";
 }
+function aggregateSqlExpression(metric: AggregateMetric, q: (name: string) => string) {
+  const column = metric.column.trim();
+  if (metric.fn === "COUNT" && column === "*") return "COUNT(*)";
+  if (metric.fn === "JSON_OBJECTAGG") {
+    const pair = column.split(",").map((value) => value.trim());
+    if (pair.length !== 2 || pair.some((value) => !validColumnReference(value))) throw new Error("Для JSON_OBJECTAGG укажи два столбца: ключ, значение.");
+    return "JSON_OBJECTAGG(" + q(pair[0]) + ", " + q(pair[1]) + ")";
+  }
+  if (!validColumnReference(column)) throw new Error("Проверь столбец агрегатного показателя. Для COUNT(*) укажи звёздочку.");
+  if (metric.fn === "COUNT_DISTINCT") return "COUNT(DISTINCT " + q(column) + ")";
+  if (metric.fn === "STRING_AGG") return "STRING_AGG(" + q(column) + ", ', ')";
+  return metric.fn + "(" + q(column) + ")";
+}
+
 function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
   const table = form.table.trim();
   if (operation !== "createTableAs" && !validIdentifier(table)) return { sql: "", params: [], error: "Укажи имя таблицы латиницей: users, order_items." };
@@ -245,15 +259,9 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         const groupAliases = form.groupAliases.trim() ? form.groupAliases.split(",").map((alias) => alias.trim()) : [];
         if (groupAliases.length && (groupAliases.length !== groupColumns.length || groupAliases.some((alias) => !alias))) return { sql: "", params, error: "Если задаёшь псевдонимы, укажи по одному для каждого столбца группировки через запятую." };
         const expressions = form.aggregates.map((metric, index) => {
-          const column = metric.column.trim();
           const alias = metric.alias.trim();
           if (!alias) throw new Error("Укажи псевдоним для агрегатного столбца №" + (index + 1) + ".");
-          if (metric.fn === "COUNT" && column === "*") return "COUNT(*) AS " + aliasSql(alias);
-          if (!validIdentifier(column)) throw new Error("Проверь столбец агрегатного показателя №" + (index + 1) + ". Для COUNT(*) укажи звёздочку.");
-          const expression = metric.fn === "COUNT_DISTINCT"
-            ? "COUNT(DISTINCT " + q(column) + ")"
-            : metric.fn + "(" + q(column) + ")";
-          return expression + " AS " + aliasSql(alias);
+          return aggregateSqlExpression(metric, q) + " AS " + aliasSql(alias);
         });
         if (form.havingAlias.trim() && !validIdentifier(form.havingAlias.trim())) return { sql: "", params, error: "HAVING должен ссылаться на корректный псевдоним агрегатного показателя." };
         if (form.havingAlias.trim() && !form.aggregates.some((metric) => metric.alias.trim() === form.havingAlias.trim())) return { sql: "", params, error: "Псевдоним HAVING должен совпадать с псевдонимом одного из агрегатных показателей." };
@@ -263,20 +271,17 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         if (form.offset.trim() && (!/^\d+$/.test(form.offset.trim()) || Number(form.offset) > 1000000)) return { sql: "", params, error: "OFFSET должен быть целым числом от 0 до 1000000." };
         const whereClause = where();
         const havingMetric = form.aggregates.find((metric) => metric.alias.trim() === form.havingAlias.trim());
-        const havingTarget = havingMetric
-          ? havingMetric.fn === "COUNT" && havingMetric.column.trim() === "*"
-            ? "COUNT(*)"
-            : havingMetric.fn === "COUNT_DISTINCT"
-              ? "COUNT(DISTINCT " + q(havingMetric.column.trim()) + ")"
-              : havingMetric.fn + "(" + q(havingMetric.column.trim()) + ")"
-          : "";
+        const havingTarget = havingMetric ? aggregateSqlExpression(havingMetric, q) : "";
         const having = form.havingAlias.trim()
           ? "\nHAVING " + (dialect === "mysql" ? q(form.havingAlias.trim()) : havingTarget) + " " + form.havingOperator + " " + placeholder(form.havingValue)
           : "";
         const sorting = form.orderColumn.trim() ? "\nORDER BY " + q(form.orderColumn.trim()) + " " + form.orderDirection : "";
         const limit = form.limit.trim() ? "\nLIMIT " + Number(form.limit) : "";
         const offset = form.offset.trim() ? "\nOFFSET " + Number(form.offset) : "";
-        return { sql: "SELECT " + groupColumns.map((column, index) => groupAliases.length ? q(column) + " AS " + aliasSql(groupAliases[index]) : q(column)).join(", ") + ",\n       " + expressions.join(",\n       ") + "\nFROM " + tableSql + whereClause + "\nGROUP BY " + groupColumns.map(q).join(", ") + having + sorting + limit + offset + ";", params, error: "" };
+        const selectedGroups = groupColumns.map((column, index) => groupAliases.length ? q(column) + " AS " + aliasSql(groupAliases[index]) : q(column));
+        const selectItems = [...selectedGroups, ...expressions].join(",\\n       ");
+        const groupByClause = groupColumns.length ? "\\nGROUP BY " + groupColumns.map(q).join(", ") : "";
+        return { sql: "SELECT " + selectItems + "\\nFROM " + tableSql + whereClause + groupByClause + having + sorting + limit + offset + ";", params, error: "" };
       }
       case "join": {
         const joinedTables = splitIdentifiers(form.secondTable);
@@ -501,14 +506,14 @@ export function DatabaseWorkbenchModule() {
               {operation === "advancedSelect" && <div className="space-y-3 rounded-lg border border-primary/20 bg-muted/30 p-3"><p className="text-xs text-muted-foreground">Собирай сложный SELECT: по одному выражению на строку, каждый JOIN — отдельной строкой. WHERE использует общий редактор условий ниже.</p><label className={labelClass}>Псевдоним основной таблицы (необязательно)</label><input value={form.advancedFromAlias} onChange={(event) => update("advancedFromAlias", event.target.value)} className={fieldClass} placeholder="u" /><label className={labelClass}>SELECT — столбцы, агрегаты, арифметика, CASE WHEN (по одному выражению на строку)</label><textarea value={form.advancedSelectItems} onChange={(event) => update("advancedSelectItems", event.target.value)} className={fieldClass + " min-h-24"} placeholder={"u.id AS user_id\nu.email\nCOUNT(o.id) AS orders_count"} /><label className={labelClass}>JOIN (каждый с новой строки)</label><textarea value={form.advancedJoins} onChange={(event) => update("advancedJoins", event.target.value)} className={fieldClass + " min-h-20"} placeholder={"LEFT JOIN orders AS o ON o.user_id = u.id\nLEFT JOIN payments AS p ON p.order_id = o.id"} /><label className={labelClass}>GROUP BY (через запятую, необязательно)</label><input value={form.advancedGroupBy} onChange={(event) => update("advancedGroupBy", event.target.value)} className={fieldClass} placeholder="u.id, u.email" /><label className={labelClass}>HAVING (каждое условие с новой строки, агрегаты)</label><textarea value={form.advancedHaving} onChange={(event) => update("advancedHaving", event.target.value)} className={fieldClass + " min-h-16"} placeholder={"COUNT(o.id) > 1\nSUM(o.amount) >= 100"} /><label className={labelClass}>ORDER BY (через запятую, направление у каждого поля)</label><input value={form.advancedOrderBy} onChange={(event) => update("advancedOrderBy", event.target.value)} className={fieldClass} placeholder="orders_count DESC, u.email ASC" /><label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={form.distinct} onChange={(event) => update("distinct", event.target.checked)} />DISTINCT</label><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>LIMIT</label><input value={form.limit} onChange={(event) => update("limit", event.target.value)} className={fieldClass} /></div><div><label className={labelClass}>OFFSET</label><input value={form.offset} onChange={(event) => update("offset", event.target.value)} className={fieldClass} /></div></div></div>}
               {(operation === "select" || operation === "subquery" || operation === "cte" || operation === "insert" || operation === "alias") && <div><label className={labelClass}>Столбцы, которые нужно вывести через запятую</label><input value={form.columns} onChange={(event) => update("columns", event.target.value)} className={fieldClass} placeholder="id, email, created_at" /><p className="mt-1 text-[11px] text-muted-foreground">Для SELECT можно указать * — все столбцы.</p></div>}
               {operation === "aggregate" && <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
-                <div><label className={labelClass}>Группировать по (один или несколько столбцов)</label><input value={form.groupBy} onChange={(event) => update("groupBy", event.target.value)} className={fieldClass} placeholder="status, department" /><label className={labelClass + " mt-2"}>Псевдонимы столбцов группировки (необязательно)</label><input value={form.groupAliases} onChange={(event) => update("groupAliases", event.target.value)} className={fieldClass} placeholder="Статус, Отдел" /><p className="mt-1 text-[11px] text-muted-foreground">Можно группировать по любым полям текущей таблицы. Перечисли несколько столбцов через запятую. Если псевдонимы не нужны, оставь поле пустым.</p></div>
+                <div><label className={labelClass}>Группировать по (необязательно; пустое поле — один общий результат)</label><input value={form.groupBy} onChange={(event) => update("groupBy", event.target.value)} className={fieldClass} placeholder="status, department" /><label className={labelClass + " mt-2"}>Псевдонимы столбцов группировки (необязательно)</label><input value={form.groupAliases} onChange={(event) => update("groupAliases", event.target.value)} className={fieldClass} placeholder="Статус, Отдел" /><p className="mt-1 text-[11px] text-muted-foreground">Можно группировать по любым полям текущей таблицы. Перечисли несколько столбцов через запятую. Если псевдонимы не нужны, оставь поле пустым.</p></div>
                 <div className="flex items-center justify-between gap-2"><p className="text-xs font-semibold">Агрегатные показатели</p><button type="button" onClick={() => setForm((current) => ({ ...current, aggregates: [...current.aggregates, { id: Math.max(0, ...current.aggregates.map((metric) => metric.id)) + 1, fn: "COUNT", column: "*", alias: "total" }] }))} className="rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-background">+ Добавить показатель</button></div>
                 {form.aggregates.map((metric, index) => <div key={metric.id} className="space-y-2 rounded-lg border border-border bg-card p-3">
                   <div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold">Показатель {index + 1}</span>{form.aggregates.length > 1 && <button type="button" onClick={() => setForm((current) => ({ ...current, aggregates: current.aggregates.filter((item) => item.id !== metric.id) }))} className="text-xs text-destructive hover:underline">Удалить</button>}</div>
-                  <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Функция</label><select value={metric.fn} onChange={(event) => setForm((current) => ({ ...current, aggregates: current.aggregates.map((item) => item.id === metric.id ? { ...item, fn: event.target.value as AggregateFunction } : item) }))} className={fieldClass}><option value="COUNT">COUNT — посчитать</option><option value="COUNT_DISTINCT">COUNT DISTINCT — уникальные</option><option value="SUM">SUM — сумма</option><option value="AVG">AVG — среднее</option><option value="MIN">MIN — минимум</option><option value="MAX">MAX — максимум</option></select></div><div><label className={labelClass}>Столбец</label><input value={metric.column} onChange={(event) => setForm((current) => ({ ...current, aggregates: current.aggregates.map((item) => item.id === metric.id ? { ...item, column: event.target.value } : item) }))} className={fieldClass} placeholder="* или book_id" /></div></div>
+                  <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Функция</label><select value={metric.fn} onChange={(event) => setForm((current) => ({ ...current, aggregates: current.aggregates.map((item) => item.id === metric.id ? { ...item, fn: event.target.value as AggregateFunction } : item) }))} className={fieldClass}><option value="COUNT">COUNT — количество</option><option value="COUNT_DISTINCT">COUNT DISTINCT — уникальные</option><option value="SUM">SUM — сумма</option><option value="AVG">AVG — среднее</option><option value="MIN">MIN — минимум</option><option value="MAX">MAX — максимум</option><option value="GROUP_CONCAT">GROUP_CONCAT — объединить строки</option><option value="STRING_AGG">STRING_AGG — объединить строки с разделителем</option><option value="ARRAY_AGG">ARRAY_AGG — массив значений (JSON)</option><option value="JSON_AGG">JSON_AGG — JSON-массив</option><option value="JSON_ARRAYAGG">JSON_ARRAYAGG — JSON-массив</option><option value="JSON_OBJECTAGG">JSON_OBJECTAGG — JSON-объект (ключ, значение)</option><option value="BOOL_AND">BOOL_AND — все истинны</option><option value="BOOL_OR">BOOL_OR — хотя бы одно истинно</option><option value="EVERY">EVERY — все истинны</option><option value="BIT_AND">BIT_AND — побитовое И</option><option value="BIT_OR">BIT_OR — побитовое ИЛИ</option><option value="BIT_XOR">BIT_XOR — побитовое исключающее ИЛИ</option><option value="STDDEV">STDDEV — стандартное отклонение</option><option value="STDDEV_POP">STDDEV_POP — отклонение генеральной совокупности</option><option value="STDDEV_SAMP">STDDEV_SAMP — выборочное отклонение</option><option value="VARIANCE">VARIANCE — дисперсия</option><option value="VAR_POP">VAR_POP — дисперсия генеральной совокупности</option><option value="VAR_SAMP">VAR_SAMP — выборочная дисперсия</option><option value="MEDIAN">MEDIAN — медиана</option><option value="TOTAL">TOTAL — сумма с результатом 0 для пустого набора</option><option value="ANY_VALUE">ANY_VALUE — любое значение группы</option></select></div><div><label className={labelClass}>Столбец</label><input value={metric.column} onChange={(event) => setForm((current) => ({ ...current, aggregates: current.aggregates.map((item) => item.id === metric.id ? { ...item, column: event.target.value } : item) }))} className={fieldClass} placeholder="* / first_name / key_column, value_column" /></div></div>
                   <div><label className={labelClass}>Название столбца в результате (AS)</label><input value={metric.alias} onChange={(event) => setForm((current) => ({ ...current, aggregates: current.aggregates.map((item) => item.id === metric.id ? { ...item, alias: event.target.value } : item) }))} className={fieldClass} placeholder="Количество_экземпляров" /></div>
                 </div>)}
-                <p className="text-[11px] leading-relaxed text-muted-foreground">Выбирай агрегатные функции и столбцы под свою задачу: COUNT(*) считает строки, COUNT(column) — непустые значения, COUNT(DISTINCT column) — уникальные значения, SUM — сумму, AVG — среднее, MIN и MAX — минимум и максимум. COUNT(column) и COUNT(DISTINCT column) не учитывают NULL.</p>
+                <p className="text-[11px] leading-relaxed text-muted-foreground">Выбирай агрегатные функции и столбцы под свою задачу: GROUP BY можно не заполнять: агрегат вычисляется по всей выборке после WHERE. Доступны COUNT, SUM, AVG, MIN, MAX, GROUP_CONCAT, STRING_AGG, ARRAY_AGG, JSON_AGG/JSON_ARRAYAGG/JSON_OBJECTAGG, BOOL_AND/OR, EVERY, BIT_AND/OR/XOR, STDDEV, VARIANCE, MEDIAN, TOTAL и ANY_VALUE. Для JSON_OBJECTAGG укажи два столбца через запятую: ключ, значение.</p>
               </div>}
               {operation === "createTableAs" && <div className="space-y-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
                 <p className="text-xs text-muted-foreground">CREATE TABLE AS создаёт физическую таблицу из результата SELECT. Скалярный подзапрос можно использовать как вычисляемый столбец в SELECT и как правую часть сравнения в WHERE.</p>
