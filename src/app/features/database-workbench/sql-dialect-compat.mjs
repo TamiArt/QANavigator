@@ -197,13 +197,13 @@ export function registerSqlCompatibilityFunctions(database) {
   });
   const collect = {
     init: () => [],
-    step: (state, value) => { if (value !== null && value !== undefined) state.push(value); return state; },
+    step: (state, value) => { state.push(value === undefined ? null : value); return state; },
     finalize: (state) => state.length ? JSON.stringify(state) : null,
   };
   for (const name of ["ARRAY_AGG", "JSON_AGG", "JSONB_AGG", "JSON_ARRAYAGG"]) register(name, collect);
   register("JSON_OBJECTAGG", {
     init: () => ({}),
-    step: (state, key, value) => { if (key !== null && key !== undefined && value !== null && value !== undefined) state[String(key)] = value; return state; },
+    step: (state, key, value) => { if (key !== null && key !== undefined) state[String(key)] = value === undefined ? null : value; return state; },
     finalize: (state) => Object.keys(state).length ? JSON.stringify(state) : null,
   });
   register("STRING_AGG", {
