@@ -621,3 +621,91 @@ test("dialect adapter leaves quoted identifiers, strings and comments intact", (
   assert.equal(adaptSqlForSqlite(sql, "postgres"), sql);
   assert.equal(adaptSqlForSqlite(sql, "mysql"), sql);
 });
+
+
+test("Student sample supports COUNT(column) with a WHERE filter and returns the expected count", async (t) => {
+  const database = await createSeededDatabase();
+  registerSqlCompatibilityFunctions(database);
+  t.after(() => database.close());
+
+  const result = executeSqlBatch(database, "SELECT COUNT(first_name) AS count FROM Student WHERE first_name = 'Anna';");
+  assert.equal(result.ok, true, result.error ?? "Filtered COUNT should execute");
+  assert.deepEqual(result.results[0].tables[0].columns, ["count"]);
+  assert.deepEqual(result.results[0].tables[0].rows, [[3]]);
+});
+
+test("SQL trainer executes common PostgreSQL and MySQL aggregate function families", async (t) => {
+  const database = await createSeededDatabase();
+  registerSqlCompatibilityFunctions(database);
+  t.after(() => database.close());
+
+  const result = executeSqlBatch(database, `SELECT
+    COUNT(*) AS row_count,
+    COUNT(first_name) AS named_count,
+    SUM(score) AS score_sum,
+    AVG(score) AS score_average,
+    MIN(score) AS score_min,
+    MAX(score) AS score_max,
+    GROUP_CONCAT(first_name) AS names,
+    STRING_AGG(first_name, ', ') AS names_joined,
+    ARRAY_AGG(first_name) AS names_array,
+    JSON_AGG(first_name) AS names_json,
+    JSON_ARRAYAGG(first_name) AS names_json_array,
+    JSON_OBJECTAGG(student_id, first_name) AS names_by_id,
+    BOOL_AND(is_active) AS all_active,
+    BOOL_OR(is_active) AS any_active,
+    EVERY(is_active) AS every_active,
+    BIT_AND(student_id) AS bit_and_value,
+    BIT_OR(student_id) AS bit_or_value,
+    BIT_XOR(student_id) AS bit_xor_value,
+    STDDEV(score) AS score_stddev,
+    STDDEV_POP(score) AS score_stddev_pop,
+    STDDEV_SAMP(score) AS score_stddev_samp,
+    VARIANCE(score) AS score_variance,
+    VAR_POP(score) AS score_var_pop,
+    VAR_SAMP(score) AS score_var_samp,
+    MEDIAN(score) AS score_median,
+    TOTAL(score) AS score_total,
+    ANY_VALUE(first_name) AS arbitrary_name
+  FROM Student;`);
+  assert.equal(result.ok, true, result.error ?? "Aggregate family query should execute");
+  const row = result.results[0].tables[0].rows[0];
+  assert.equal(row[0], 6);
+  assert.equal(row[1], 5);
+  assert.equal(row[2], 433);
+  assert.equal(row[3], 86.6);
+  assert.equal(row[4], 78);
+  assert.equal(row[5], 92);
+  assert.match(row[6], /Anna/);
+  assert.match(row[7], /Anna/);
+  assert.deepEqual(JSON.parse(row[8]), ["Anna", "Anna", "John", "Maria", null, "Anna"]);
+  assert.deepEqual(JSON.parse(row[9]), ["Anna", "Anna", "John", "Maria", null, "Anna"]);
+  assert.deepEqual(JSON.parse(row[10]), ["Anna", "Anna", "John", "Maria", null, "Anna"]);
+  assert.deepEqual(JSON.parse(row[11]), { "1": "Anna", "2": "Anna", "3": "John", "4": "Maria", "5": null, "6": "Anna" });
+  assert.equal(row[12], 0);
+  assert.equal(row[13], 1);
+  assert.equal(row[14], 0);
+  assert.equal(row[15], 0);
+  assert.equal(row[16], 7);
+  assert.equal(row[17], 7);
+  assert.ok(row[18] > 0);
+  assert.ok(row[19] > 0);
+  assert.ok(row[20] > row[19]);
+  assert.ok(row[21] > 0);
+  assert.ok(row[22] > row[21]);
+  assert.ok(row[23] > 0);
+  assert.equal(row[24], 88);
+  assert.equal(row[25], 433);
+  assert.equal(row[26], "Anna");
+});
+
+test("aggregate builder allows a single aggregate result without GROUP BY and keeps WHERE", () => {
+  assert.match(source, /form\.groupBy\.trim\(\) \? splitIdentifiers\(form\.groupBy\) : \[\]/);
+  assert.match(source, /const groupByClause = groupColumns\.length \?/);
+  assert.match(source, /aggregateSqlExpression\(metric, q\)/);
+  assert.match(source, /value="JSON_OBJECTAGG"/);
+  assert.match(source, /value="STDDEV_POP"/);
+  assert.match(source, /COUNT\(first_name\)/);
+  assert.match(source, /FROM Student/);
+  assert.match(source, /WHERE first_name = 'Anna'/);
+});
