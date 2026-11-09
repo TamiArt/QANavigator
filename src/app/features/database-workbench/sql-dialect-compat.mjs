@@ -82,8 +82,11 @@ function adaptPostgres(code) {
 function adaptMysql(code) {
   let result = code;
   result = result.replace(/\\bINSERT\\s+IGNORE\\s+INTO\\b/gi, "INSERT OR IGNORE INTO");
+  result = result.replace(/\\bON\\s+DUPLICATE\\s+KEY\\s+UPDATE\\b/gi, "ON CONFLICT DO UPDATE SET");
+  result = result.replace(/\\bVALUES\\s*\\(\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*\\)/gi, "excluded.$1");
   result = result.replace(/\\b(?:BIGINT|INT|INTEGER|SMALLINT)\\s+UNSIGNED\\b/gi, "$&");
   result = result.replace(/\\bUNSIGNED\\b/gi, "");
+  result = result.replace(/\\b(?:INT|INTEGER|BIGINT)\\s+AUTO_INCREMENT\\s+PRIMARY\\s+KEY\\b/gi, "INTEGER PRIMARY KEY AUTOINCREMENT");
   result = result.replace(/\\bAUTO_INCREMENT\\b/gi, "AUTOINCREMENT");
   result = result.replace(/\\bENGINE\\s*=\\s*[A-Za-z_][A-Za-z0-9_]*/gi, "");
   result = result.replace(/\\bDEFAULT\\s+ON\\s+UPDATE\\s+CURRENT_TIMESTAMP\\b/gi, "DEFAULT CURRENT_TIMESTAMP");
