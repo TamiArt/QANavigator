@@ -25,5 +25,5 @@ export function splitSqlStatements(sql: string): string[];
 export function executeSqlBatch(database: {
   exec(sql: string): { columns: string[]; values: SqlResultValue[][] }[];
   getRowsModified(): number;
-}, sql: string): SqlBatchResult;
+}, sql: string, dialect?: "postgres" | "mysql"): SqlBatchResult;
 export const SQL_EXECUTION_LIMITS: Readonly<{ maxStatements: number; maxRowsPerResult: number }>;
