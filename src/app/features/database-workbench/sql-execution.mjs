@@ -1,3 +1,5 @@
+import { adaptSqlForSqlite } from "./sql-dialect-compat.mjs";
+
 const MAX_STATEMENTS = 50;
 const MAX_ROWS_PER_RESULT = 500;
 
@@ -62,7 +64,7 @@ export function splitSqlStatements(sql) {
   return statements;
 }
 
-export function executeSqlBatch(database, sql) {
+export function executeSqlBatch(database, sql, dialect = "postgres") {
   let statements;
   try {
     statements = splitSqlStatements(sql);
@@ -77,7 +79,7 @@ export function executeSqlBatch(database, sql) {
   const results = [];
   for (const [index, statement] of statements.entries()) {
     try {
-      const queryResults = database.exec(statement);
+      const queryResults = database.exec(adaptSqlForSqlite(statement, dialect));
       const tables = queryResults.map((result) => {
         const rowCount = result.values.length;
         return {
