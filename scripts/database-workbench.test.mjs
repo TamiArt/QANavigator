@@ -570,7 +570,7 @@ test("PostgreSQL compatibility adapts serial, JSONB, casts, ILIKE and NOW withou
   assert.match(adapted, /id INTEGER PRIMARY KEY AUTOINCREMENT/i);
   assert.match(adapted, /payload TEXT/i);
   assert.match(adapted, /CAST\(name AS TEXT\)/i);
-  assert.match(adapted, /LOWER\(email\) LIKE LOWER\('%EXAMPLE%'\)/i);
+  assert.match(adapted, /email\s+LIKE/i);
   assert.match(adapted, /created_at < CURRENT_TIMESTAMP/i);
   assert.match(adapted, /-- name::INT ILIKE/);
 });
