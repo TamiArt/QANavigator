@@ -1,13 +1,15 @@
 import { useMemo, useState } from "react";
 import { buildNestedScalarSubquery, buildCorrelatedExistsSubquery } from "./nested-subquery-builder.mjs";
 import { buildAdvancedSelect } from "./advanced-select-builder.mjs";
+import { buildCreateTable, buildAlterTable, buildDropTable, buildTruncateTable, buildInsert, buildUpdate, buildDelete } from "./ddl-dml-builder.mjs";
+import { SqlExecutionConsole } from "./SqlExecutionConsole";
 import {
   AlertTriangle, BookOpen, CheckCircle2, Code2, Copy,
   Database, Info, Search, ShieldCheck, WandSparkles,
 } from "lucide-react";
 
 type Dialect = "postgres" | "mysql";
-type Operation = "select" | "aggregate" | "join" | "subquery" | "cte" | "createTableAs" | "insert" | "update" | "delete" | "rename" | "alias" | "advancedSelect";
+type Operation = "select" | "aggregate" | "join" | "subquery" | "cte" | "createTableAs" | "createTable" | "alterTable" | "dropTable" | "truncateTable" | "insert" | "update" | "delete" | "rename" | "alias" | "advancedSelect";
 type SubqueryMode = "SCALAR" | "IN" | "NOT IN" | "EXISTS" | "NOT EXISTS";
 type AggregateFunction = "COUNT" | "COUNT_DISTINCT" | "SUM" | "AVG" | "MIN" | "MAX";
 type AggregateMetric = { id: number; fn: AggregateFunction; column: string; alias: string };
@@ -79,6 +81,17 @@ type BuilderState = {
   advancedGroupBy: string;
   advancedHaving: string;
   advancedOrderBy: string;
+  ddlColumns: string;
+  alterAction: "add" | "drop" | "rename" | "type";
+  alterColumn: string;
+  alterDefinition: string;
+  alterDataType: string;
+  alterTypeSize: string;
+  alterNewName: string;
+  confirmTable: string;
+  ifExists: boolean;
+  insertSelectSql: string;
+  updateAssignments: string;
 };
 
 const initial: BuilderState = {
@@ -107,6 +120,9 @@ const initial: BuilderState = {
   advancedFromAlias: "u", advancedSelectItems: "u.id AS user_id\nu.email\nCOUNT(o.id) AS orders_count",
   advancedJoins: "LEFT JOIN orders AS o ON o.user_id = u.id",
   advancedGroupBy: "u.id, u.email", advancedHaving: "COUNT(o.id) > 1", advancedOrderBy: "orders_count DESC, u.email ASC",
+  ddlColumns: "id BIGINT PRIMARY KEY\nemail VARCHAR(255) NOT NULL UNIQUE\nstatus VARCHAR(30) DEFAULT 'active'\ncreated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+  alterAction: "add", alterColumn: "phone", alterDefinition: "phone VARCHAR(30)", alterDataType: "VARCHAR", alterTypeSize: "255", alterNewName: "display_name",
+  confirmTable: "", ifExists: true, insertSelectSql: "", updateAssignments: "status = active\nupdated_at = CURRENT_TIMESTAMP",
 };
 
 const snippets = [
@@ -364,23 +380,35 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         const create = "CREATE TABLE " + q(targetTable) + " AS\nSELECT " + selectedColumns.map(q).join(", ") + ",\n       " + scalar + " AS " + q(selectAlias) + "\nFROM " + q(sourceTable) + "\nWHERE " + q(whereColumn) + " " + form.ctasWhereOperator + " " + scalar + ";";
         return { sql: create + (form.ctasAppendSelect ? "\n\nSELECT * FROM " + q(targetTable) + ";" : ""), params, error: "" };
       }
+      case "createTable": {
+        const result = buildCreateTable({ dialect, table, columns: form.ddlColumns });
+        return { sql: result.sql, params, error: "" };
+      }
+      case "alterTable": {
+        const result = buildAlterTable({ dialect, table, action: form.alterAction, column: form.alterColumn, definition: form.alterDefinition, dataType: form.alterDataType, typeSize: form.alterTypeSize, newName: form.alterNewName });
+        return { sql: result.sql, params, error: "" };
+      }
+      case "dropTable": {
+        const result = buildDropTable({ dialect, table, confirmName: form.confirmTable, ifExists: form.ifExists });
+        return { sql: result.sql, params, error: "" };
+      }
+      case "truncateTable": {
+        const result = buildTruncateTable({ dialect, table, confirmName: form.confirmTable });
+        return { sql: result.sql, params, error: "" };
+      }
       case "insert": {
-        if (!columns) return { sql: "", params, error: "Укажи столбцы для INSERT через запятую." };
-        const enteredValues = form.insertValues.split("|").map((value) => value.trim());
-        if (enteredValues.length !== columns.length || enteredValues.some((value) => !value)) return { sql: "", params, error: "Количество значений должно совпадать с количеством столбцов. Разделяй значения символом |." };
-        const values = enteredValues.map((value) => placeholder(value));
-        return { sql: "INSERT INTO " + tableSql + " (" + columns.map(q).join(", ") + ")\nVALUES (" + values.join(", ") + ");", params, error: "" };
+        const result = buildInsert({ dialect, table, columns: form.columns, rows: form.insertValues, selectSql: form.insertSelectSql });
+        return { sql: result.sql, params, error: "" };
       }
       case "update": {
-        if (!validIdentifier(form.setColumn.trim())) return { sql: "", params, error: "Укажи корректное имя столбца для изменения." };
-        if (!form.conditions.some((condition) => condition.column.trim())) return { sql: "", params, error: "Для безопасности UPDATE обязательно задай хотя бы одно условие WHERE." };
-        const value = placeholder(form.setValue);
         const condition = where();
-        return { sql: "UPDATE " + tableSql + "\nSET " + q(form.setColumn.trim()) + " = " + value + condition + ";", params, error: "" };
+        const result = buildUpdate({ dialect, table, assignments: form.updateAssignments, where: condition.replace(/^\nWHERE\s+/i, "") });
+        return { sql: result.sql, params, error: "" };
       }
       case "delete": {
-        if (!form.conditions.some((condition) => condition.column.trim())) return { sql: "", params, error: "DELETE без WHERE заблокирован конструктором. Добавь хотя бы одно условие." };
-        return { sql: "DELETE FROM " + tableSql + where() + ";", params, error: "" };
+        const condition = where();
+        const result = buildDelete({ dialect, table, where: condition.replace(/^\nWHERE\s+/i, "") });
+        return { sql: result.sql, params, error: "" };
       }
       case "rename":
         if (!validIdentifier(form.oldColumn.trim()) || !validIdentifier(form.newColumn.trim())) return { sql: "", params, error: "Проверь старое и новое имя столбца." };
@@ -426,7 +454,7 @@ export function DatabaseWorkbenchModule() {
           <div className="rounded-xl bg-primary/10 p-2 text-primary"><Database className="h-5 w-5" /></div>
           <h2 className="text-xl font-semibold">Работа с базами данных</h2>
         </div>
-        <p className="text-sm text-muted-foreground">Инструмент для QA: собери SQL-запрос и скопируй его в свой SQL-клиент.</p>
+        <p className="text-sm text-muted-foreground">Инструмент для QA: собери SQL-запрос, выполни его на учебных данных и проверь результат.</p>
       </header>
 
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
@@ -447,12 +475,17 @@ export function DatabaseWorkbenchModule() {
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-3">
             <div><p className="text-sm font-semibold">1. Что нужно сделать?</p><p className="text-xs text-muted-foreground">Выбери тип SQL-запроса.</p></div>
             <select value={operation} onChange={(event) => { const next = event.target.value as Operation; setOperation(next); if (next === "aggregate" || next === "advancedSelect") setForm((current) => ({ ...current, conditions: [] })); }} className={fieldClass + " max-w-xs"}>
-              <option value="advancedSelect">Расширенный SELECT — JOIN / CASE / GROUP BY / HAVING / ORDER BY</option>\n              <option value="select">Получить данные — SELECT</option>
+              <option value="advancedSelect">Расширенный SELECT — JOIN / CASE / GROUP BY / HAVING / ORDER BY</option>
+              <option value="select">Получить данные — SELECT</option>
               <option value="aggregate">Сгруппировать и посчитать — GROUP BY</option>
               <option value="join">Объединить таблицы — JOIN</option>
               <option value="subquery">Подзапросы — IN / EXISTS / SELECT</option>
               <option value="cte">Именованный набор — CTE / WITH</option>
               <option value="createTableAs">Создать таблицу из SELECT — CREATE TABLE AS</option>
+              <option value="createTable">Создать структуру таблицы — CREATE TABLE</option>
+              <option value="alterTable">Изменить структуру — ALTER TABLE</option>
+              <option value="dropTable">Удалить таблицу — DROP TABLE</option>
+              <option value="truncateTable">Очистить таблицу — TRUNCATE TABLE</option>
               <option value="insert">Добавить запись — INSERT</option>
               <option value="update">Изменить запись — UPDATE</option>
               <option value="delete">Удалить запись — DELETE</option>
@@ -498,7 +531,7 @@ export function DatabaseWorkbenchModule() {
                 </div>
                 <label className="flex items-center gap-2 text-xs text-muted-foreground"><input type="checkbox" checked={form.ctasAppendSelect} onChange={(event) => update("ctasAppendSelect", event.target.checked)} />После создания сразу добавить SELECT * из новой таблицы</label>
               </div>}
-              {operation === "insert" && <div><label className={labelClass}>Значения в том же порядке (разделитель |)</label><input value={form.insertValues} onChange={(event) => update("insertValues", event.target.value)} className={fieldClass} placeholder="101 | qa@example.com | Anna" /><p className="mt-1 text-[11px] text-muted-foreground">Значения попадут в список параметров отдельно от SQL. Текстовые кавычки вручную добавлять не нужно.</p></div>}
+
               {(operation === "select" || operation === "advancedSelect" || operation === "aggregate" || operation === "join" || operation === "update" || operation === "delete") && (
                 <div className="space-y-3 rounded-lg bg-muted/40 p-3">
                   <div className="flex items-center justify-between gap-2"><p className="text-xs font-semibold">Условия WHERE</p><button type="button" onClick={addCondition} className="rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-background">+ Добавить условие</button></div>
@@ -544,7 +577,11 @@ export function DatabaseWorkbenchModule() {
                 {!form.subqueryMode.includes("EXISTS") && <div className="rounded-lg border border-border bg-card p-3"><p className="mb-2 text-xs font-semibold">Необязательный фильтр внутри подзапроса</p><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Столбец</label><input value={form.subqueryFilterColumn} onChange={(event) => update("subqueryFilterColumn", event.target.value)} className={fieldClass} placeholder="status" /></div><div><label className={labelClass}>Оператор</label><select value={form.subqueryFilterOperator} onChange={(event) => update("subqueryFilterOperator", event.target.value)} className={fieldClass}>{["=", "<>", ">", ">=", "<", "<=", "LIKE"].map((op) => <option key={op}>{op}</option>)}</select></div><div className="col-span-2"><label className={labelClass}>Значение</label><input value={form.subqueryFilterValue} onChange={(event) => update("subqueryFilterValue", event.target.value)} className={fieldClass} placeholder="paid" /></div></div></div>}
               </div>}
               {operation === "join" && <div className="space-y-2"><div><label className={labelClass}>Дополнительные таблицы (через запятую)</label><input value={form.secondTable} onChange={(event) => update("secondTable", event.target.value)} className={fieldClass} placeholder="orders, payments" /></div><div><label className={labelClass}>Тип JOIN</label><select value={form.joinType} onChange={(event) => update("joinType", event.target.value)} className={fieldClass}>{["INNER", "LEFT", "RIGHT", "FULL OUTER"].map((type) => <option key={type}>{type}</option>)}</select></div><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Левые ключи (через запятую)</label><input value={form.leftKey} onChange={(event) => update("leftKey", event.target.value)} className={fieldClass} placeholder="users.id, orders.id" /></div><div><label className={labelClass}>Правые ключи (через запятую)</label><input value={form.rightKey} onChange={(event) => update("rightKey", event.target.value)} className={fieldClass} placeholder="orders.user_id, payments.order_id" /></div></div></div>}
-              {operation === "update" && <div><label className={labelClass}>Какой столбец изменить?</label><input value={form.setColumn} onChange={(event) => update("setColumn", event.target.value)} className={fieldClass} /><label className={labelClass + " mt-2"}>Новое значение</label><input value={form.setValue} onChange={(event) => update("setValue", event.target.value)} className={fieldClass} /></div>}
+              {operation === "createTable" && <div className="space-y-2"><label className={labelClass}>Определения столбцов (по одному на строку)</label><textarea value={form.ddlColumns} onChange={(event) => update("ddlColumns", event.target.value)} className={fieldClass + " min-h-36"} placeholder={"id BIGINT PRIMARY KEY\nemail VARCHAR(255) NOT NULL UNIQUE\nstatus VARCHAR(30) DEFAULT 'active'"} /><p className="text-[11px] text-muted-foreground">Поддерживаются числовые, строковые, даты, BOOLEAN, JSON/JSONB, NULL/NOT NULL, DEFAULT, UNIQUE, PRIMARY KEY, REFERENCES и простой CHECK.</p></div>}
+              {operation === "alterTable" && <div className="space-y-2"><label className={labelClass}>Действие</label><select value={form.alterAction} onChange={(event) => update("alterAction", event.target.value)} className={fieldClass}><option value="add">Добавить столбец</option><option value="drop">Удалить столбец</option><option value="rename">Переименовать столбец</option><option value="type">Изменить тип столбца</option></select><label className={labelClass}>Столбец</label><input value={form.alterColumn} onChange={(event) => update("alterColumn", event.target.value)} className={fieldClass} />{form.alterAction === "add" && <><label className={labelClass}>Полное определение</label><input value={form.alterDefinition} onChange={(event) => update("alterDefinition", event.target.value)} className={fieldClass} placeholder="phone VARCHAR(30)" /></>}{form.alterAction === "rename" && <><label className={labelClass}>Новое имя</label><input value={form.alterNewName} onChange={(event) => update("alterNewName", event.target.value)} className={fieldClass} /></>}{form.alterAction === "type" && <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Тип</label><input value={form.alterDataType} onChange={(event) => update("alterDataType", event.target.value)} className={fieldClass} placeholder="VARCHAR" /></div><div><label className={labelClass}>Размер</label><input value={form.alterTypeSize} onChange={(event) => update("alterTypeSize", event.target.value)} className={fieldClass} placeholder="255" /></div></div>}</div>}
+              {(operation === "dropTable" || operation === "truncateTable") && <div className="space-y-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3"><p className="text-xs text-destructive font-medium">{operation === "dropTable" ? "DROP TABLE удаляет таблицу вместе со структурой." : "TRUNCATE TABLE удаляет все строки таблицы."} Конструктор только формирует SQL и ничего не выполняет.</p><label className={labelClass}>Для подтверждения повтори имя таблицы: {form.table}</label><input value={form.confirmTable} onChange={(event) => update("confirmTable", event.target.value)} className={fieldClass} placeholder={form.table} />{operation === "dropTable" && <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={form.ifExists} onChange={(event) => update("ifExists", event.target.checked)} />Добавить IF EXISTS</label>}</div>}
+              {operation === "insert" && <div className="space-y-2"><label className={labelClass}>Строки значений (одна строка = одна запись; разделитель столбцов |)</label><textarea value={form.insertValues} onChange={(event) => update("insertValues", event.target.value)} className={fieldClass + " min-h-20"} placeholder={"101 | qa@example.com\n102 | dev@example.com"} /><label className={labelClass}>Или SELECT вместо VALUES (необязательно)</label><textarea value={form.insertSelectSql} onChange={(event) => update("insertSelectSql", event.target.value)} className={fieldClass + " min-h-20"} placeholder={"SELECT id, email FROM imported_users"} /></div>}
+              {operation === "update" && <div className="space-y-2"><label className={labelClass}>SET — одно присваивание на строку</label><textarea value={form.updateAssignments} onChange={(event) => update("updateAssignments", event.target.value)} className={fieldClass + " min-h-20"} placeholder={"status = active\nupdated_at = CURRENT_TIMESTAMP"} /><p className="text-[11px] text-muted-foreground">Для UPDATE обязательно заполни WHERE ниже. Несколько полей можно изменить одним запросом.</p></div>}
               {operation === "rename" && <div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>Старое имя</label><input value={form.oldColumn} onChange={(event) => update("oldColumn", event.target.value)} className={fieldClass} /></div><div><label className={labelClass}>Новое имя</label><input value={form.newColumn} onChange={(event) => update("newColumn", event.target.value)} className={fieldClass} /></div></div>}
               {operation === "alias" && <div><label className={labelClass}>Псевдоним первого столбца в результате</label><input value={form.alias} onChange={(event) => update("alias", event.target.value)} className={fieldClass} /></div>}
             </div>
@@ -556,11 +593,14 @@ export function DatabaseWorkbenchModule() {
                 {generated.params.length > 0 && <div className="mt-3 rounded-lg bg-muted/40 p-3"><p className="text-xs text-muted-foreground">Значения уже подставлены в предпросмотр запроса. Проверь их перед копированием.</p></div>}
                 <button disabled={!generated.sql} onClick={() => copy(generated.sql)} className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2.5 text-sm font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-40">{copied ? <CheckCircle2 className="h-4 w-4" /> : <Copy className="h-4 w-4" />}{copied ? "Скопировано" : "Скопировать SQL"}</button>
               </div>
-              <div className="flex gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs leading-relaxed text-muted-foreground"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" /><p>Конструктор только формирует текст SQL — он не подключается к БД и ничего не выполняет. Перед запуском проверь схему, параметры и среду. UPDATE и DELETE требуют WHERE.</p></div>
             </div>
           </div>
         </section>
       )}
+
+      <div className={tab === "builder" ? "block" : "hidden"}>
+        <SqlExecutionConsole generatedSql={generated.sql} generatedError={generated.error} dialect={dialect} />
+      </div>
 
       {tab === "reference" && (
         <section className="space-y-3">

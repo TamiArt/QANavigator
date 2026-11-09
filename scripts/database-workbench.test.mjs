@@ -3,9 +3,15 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { buildNestedScalarSubquery, buildCorrelatedExistsSubquery } from "../src/app/features/database-workbench/nested-subquery-builder.mjs";
 import { buildAdvancedSelect } from "../src/app/features/database-workbench/advanced-select-builder.mjs";
+import { buildCreateTable, buildAlterTable, buildDropTable, buildTruncateTable, buildInsert, buildUpdate, buildDelete } from "../src/app/features/database-workbench/ddl-dml-builder.mjs";
+import initSqlJs from "sql.js";
+import { executeSqlBatch, splitSqlStatements } from "../src/app/features/database-workbench/sql-execution.mjs";
+import { adaptSqlForSqlite, registerSqlCompatibilityFunctions } from "../src/app/features/database-workbench/sql-dialect-compat.mjs";
+import { SQL_TRAINER_SEED_SQL } from "../src/app/features/database-workbench/sql-seed.mjs";
 
 const source = await readFile("src/app/features/database-workbench/DatabaseWorkbenchModule.tsx", "utf8");
 const nestedBuilderSource = await readFile("src/app/features/database-workbench/nested-subquery-builder.mjs", "utf8");
+const ddlDmlBuilderSource = await readFile("src/app/features/database-workbench/ddl-dml-builder.mjs", "utf8");
 
 test("database workbench exposes practical SQL operations", () => {
   for (const operation of ["SELECT", "JOIN", "INSERT", "UPDATE", "DELETE", "RENAME", "AS"]) {
@@ -14,8 +20,10 @@ test("database workbench exposes practical SQL operations", () => {
 });
 
 test("database workbench keeps destructive statements behind a WHERE guard", () => {
-  assert.ok(source.includes('if (!form.conditions.some((condition) => condition.column.trim()))'), "UPDATE and DELETE must require at least one WHERE condition");
-  assert.ok(source.includes("DELETE без WHERE заблокирован конструктором"), "DELETE must stay protected without WHERE");
+  assert.ok(source.includes("buildUpdate({ dialect, table, assignments: form.updateAssignments"), "UPDATE must delegate to the guarded DML builder");
+  assert.ok(source.includes("buildDelete({ dialect, table, where:"), "DELETE must delegate to the guarded DML builder");
+  assert.ok(ddlDmlBuilderSource.includes("Для безопасности UPDATE обязательно задай WHERE"), "UPDATE must reject an empty WHERE");
+  assert.ok(ddlDmlBuilderSource.includes("DELETE без WHERE заблокирован конструктором"), "DELETE must stay protected without WHERE");
 });
 
 test("database workbench validates identifiers and previews literal parameter values", () => {
@@ -82,9 +90,12 @@ test("database workbench handles PostgreSQL and MySQL syntax differences", () =>
   assert.ok(source.includes("MySQL не поддерживает FULL OUTER JOIN напрямую"));
 });
 
-test("database workbench never executes SQL or connects to a database", () => {
-  assert.ok(source.includes("он не подключается к БД и ничего не выполняет"));
-  assert.equal(/\b(mysql2|pg|sequelize|prisma|knex)\b/.test(source), false);
+test("database workbench executes SQL only in an isolated in-browser database", async () => {
+  const consoleSource = await readFile("src/app/features/database-workbench/SqlExecutionConsole.tsx", "utf8");
+  assert.ok(source.includes("SqlExecutionConsole"));
+  assert.ok(consoleSource.includes("SQLite в WebAssembly"));
+  assert.ok(consoleSource.includes("отдельной SQLite-базе прямо в браузере"));
+  assert.equal(/\b(mysql2|pg|sequelize|prisma|knex)\b/.test(source + consoleSource), false);
 });
 
 test("database workbench builds grouped aggregate queries with distinct counts and aliases", () => {
@@ -377,4 +388,236 @@ test("advanced SELECT validates join alias scope and rejects unsupported MySQL F
   assert.throws(() => buildAdvancedSelect({ ...base, joins: "LEFT JOIN orders AS u ON u.user_id = u.id" }), /уже используется/);
   assert.throws(() => buildAdvancedSelect({ ...base, dialect: "mysql", joins: "FULL OUTER JOIN orders AS o ON o.user_id = u.id" }), /MySQL не поддерживает FULL OUTER JOIN/);
   assert.match(buildAdvancedSelect({ ...base, dialect: "postgres", joins: "FULL OUTER JOIN orders AS o ON o.user_id = u.id" }).sql, /FULL OUTER JOIN/);
+});
+
+
+test("DDL CREATE TABLE supports typed columns and common constraints", () => {
+  const result = buildCreateTable({
+    dialect: "postgres",
+    table: "orders",
+    columns: "id BIGINT PRIMARY KEY\nuser_id BIGINT NOT NULL REFERENCES users(id)\namount DECIMAL(10,2) NOT NULL CHECK (amount > 0)\nstatus VARCHAR(30) DEFAULT 'new'\ncreated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+  });
+  assert.equal(result.columnCount, 5);
+  assert.match(result.sql, /CREATE TABLE "orders"/);
+  assert.match(result.sql, /"user_id" BIGINT NOT NULL REFERENCES "users" \("id"\)/);
+  assert.match(result.sql, /DECIMAL\(10,2\) NOT NULL CHECK \(amount > 0\)/);
+  assert.match(result.sql, /DEFAULT 'new'/);
+  assert.throws(() => buildCreateTable({ table: "orders", columns: "id BOGUS" }), /неподдерживаемый тип данных/);
+  assert.throws(() => buildCreateTable({ table: "orders", columns: "id INT\nid TEXT" }), /уникальными/);
+  assert.throws(() => buildCreateTable({ table: "orders", columns: "id INT; DROP TABLE users" }), /недопустимые символы|не удалось разобрать/);
+});
+
+test("DDL ALTER TABLE supports add, drop, rename and dialect-specific type changes", () => {
+  assert.match(buildAlterTable({ table: "users", action: "add", column: "phone", definition: "phone VARCHAR(30) NOT NULL" }).sql, /ADD COLUMN "phone" VARCHAR\(30\) NOT NULL/);
+  assert.match(buildAlterTable({ table: "users", action: "drop", column: "phone" }).sql, /DROP COLUMN "phone"/);
+  assert.match(buildAlterTable({ table: "users", action: "rename", column: "name", newName: "display_name" }).sql, /RENAME COLUMN "name" TO "display_name"/);
+  assert.match(buildAlterTable({ dialect: "mysql", table: "users", action: "type", column: "name", dataType: "VARCHAR", typeSize: "255" }).sql, /MODIFY COLUMN .name. VARCHAR\(255\)/);
+  assert.match(buildAlterTable({ dialect: "postgres", table: "users", action: "type", column: "name", dataType: "TEXT" }).sql, /ALTER COLUMN "name" TYPE TEXT/);
+  assert.throws(() => buildAlterTable({ table: "users", action: "type", column: "name", dataType: "UNSAFE" }), /поддерживаемый тип/);
+});
+
+test("destructive DDL requires exact table-name confirmation", () => {
+  assert.equal(buildDropTable({ table: "old_users", confirmName: "old_users", ifExists: true }).sql, 'DROP TABLE IF EXISTS "old_users";');
+  assert.match(buildTruncateTable({ dialect: "mysql", table: "logs", confirmName: "logs" }).sql, /TRUNCATE TABLE .logs./);
+  assert.throws(() => buildDropTable({ table: "users", confirmName: "" }), /повтори имя таблицы/);
+  assert.throws(() => buildTruncateTable({ table: "users", confirmName: "user" }), /повтори имя таблицы/);
+});
+
+test("DML INSERT supports multiple rows, escaped strings and INSERT SELECT", () => {
+  const result = buildInsert({ table: "users", columns: "id, email", rows: "1 | qa@example.com\n2 | O'Neil@example.com" });
+  assert.equal(result.rowCount, 2);
+  const injected = buildInsert({ table: "users", columns: "email", rows: "x' OR '1'='1" }).sql;
+  assert.ok(injected.includes("'x'' OR ''1''=''1'"), "untrusted values must remain escaped string literals");
+  assert.match(result.sql, /VALUES\n  \(1, 'qa@example.com'\),\n  \(2, 'O''Neil@example.com'\);/);
+  const insertSelect = buildInsert({ dialect: "mysql", table: "archive", columns: "id, email", selectSql: "SELECT id, email FROM users WHERE active = TRUE" }).sql;
+  assert.ok(insertSelect.includes("INSERT INTO \`archive\` (\`id\`, \`email\`)"));
+  assert.match(insertSelect, /\nSELECT id, email FROM users WHERE active = TRUE;/);
+  assert.throws(() => buildInsert({ table: "users", columns: "id,email", rows: "1|qa\n2" }), /Строка INSERT №2/);
+  assert.throws(() => buildInsert({ table: "users", columns: "id", selectSql: "SELECT 1; DROP TABLE users" }), /один безопасный SELECT/);
+  assert.throws(() => buildInsert({ dialect: "mysql", table: "users", columns: "id", selectSql: "SELECT LOAD_FILE('/etc/passwd')" }), /один безопасный SELECT/);
+});
+
+test("DML UPDATE supports multiple assignments and enforces WHERE", () => {
+  const sql = buildUpdate({ table: "users", assignments: "status = active\nupdated_at = CURRENT_TIMESTAMP\nscore = 12", where: "id = 7 AND is_active = TRUE" }).sql;
+  assert.match(sql, /SET "status" = 'active',\n    "updated_at" = CURRENT_TIMESTAMP,\n    "score" = 12/);
+  assert.match(sql, /WHERE id = 7 AND is_active = TRUE;/);
+  assert.throws(() => buildUpdate({ table: "users", assignments: "status = active", where: "" }), /обязательно задай WHERE/);
+  assert.throws(() => buildUpdate({ table: "users", assignments: "status = active\nstatus = blocked", where: "id = 1" }), /повторяется в SET/);
+  assert.throws(() => buildUpdate({ table: "users", assignments: "status = active", where: "id = 1; DROP TABLE users" }), /Недопустимое условие/);
+});
+
+test("DML DELETE refuses missing WHERE and destructive SQL fragments", () => {
+  assert.equal(buildDelete({ table: "users", where: "id = 7" }).sql, 'DELETE FROM "users"\nWHERE id = 7;');
+  assert.throws(() => buildDelete({ table: "users", where: "" }), /DELETE без WHERE/);
+  assert.throws(() => buildDelete({ table: "users", where: "1 = 1 OR DROP = 1" }), /Недопустимое условие/);
+});
+
+test("DDL and expanded DML operations are wired to the interactive workbench", () => {
+  for (const operation of ["createTable", "alterTable", "dropTable", "truncateTable"]) {
+    assert.ok(source.includes('value="' + operation + '"'), "missing UI operation " + operation);
+    assert.ok(source.includes('case "' + operation + '"'), "missing builder case " + operation);
+  }
+  assert.ok(source.includes("form.ddlColumns"));
+  assert.ok(source.includes("form.alterAction"));
+  assert.ok(source.includes("form.confirmTable"));
+  assert.ok(source.includes("form.insertSelectSql"));
+  assert.ok(source.includes("form.updateAssignments"));
+  assert.ok(source.includes("buildInsert({ dialect, table, columns: form.columns, rows: form.insertValues, selectSql: form.insertSelectSql })"));
+  assert.ok(source.includes("buildUpdate({ dialect, table, assignments: form.updateAssignments"));
+});
+
+
+test("SQL statement splitter respects quoted semicolons and SQL comments", () => {
+  const script = `SELECT ';' AS value; -- ; ignored
+SELECT 2; /* ; ignored */ SELECT '[x;y]' AS value;`;
+  assert.deepEqual(splitSqlStatements(script), [
+    "SELECT ';' AS value",
+    "-- ; ignored\nSELECT 2",
+    "/* ; ignored */ SELECT '[x;y]' AS value",
+  ]);
+  assert.throws(() => splitSqlStatements("SELECT 'unfinished"), /незакрытую строку/);
+  assert.throws(() => splitSqlStatements("SELECT 1; /* unfinished"), /незакрытый комментарий/);
+});
+
+async function createSeededDatabase() {
+  const SQL = await initSqlJs();
+  const database = new SQL.Database();
+  database.run(SQL_TRAINER_SEED_SQL);
+  return database;
+}
+
+test("SQL execution runs CREATE TABLE AS with nested scalar subqueries and returns actual rows", async (t) => {
+  const database = await createSeededDatabase();
+  t.after(() => database.close());
+  const sql = `DROP TABLE IF EXISTS ordering;
+CREATE TABLE ordering AS
+SELECT author, title,
+       (SELECT AVG(amount) FROM book) AS amount
+FROM book
+WHERE amount < (SELECT AVG(amount) FROM book);
+SELECT * FROM ordering ORDER BY amount;`;
+  const result = executeSqlBatch(database, sql);
+  assert.equal(result.ok, true);
+  assert.equal(result.statementCount, 3);
+  assert.equal(result.results.length, 3);
+  assert.deepEqual(result.results[2].tables[0].columns, ["author", "title", "amount"]);
+  assert.equal(result.results[2].tables[0].rowCount, 3);
+  assert.deepEqual(result.results[2].tables[0].rows.map((row) => row[1]).sort(), ["Идиот", "Рассказы", "Евгений Онегин"].sort());
+  assert.ok(result.results[2].tables[0].rows.every((row) => row[2] > 0));
+});
+
+test("SQL execution preserves NULL values and SQLite three-valued logic", async (t) => {
+  const database = await createSeededDatabase();
+  t.after(() => database.close());
+  const result = executeSqlBatch(database, "SELECT id, last_name, last_name IS NULL AS is_missing FROM users WHERE last_name IS NULL ORDER BY id;");
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.results[0].tables[0].rows, [[3, null, 1], [5, null, 1]]);
+  const aggregate = executeSqlBatch(database, "SELECT COUNT(*) AS all_orders, COUNT(total) AS priced_orders, AVG(total) AS average_total FROM orders;");
+  assert.deepEqual(aggregate.results[0].tables[0].rows, [[6, 5, 102.1]]);
+});
+
+test("SQL execution applies DDL and DML changes between instructions and reports affected rows", async (t) => {
+  const database = await createSeededDatabase();
+  t.after(() => database.close());
+  const result = executeSqlBatch(database, `CREATE TABLE task_log (id INTEGER PRIMARY KEY, note TEXT);
+INSERT INTO task_log (id, note) VALUES (1, 'created'), (2, NULL);
+UPDATE task_log SET note = 'updated' WHERE id = 1;
+DELETE FROM task_log WHERE id = 2;
+SELECT * FROM task_log;`);
+  assert.equal(result.ok, true);
+  assert.equal(result.results[1].affectedRows, 2);
+  assert.equal(result.results[2].affectedRows, 1);
+  assert.equal(result.results[3].affectedRows, 1);
+  assert.deepEqual(result.results[4].tables[0].rows, [[1, "updated"]]);
+});
+
+test("SQL execution stops on the first runtime error and preserves earlier successful statements", async (t) => {
+  const database = await createSeededDatabase();
+  t.after(() => database.close());
+  const result = executeSqlBatch(database, "CREATE TABLE before_error (id INTEGER); INSERT INTO before_error VALUES (7); SELECT * FROM missing_table; SELECT 99;");
+  assert.equal(result.ok, false);
+  assert.equal(result.failedStatement, 3);
+  assert.equal(result.completedCount, 2);
+  assert.match(result.error, /no such table/i);
+  const persisted = database.exec("SELECT id FROM before_error;");
+  assert.deepEqual(persisted[0].values, [[7]]);
+});
+
+test("SQL execution rejects empty scripts and caps statement and result counts", async (t) => {
+  const database = await createSeededDatabase();
+  t.after(() => database.close());
+  assert.match(executeSqlBatch(database, "").error, /Добавь SQL-инструкцию/);
+  assert.match(executeSqlBatch(database, Array.from({ length: 51 }, () => "SELECT 1").join(";")).error, /не более 50/);
+  const large = executeSqlBatch(database, "WITH RECURSIVE numbers(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM numbers WHERE x < 600) SELECT x FROM numbers;");
+  assert.equal(large.results[0].tables[0].rowCount, 600);
+  assert.equal(large.results[0].tables[0].rows.length, 500);
+  assert.equal(large.results[0].tables[0].truncated, true);
+});
+
+test("SQL workbench integrates a local execution console and explicit SQLite isolation notice", async () => {
+  const consoleSource = await readFile("src/app/features/database-workbench/SqlExecutionConsole.tsx", "utf8");
+  assert.ok(source.includes("SqlExecutionConsole"));
+  assert.ok(consoleSource.includes("Выполнить SQL"));
+  assert.ok(consoleSource.includes("Подставить собранный SQL"));
+  assert.ok(consoleSource.includes("SQLite-базе прямо в браузере"));
+  assert.ok(consoleSource.includes("SQLite в WebAssembly"));
+});
+
+
+test("PostgreSQL compatibility adapts serial, JSONB, casts, ILIKE and NOW without changing literals or comments", () => {
+  const sql = "CREATE TABLE sample (id SERIAL PRIMARY KEY, payload JSONB); SELECT name::TEXT, created_at FROM users WHERE email ILIKE '%EXAMPLE%' AND created_at < NOW(); -- name::INT ILIKE";
+  const adapted = adaptSqlForSqlite(sql, "postgres");
+  assert.match(adapted, /id INTEGER PRIMARY KEY AUTOINCREMENT/i);
+  assert.match(adapted, /payload TEXT/i);
+  assert.match(adapted, /CAST\(name AS TEXT\)/i);
+  assert.match(adapted, /email\s+LIKE/i);
+  assert.match(adapted, /created_at < CURRENT_TIMESTAMP/i);
+  assert.match(adapted, /-- name::INT ILIKE/);
+});
+
+test("MySQL compatibility adapts INSERT IGNORE, AUTO_INCREMENT, duplicate-key updates and common types", () => {
+  const adapted = adaptSqlForSqlite("CREATE TABLE sample (id INT AUTO_INCREMENT PRIMARY KEY, active TINYINT(1), created DATETIME) ENGINE=InnoDB; INSERT IGNORE INTO sample VALUES (1, 1, NOW()) ON DUPLICATE KEY UPDATE active = VALUES(active);", "mysql");
+  assert.match(adapted, /id INTEGER PRIMARY KEY AUTOINCREMENT/i);
+  assert.match(adapted, /active INTEGER/i);
+  assert.match(adapted, /created TEXT/i);
+  assert.match(adapted, /INSERT OR IGNORE INTO/i);
+  assert.match(adapted, /ON CONFLICT DO UPDATE SET active = excluded\.active/i);
+  assert.doesNotMatch(adapted, /ENGINE=/i);
+});
+
+test("PostgreSQL and MySQL compatible functions execute in the isolated SQLite database", async (t) => {
+  const database = await createSeededDatabase();
+  registerSqlCompatibilityFunctions(database);
+  t.after(() => database.close());
+
+  const pg = executeSqlBatch(database, "SELECT email::TEXT AS address FROM users WHERE email ILIKE '%EXAMPLE%' ORDER BY id;", "postgres");
+  assert.equal(pg.ok, true, pg.error ?? "PostgreSQL-compatible SELECT should execute");
+  assert.equal(pg.results[0].tables[0].rowCount, 5);
+
+  const mysql = executeSqlBatch(database, "SELECT CONCAT(first_name, ' ', IFNULL(last_name, '')) AS full_name, IF(last_name IS NULL, 1, 0) AS missing FROM users ORDER BY id;", "mysql");
+  assert.equal(mysql.ok, true);
+  assert.deepEqual(mysql.results[0].tables[0].rows[2], ["Елена ", 1]);
+});
+
+test("dialect-specific DDL and upsert statements execute against the local SQLite engine", async (t) => {
+  const database = await createSeededDatabase();
+  registerSqlCompatibilityFunctions(database);
+  t.after(() => database.close());
+
+  const mysql = executeSqlBatch(database, `CREATE TABLE mysql_items (id INT AUTO_INCREMENT PRIMARY KEY, label VARCHAR(30), active TINYINT(1)) ENGINE=InnoDB;
+INSERT INTO mysql_items (label, active) VALUES ('first', 1);
+INSERT INTO mysql_items (id, label, active) VALUES (1, 'updated', 0) ON DUPLICATE KEY UPDATE label = VALUES(label), active = VALUES(active);
+SELECT id, label, active FROM mysql_items;`, "mysql");
+  assert.equal(mysql.ok, true, mysql.error ?? "MySQL-compatible script should execute");
+  assert.deepEqual(mysql.results[3].tables[0].rows, [[1, "updated", 0]]);
+
+  const postgres = executeSqlBatch(database, `CREATE TABLE pg_items (id SERIAL PRIMARY KEY, label JSONB); INSERT INTO pg_items (label) VALUES ('{"ok":true}'); SELECT id, label FROM pg_items;`, "postgres");
+  assert.equal(postgres.ok, true, postgres.error ?? "PostgreSQL-compatible script should execute");
+  assert.deepEqual(postgres.results[2].tables[0].rows, [[1, '{"ok":true}']]);
+});
+
+test("dialect adapter leaves quoted identifiers, strings and comments intact", () => {
+  const sql = "SELECT `ILIKE`, 'name::INT NOW()' AS literal /* AUTO_INCREMENT */ FROM users -- SERIAL";
+  assert.equal(adaptSqlForSqlite(sql, "postgres"), sql);
+  assert.equal(adaptSqlForSqlite(sql, "mysql"), sql);
 });
