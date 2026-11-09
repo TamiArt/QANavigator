@@ -80,6 +80,9 @@ function adaptPostgres(code) {
 }
 
 function adaptMysql(code) {
+  result = result.replace(/\bSTDDEV\s*\(/gi, "STDDEV_POP(");
+  result = result.replace(/\bSTD\s*\(/gi, "STDDEV_POP(");
+  result = result.replace(/\bVARIANCE\s*\(/gi, "VAR_POP(");
   let result = code;
   result = result.replace(/\bINSERT\s+IGNORE\s+INTO\b/gi, "INSERT OR IGNORE INTO");
   result = result.replace(/\bON\s+DUPLICATE\s+KEY\s+UPDATE\b/gi, "ON CONFLICT DO UPDATE SET");
