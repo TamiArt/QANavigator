@@ -709,3 +709,16 @@ test("aggregate builder allows a single aggregate result without GROUP BY and ke
   assert.match(source, /FROM Student/);
   assert.match(source, /WHERE first_name = 'Anna'/);
 });
+
+
+test("MySQL STDDEV and VARIANCE aliases use population statistics", async (t) => {
+  const database = await createSeededDatabase();
+  registerSqlCompatibilityFunctions(database);
+  t.after(() => database.close());
+  const result = executeSqlBatch(database, "SELECT STDDEV(score) AS deviation, VARIANCE(score) AS variance FROM Student;", "mysql");
+  assert.equal(result.ok, true, result.error ?? "MySQL statistical aliases should execute");
+  const [deviation, variance] = result.results[0].tables[0].rows[0];
+  assert.ok(deviation > 0);
+  assert.ok(variance > 0);
+  assert.ok(Math.abs(deviation * deviation - variance) < 1e-9);
+});
