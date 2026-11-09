@@ -76,6 +76,7 @@ function adaptPostgres(code) {
   result = result.replace(/\bSMALLSERIAL\s+PRIMARY\s+KEY\b/gi, "INTEGER PRIMARY KEY AUTOINCREMENT");
   result = result.replace(/\b(?:SERIAL|BIGSERIAL|SMALLSERIAL)\b/gi, "INTEGER");
   result = result.replace(/\bJSONB\b/gi, "TEXT");
+  result = result.replace(/\bJSONB_OBJECTAGG\s*\(/gi, "JSON_OBJECTAGG(");
   return result;
 }
 
