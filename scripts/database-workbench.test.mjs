@@ -6,6 +6,7 @@ import { buildAdvancedSelect } from "../src/app/features/database-workbench/adva
 import { buildCreateTable, buildAlterTable, buildDropTable, buildTruncateTable, buildInsert, buildUpdate, buildDelete } from "../src/app/features/database-workbench/ddl-dml-builder.mjs";
 import initSqlJs from "sql.js";
 import { executeSqlBatch, splitSqlStatements } from "../src/app/features/database-workbench/sql-execution.mjs";
+import { adaptSqlForSqlite, registerSqlCompatibilityFunctions } from "../src/app/features/database-workbench/sql-dialect-compat.mjs";
 import { SQL_TRAINER_SEED_SQL } from "../src/app/features/database-workbench/sql-seed.mjs";
 
 const source = await readFile("src/app/features/database-workbench/DatabaseWorkbenchModule.tsx", "utf8");
@@ -560,4 +561,46 @@ test("SQL workbench integrates a local execution console and explicit SQLite iso
   assert.ok(consoleSource.includes("Подставить собранный SQL"));
   assert.ok(consoleSource.includes("SQLite-базе прямо в браузере"));
   assert.ok(consoleSource.includes("SQLite в WebAssembly"));
+});
+
+
+test("PostgreSQL compatibility adapts serial, JSONB, casts, ILIKE and NOW without changing literals or comments", () => {
+  const sql = "CREATE TABLE sample (id SERIAL PRIMARY KEY, payload JSONB); SELECT name::TEXT, created_at FROM users WHERE email ILIKE '%EXAMPLE%' AND created_at < NOW(); -- name::INT ILIKE";
+  const adapted = adaptSqlForSqlite(sql, "postgres");
+  assert.match(adapted, /id INTEGER PRIMARY KEY AUTOINCREMENT/i);
+  assert.match(adapted, /payload TEXT/i);
+  assert.match(adapted, /CAST\(name AS TEXT\)/i);
+  assert.match(adapted, /LOWER\(email\) LIKE LOWER\('%EXAMPLE%'\)/i);
+  assert.match(adapted, /created_at < CURRENT_TIMESTAMP/i);
+  assert.match(adapted, /-- name::INT ILIKE/);
+});
+
+test("MySQL compatibility adapts INSERT IGNORE, AUTO_INCREMENT, duplicate-key updates and common types", () => {
+  const adapted = adaptSqlForSqlite("CREATE TABLE sample (id INT AUTO_INCREMENT PRIMARY KEY, active TINYINT(1), created DATETIME) ENGINE=InnoDB; INSERT IGNORE INTO sample VALUES (1, 1, NOW()) ON DUPLICATE KEY UPDATE active = VALUES(active);", "mysql");
+  assert.match(adapted, /id INTEGER PRIMARY KEY AUTOINCREMENT/i);
+  assert.match(adapted, /active INTEGER/i);
+  assert.match(adapted, /created TEXT/i);
+  assert.match(adapted, /INSERT OR IGNORE INTO/i);
+  assert.match(adapted, /ON CONFLICT DO UPDATE SET active = excluded\.active/i);
+  assert.doesNotMatch(adapted, /ENGINE=/i);
+});
+
+test("PostgreSQL and MySQL compatible functions execute in the isolated SQLite database", async (t) => {
+  const database = await createSeededDatabase();
+  registerSqlCompatibilityFunctions(database);
+  t.after(() => database.close());
+
+  const pg = executeSqlBatch(database, "SELECT email::TEXT AS address FROM users WHERE email ILIKE '%EXAMPLE%' ORDER BY id;", "postgres");
+  assert.equal(pg.ok, true);
+  assert.equal(pg.results[0].tables[0].rowCount, 5);
+
+  const mysql = executeSqlBatch(database, "SELECT CONCAT(first_name, ' ', IFNULL(last_name, '')) AS full_name, IF(last_name IS NULL, 1, 0) AS missing FROM users ORDER BY id;", "mysql");
+  assert.equal(mysql.ok, true);
+  assert.deepEqual(mysql.results[0].tables[0].rows[2], ["Елена ", 1]);
+});
+
+test("dialect adapter leaves quoted identifiers, strings and comments intact", () => {
+  const sql = "SELECT `ILIKE`, 'name::INT NOW()' AS literal /* AUTO_INCREMENT */ FROM users -- SERIAL";
+  assert.equal(adaptSqlForSqlite(sql, "postgres"), sql);
+  assert.equal(adaptSqlForSqlite(sql, "mysql"), sql);
 });
