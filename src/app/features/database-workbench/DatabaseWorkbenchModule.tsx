@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { buildNestedScalarSubquery, buildCorrelatedExistsSubquery } from "./nested-subquery-builder.mjs";
+import { buildAdvancedSelect } from "./advanced-select-builder.mjs";
 import {
   AlertTriangle, BookOpen, CheckCircle2, Code2, Copy,
   Database, Info, Search, ShieldCheck, WandSparkles,
 } from "lucide-react";
 
 type Dialect = "postgres" | "mysql";
-type Operation = "select" | "aggregate" | "join" | "subquery" | "cte" | "createTableAs" | "insert" | "update" | "delete" | "rename" | "alias";
+type Operation = "select" | "aggregate" | "join" | "subquery" | "cte" | "createTableAs" | "insert" | "update" | "delete" | "rename" | "alias" | "advancedSelect";
 type SubqueryMode = "SCALAR" | "IN" | "NOT IN" | "EXISTS" | "NOT EXISTS";
 type AggregateFunction = "COUNT" | "COUNT_DISTINCT" | "SUM" | "AVG" | "MIN" | "MAX";
 type AggregateMetric = { id: number; fn: AggregateFunction; column: string; alias: string };
@@ -72,6 +73,12 @@ type BuilderState = {
   newColumn: string;
   oldColumn: string;
   alias: string;
+  advancedFromAlias: string;
+  advancedSelectItems: string;
+  advancedJoins: string;
+  advancedGroupBy: string;
+  advancedHaving: string;
+  advancedOrderBy: string;
 };
 
 const initial: BuilderState = {
@@ -97,6 +104,9 @@ const initial: BuilderState = {
   ctasSubqueryLevels: [{ id: 2, table: "book", selectKind: "aggregate", aggregate: "AVG", column: "amount", filterEnabled: false, filterColumn: "amount", filterOperator: ">", filterValue: "0" }], ctasAppendSelect: true,
   setColumn: "status", setValue: "active", newColumn: "display_name",
   oldColumn: "name", alias: "u",
+  advancedFromAlias: "u", advancedSelectItems: "u.id AS user_id\nu.email\nCOUNT(o.id) AS orders_count",
+  advancedJoins: "LEFT JOIN orders AS o ON o.user_id = u.id",
+  advancedGroupBy: "u.id, u.email", advancedHaving: "COUNT(o.id) > 1", advancedOrderBy: "orders_count DESC, u.email ASC",
 };
 
 const snippets = [
@@ -195,6 +205,12 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
   };
   try {
     switch (operation) {
+      case "advancedSelect": {
+        if (form.limit.trim() && (!/^\\d+$/.test(form.limit.trim()) || Number(form.limit) > 10000)) return { sql: "", params, error: "LIMIT должен быть целым числом от 0 до 10000." };
+        if (form.offset.trim() && (!/^\\d+$/.test(form.offset.trim()) || Number(form.offset) > 1000000)) return { sql: "", params, error: "OFFSET должен быть целым числом от 0 до 1000000." };
+        const advanced = buildAdvancedSelect({ table, fromAlias: form.advancedFromAlias, dialect, selectItems: form.advancedSelectItems, joins: form.advancedJoins, whereClause: where(), groupBy: form.advancedGroupBy, having: form.advancedHaving, orderBy: form.advancedOrderBy, distinct: form.distinct, limit: form.limit.trim() ? String(Number(form.limit)) : "", offset: form.offset.trim() ? String(Number(form.offset)) : "" });
+        return { sql: advanced.sql, params, error: "" };
+      }
       case "select": {
         if (!columns) return { sql: "", params, error: "Перечисли столбцы через запятую или укажи *." };
         const selected = form.columns.trim() === "*" ? "*" : columns.map(q).join(", ");
@@ -430,8 +446,8 @@ export function DatabaseWorkbenchModule() {
         <section className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-3">
             <div><p className="text-sm font-semibold">1. Что нужно сделать?</p><p className="text-xs text-muted-foreground">Выбери тип SQL-запроса.</p></div>
-            <select value={operation} onChange={(event) => { const next = event.target.value as Operation; setOperation(next); if (next === "aggregate") setForm((current) => ({ ...current, conditions: [] })); }} className={fieldClass + " max-w-xs"}>
-              <option value="select">Получить данные — SELECT</option>
+            <select value={operation} onChange={(event) => { const next = event.target.value as Operation; setOperation(next); if (next === "aggregate" || next === "advancedSelect") setForm((current) => ({ ...current, conditions: [] })); }} className={fieldClass + " max-w-xs"}>
+              <option value="advancedSelect">Расширенный SELECT — JOIN / CASE / GROUP BY / HAVING / ORDER BY</option>\n              <option value="select">Получить данные — SELECT</option>
               <option value="aggregate">Сгруппировать и посчитать — GROUP BY</option>
               <option value="join">Объединить таблицы — JOIN</option>
               <option value="subquery">Подзапросы — IN / EXISTS / SELECT</option>
@@ -449,6 +465,7 @@ export function DatabaseWorkbenchModule() {
             <div className="space-y-4 rounded-xl border border-border bg-card p-4">
               <div className="flex items-center justify-between gap-2"><p className="text-sm font-semibold">2. Параметры запроса</p><select aria-label="Диалект SQL" value={dialect} onChange={(event) => setDialect(event.target.value as Dialect)} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs"><option value="postgres">PostgreSQL</option><option value="mysql">MySQL</option></select></div>
               {operation !== "createTableAs" && <div><label className={labelClass}>Название таблицы</label><input value={form.table} onChange={(event) => update("table", event.target.value)} className={fieldClass} placeholder="users" /></div>}
+              {operation === "advancedSelect" && <div className="space-y-3 rounded-lg border border-primary/20 bg-muted/30 p-3"><p className="text-xs text-muted-foreground">Собирай сложный SELECT: по одному выражению на строку, каждый JOIN — отдельной строкой. WHERE использует общий редактор условий ниже.</p><label className={labelClass}>Псевдоним основной таблицы (необязательно)</label><input value={form.advancedFromAlias} onChange={(event) => update("advancedFromAlias", event.target.value)} className={fieldClass} placeholder="u" /><label className={labelClass}>SELECT — столбцы, агрегаты, арифметика, CASE WHEN (по одному выражению на строку)</label><textarea value={form.advancedSelectItems} onChange={(event) => update("advancedSelectItems", event.target.value)} className={fieldClass + " min-h-24"} placeholder={"u.id AS user_id\nu.email\nCOUNT(o.id) AS orders_count"} /><label className={labelClass}>JOIN (каждый с новой строки)</label><textarea value={form.advancedJoins} onChange={(event) => update("advancedJoins", event.target.value)} className={fieldClass + " min-h-20"} placeholder={"LEFT JOIN orders AS o ON o.user_id = u.id\nLEFT JOIN payments AS p ON p.order_id = o.id"} /><label className={labelClass}>GROUP BY (через запятую, необязательно)</label><input value={form.advancedGroupBy} onChange={(event) => update("advancedGroupBy", event.target.value)} className={fieldClass} placeholder="u.id, u.email" /><label className={labelClass}>HAVING (каждое условие с новой строки, агрегаты)</label><textarea value={form.advancedHaving} onChange={(event) => update("advancedHaving", event.target.value)} className={fieldClass + " min-h-16"} placeholder={"COUNT(o.id) > 1\nSUM(o.amount) >= 100"} /><label className={labelClass}>ORDER BY (через запятую, направление у каждого поля)</label><input value={form.advancedOrderBy} onChange={(event) => update("advancedOrderBy", event.target.value)} className={fieldClass} placeholder="orders_count DESC, u.email ASC" /><label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={form.distinct} onChange={(event) => update("distinct", event.target.checked)} />DISTINCT</label><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>LIMIT</label><input value={form.limit} onChange={(event) => update("limit", event.target.value)} className={fieldClass} /></div><div><label className={labelClass}>OFFSET</label><input value={form.offset} onChange={(event) => update("offset", event.target.value)} className={fieldClass} /></div></div></div>}
               {(operation === "select" || operation === "subquery" || operation === "cte" || operation === "insert" || operation === "alias") && <div><label className={labelClass}>Столбцы, которые нужно вывести через запятую</label><input value={form.columns} onChange={(event) => update("columns", event.target.value)} className={fieldClass} placeholder="id, email, created_at" /><p className="mt-1 text-[11px] text-muted-foreground">Для SELECT можно указать * — все столбцы.</p></div>}
               {operation === "aggregate" && <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
                 <div><label className={labelClass}>Группировать по (один или несколько столбцов)</label><input value={form.groupBy} onChange={(event) => update("groupBy", event.target.value)} className={fieldClass} placeholder="status, department" /><label className={labelClass + " mt-2"}>Псевдонимы столбцов группировки (необязательно)</label><input value={form.groupAliases} onChange={(event) => update("groupAliases", event.target.value)} className={fieldClass} placeholder="Статус, Отдел" /><p className="mt-1 text-[11px] text-muted-foreground">Можно группировать по любым полям текущей таблицы. Перечисли несколько столбцов через запятую. Если псевдонимы не нужны, оставь поле пустым.</p></div>
@@ -482,7 +499,7 @@ export function DatabaseWorkbenchModule() {
                 <label className="flex items-center gap-2 text-xs text-muted-foreground"><input type="checkbox" checked={form.ctasAppendSelect} onChange={(event) => update("ctasAppendSelect", event.target.checked)} />После создания сразу добавить SELECT * из новой таблицы</label>
               </div>}
               {operation === "insert" && <div><label className={labelClass}>Значения в том же порядке (разделитель |)</label><input value={form.insertValues} onChange={(event) => update("insertValues", event.target.value)} className={fieldClass} placeholder="101 | qa@example.com | Anna" /><p className="mt-1 text-[11px] text-muted-foreground">Значения попадут в список параметров отдельно от SQL. Текстовые кавычки вручную добавлять не нужно.</p></div>}
-              {(operation === "select" || operation === "aggregate" || operation === "join" || operation === "update" || operation === "delete") && (
+              {(operation === "select" || operation === "advancedSelect" || operation === "aggregate" || operation === "join" || operation === "update" || operation === "delete") && (
                 <div className="space-y-3 rounded-lg bg-muted/40 p-3">
                   <div className="flex items-center justify-between gap-2"><p className="text-xs font-semibold">Условия WHERE</p><button type="button" onClick={addCondition} className="rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-background">+ Добавить условие</button></div>
                   {form.conditions.map((condition, index) => <div key={condition.id} className="space-y-2 rounded-lg border border-border bg-card p-3">
