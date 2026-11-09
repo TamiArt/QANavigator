@@ -108,10 +108,107 @@ export function adaptSqlForSqlite(sql, dialect = "postgres") {
   });
 }
 
+function numericValues(values) {
+  return values.filter((value) => value !== null && value !== undefined).map(Number).filter(Number.isFinite);
+}
+
+function statisticalAggregate(kind, sample = false) {
+  return {
+    init: () => ({ count: 0, mean: 0, m2: 0, values: [] }),
+    step: (state, value) => {
+      if (value === null || value === undefined) return state;
+      const number = Number(value);
+      if (!Number.isFinite(number)) return state;
+      state.count += 1;
+      const delta = number - state.mean;
+      state.mean += delta / state.count;
+      state.m2 += delta * (number - state.mean);
+      state.values.push(number);
+      return state;
+    },
+    finalize: (state) => {
+      if (!state.count) return null;
+      if (kind === "median") {
+        const sorted = state.values.sort((a, b) => a - b);
+        const middle = Math.floor(sorted.length / 2);
+        return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+      }
+      if (kind === "stddev" || kind === "variance") {
+        if (sample && state.count < 2) return null;
+        const variance = state.m2 / (sample ? state.count - 1 : state.count);
+        return kind === "stddev" ? Math.sqrt(variance) : variance;
+      }
+      return null;
+    },
+  };
+}
+
+/** Register aggregate names commonly used by PostgreSQL and MySQL on the local SQLite engine. */
 export function registerSqlCompatibilityFunctions(database) {
   if (typeof database?.create_function !== "function") return;
   database.create_function("CONCAT", (...values) => values.map((value) => value == null ? "" : String(value)).join(""));
   database.create_function("IF", (condition, whenTrue, whenFalse) => condition ? whenTrue : whenFalse);
   database.create_function("GREATEST", (...values) => values.some((value) => value == null) ? null : Math.max(...values.map(Number)));
   database.create_function("LEAST", (...values) => values.some((value) => value == null) ? null : Math.min(...values.map(Number)));
+
+  if (typeof database.create_aggregate !== "function") return;
+  const register = (name, aggregate) => database.create_aggregate(name, aggregate);
+  for (const [name, kind, sample] of [
+    ["STDDEV", "stddev", true], ["STD", "stddev", true],
+    ["STDDEV_SAMP", "stddev", true], ["STDDEV_POP", "stddev", false],
+    ["VARIANCE", "variance", true], ["VAR_SAMP", "variance", true], ["VAR_POP", "variance", false],
+    ["MEDIAN", "median", false],
+  ]) register(name, statisticalAggregate(kind, sample));
+
+  register("BOOL_AND", {
+    init: () => null,
+    step: (state, value) => value == null ? state : state === null ? Boolean(value) : state && Boolean(value),
+    finalize: (state) => state,
+  });
+  register("BOOL_OR", {
+    init: () => null,
+    step: (state, value) => value == null ? state : state === null ? Boolean(value) : state || Boolean(value),
+    finalize: (state) => state,
+  });
+  register("EVERY", {
+    init: () => null,
+    step: (state, value) => value == null ? state : state === null ? Boolean(value) : state && Boolean(value),
+    finalize: (state) => state,
+  });
+  register("BIT_AND", {
+    init: () => null,
+    step: (state, value) => value == null ? state : state === null ? Number(value) | 0 : state & (Number(value) | 0),
+    finalize: (state) => state,
+  });
+  register("BIT_OR", {
+    init: () => null,
+    step: (state, value) => value == null ? state : state === null ? Number(value) | 0 : state | (Number(value) | 0),
+    finalize: (state) => state,
+  });
+  register("BIT_XOR", {
+    init: () => null,
+    step: (state, value) => value == null ? state : state === null ? Number(value) | 0 : state ^ (Number(value) | 0),
+    finalize: (state) => state,
+  });
+  register("ANY_VALUE", {
+    init: () => null,
+    step: (state, value) => state === null && value !== null ? value : state,
+    finalize: (state) => state,
+  });
+  const collect = {
+    init: () => [],
+    step: (state, value) => { if (value !== null && value !== undefined) state.push(value); return state; },
+    finalize: (state) => state.length ? JSON.stringify(state) : null,
+  };
+  for (const name of ["ARRAY_AGG", "JSON_AGG", "JSONB_AGG", "JSON_ARRAYAGG"]) register(name, collect);
+  register("JSON_OBJECTAGG", {
+    init: () => ({}),
+    step: (state, key, value) => { if (key !== null && key !== undefined && value !== null && value !== undefined) state[String(key)] = value; return state; },
+    finalize: (state) => Object.keys(state).length ? JSON.stringify(state) : null,
+  });
+  register("STRING_AGG", {
+    init: () => null,
+    step: (state, value, separator) => value == null ? state : state === null ? String(value) : state + (separator == null ? "" : String(separator)) + String(value),
+    finalize: (state) => state,
+  });
 }
