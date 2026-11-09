@@ -254,9 +254,7 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         return { sql: "SELECT " + (form.distinct ? "DISTINCT " : "") + selected + "\nFROM " + tableSql + where() + sorting + limit + offset + ";", params, error: "" };
       }
       case "aggregate": {
-        const groupColumns = splitIdentifiers(form.groupBy);
-        if (!groupColumns) return { sql: "", params, error: "Укажи один или несколько столбцов группировки через запятую." };
-        if (!form.aggregates.length) return { sql: "", params, error: "Добавь хотя бы один агрегатный показатель." };
+        const groupColumns = form.groupBy.trim() ? splitIdentifiers(form.groupBy) : [];\n        if (!groupColumns) return { sql: "", params, error: "Проверь столбцы группировки: используй имена через запятую." };\n        if (!form.aggregates.length) return { sql: "", params, error: "Добавь хотя бы один агрегатный показатель." };
         const groupAliases = form.groupAliases.trim() ? form.groupAliases.split(",").map((alias) => alias.trim()) : [];
         if (groupAliases.length && (groupAliases.length !== groupColumns.length || groupAliases.some((alias) => !alias))) return { sql: "", params, error: "Если задаёшь псевдонимы, укажи по одному для каждого столбца группировки через запятую." };
         const expressions = form.aggregates.map((metric, index) => {
