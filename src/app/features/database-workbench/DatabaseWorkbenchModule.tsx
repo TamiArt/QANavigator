@@ -279,9 +279,9 @@ function buildSql(operation: Operation, dialect: Dialect, form: BuilderState) {
         const limit = form.limit.trim() ? "\nLIMIT " + Number(form.limit) : "";
         const offset = form.offset.trim() ? "\nOFFSET " + Number(form.offset) : "";
         const selectedGroups = groupColumns.map((column, index) => groupAliases.length ? q(column) + " AS " + aliasSql(groupAliases[index]) : q(column));
-        const selectItems = [...selectedGroups, ...expressions].join(",\\n       ");
-        const groupByClause = groupColumns.length ? "\\nGROUP BY " + groupColumns.map(q).join(", ") : "";
-        return { sql: "SELECT " + selectItems + "\\nFROM " + tableSql + whereClause + groupByClause + having + sorting + limit + offset + ";", params, error: "" };
+        const selectItems = [...selectedGroups, ...expressions].join(",\n       ");
+        const groupByClause = groupColumns.length ? "\nGROUP BY " + groupColumns.map(q).join(", ") : "";
+        return { sql: "SELECT " + selectItems + "\nFROM " + tableSql + whereClause + groupByClause + having + sorting + limit + offset + ";", params, error: "" };
       }
       case "join": {
         const joinedTables = splitIdentifiers(form.secondTable);
