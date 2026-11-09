@@ -102,8 +102,8 @@ test("database workbench builds grouped aggregate queries with distinct counts a
   assert.ok(source.includes('type Operation = "select" | "aggregate"'), "GROUP BY must be available as a builder operation");
   assert.ok(source.includes('case "aggregate":'), "aggregate operation must generate SQL");
   assert.ok(source.includes('"COUNT(DISTINCT " + q(column) + ")"'), "distinct book counting must use a unique book identifier");
-  assert.ok(source.includes('"COUNT(*) AS " + aliasSql(alias)'), "COUNT(*) must support counting physical-copy rows");
-  assert.ok(source.includes('" + groupColumns.map(q).join(", ") + having + sorting + limit + offset + ";"'), "aggregate queries must retain GROUP BY before optional HAVING, sorting and pagination");
+  assert.ok(source.includes('metric.fn === "COUNT" && column === "*"'), "COUNT(*) must support counting physical-copy rows");
+  assert.ok(source.includes('const groupByClause = groupColumns.length ?') && source.includes(" + groupByClause + having + sorting + limit + offset + \";\""), "aggregate queries must include GROUP BY only when configured");
   assert.ok(source.includes("groupAliases") && source.includes("aliasSql"), "grouped and aggregate output columns must support aliases");
   assert.ok(source.includes('groupBy: "", groupAliases: ""'), "GROUP BY must not default to a domain-specific column");
   assert.ok(source.includes('{ id: 1, fn: "COUNT", column: "*", alias: "total" }'), "aggregate metrics must start with a neutral COUNT(*) example");
@@ -127,7 +127,7 @@ test("SELECT supports DISTINCT and validated pagination", () => {
 test("aggregate queries support HAVING, ORDER BY and pagination", () => {
   assert.ok(source.includes('havingAlias: string'));
   assert.ok(source.includes('"\\nHAVING " + (dialect === "mysql" ? q(form.havingAlias.trim()) : havingTarget)'), "HAVING must filter grouped results with dialect-aware expressions");
-  assert.ok(source.includes('havingMetric.fn === "COUNT_DISTINCT"'), "PostgreSQL HAVING must use the aggregate expression rather than a SELECT alias");
+  assert.ok(source.includes("aggregateSqlExpression(havingMetric, q)"), "PostgreSQL HAVING must use the configured aggregate expression rather than a SELECT alias");
   assert.ok(source.includes('"\\nORDER BY " + q(form.orderColumn.trim())'), "aggregate results must be sortable");
   assert.ok(source.includes('"\\nLIMIT " + Number(form.limit)'), "aggregate results must support LIMIT");
   assert.ok(source.includes('"\\nOFFSET " + Number(form.offset)'), "aggregate results must support OFFSET");
@@ -620,4 +620,108 @@ test("dialect adapter leaves quoted identifiers, strings and comments intact", (
   const sql = "SELECT `ILIKE`, 'name::INT NOW()' AS literal /* AUTO_INCREMENT */ FROM users -- SERIAL";
   assert.equal(adaptSqlForSqlite(sql, "postgres"), sql);
   assert.equal(adaptSqlForSqlite(sql, "mysql"), sql);
+});
+
+
+test("Student sample supports COUNT(column) with a WHERE filter and returns the expected count", async (t) => {
+  const database = await createSeededDatabase();
+  registerSqlCompatibilityFunctions(database);
+  t.after(() => database.close());
+
+  const result = executeSqlBatch(database, "SELECT COUNT(first_name) AS count FROM Student WHERE first_name = 'Anna';");
+  assert.equal(result.ok, true, result.error ?? "Filtered COUNT should execute");
+  assert.deepEqual(result.results[0].tables[0].columns, ["count"]);
+  assert.deepEqual(result.results[0].tables[0].rows, [[3]]);
+  const jsonb = executeSqlBatch(database, "SELECT JSONB_OBJECTAGG(student_id, first_name) AS students FROM Student;", "postgres");
+  assert.equal(jsonb.ok, true, jsonb.error ?? "JSONB_OBJECTAGG should execute");
+  assert.equal(JSON.parse(jsonb.results[0].tables[0].rows[0][0])["5"], null);
+});
+
+test("SQL trainer executes common PostgreSQL and MySQL aggregate function families", async (t) => {
+  const database = await createSeededDatabase();
+  registerSqlCompatibilityFunctions(database);
+  t.after(() => database.close());
+
+  const result = executeSqlBatch(database, `SELECT
+    COUNT(*) AS row_count,
+    COUNT(first_name) AS named_count,
+    SUM(score) AS score_sum,
+    AVG(score) AS score_average,
+    MIN(score) AS score_min,
+    MAX(score) AS score_max,
+    GROUP_CONCAT(first_name) AS names,
+    STRING_AGG(first_name, ', ') AS names_joined,
+    ARRAY_AGG(first_name) AS names_array,
+    JSON_AGG(first_name) AS names_json,
+    JSON_ARRAYAGG(first_name) AS names_json_array,
+    JSON_OBJECTAGG(student_id, first_name) AS names_by_id,
+    BOOL_AND(is_active) AS all_active,
+    BOOL_OR(is_active) AS any_active,
+    EVERY(is_active) AS every_active,
+    BIT_AND(student_id) AS bit_and_value,
+    BIT_OR(student_id) AS bit_or_value,
+    BIT_XOR(student_id) AS bit_xor_value,
+    STDDEV(score) AS score_stddev,
+    STDDEV_POP(score) AS score_stddev_pop,
+    STDDEV_SAMP(score) AS score_stddev_samp,
+    VARIANCE(score) AS score_variance,
+    VAR_POP(score) AS score_var_pop,
+    VAR_SAMP(score) AS score_var_samp,
+    MEDIAN(score) AS score_median,
+    TOTAL(score) AS score_total,
+    ANY_VALUE(first_name) AS arbitrary_name
+  FROM Student;`);
+  assert.equal(result.ok, true, result.error ?? "Aggregate family query should execute");
+  const row = result.results[0].tables[0].rows[0];
+  assert.equal(row[0], 6);
+  assert.equal(row[1], 5);
+  assert.equal(row[2], 433);
+  assert.equal(row[3], 86.6);
+  assert.equal(row[4], 78);
+  assert.equal(row[5], 92);
+  assert.match(row[6], /Anna/);
+  assert.match(row[7], /Anna/);
+  assert.deepEqual(JSON.parse(row[8]), ["Anna", "Anna", "John", "Maria", null, "Anna"]);
+  assert.deepEqual(JSON.parse(row[9]), ["Anna", "Anna", "John", "Maria", null, "Anna"]);
+  assert.deepEqual(JSON.parse(row[10]), ["Anna", "Anna", "John", "Maria", null, "Anna"]);
+  assert.deepEqual(JSON.parse(row[11]), { "1": "Anna", "2": "Anna", "3": "John", "4": "Maria", "5": null, "6": "Anna" });
+  assert.equal(row[12], 0);
+  assert.equal(row[13], 1);
+  assert.equal(row[14], 0);
+  assert.equal(row[15], 0);
+  assert.equal(row[16], 7);
+  assert.equal(row[17], 7);
+  assert.ok(row[18] > 0);
+  assert.ok(row[19] > 0);
+  assert.ok(row[20] > row[19]);
+  assert.ok(row[21] > 0);
+  assert.ok(row[21] > row[22]);
+  assert.ok(row[23] > row[22]);
+  assert.equal(row[24], 88);
+  assert.equal(row[25], 433);
+  assert.equal(row[26], "Anna");
+});
+
+test("aggregate builder allows a single aggregate result without GROUP BY and keeps WHERE", () => {
+  assert.match(source, /form\.groupBy\.trim\(\) \? splitIdentifiers\(form\.groupBy\) : \[\]/);
+  assert.match(source, /const groupByClause = groupColumns\.length \?/);
+  assert.match(source, /aggregateSqlExpression\(metric, q\)/);
+  assert.match(source, /value="JSON_OBJECTAGG"/);
+  assert.match(source, /value="STDDEV_POP"/);
+  assert.match(source, /COUNT\(first_name\)/);
+  assert.match(source, /FROM Student/);
+  assert.match(source, /WHERE first_name = 'Anna'/);
+});
+
+
+test("MySQL STDDEV and VARIANCE aliases use population statistics", async (t) => {
+  const database = await createSeededDatabase();
+  registerSqlCompatibilityFunctions(database);
+  t.after(() => database.close());
+  const result = executeSqlBatch(database, "SELECT STDDEV(score) AS deviation, VARIANCE(score) AS variance FROM Student;", "mysql");
+  assert.equal(result.ok, true, result.error ?? "MySQL statistical aliases should execute");
+  const [deviation, variance] = result.results[0].tables[0].rows[0];
+  assert.ok(deviation > 0);
+  assert.ok(variance > 0);
+  assert.ok(Math.abs(deviation * deviation - variance) < 1e-9);
 });
