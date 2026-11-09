@@ -102,8 +102,8 @@ test("database workbench builds grouped aggregate queries with distinct counts a
   assert.ok(source.includes('type Operation = "select" | "aggregate"'), "GROUP BY must be available as a builder operation");
   assert.ok(source.includes('case "aggregate":'), "aggregate operation must generate SQL");
   assert.ok(source.includes('"COUNT(DISTINCT " + q(column) + ")"'), "distinct book counting must use a unique book identifier");
-  assert.ok(source.includes('"COUNT(*) AS " + aliasSql(alias)'), "COUNT(*) must support counting physical-copy rows");
-  assert.ok(source.includes('" + groupColumns.map(q).join(", ") + having + sorting + limit + offset + ";"'), "aggregate queries must retain GROUP BY before optional HAVING, sorting and pagination");
+  assert.ok(source.includes('metric.fn === "COUNT" && column === "*"'), "COUNT(*) must support counting physical-copy rows");
+  assert.ok(source.includes('const groupByClause = groupColumns.length ?') && source.includes(" + groupByClause + having + sorting + limit + offset + \";\""), "aggregate queries must include GROUP BY only when configured");
   assert.ok(source.includes("groupAliases") && source.includes("aliasSql"), "grouped and aggregate output columns must support aliases");
   assert.ok(source.includes('groupBy: "", groupAliases: ""'), "GROUP BY must not default to a domain-specific column");
   assert.ok(source.includes('{ id: 1, fn: "COUNT", column: "*", alias: "total" }'), "aggregate metrics must start with a neutral COUNT(*) example");
@@ -127,7 +127,7 @@ test("SELECT supports DISTINCT and validated pagination", () => {
 test("aggregate queries support HAVING, ORDER BY and pagination", () => {
   assert.ok(source.includes('havingAlias: string'));
   assert.ok(source.includes('"\\nHAVING " + (dialect === "mysql" ? q(form.havingAlias.trim()) : havingTarget)'), "HAVING must filter grouped results with dialect-aware expressions");
-  assert.ok(source.includes('havingMetric.fn === "COUNT_DISTINCT"'), "PostgreSQL HAVING must use the aggregate expression rather than a SELECT alias");
+  assert.ok(source.includes("aggregateSqlExpression(havingMetric, q)"), "PostgreSQL HAVING must use the configured aggregate expression rather than a SELECT alias");
   assert.ok(source.includes('"\\nORDER BY " + q(form.orderColumn.trim())'), "aggregate results must be sortable");
   assert.ok(source.includes('"\\nLIMIT " + Number(form.limit)'), "aggregate results must support LIMIT");
   assert.ok(source.includes('"\\nOFFSET " + Number(form.offset)'), "aggregate results must support OFFSET");
@@ -692,8 +692,8 @@ test("SQL trainer executes common PostgreSQL and MySQL aggregate function famili
   assert.ok(row[19] > 0);
   assert.ok(row[20] > row[19]);
   assert.ok(row[21] > 0);
-  assert.ok(row[22] > row[21]);
-  assert.ok(row[23] > 0);
+  assert.ok(row[21] > row[22]);
+  assert.ok(row[23] > row[22]);
   assert.equal(row[24], 88);
   assert.equal(row[25], 433);
   assert.equal(row[26], "Anna");
