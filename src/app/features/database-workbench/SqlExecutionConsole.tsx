@@ -4,6 +4,7 @@ import wasmUrl from "sql.js/dist/sql-wasm.wasm?url";
 import { AlertTriangle, Database as DatabaseIcon, Play, RotateCcw } from "lucide-react";
 import { SQL_TRAINER_SEED_SQL } from "./sql-seed.mjs";
 import { executeSqlBatch, type SqlBatchResult } from "./sql-execution.mjs";
+import { registerSqlCompatibilityFunctions } from "./sql-dialect-compat.mjs";
 
 const DEFAULT_SQL = `DROP TABLE IF EXISTS ordering;
 CREATE TABLE ordering AS
@@ -13,9 +14,9 @@ FROM book
 WHERE amount < (SELECT AVG(amount) FROM book);
 SELECT * FROM ordering;`;
 
-type Props = { generatedSql: string; generatedError?: string };
+type Props = { generatedSql: string; generatedError?: string; dialect: "postgres" | "mysql" };
 
-export function SqlExecutionConsole({ generatedSql, generatedError }: Props) {
+export function SqlExecutionConsole({ generatedSql, generatedError, dialect }: Props) {
   const [sql, setSql] = useState(DEFAULT_SQL);
   const [ready, setReady] = useState(false);
   const [initializationError, setInitializationError] = useState("");
@@ -30,6 +31,7 @@ export function SqlExecutionConsole({ generatedSql, generatedError }: Props) {
       .then((SQL) => {
         if (!active) return;
         const database = new SQL.Database();
+        registerSqlCompatibilityFunctions(database);
         database.run(SQL_TRAINER_SEED_SQL);
         engineRef.current = SQL;
         databaseRef.current = database;
@@ -50,7 +52,7 @@ export function SqlExecutionConsole({ generatedSql, generatedError }: Props) {
     if (!databaseRef.current || running) return;
     setRunning(true);
     try {
-      setBatch(executeSqlBatch(databaseRef.current, sql));
+      setBatch(executeSqlBatch(databaseRef.current, sql, dialect));
     } finally {
       setRunning(false);
     }
@@ -61,6 +63,7 @@ export function SqlExecutionConsole({ generatedSql, generatedError }: Props) {
     if (!SQL) return;
     databaseRef.current?.close();
     const database = new SQL.Database();
+    registerSqlCompatibilityFunctions(database);
     database.run(SQL_TRAINER_SEED_SQL);
     databaseRef.current = database;
     setBatch(null);
@@ -114,7 +117,7 @@ export function SqlExecutionConsole({ generatedSql, generatedError }: Props) {
           {!batch.ok && batch.failedSql && <div className="flex gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs"><AlertTriangle className="h-4 w-4 shrink-0 text-destructive" /><code className="whitespace-pre-wrap break-all">{batch.failedSql}</code></div>}
         </div>
       )}
-      <p className="text-[11px] leading-relaxed text-muted-foreground">Важно: используется SQLite в WebAssembly, а не сервер PostgreSQL/MySQL. Большинство базовых SELECT, подзапросов, JOIN, агрегатов, CREATE/INSERT/UPDATE/DELETE и NULL работают реально; специфичные конструкции конкретной СУБД могут отличаться. База изолирована в памяти браузера и не имеет доступа к внешним данным.</p>
+      <p className="text-[11px] leading-relaxed text-muted-foreground">Важно: используется SQLite в WebAssembly, а не сервер PostgreSQL/MySQL. Выбранный диалект: {dialect === "postgres" ? "PostgreSQL" : "MySQL"}. Совместимый синтаксис адаптируется для SQLite; специфичные возможности сервера, расширения и типы данных могут отличаться. База изолирована в памяти браузера и не имеет доступа к внешним данным.</p>
     </section>
   );
 }
