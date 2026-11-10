@@ -752,3 +752,31 @@ SELECT 2; /* outer ; /* nested ; */ still outer ; */ SELECT 3;`;
   ]);
   assert.throws(() => splitSqlStatements("SELECT 1; /* outer /* nested */"), /незакрытый комментарий/);
 });
+
+
+test("database workbench exposes a searchable SQL operator memo with the main command groups", () => {
+  for (const token of [
+    'id: "memo" as const',
+    "memoOperatorGroups",
+    "DQL — чтение данных",
+    "DML — изменение данных",
+    "DDL — структура БД",
+    "DCL — права доступа",
+    "TCL — транзакции",
+    "BETWEEN",
+    "IS NULL",
+    "EXISTS",
+    "UNION ALL",
+    "INNER JOIN",
+    "LEFT [OUTER] JOIN",
+    "COUNT(DISTINCT column)",
+    "ROW_NUMBER",
+    "PRIMARY KEY",
+    "FOREIGN KEY",
+    "ROLLBACK",
+    "Копировать",
+  ]) {
+    assert.ok(source.includes(token), "SQL memo is missing " + token);
+  }
+  assert.ok(source.includes("value.replace(/'/g, \"''\")"), "the shared copy helper must remain available");
+});
