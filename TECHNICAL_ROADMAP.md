@@ -2022,3 +2022,13 @@ The parser improvement affects statement boundaries only. The local execution en
 - added concise Russian explanations, syntax examples, a search field and one-click copying;
 - documented dialect-specific syntax differences and highlighted destructive commands that require a safe test environment;
 - added regression assertions for the memo tab and its core operator coverage.
+
+
+### 7.1.72 SQL Trainer — SET and UPDATE reference — 2026-11-10
+
+- expanded the SQL memo with the complete multiline UPDATE pattern, including multiple column assignments and a WHERE condition;
+- added a separate SET entry explaining that SET assigns new column values inside UPDATE and is not a standalone data-modification statement;
+- clarified that WHERE limits the rows affected and that omitting it updates every row;
+- extended the SQL memo regression test to cover the syntax and explanations.
+
+Validation: source and regression assertions updated. Run the focused database-workbench test and full `npm run verify` before treating the change as fully verified.
