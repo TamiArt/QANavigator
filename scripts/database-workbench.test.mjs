@@ -780,3 +780,17 @@ test("database workbench exposes a searchable SQL operator memo with the main co
   }
   assert.ok(source.includes("value.replace(/'/g, \"''\")"), "the shared copy helper must remain available");
 });
+
+
+test("SQL cheat sheet presents each query as a compact responsive card", () => {
+  const referenceStart = source.indexOf('{tab === "reference" && (');
+  const referenceEnd = source.indexOf('{tab === "memo" && (', referenceStart);
+  assert.ok(referenceStart >= 0 && referenceEnd > referenceStart, "the SQL cheat sheet tab must remain available");
+  const reference = source.slice(referenceStart, referenceEnd);
+  assert.ok(reference.includes('grid gap-2.5 sm:grid-cols-2'), "query cards must use a compact responsive grid");
+  assert.ok(reference.includes('rounded-xl border border-border/80 bg-card p-3'), "each query must have a distinct compact card surface");
+  assert.ok(reference.includes('<pre className="overflow-x-auto rounded-lg border'), "SQL must be visually separated in a readable code block");
+  assert.ok(reference.includes('aria-label={"Копировать запрос: " + item.title}'), "each query must retain an accessible copy action");
+  assert.ok(reference.includes('<h4 className="min-w-0 text-xs font-semibold'), "each query must have a distinct title");
+  assert.ok(reference.includes('<p className="text-[11px] leading-[1.55] text-muted-foreground">{item.note}</p>'), "each query explanation must be visually separated from its SQL");
+});

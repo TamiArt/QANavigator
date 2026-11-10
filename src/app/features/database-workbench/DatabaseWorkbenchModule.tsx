@@ -898,24 +898,29 @@ export function DatabaseWorkbenchModule() {
 
       {tab === "reference" && (
         <section className="space-y-5">
-          <h2 className="text-lg font-semibold text-foreground">DQL — выборка и фильтрация</h2>
+          <div className="space-y-1">
+            <h2 className="text-lg font-semibold text-foreground">Шпаргалка SQL</h2>
+            <p className="text-xs text-muted-foreground">Краткие примеры команд и конструкций. Каждый запрос оформлен отдельной карточкой — его удобно просматривать и копировать.</p>
+          </div>
           <div className="relative"><Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" /><input value={search} onChange={(event) => setSearch(event.target.value)} className={fieldClass + " pl-9"} placeholder="Найти оператор, функцию или синтаксис: SELECT, COUNT, CASE, JOIN..." /></div>
-          <div className="space-y-7">
+          <div className="space-y-6">
             {snippetGroups.map((group) => (
               <section key={group} className="space-y-3">
-                {group === "DQL — выборка и фильтрация" ? (
-                  <h3 className="border-b border-border pb-2 text-sm font-semibold text-foreground">🔹 Основные команды выборки и фильтрации (DQL)</h3>
-                ) : (
-                  <h3 className="border-b border-border pb-2 text-sm font-semibold text-foreground">🔹 {group}</h3>
-                )}
-                <div className="space-y-2">
+                <div className="flex items-center gap-2 border-b border-border pb-2">
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                  <h3 className="text-sm font-semibold text-foreground">{group === "DQL — выборка и фильтрация" ? "Основные команды выборки и фильтрации (DQL)" : group}</h3>
+                  <span className="ml-auto text-[10px] text-muted-foreground">{filteredSnippets.filter((item) => item.group === group).length}</span>
+                </div>
+                <div className="grid gap-2.5 sm:grid-cols-2">
                   {filteredSnippets.filter((item) => item.group === group).map((item) => (
-                    <p key={item.title} className="text-sm leading-6 text-foreground">
-                      <strong>{item.title}</strong>{" "}
-                      <code className="whitespace-pre-wrap break-words rounded bg-muted/60 px-1 py-0.5 text-xs">{item.sql.replace(/\\s+/g, " ")}</code>
-                      {" — "}{item.note}
-                      <button onClick={() => copy(item.sql)} className="ml-2 inline-flex items-center gap-1 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"><Copy className="h-3 w-3" />Копировать</button>
-                    </p>
+                    <article key={item.title} className="group flex min-w-0 flex-col gap-2 rounded-xl border border-border/80 bg-card p-3 transition-colors hover:border-primary/35 hover:bg-muted/20">
+                      <div className="flex items-start justify-between gap-2">
+                        <h4 className="min-w-0 text-xs font-semibold leading-5 text-foreground">{item.title}</h4>
+                        <button type="button" onClick={() => copy(item.sql)} aria-label={"Копировать запрос: " + item.title} title="Копировать запрос" className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[10px] text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"><Copy className="h-3 w-3" /><span>Копировать</span></button>
+                      </div>
+                      <pre className="overflow-x-auto rounded-lg border border-border/50 bg-muted/50 px-2.5 py-2 text-[11px] leading-5 text-foreground"><code>{item.sql}</code></pre>
+                      <p className="text-[11px] leading-[1.55] text-muted-foreground">{item.note}</p>
+                    </article>
                   ))}
                 </div>
               </section>
