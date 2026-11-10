@@ -750,7 +750,7 @@ export function DatabaseWorkbenchModule() {
 
       {tab === "reference" && (
         <section className="space-y-5">
-          <h2 className="text-lg font-semibold text-foreground">## DQL — выборка и фильтрация</h2>
+          <h2 className="text-lg font-semibold text-foreground">DQL — выборка и фильтрация</h2>
           <div className="relative"><Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" /><input value={search} onChange={(event) => setSearch(event.target.value)} className={fieldClass + " pl-9"} placeholder="Найти оператор, функцию или синтаксис: SELECT, COUNT, CASE, JOIN..." /></div>
           <div className="space-y-7">
             {snippetGroups.map((group) => (
