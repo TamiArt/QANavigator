@@ -2003,3 +2003,13 @@ Validation: source and regression assertions updated. Run the focused Module 7 t
 - shifted the IDs of the former lessons 8–11 to 9–12 and updated the matching infographic models and regression expectations;
 - corrected malformed examples from the supplied notes (SELECT *, multiplication *, four-character LIKE pattern) and clarified NULL counting and JOIN support differences.
 Validation: source, infographic entries and regression assertions updated. Run the focused Module 7 test and full `npm run verify` before treating the work as fully verified.
+
+
+### 7.1.70 SQL Trainer — dialect-aware statement splitting — 2026-11-10
+
+- hardened multi-statement SQL parsing to keep semicolons inside PostgreSQL dollar-quoted strings and procedural bodies;
+- added nested block-comment handling and MySQL `#` line comments;
+- retained support for quoted strings, quoted identifiers and existing `--` comments;
+- added regression tests for dollar-quote delimiters, unterminated dollar-quoted strings, nested comments and MySQL line comments.
+
+The parser improvement affects statement boundaries only. The local execution engine remains SQLite/WebAssembly and does not become a PostgreSQL or MySQL server emulator.
