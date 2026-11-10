@@ -4,7 +4,7 @@ import { buildAdvancedSelect } from "./advanced-select-builder.mjs";
 import { buildCreateTable, buildAlterTable, buildDropTable, buildTruncateTable, buildInsert, buildUpdate, buildDelete } from "./ddl-dml-builder.mjs";
 import { SqlExecutionConsole } from "./SqlExecutionConsole";
 import {
-  AlertTriangle, BookOpen, CheckCircle2, Code2, Copy,
+  AlertTriangle, BookOpen, CheckCircle2, ClipboardList, Code2, Copy,
   Database, Info, Search, ShieldCheck, WandSparkles,
 } from "lucide-react";
 
@@ -124,6 +124,28 @@ const initial: BuilderState = {
   alterAction: "add", alterColumn: "phone", alterDefinition: "phone VARCHAR(30)", alterDataType: "VARCHAR", alterTypeSize: "255", alterNewName: "display_name",
   confirmTable: "", ifExists: true, insertSelectSql: "", updateAssignments: "status = active\nupdated_at = CURRENT_TIMESTAMP",
 };
+
+const frequentQueries = [
+  { group: "Поиск и просмотр записей", title: "Найти запись по ID", sql: "SELECT *\nFROM users\nWHERE id = 101;", note: "Находит конкретную запись по первичному ключу. Замени users, id и 101 на свои значения." },
+  { group: "Поиск и просмотр записей", title: "Найти запись по нескольким значениям", sql: "SELECT *\nFROM orders\nWHERE id IN (101, 102, 103);", note: "Проверяет сразу несколько записей по списку идентификаторов." },
+  { group: "Поиск и просмотр записей", title: "Найти последние добавленные записи", sql: "SELECT *\nFROM users\nORDER BY created_at DESC\nLIMIT 20;", note: "Показывает 20 последних записей. Если в таблице другое поле даты создания, замени created_at." },
+  { group: "Поиск и просмотр записей", title: "Найти записи за период", sql: "SELECT *\nFROM orders\nWHERE created_at >= '2026-01-01'\n  AND created_at < '2026-02-01'\nORDER BY created_at;", note: "Выбирает записи за январь 2026 года. Полуоткрытый диапазон корректно включает все часы последнего дня." },
+  { group: "Количество и агрегаты", title: "Посчитать общее количество записей", sql: "SELECT COUNT(*) AS total\nFROM users;", note: "Возвращает общее количество строк в таблице. Сравни с количеством элементов в интерфейсе или API с учётом фильтров." },
+  { group: "Количество и агрегаты", title: "Посчитать записи по каждому статусу", sql: "SELECT status, COUNT(*) AS total\nFROM orders\nGROUP BY status\nORDER BY total DESC;", note: "Показывает распределение заказов по статусам — удобно проверять переходы состояний." },
+  { group: "Количество и агрегаты", title: "Проверить сумму и среднее значение", sql: "SELECT COUNT(*) AS rows_count,\n       SUM(amount) AS total_amount,\n       AVG(amount) AS average_amount,\n       MIN(amount) AS min_amount,\n       MAX(amount) AS max_amount\nFROM orders;", note: "Считает количество, сумму, среднее, минимум и максимум. Проверь, что amount — числовой столбец." },
+  { group: "Качество данных", title: "Найти NULL в обязательном поле", sql: "SELECT *\nFROM users\nWHERE email IS NULL;", note: "Находит строки, где значение отсутствует именно как NULL. Замени email на проверяемое поле." },
+  { group: "Качество данных", title: "Найти пустые строки и строки из пробелов", sql: "SELECT *\nFROM users\nWHERE email IS NULL\n   OR TRIM(email) = '';", note: "Проверяет NULL, пустую строку и строку из пробелов — это разные состояния данных." },
+  { group: "Качество данных", title: "Найти дубликаты по значению", sql: "SELECT email, COUNT(*) AS duplicates_count\nFROM users\nGROUP BY email\nHAVING COUNT(*) > 1;", note: "Показывает значения email, которые встречаются больше одного раза. Для составной уникальности добавь поля в GROUP BY." },
+  { group: "Качество данных", title: "Найти записи с некорректным диапазоном", sql: "SELECT *\nFROM products\nWHERE price < 0\n   OR stock < 0;", note: "Ищет отрицательные цены или остатки. Замени условие на бизнес-правила проверяемых полей." },
+  { group: "Связи между таблицами", title: "Найти записи без связанных данных", sql: "SELECT u.*\nFROM users AS u\nLEFT JOIN orders AS o ON o.user_id = u.id\nWHERE o.id IS NULL;", note: "Находит пользователей, у которых нет заказов. Подходит для проверки необязательной связи один-ко-многим." },
+  { group: "Связи между таблицами", title: "Найти «осиротевшие» дочерние записи", sql: "SELECT o.*\nFROM orders AS o\nLEFT JOIN users AS u ON u.id = o.user_id\nWHERE u.id IS NULL;", note: "Находит заказы, для которых не существует пользователя. Полезно для проверки ссылочной целостности." },
+  { group: "Связи между таблицами", title: "Получить данные из двух связанных таблиц", sql: "SELECT o.id, o.status, o.amount, u.email\nFROM orders AS o\nINNER JOIN users AS u ON u.id = o.user_id\nWHERE o.id = 101;", note: "Показывает заказ вместе с данными пользователя. Замени условие, чтобы проверить нужную запись." },
+  { group: "Сверка данных и результатов операций", title: "Проверить, что запись сохранилась после создания", sql: "SELECT id, email, status, created_at\nFROM users\nWHERE email = 'qa.test@example.com';", note: "Проверяет наличие созданной записи и значения её ключевых полей. Подставь уникальное тестовое значение." },
+  { group: "Сверка данных и результатов операций", title: "Проверить результат изменения записи", sql: "SELECT id, status, updated_at\nFROM orders\nWHERE id = 101;", note: "Проверяет фактическое состояние записи после UPDATE или запроса API на изменение." },
+  { group: "Сверка данных и результатов операций", title: "Проверить отсутствие записи после удаления", sql: "SELECT COUNT(*) AS remaining_count\nFROM users\nWHERE id = 101;", note: "После удаления ожидается remaining_count = 0. Если удаление логическое, проверь также deleted_at или статус." },
+  { group: "Сверка данных и результатов операций", title: "Сравнить значения в связанных таблицах", sql: "SELECT o.id, o.total AS order_total,\n       SUM(oi.quantity * oi.price) AS items_total\nFROM orders AS o\nJOIN order_items AS oi ON oi.order_id = o.id\nWHERE o.id = 101\nGROUP BY o.id, o.total\nHAVING o.total <> SUM(oi.quantity * oi.price);", note: "Находит заказ, сумма которого отличается от суммы его позиций. Учти скидки, доставку, налоги и правила округления проекта." },
+  { group: "Сверка данных и результатов операций", title: "Найти записи, отсутствующие во второй таблице", sql: "SELECT a.id\nFROM expected_records AS a\nLEFT JOIN actual_records AS b ON b.id = a.id\nWHERE b.id IS NULL;", note: "Сверяет ожидаемый набор с фактическим и показывает ID, которых нет во второй таблице. Замени таблицы на свои наборы данных." },
+];
 
 const snippets = [
   { group: "Чтение данных", title: "Найти запись по ID", sql: "SELECT * FROM users WHERE id = :id;", note: "Подставь параметр id через механизм параметров своего SQL-клиента." },
@@ -570,11 +592,12 @@ const fieldClass = "w-full rounded-lg border border-border bg-background px-3 py
 const labelClass = "mb-1.5 block text-xs font-medium text-muted-foreground";
 
 export function DatabaseWorkbenchModule() {
-  const [tab, setTab] = useState<"builder" | "reference" | "checks">("builder");
+  const [tab, setTab] = useState<"builder" | "reference" | "frequent" | "checks">("builder");
   const [dialect, setDialect] = useState<Dialect>("postgres");
   const [operation, setOperation] = useState<Operation>("select");
   const [form, setForm] = useState<BuilderState>(initial);
   const [search, setSearch] = useState("");
+  const [frequentSearch, setFrequentSearch] = useState("");
   const [copied, setCopied] = useState(false);
   const generated = useMemo(() => buildSql(operation, dialect, form), [operation, dialect, form]);
   const update = (key: keyof BuilderState, value: string | boolean | CorrelatedSubqueryLevel[]) => setForm((current) => ({ ...current, [key]: value } as BuilderState));
@@ -587,7 +610,11 @@ export function DatabaseWorkbenchModule() {
     window.setTimeout(() => setCopied(false), 1600);
   };
   const filteredSnippets = snippets.filter((item) => (item.title + item.group + item.sql + item.note).toLocaleLowerCase("ru").includes(search.toLocaleLowerCase("ru")));
-  const snippetGroups = [...new Set(filteredSnippets.map((item) => item.group))];
+  const snippetGroups = [...new Set(filteredSnippets.map((item) => item.group))].sort((a, b) => {
+    if (a === "DQL — выборка и фильтрация") return -1;
+    if (b === "DQL — выборка и фильтрация") return 1;
+    return 0;
+  });
 
   return (
     <div className="space-y-5">
@@ -603,7 +630,8 @@ export function DatabaseWorkbenchModule() {
         {[
           { id: "builder" as const, title: "Конструктор запросов", desc: "Собрать SQL по полям", icon: <WandSparkles className="h-4 w-4" /> },
           { id: "reference" as const, title: "Шпаргалка SQL", desc: "Команды и примеры", icon: <BookOpen className="h-4 w-4" /> },
-          { id: "checks" as const, title: "Проверки QA", desc: "Готовые запросы для тестов", icon: <ShieldCheck className="h-4 w-4" /> },
+          { id: "frequent" as const, title: "Наиболее частые запросы", desc: "SQL для ежедневных QA-проверок", icon: <ClipboardList className="h-4 w-4" /> },
+          { id: "checks" as const, title: "Проверки QA", desc: "Чек-лист тестирования данных", icon: <ShieldCheck className="h-4 w-4" /> },
         ].map((item) => (
           <button key={item.id} onClick={() => setTab(item.id)} className={"rounded-xl border p-3 text-left transition-colors " + (tab === item.id ? "border-primary bg-primary/5" : "border-border bg-card hover:bg-muted/40")}>
             <span className="mb-2 flex items-center gap-2 text-sm font-semibold">{item.icon}{item.title}</span>
@@ -746,30 +774,61 @@ export function DatabaseWorkbenchModule() {
 
       {tab === "reference" && (
         <section className="space-y-5">
-          <div className="rounded-xl border border-border bg-muted/20 p-3 text-sm text-muted-foreground">
-            Справочник операторов и функций SQL. Каждый раздел содержит конструкцию, её синтаксис и краткое назначение. Для PostgreSQL и MySQL различия отмечены отдельно.
-          </div>
+          <h2 className="text-lg font-semibold text-foreground">DQL — выборка и фильтрация</h2>
           <div className="relative"><Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" /><input value={search} onChange={(event) => setSearch(event.target.value)} className={fieldClass + " pl-9"} placeholder="Найти оператор, функцию или синтаксис: SELECT, COUNT, CASE, JOIN..." /></div>
-          <div className="space-y-6">
+          <div className="space-y-7">
             {snippetGroups.map((group) => (
               <section key={group} className="space-y-3">
-                <h2 className="border-b border-border pb-2 text-base font-semibold text-foreground">{group}</h2>
-                <div className="grid gap-3">
+                {group === "DQL — выборка и фильтрация" ? (
+                  <h3 className="border-b border-border pb-2 text-sm font-semibold text-foreground">🔹 Основные команды выборки и фильтрации (DQL)</h3>
+                ) : (
+                  <h3 className="border-b border-border pb-2 text-sm font-semibold text-foreground">🔹 {group}</h3>
+                )}
+                <div className="space-y-2">
                   {filteredSnippets.filter((item) => item.group === group).map((item) => (
-                    <article key={item.title} className="rounded-xl border border-border bg-card p-4">
-                      <div className="mb-2 flex items-center justify-between gap-2">
-                        <h3 className="text-sm font-semibold">{item.title}</h3>
-                        <button onClick={() => copy(item.sql)} className="flex shrink-0 items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground"><Copy className="h-3 w-3" />Копировать</button>
-                      </div>
-                      <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-muted/60 p-3 text-xs leading-5">{item.sql}</pre>
-                      <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.note}</p>
-                    </article>
+                    <p key={item.title} className="text-sm leading-6 text-foreground">
+                      <strong>{item.title}</strong>{" "}
+                      <code className="whitespace-pre-wrap break-words rounded bg-muted/60 px-1 py-0.5 text-xs">{item.sql.replace(/\\s+/g, " ")}</code>
+                      {" — "}{item.note}
+                      <button onClick={() => copy(item.sql)} className="ml-2 inline-flex items-center gap-1 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"><Copy className="h-3 w-3" />Копировать</button>
+                    </p>
                   ))}
                 </div>
               </section>
             ))}
             {filteredSnippets.length === 0 && <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">По запросу ничего не найдено.</p>}
           </div>
+        </section>
+      )}
+      
+      {tab === "frequent" && (
+        <section className="space-y-5">
+          <div className="space-y-1">
+            <h3 className="text-lg font-semibold text-foreground">Наиболее частые запросы</h3>
+            <p className="text-sm text-muted-foreground">Готовые SQL-примеры для повседневных проверок тестировщика. Перед запуском замени названия таблиц, столбцов и тестовые значения на соответствующие своей БД.</p>
+          </div>
+          <div className="relative"><Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" /><input value={frequentSearch} onChange={(event) => setFrequentSearch(event.target.value)} className={fieldClass + " pl-9"} placeholder="Найти запрос: дубликаты, NULL, статус, JOIN..." /></div>
+          <div className="space-y-7">
+            {[...new Set(frequentQueries.filter((item) => (item.title + item.group + item.sql + item.note).toLocaleLowerCase("ru").includes(frequentSearch.toLocaleLowerCase("ru"))).map((item) => item.group))].map((group) => (
+              <section key={group} className="space-y-3">
+                <h4 className="border-b border-border pb-2 text-sm font-semibold text-foreground">🔹 {group}</h4>
+                <div className="grid gap-3 lg:grid-cols-2">
+                  {frequentQueries.filter((item) => item.group === group && (item.title + item.group + item.sql + item.note).toLocaleLowerCase("ru").includes(frequentSearch.toLocaleLowerCase("ru"))).map((item) => (
+                    <article key={item.title} className="min-w-0 space-y-2 rounded-xl border border-border bg-card p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <h5 className="text-sm font-semibold text-foreground">{item.title}</h5>
+                        <button type="button" onClick={() => copy(item.sql)} className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs text-muted-foreground hover:bg-muted"><Copy className="h-3 w-3" />Копировать</button>
+                      </div>
+                      <pre className="overflow-x-auto rounded-lg bg-muted/60 p-3 text-xs leading-5 text-foreground"><code>{item.sql}</code></pre>
+                      <p className="text-xs leading-5 text-muted-foreground">{item.note}</p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            ))}
+            {frequentQueries.filter((item) => (item.title + item.group + item.sql + item.note).toLocaleLowerCase("ru").includes(frequentSearch.toLocaleLowerCase("ru"))).length === 0 && <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">По запросу ничего не найдено.</p>}
+          </div>
+          <div className="flex gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground"><AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" /><p>Примеры в основном читают данные (SELECT). Перед использованием проверь имена таблиц и полей, права доступа и тестовую среду. Не запускай изменяющие данные команды на production без разрешения.</p></div>
         </section>
       )}
 
