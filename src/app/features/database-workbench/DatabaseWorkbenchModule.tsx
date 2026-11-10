@@ -587,7 +587,11 @@ export function DatabaseWorkbenchModule() {
     window.setTimeout(() => setCopied(false), 1600);
   };
   const filteredSnippets = snippets.filter((item) => (item.title + item.group + item.sql + item.note).toLocaleLowerCase("ru").includes(search.toLocaleLowerCase("ru")));
-  const snippetGroups = [...new Set(filteredSnippets.map((item) => item.group))];
+  const snippetGroups = [...new Set(filteredSnippets.map((item) => item.group))].sort((a, b) => {
+    if (a === "DQL — выборка и фильтрация") return -1;
+    if (b === "DQL — выборка и фильтрация") return 1;
+    return 0;
+  });
 
   return (
     <div className="space-y-5">
@@ -746,24 +750,24 @@ export function DatabaseWorkbenchModule() {
 
       {tab === "reference" && (
         <section className="space-y-5">
-          <div className="rounded-xl border border-border bg-muted/20 p-3 text-sm text-muted-foreground">
-            Справочник операторов и функций SQL. Каждый раздел содержит конструкцию, её синтаксис и краткое назначение. Для PostgreSQL и MySQL различия отмечены отдельно.
-          </div>
+          <h2 className="text-lg font-semibold text-foreground">## DQL — выборка и фильтрация</h2>
           <div className="relative"><Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" /><input value={search} onChange={(event) => setSearch(event.target.value)} className={fieldClass + " pl-9"} placeholder="Найти оператор, функцию или синтаксис: SELECT, COUNT, CASE, JOIN..." /></div>
-          <div className="space-y-6">
+          <div className="space-y-7">
             {snippetGroups.map((group) => (
               <section key={group} className="space-y-3">
-                <h2 className="border-b border-border pb-2 text-base font-semibold text-foreground">{group}</h2>
-                <div className="grid gap-3">
+                {group === "DQL — выборка и фильтрация" ? (
+                  <h3 className="border-b border-border pb-2 text-sm font-semibold text-foreground">🔹 Основные команды выборки и фильтрации (DQL)</h3>
+                ) : (
+                  <h3 className="border-b border-border pb-2 text-sm font-semibold text-foreground">🔹 {group}</h3>
+                )}
+                <div className="space-y-2">
                   {filteredSnippets.filter((item) => item.group === group).map((item) => (
-                    <article key={item.title} className="rounded-xl border border-border bg-card p-4">
-                      <div className="mb-2 flex items-center justify-between gap-2">
-                        <h3 className="text-sm font-semibold">{item.title}</h3>
-                        <button onClick={() => copy(item.sql)} className="flex shrink-0 items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground"><Copy className="h-3 w-3" />Копировать</button>
-                      </div>
-                      <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-muted/60 p-3 text-xs leading-5">{item.sql}</pre>
-                      <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.note}</p>
-                    </article>
+                    <p key={item.title} className="text-sm leading-6 text-foreground">
+                      <strong>{item.title}</strong>{" "}
+                      <code className="whitespace-pre-wrap break-words rounded bg-muted/60 px-1 py-0.5 text-xs">{item.sql.replace(/\\s+/g, " ")}</code>
+                      {" — "}{item.note}
+                      <button onClick={() => copy(item.sql)} className="ml-2 inline-flex items-center gap-1 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"><Copy className="h-3 w-3" />Копировать</button>
+                    </p>
                   ))}
                 </div>
               </section>
@@ -772,7 +776,7 @@ export function DatabaseWorkbenchModule() {
           </div>
         </section>
       )}
-
+      
       {tab === "checks" && (
         <section className="space-y-3">
           <div className="rounded-xl border border-border bg-card p-4"><div className="mb-2 flex items-center gap-2 text-sm font-semibold"><CheckCircle2 className="h-4 w-4 text-emerald-500" />Чек-лист проверки данных</div><ul className="space-y-2 text-sm text-muted-foreground">{["После создания пользователя проверь, что запись появилась и поля заполнены корректно.","После изменения статуса проверь новое значение и историю изменений, если она предусмотрена.","Для связей проверь существование родительской записи и отсутствие «осиротевших» записей.","Для списков сравни COUNT(*) с количеством элементов в UI/API с учётом фильтров и пагинации.","Проверь дубликаты в полях, которые по требованиям должны быть уникальными.","Проверь NULL, пустую строку и пробелы отдельно — это разные значения.","Для денежных расчётов сравни сумму заказа с суммой позиций и правилами округления.","Для удаления проверь, что удалена только нужная запись и связанные данные обработаны согласно требованиям."].map((item) => <li key={item} className="flex gap-2"><span className="text-primary">•</span>{item}</li>)}</ul></div>
