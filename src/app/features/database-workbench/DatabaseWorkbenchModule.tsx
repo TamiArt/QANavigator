@@ -145,6 +145,128 @@ const frequentQueries = [
   { group: "Сверка данных и результатов операций", title: "Проверить отсутствие записи после удаления", sql: "SELECT COUNT(*) AS remaining_count\nFROM users\nWHERE id = 101;", note: "После удаления ожидается remaining_count = 0. Если удаление логическое, проверь также deleted_at или статус." },
   { group: "Сверка данных и результатов операций", title: "Сравнить значения в связанных таблицах", sql: "SELECT o.id, o.total AS order_total,\n       SUM(oi.quantity * oi.price) AS items_total\nFROM orders AS o\nJOIN order_items AS oi ON oi.order_id = o.id\nWHERE o.id = 101\nGROUP BY o.id, o.total\nHAVING o.total <> SUM(oi.quantity * oi.price);", note: "Находит заказ, сумма которого отличается от суммы его позиций. Учти скидки, доставку, налоги и правила округления проекта." },
   { group: "Сверка данных и результатов операций", title: "Найти записи, отсутствующие во второй таблице", sql: "SELECT a.id\nFROM expected_records AS a\nLEFT JOIN actual_records AS b ON b.id = a.id\nWHERE b.id IS NULL;", note: "Сверяет ожидаемый набор с фактическим и показывает ID, которых нет во второй таблице. Замени таблицы на свои наборы данных." },
+
+];
+
+const memoOperatorGroups = [
+  {
+    group: "Группы SQL-команд",
+    items: [
+      { title: "DQL — чтение данных", syntax: "SELECT", note: "Получает данные из таблиц, представлений или подзапросов. Не изменяет сохранённые данные." },
+      { title: "DML — изменение данных", syntax: "INSERT", note: "Добавляет новые строки в таблицу." },
+      { title: "DML — изменение данных", syntax: "UPDATE", note: "Изменяет значения в существующих строках. Без WHERE может обновить все строки." },
+      { title: "DML — изменение данных", syntax: "DELETE", note: "Удаляет строки из таблицы. Без WHERE может удалить все строки." },
+      { title: "DDL — структура БД", syntax: "CREATE", note: "Создаёт объект БД: таблицу, представление, индекс, схему и другие объекты." },
+      { title: "DDL — структура БД", syntax: "ALTER", note: "Изменяет структуру существующего объекта: добавляет, удаляет или меняет столбцы и ограничения." },
+      { title: "DDL — структура БД", syntax: "DROP", note: "Удаляет объект БД целиком, например таблицу или представление, вместе с его структурой." },
+      { title: "DDL — структура БД", syntax: "TRUNCATE", note: "Быстро удаляет все строки таблицы, сохраняя саму таблицу. Детали отката и счётчиков зависят от СУБД." },
+      { title: "DCL — права доступа", syntax: "GRANT / REVOKE", note: "GRANT выдаёт права пользователю или роли; REVOKE отзывает ранее выданные права." },
+      { title: "TCL — транзакции", syntax: "BEGIN / START TRANSACTION", note: "Начинает транзакцию — логически объединённую последовательность операций." },
+      { title: "TCL — транзакции", syntax: "COMMIT", note: "Подтверждает транзакцию и сохраняет её изменения." },
+      { title: "TCL — транзакции", syntax: "ROLLBACK", note: "Отменяет неподтверждённые изменения текущей транзакции." },
+      { title: "TCL — транзакции", syntax: "SAVEPOINT / ROLLBACK TO SAVEPOINT", note: "Создаёт точку сохранения внутри транзакции и позволяет откатиться к ней, не отменяя всю транзакцию." },
+    ],
+  },
+  {
+    group: "Части SELECT-запроса",
+    items: [
+      { title: "SELECT", syntax: "SELECT column1, column2", note: "Определяет, какие столбцы или выражения попадут в результат. SELECT * выбирает все столбцы." },
+      { title: "DISTINCT", syntax: "SELECT DISTINCT column", note: "Убирает повторяющиеся строки результата по комбинации всех выбранных столбцов." },
+      { title: "FROM", syntax: "FROM table_name", note: "Указывает источник данных: таблицу, представление или подзапрос." },
+      { title: "JOIN", syntax: "JOIN table_name ON condition", note: "Соединяет строки из нескольких таблиц по условию связи." },
+      { title: "ON", syntax: "ON a.id = b.a_id", note: "Задаёт условие соединения таблиц в JOIN." },
+      { title: "USING", syntax: "JOIN other_table USING (id)", note: "Краткая форма условия JOIN, когда столбец связи имеет одинаковое имя в обеих таблицах. Поддержка зависит от СУБД." },
+      { title: "WHERE", syntax: "WHERE condition", note: "Фильтрует отдельные строки до группировки и агрегирования." },
+      { title: "GROUP BY", syntax: "GROUP BY column", note: "Объединяет строки с одинаковыми значениями в группы, обычно для COUNT, SUM, AVG и других агрегатов." },
+      { title: "HAVING", syntax: "HAVING COUNT(*) > 1", note: "Фильтрует уже сформированные группы. В отличие от WHERE может фильтровать по агрегатным результатам." },
+      { title: "ORDER BY", syntax: "ORDER BY column ASC | DESC", note: "Сортирует результат. ASC — по возрастанию (по умолчанию), DESC — по убыванию." },
+      { title: "LIMIT / OFFSET", syntax: "LIMIT 10 OFFSET 20", note: "LIMIT ограничивает число возвращаемых строк, OFFSET пропускает заданное количество. В других СУБД могут использоваться FETCH или TOP." },
+      { title: "AS", syntax: "SELECT total AS order_total", note: "Задаёт псевдоним столбцу или таблице только внутри запроса/результата; не переименовывает объект в БД." },
+      { title: "WITH (CTE)", syntax: "WITH active AS (SELECT ...)", note: "Объявляет именованный временный результат, который можно использовать в основном запросе." },
+      { title: "WITH RECURSIVE", syntax: "WITH RECURSIVE tree AS (...)", note: "Создаёт рекурсивный CTE для обхода иерархий, деревьев и связанных последовательностей." },
+    ],
+  },
+  {
+    group: "Операторы сравнения и фильтрации",
+    items: [
+      { title: "Равно", syntax: "=", note: "Проверяет равенство двух значений." },
+      { title: "Не равно", syntax: "<>  или  !=", note: "Проверяет, что значения различаются. <> — стандартная форма SQL; != поддерживается многими СУБД." },
+      { title: "Сравнение величин", syntax: ">   <   >=   <=", note: "Больше, меньше, больше или равно, меньше или равно." },
+      { title: "Диапазон", syntax: "BETWEEN min AND max", note: "Проверяет попадание в диапазон, включая обе границы." },
+      { title: "Вхождение в список", syntax: "IN (value1, value2, ...)", note: "Проверяет, совпадает ли значение хотя бы с одним элементом списка или результата подзапроса." },
+      { title: "Исключение списка", syntax: "NOT IN (value1, value2, ...)", note: "Проверяет, что значение не входит в список. Важно: NULL внутри списка/подзапроса может дать UNKNOWN и повлиять на результат." },
+      { title: "Шаблон строки", syntax: "LIKE 'A%'  |  NOT LIKE 'A%'", note: "Ищет строки по шаблону: % означает любое количество символов, _ — ровно один символ." },
+      { title: "Регистронезависимый шаблон", syntax: "ILIKE 'anna%'", note: "Регистронезависимый вариант LIKE в PostgreSQL. В MySQL регистрозависимость обычно определяется collation." },
+      { title: "Проверка NULL", syntax: "IS NULL  |  IS NOT NULL", note: "Проверяет отсутствие или наличие значения NULL. Нельзя писать = NULL или <> NULL." },
+      { title: "NULL-безопасное сравнение", syntax: "IS DISTINCT FROM", note: "Сравнивает два значения так, чтобы NULL корректно участвовал в сравнении. Синтаксис доступен не во всех СУБД." },
+    ],
+  },
+  {
+    group: "Логические и специальные операторы",
+    items: [
+      { title: "Логическое И", syntax: "condition1 AND condition2", note: "Истина только тогда, когда истинны оба условия." },
+      { title: "Логическое ИЛИ", syntax: "condition1 OR condition2", note: "Истина, когда истинно хотя бы одно условие." },
+      { title: "Логическое НЕ", syntax: "NOT condition", note: "Инвертирует логическое условие. Скобки помогают явно задать порядок вычислений." },
+      { title: "Скобки", syntax: "(condition1 OR condition2) AND condition3", note: "Группируют условия и задают приоритет. AND выполняется раньше OR, если скобки не меняют порядок." },
+      { title: "Проверка существования", syntax: "EXISTS (SELECT 1 ...)", note: "Возвращает TRUE, если подзапрос вернул хотя бы одну строку; часто применяется для проверки связанных записей." },
+      { title: "Отсутствие строк", syntax: "NOT EXISTS (SELECT 1 ...)", note: "Возвращает TRUE, если подзапрос не вернул ни одной строки." },
+      { title: "Сравнение с набором", syntax: "value = ANY (subquery)", note: "Сравнивает значение с элементами набора; ANY/SOME означает, что достаточно совпадения хотя бы с одним элементом." },
+      { title: "Сравнение со всеми", syntax: "value > ALL (subquery)", note: "Условие должно выполняться для каждого значения из набора." },
+    ],
+  },
+  {
+    group: "Арифметика и работа со значениями",
+    items: [
+      { title: "Сложение / вычитание", syntax: "+   -", note: "Выполняет сложение и вычитание чисел; в зависимости от СУБД + также может участвовать в операциях с датами." },
+      { title: "Умножение / деление", syntax: "*   /", note: "Выполняет умножение и деление. Следи за типами данных и целочисленным делением." },
+      { title: "Остаток от деления", syntax: "%  или  MOD(a, b)", note: "Возвращает остаток от деления. Поддерживаемая форма зависит от СУБД." },
+      { title: "Конкатенация строк", syntax: "||", note: "Объединяет строки в PostgreSQL и стандартном SQL. В MySQL обычно используют CONCAT(a, b)." },
+      { title: "CASE", syntax: "CASE WHEN condition THEN value ELSE other END", note: "Возвращает значение по условиям, аналог условного if/else внутри SQL-запроса." },
+      { title: "COALESCE", syntax: "COALESCE(value1, value2, ...)", note: "Возвращает первое значение, которое не равно NULL. Полезно для обработки отсутствующих данных." },
+      { title: "NULLIF", syntax: "NULLIF(value1, value2)", note: "Возвращает NULL, если значения равны; иначе возвращает первое значение. Может помочь избежать деления на ноль." },
+      { title: "CAST", syntax: "CAST(value AS data_type)", note: "Преобразует значение к указанному типу данных, например строку в число или дату." },
+    ],
+  },
+  {
+    group: "Объединение результатов и соединения",
+    items: [
+      { title: "UNION", syntax: "query1 UNION query2", note: "Объединяет результаты двух SELECT и удаляет дубликаты. Количество и совместимость типов столбцов должны совпадать." },
+      { title: "UNION ALL", syntax: "query1 UNION ALL query2", note: "Объединяет результаты SELECT, сохраняя дубликаты; обычно не требует затрат на их удаление." },
+      { title: "INTERSECT", syntax: "query1 INTERSECT query2", note: "Возвращает строки, присутствующие в обоих результатах. Доступность зависит от СУБД и версии." },
+      { title: "EXCEPT", syntax: "query1 EXCEPT query2", note: "Возвращает строки первого результата, которых нет во втором. В Oracle используется оператор MINUS." },
+      { title: "INNER JOIN", syntax: "INNER JOIN ... ON ...", note: "Возвращает только строки с совпадениями в обеих таблицах." },
+      { title: "LEFT [OUTER] JOIN", syntax: "LEFT JOIN ... ON ...", note: "Возвращает все строки левой таблицы и совпадения справа; при отсутствии пары правые столбцы будут NULL." },
+      { title: "RIGHT [OUTER] JOIN", syntax: "RIGHT JOIN ... ON ...", note: "Возвращает все строки правой таблицы и совпадения слева." },
+      { title: "FULL [OUTER] JOIN", syntax: "FULL OUTER JOIN ... ON ...", note: "Возвращает совпадения и несовпавшие строки обеих таблиц. MySQL не поддерживает его напрямую." },
+      { title: "CROSS JOIN", syntax: "CROSS JOIN", note: "Создаёт декартово произведение: каждая строка первой таблицы соединяется с каждой строкой второй." },
+    ],
+  },
+  {
+    group: "Агрегатные и оконные функции",
+    items: [
+      { title: "COUNT", syntax: "COUNT(*)  |  COUNT(column)  |  COUNT(DISTINCT column)", note: "Считает строки; COUNT(column) не учитывает NULL, COUNT(DISTINCT column) считает уникальные непустые значения." },
+      { title: "SUM", syntax: "SUM(amount)", note: "Суммирует значения числового столбца, игнорируя NULL." },
+      { title: "AVG", syntax: "AVG(amount)", note: "Вычисляет среднее арифметическое непустых значений." },
+      { title: "MIN / MAX", syntax: "MIN(value)  |  MAX(value)", note: "Возвращают минимальное и максимальное значение." },
+      { title: "STRING_AGG / GROUP_CONCAT", syntax: "STRING_AGG(name, ', ')", note: "Объединяет значения нескольких строк в одну строку. Название функции зависит от СУБД." },
+      { title: "OVER", syntax: "function() OVER (...)", note: "Превращает функцию в оконную: вычисляет результат по набору строк, не сворачивая строки в одну группу." },
+      { title: "PARTITION BY", syntax: "OVER (PARTITION BY department)", note: "Делит строки на независимые окна/группы для оконной функции." },
+      { title: "ROW_NUMBER", syntax: "ROW_NUMBER() OVER (ORDER BY created_at)", note: "Нумерует строки по порядку; номер каждой строки уникален." },
+      { title: "RANK / DENSE_RANK", syntax: "RANK() OVER (...)  |  DENSE_RANK() OVER (...)", note: "Присваивают ранг. RANK оставляет пропуски после равных значений, DENSE_RANK — без пропусков." },
+      { title: "LAG / LEAD", syntax: "LAG(value) OVER (...)  |  LEAD(value) OVER (...)", note: "Получают значение из предыдущей или следующей строки в рамках окна." },
+    ],
+  },
+  {
+    group: "Ограничения целостности таблиц",
+    items: [
+      { title: "PRIMARY KEY", syntax: "PRIMARY KEY (id)", note: "Первичный ключ: уникально идентифицирует строку; не допускает NULL и дубликаты." },
+      { title: "FOREIGN KEY", syntax: "FOREIGN KEY (user_id) REFERENCES users(id)", note: "Внешний ключ: связывает таблицы и защищает ссылочную целостность." },
+      { title: "UNIQUE", syntax: "UNIQUE (email)", note: "Запрещает повторяющиеся значения или комбинации столбцов. Поведение с NULL зависит от СУБД." },
+      { title: "NOT NULL", syntax: "email VARCHAR(255) NOT NULL", note: "Запрещает сохранять NULL в столбце." },
+      { title: "CHECK", syntax: "CHECK (price >= 0)", note: "Ограничивает допустимые значения выражением, например запрещает отрицательную цену." },
+      { title: "DEFAULT", syntax: "status VARCHAR(20) DEFAULT 'new'", note: "Подставляет значение по умолчанию, если при INSERT значение не указано." },
+    ],
+  },
 ];
 
 const snippets = [
@@ -592,12 +714,13 @@ const fieldClass = "w-full rounded-lg border border-border bg-background px-3 py
 const labelClass = "mb-1.5 block text-xs font-medium text-muted-foreground";
 
 export function DatabaseWorkbenchModule() {
-  const [tab, setTab] = useState<"builder" | "reference" | "frequent" | "checks">("builder");
+  const [tab, setTab] = useState<"builder" | "reference" | "memo" | "frequent" | "checks">("builder");
   const [dialect, setDialect] = useState<Dialect>("postgres");
   const [operation, setOperation] = useState<Operation>("select");
   const [form, setForm] = useState<BuilderState>(initial);
   const [search, setSearch] = useState("");
   const [frequentSearch, setFrequentSearch] = useState("");
+  const [memoSearch, setMemoSearch] = useState("");
   const [copied, setCopied] = useState(false);
   const generated = useMemo(() => buildSql(operation, dialect, form), [operation, dialect, form]);
   const update = (key: keyof BuilderState, value: string | boolean | CorrelatedSubqueryLevel[]) => setForm((current) => ({ ...current, [key]: value } as BuilderState));
@@ -630,6 +753,7 @@ export function DatabaseWorkbenchModule() {
         {[
           { id: "builder" as const, title: "Конструктор запросов", desc: "Собрать SQL по полям", icon: <WandSparkles className="h-4 w-4" /> },
           { id: "reference" as const, title: "Шпаргалка SQL", desc: "Команды и примеры", icon: <BookOpen className="h-4 w-4" /> },
+          { id: "memo" as const, title: "Памятка по SQL", desc: "Основные операторы и их значения", icon: <Info className="h-4 w-4" /> },
           { id: "frequent" as const, title: "Наиболее частые запросы", desc: "SQL для ежедневных QA-проверок", icon: <ClipboardList className="h-4 w-4" /> },
           { id: "checks" as const, title: "Проверки QA", desc: "Чек-лист тестирования данных", icon: <ShieldCheck className="h-4 w-4" /> },
         ].map((item) => (
@@ -801,6 +925,41 @@ export function DatabaseWorkbenchModule() {
         </section>
       )}
       
+      {tab === "memo" && (
+        <section className="space-y-5">
+          <div className="space-y-1">
+            <h3 className="text-lg font-semibold text-foreground">Памятка по SQL — основные операторы и их значения</h3>
+            <p className="text-sm text-muted-foreground">Краткий справочник по командам, частям запросов, условиям, функциям и ограничениям целостности. Синтаксис отдельных операторов может отличаться между PostgreSQL, MySQL и другими СУБД.</p>
+          </div>
+          <div className="relative"><Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" /><input value={memoSearch} onChange={(event) => setMemoSearch(event.target.value)} className={fieldClass + " pl-9"} placeholder="Найти оператор: WHERE, JOIN, AND, COUNT, COMMIT..." /></div>
+          <div className="space-y-6">
+            {memoOperatorGroups.map((group) => {
+              const items = group.items.filter((item) => (group.group + item.title + item.syntax + item.note).toLocaleLowerCase("ru").includes(memoSearch.toLocaleLowerCase("ru")));
+              if (!items.length) return null;
+              return (
+                <section key={group.group} className="space-y-3">
+                  <h4 className="border-b border-border pb-2 text-sm font-semibold text-foreground">{group.group}</h4>
+                  <div className="grid gap-2 lg:grid-cols-2">
+                    {items.map((item) => (
+                      <article key={item.title + item.syntax} className="min-w-0 rounded-xl border border-border bg-card p-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <h5 className="text-sm font-semibold text-foreground">{item.title}</h5>
+                          <button type="button" onClick={() => copy(item.syntax)} className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"><Copy className="h-3 w-3" />Копировать</button>
+                        </div>
+                        <code className="mt-2 block whitespace-pre-wrap break-words rounded bg-muted/60 px-2 py-1.5 text-xs text-foreground">{item.syntax}</code>
+                        <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.note}</p>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
+            {!memoOperatorGroups.some((group) => group.items.some((item) => (group.group + item.title + item.syntax + item.note).toLocaleLowerCase("ru").includes(memoSearch.toLocaleLowerCase("ru")))) && <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">По запросу ничего не найдено.</p>}
+          </div>
+          <div className="flex gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground"><AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" /><p>Осторожно с UPDATE, DELETE, DROP и TRUNCATE: они изменяют или удаляют данные/объекты. Перед изменениями проверь WHERE, используй тестовую БД и транзакцию, если СУБД поддерживает откат этой операции.</p></div>
+        </section>
+      )}
+
       {tab === "frequent" && (
         <section className="space-y-5">
           <div className="space-y-1">
@@ -835,7 +994,6 @@ export function DatabaseWorkbenchModule() {
       {tab === "checks" && (
         <section className="space-y-3">
           <div className="rounded-xl border border-border bg-card p-4"><div className="mb-2 flex items-center gap-2 text-sm font-semibold"><CheckCircle2 className="h-4 w-4 text-emerald-500" />Чек-лист проверки данных</div><ul className="space-y-2 text-sm text-muted-foreground">{["После создания пользователя проверь, что запись появилась и поля заполнены корректно.","После изменения статуса проверь новое значение и историю изменений, если она предусмотрена.","Для связей проверь существование родительской записи и отсутствие «осиротевших» записей.","Для списков сравни COUNT(*) с количеством элементов в UI/API с учётом фильтров и пагинации.","Проверь дубликаты в полях, которые по требованиям должны быть уникальными.","Проверь NULL, пустую строку и пробелы отдельно — это разные значения.","Для денежных расчётов сравни сумму заказа с суммой позиций и правилами округления.","Для удаления проверь, что удалена только нужная запись и связанные данные обработаны согласно требованиям."].map((item) => <li key={item} className="flex gap-2"><span className="text-primary">•</span>{item}</li>)}</ul></div>
-          <div className="rounded-xl border border-border bg-card p-4"><div className="mb-2 flex items-center gap-2 text-sm font-semibold"><Info className="h-4 w-4 text-primary" />Памятка по SQL</div><div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2"><p><code>AS</code> — псевдоним в результате запроса; не меняет схему БД.</p><p><code>ALTER TABLE ... RENAME COLUMN</code> — реальное переименование столбца.</p><p><code>WHERE</code> — фильтр строк до группировки.</p><p><code>HAVING</code> — фильтр сгруппированных результатов.</p><p><code>COUNT(*)</code> — все строки; <code>COUNT(column)</code> — только не-NULL.</p><p><code>IS NULL</code> — проверка NULL; не используй <code>= NULL</code>.</p></div></div>
           <div className="flex gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground"><AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" /><p>Не запускай DDL/DML-команды в production или общей staging-среде без явного разрешения. Перед UPDATE/DELETE сначала выполни SELECT с тем же WHERE и проверь количество строк.</p></div>
         </section>
       )}
