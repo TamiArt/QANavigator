@@ -587,6 +587,7 @@ export function DatabaseWorkbenchModule() {
     window.setTimeout(() => setCopied(false), 1600);
   };
   const filteredSnippets = snippets.filter((item) => (item.title + item.group + item.sql + item.note).toLocaleLowerCase("ru").includes(search.toLocaleLowerCase("ru")));
+  const snippetGroups = [...new Set(filteredSnippets.map((item) => item.group))];
 
   return (
     <div className="space-y-5">
@@ -744,10 +745,29 @@ export function DatabaseWorkbenchModule() {
       </div>
 
       {tab === "reference" && (
-        <section className="space-y-3">
+        <section className="space-y-5">
+          <div className="rounded-xl border border-border bg-muted/20 p-3 text-sm text-muted-foreground">
+            Справочник операторов и функций SQL. Каждый раздел содержит конструкцию, её синтаксис и краткое назначение. Для PostgreSQL и MySQL различия отмечены отдельно.
+          </div>
           <div className="relative"><Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" /><input value={search} onChange={(event) => setSearch(event.target.value)} className={fieldClass + " pl-9"} placeholder="Найти оператор, функцию или синтаксис: SELECT, COUNT, CASE, JOIN..." /></div>
-          <div className="space-y-3">
-            {filteredSnippets.map((item) => <article key={item.title} className="rounded-xl border border-border bg-card p-4"><div className="mb-2 flex items-center justify-between gap-2"><span className="text-[11px] font-semibold uppercase tracking-wide text-primary">{item.group}</span><button onClick={() => copy(item.sql)} className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground"><Copy className="h-3 w-3" />Копировать</button></div><h3 className="mb-2 text-sm font-semibold">{item.title}</h3><pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-muted/60 p-3 text-xs leading-5">{item.sql}</pre><p className="mt-2 text-xs text-muted-foreground">{item.note}</p></article>)}
+          <div className="space-y-6">
+            {snippetGroups.map((group) => (
+              <section key={group} className="space-y-3">
+                <h2 className="border-b border-border pb-2 text-base font-semibold text-foreground">{group}</h2>
+                <div className="grid gap-3">
+                  {filteredSnippets.filter((item) => item.group === group).map((item) => (
+                    <article key={item.title} className="rounded-xl border border-border bg-card p-4">
+                      <div className="mb-2 flex items-center justify-between gap-2">
+                        <h3 className="text-sm font-semibold">{item.title}</h3>
+                        <button onClick={() => copy(item.sql)} className="flex shrink-0 items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground"><Copy className="h-3 w-3" />Копировать</button>
+                      </div>
+                      <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-muted/60 p-3 text-xs leading-5">{item.sql}</pre>
+                      <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.note}</p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            ))}
             {filteredSnippets.length === 0 && <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">По запросу ничего не найдено.</p>}
           </div>
         </section>
