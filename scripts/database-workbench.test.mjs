@@ -725,3 +725,30 @@ test("MySQL STDDEV and VARIANCE aliases use population statistics", async (t) =>
   assert.ok(variance > 0);
   assert.ok(Math.abs(deviation * deviation - variance) < 1e-9);
 });
+
+
+test("SQL statement splitter respects PostgreSQL dollar-quoted strings and procedural bodies", () => {
+  const script = `SELECT $$first; second$$ AS value;
+SELECT $body$BEGIN
+  PERFORM ';';
+  RAISE NOTICE 'still inside';
+END$body$ AS procedure_body;
+SELECT 3;`;
+  assert.deepEqual(splitSqlStatements(script), [
+    "SELECT $$first; second$$ AS value",
+    "SELECT $body$BEGIN\\n  PERFORM ';';\\n  RAISE NOTICE 'still inside';\\nEND$body$ AS procedure_body",
+    "SELECT 3",
+  ]);
+  assert.throws(() => splitSqlStatements("SELECT $tag$unfinished; SELECT 2;"), /незакрытую dollar-quoted строку/);
+});
+
+test("SQL statement splitter handles MySQL hash comments and nested block comments", () => {
+  const script = `SELECT 1; # comment with ; delimiter
+SELECT 2; /* outer ; /* nested ; */ still outer ; */ SELECT 3;`;
+  assert.deepEqual(splitSqlStatements(script), [
+    "SELECT 1",
+    "# comment with ; delimiter\\nSELECT 2",
+    "/* outer ; /* nested ; */ still outer ; */ SELECT 3",
+  ]);
+  assert.throws(() => splitSqlStatements("SELECT 1; /* outer /* nested */"), /незакрытый комментарий/);
+});
