@@ -32,7 +32,7 @@ test("database workbench validates identifiers and previews literal parameter va
   assert.ok(source.includes("value.replace(/'/g, \"''\")"), "string values must escape single quotes");
   assert.ok(source.includes('const q = (name: string) => name;'), "identifiers must be shown without quotes");
   assert.ok(source.includes("placeholder(condition.value)"), "each condition value must be included in the SQL preview");
-  assert.ok(source.includes('"\nFROM " + tableSql'), "SELECT preview must use readable multiline formatting");
+  assert.ok(source.includes('"\\nFROM " + tableSql'), "SELECT preview must use readable multiline formatting");
 });
 
 test("database workbench uses the requested Russian field labels", () => {
@@ -53,7 +53,7 @@ test("database workbench supports multiple WHERE conditions with AND and OR", ()
   assert.ok(source.includes("const removeCondition ="));
   assert.ok(source.includes('option value="AND"'));
   assert.ok(source.includes('option value="OR"'));
-  assert.ok(source.includes('clauses.join("\\\n  ")') || source.includes('clauses.join("\n  ")'));
+  assert.ok(source.includes('clauses.join("\\\\n  ")') || source.includes('clauses.join("\\n  ")'));
   assert.ok(source.includes("Заполни столбец во всех добавленных условиях или удали пустое условие."));
   assert.ok(source.includes("AND имеет более высокий приоритет, чем OR"), "SQL builder must explain AND precedence over OR");
   assert.ok(source.includes("A OR B AND C читается как A OR (B AND C)"), "SQL builder must show the default logical grouping");
@@ -126,11 +126,11 @@ test("SELECT supports DISTINCT and validated pagination", () => {
 
 test("aggregate queries support HAVING, ORDER BY and pagination", () => {
   assert.ok(source.includes('havingAlias: string'));
-  assert.ok(source.includes('"\nHAVING " + (dialect === "mysql" ? q(form.havingAlias.trim()) : havingTarget)'), "HAVING must filter grouped results with dialect-aware expressions");
+  assert.ok(source.includes('"\\nHAVING " + (dialect === "mysql" ? q(form.havingAlias.trim()) : havingTarget)'), "HAVING must filter grouped results with dialect-aware expressions");
   assert.ok(source.includes("aggregateSqlExpression(havingMetric, q)"), "PostgreSQL HAVING must use the configured aggregate expression rather than a SELECT alias");
-  assert.ok(source.includes('"\nORDER BY " + q(form.orderColumn.trim())'), "aggregate results must be sortable");
-  assert.ok(source.includes('"\nLIMIT " + Number(form.limit)'), "aggregate results must support LIMIT");
-  assert.ok(source.includes('"\nOFFSET " + Number(form.offset)'), "aggregate results must support OFFSET");
+  assert.ok(source.includes('"\\nORDER BY " + q(form.orderColumn.trim())'), "aggregate results must be sortable");
+  assert.ok(source.includes('"\\nLIMIT " + Number(form.limit)'), "aggregate results must support LIMIT");
+  assert.ok(source.includes('"\\nOFFSET " + Number(form.offset)'), "aggregate results must support OFFSET");
   assert.ok(source.includes("const whereClause = where();"), "WHERE parameters must be registered before HAVING parameters");
 });
 
@@ -197,7 +197,7 @@ test("SQL trainer builds CREATE TABLE AS with scalar subqueries in SELECT and WH
   assert.ok(source.includes('const scalar = "(SELECT " + scalarSelect + " FROM " + q(sourceTable) + scalarFilter + ")"'), "the scalar subquery must support either an aggregate or a plain selected column");
   assert.ok(source.includes('scalar + " AS " + q(selectAlias)'), "SELECT must expose the scalar subquery under a configurable alias");
   assert.ok(source.includes('q(whereColumn) + " " + form.ctasWhereOperator + " " + scalar'), "WHERE must compare an outer column with the scalar subquery");
-  assert.ok(source.includes('form.ctasAppendSelect ? "\n\nSELECT * FROM "'), "the builder must optionally append a follow-up SELECT from the created table");
+  assert.ok(source.includes('form.ctasAppendSelect ? "\\n\\nSELECT * FROM "'), "the builder must optionally append a follow-up SELECT from the created table");
   assert.ok(source.includes("Скалярный подзапрос в SELECT") && source.includes("Скалярный подзапрос в WHERE"), "the UI must expose both scalar-subquery positions");
   assert.ok(source.includes("CREATE TABLE AS создаёт физическую таблицу"), "the UI must distinguish a created table from a CTE");
   assert.ok(source.includes("ctasScalarFilterEnabled") && source.includes("ctasSubqueryLevels"), "the scalar subquery must support dynamically configured nested SELECT levels");
