@@ -24,7 +24,7 @@ export function splitSqlStatements(sql) {
       continue;
     }
     if (lineComment) {
-      if (char === "\\n" || char === "\\r") lineComment = false;
+      if (char === "\n" || char === "\r") lineComment = false;
       continue;
     }
     if (blockCommentDepth > 0) {
@@ -41,7 +41,7 @@ export function splitSqlStatements(sql) {
       if (char === quote) {
         if (next === quote) index += 1;
         else quote = "";
-      } else if (char === "\\\\" && (quote === "'" || quote === "`") && next) {
+      } else if (char === "\\" && (quote === "'" || quote === String.fromCharCode(96)) && next) {
         index += 1;
       }
       continue;
@@ -61,14 +61,14 @@ export function splitSqlStatements(sql) {
       continue;
     }
     if (char === "$") {
-      const delimiter = source.slice(index).match(/^\\$[A-Za-z_][A-Za-z0-9_]*\\$|^\\$\\$/)?.[0];
+      const delimiter = source.slice(index).match(/^\$[A-Za-z_][A-Za-z0-9_]*\$|^\$\$/)?.[0];
       if (delimiter) {
         dollarQuote = delimiter;
         index += delimiter.length - 1;
         continue;
       }
     }
-    if (char === "'" || char === '"' || char === "`" || char === "[") {
+    if (char === "'" || char === '"' || char === String.fromCharCode(96) || char === "[") {
       quote = char === "[" ? "]" : char;
       continue;
     }
