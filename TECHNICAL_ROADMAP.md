@@ -2013,3 +2013,12 @@ Validation: source, infographic entries and regression assertions updated. Run t
 - added regression tests for dollar-quote delimiters, unterminated dollar-quoted strings, nested comments and MySQL line comments.
 
 The parser improvement affects statement boundaries only. The local execution engine remains SQLite/WebAssembly and does not become a PostgreSQL or MySQL server emulator.
+
+
+### 7.1.71 SQL Trainer — searchable SQL operator memo — 2026-11-10
+
+- added a dedicated “Памятка по SQL” tab in the database workbench;
+- grouped 78 SQL operator and command reference entries into command families, SELECT clauses, comparison and logical operators, arithmetic/value expressions, set operations and JOINs, aggregate/window functions, and integrity constraints;
+- added concise Russian explanations, syntax examples, a search field and one-click copying;
+- documented dialect-specific syntax differences and highlighted destructive commands that require a safe test environment;
+- added regression assertions for the memo tab and its core operator coverage.
