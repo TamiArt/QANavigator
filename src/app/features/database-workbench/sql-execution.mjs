@@ -8,20 +8,31 @@ export function splitSqlStatements(sql) {
   const statements = [];
   let start = 0;
   let quote = "";
+  let dollarQuote = "";
   let lineComment = false;
-  let blockComment = false;
+  let blockCommentDepth = 0;
 
   for (let index = 0; index < source.length; index += 1) {
     const char = source[index];
     const next = source[index + 1];
 
-    if (lineComment) {
-      if (char === "\n") lineComment = false;
+    if (dollarQuote) {
+      if (source.startsWith(dollarQuote, index)) {
+        index += dollarQuote.length - 1;
+        dollarQuote = "";
+      }
       continue;
     }
-    if (blockComment) {
-      if (char === "*" && next === "/") {
-        blockComment = false;
+    if (lineComment) {
+      if (char === "\\n" || char === "\\r") lineComment = false;
+      continue;
+    }
+    if (blockCommentDepth > 0) {
+      if (char === "/" && next === "*") {
+        blockCommentDepth += 1;
+        index += 1;
+      } else if (char === "*" && next === "/") {
+        blockCommentDepth -= 1;
         index += 1;
       }
       continue;
@@ -30,7 +41,7 @@ export function splitSqlStatements(sql) {
       if (char === quote) {
         if (next === quote) index += 1;
         else quote = "";
-      } else if (char === "\\" && quote === "'" && next) {
+      } else if (char === "\\\\" && (quote === "'" || quote === "`") && next) {
         index += 1;
       }
       continue;
@@ -41,9 +52,21 @@ export function splitSqlStatements(sql) {
       continue;
     }
     if (char === "/" && next === "*") {
-      blockComment = true;
+      blockCommentDepth = 1;
       index += 1;
       continue;
+    }
+    if (char === "#") {
+      lineComment = true;
+      continue;
+    }
+    if (char === "$") {
+      const delimiter = source.slice(index).match(/^\\$[A-Za-z_][A-Za-z0-9_]*\\$|^\\$\\$/)?.[0];
+      if (delimiter) {
+        dollarQuote = delimiter;
+        index += delimiter.length - 1;
+        continue;
+      }
     }
     if (char === "'" || char === '"' || char === "`" || char === "[") {
       quote = char === "[" ? "]" : char;
@@ -57,7 +80,8 @@ export function splitSqlStatements(sql) {
   }
 
   if (quote) throw new Error("SQL содержит незакрытую строку или кавычку идентификатора.");
-  if (blockComment) throw new Error("SQL содержит незакрытый комментарий /* ... */.");
+  if (dollarQuote) throw new Error("SQL содержит незакрытую dollar-quoted строку.");
+  if (blockCommentDepth > 0) throw new Error("SQL содержит незакрытый комментарий /* ... */.");
   const last = source.slice(start).trim();
   if (last) statements.push(last);
   if (statements.length > MAX_STATEMENTS) throw new Error("За один запуск можно выполнить не более " + MAX_STATEMENTS + " SQL-инструкций.");
