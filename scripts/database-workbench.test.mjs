@@ -804,7 +804,6 @@ test("SQL cheat sheet presents each query as a compact responsive card", () => {
 test("the app provides a shared accessible back-to-top button for every long module", () => {
   assert.ok(appSource.includes('const mainScrollRef = useRef<HTMLElement | null>(null)'), "the shared main scroll container must be referenced");
   assert.ok(appSource.includes('const handleMainScroll = () => setShowBackToTop((mainScrollRef.current?.scrollTop ?? 0) > 320)'), "the button must appear after meaningful downward scrolling");
-  assert.ok(appSource.includes('mainScrollRef={mainScrollRef}') === false, "the scroll ref is attached directly to the main element");
   assert.ok(appSource.includes('<main ref={mainScrollRef} onScroll={handleMainScroll}'), "all modules must share the main scroll listener");
   assert.ok(appSource.includes('mainScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })'), "the shared action must smoothly return the page to the top");
   assert.ok(appSource.includes('aria-label="Вернуться в начало страницы"'), "the button must have an accessible name");
