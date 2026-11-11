@@ -398,7 +398,7 @@ test("advanced SELECT mode explains every field in beginner-friendly steps", () 
   assert.ok(source.includes('Добавить пример CASE в шаг 1'), "CASE must be insertable as a ready-made example");
   assert.ok(source.includes('COUNT(*) &gt; 1'), "HAVING must explain a simple count condition");
   assert.ok(source.includes('aria-label="Какие столбцы показать"'), "advanced fields must have descriptive accessible labels");
-  assert.ok(source.includes('advancedFromAlias: "", advancedJoins: "", advancedGroupBy: "", advancedHaving: "", advancedOrderBy: ""'), "advanced SELECT must start without prefilled complex JOIN/grouping clauses");
+  assert.ok(source.includes('advancedFromAlias: ""') && source.includes('advancedJoins: ""') && source.includes('advancedGroupBy: ""') && source.includes('advancedHaving: ""') && source.includes('advancedOrderBy: ""'), "advanced SELECT must start without prefilled complex JOIN/grouping clauses");
 });
 
 test("advanced SELECT validates join alias scope and rejects unsupported MySQL FULL OUTER JOIN", () => {
