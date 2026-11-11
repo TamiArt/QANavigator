@@ -2042,3 +2042,14 @@ Validation: source and regression assertions updated. Run the focused database-w
 - added regression assertions for tab visibility, scroll behavior and accessibility.
 
 Validation: implementation and regression assertions committed. Confirm the focused database-workbench test, full `npm run verify`, and current-head GitHub Actions before marking the change verified.
+
+
+### 7.1.74 App-wide back-to-top navigation — 2026-11-11
+
+- moved the floating “Наверх” action from the SQL reference tabs into the application shell so it is available across every module with a long page scroll;
+- the shared button appears after the main content has been scrolled more than 320 px and uses smooth scrolling to return to the top;
+- the shared behavior automatically covers the Knowledge Base and Learning Mode because both render inside the main application scroll container;
+- removed the SQL workbench's duplicate local button and its redundant scroll handler;
+- added regression coverage for the shared scroll listener, visibility threshold, smooth-scroll action and accessible label/icon.
+
+Validation: run the database-workbench regression test, full `npm run verify`, and current-head GitHub Actions. Confirm mobile and desktop behavior in a browser before marking visual QA complete.
