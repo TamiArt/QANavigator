@@ -1,10 +1,10 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { buildNestedScalarSubquery, buildCorrelatedExistsSubquery } from "./nested-subquery-builder.mjs";
 import { buildAdvancedSelect } from "./advanced-select-builder.mjs";
 import { buildCreateTable, buildAlterTable, buildDropTable, buildTruncateTable, buildInsert, buildUpdate, buildDelete } from "./ddl-dml-builder.mjs";
 import { SqlExecutionConsole } from "./SqlExecutionConsole";
 import {
-  AlertTriangle, ArrowUp, BookOpen, CheckCircle2, ClipboardList, Code2, Copy,
+  AlertTriangle, BookOpen, CheckCircle2, ClipboardList, Code2, Copy,
   Database, Info, Search, ShieldCheck, WandSparkles,
 } from "lucide-react";
 
@@ -715,7 +715,6 @@ const fieldClass = "w-full rounded-lg border border-border bg-background px-3 py
 const labelClass = "mb-1.5 block text-xs font-medium text-muted-foreground";
 
 export function DatabaseWorkbenchModule() {
-  const workbenchRef = useRef<HTMLDivElement>(null);
   const [tab, setTab] = useState<"builder" | "reference" | "memo" | "frequent" | "checks">("builder");
   const [dialect, setDialect] = useState<Dialect>("postgres");
   const [operation, setOperation] = useState<Operation>("select");
@@ -729,18 +728,6 @@ export function DatabaseWorkbenchModule() {
   const updateCondition = (id: number, key: keyof Omit<FilterCondition, "id">, value: string | number | boolean) => setForm((current) => ({ ...current, conditions: current.conditions.map((condition) => condition.id === id ? { ...condition, [key]: value } : condition) }));
   const addCondition = () => setForm((current) => ({ ...current, conditions: [...current.conditions, { id: Math.max(0, ...current.conditions.map((condition) => condition.id)) + 1, column: "", operator: "=", value: "", connector: "AND", openGroups: 0, closeGroups: 0, negate: false, subqueryTable: "orders", subquerySelectColumn: "user_id", subqueryFilterColumn: "status", subqueryFilterOperator: "=", subqueryFilterValue: "paid" }] }));
   const removeCondition = (id: number) => setForm((current) => ({ ...current, conditions: current.conditions.filter((condition) => condition.id !== id) }));
-  const scrollToTop = () => {
-    let ancestor = workbenchRef.current?.parentElement ?? null;
-    while (ancestor && ancestor !== document.body && ancestor !== document.documentElement) {
-      const overflowY = window.getComputedStyle(ancestor).overflowY;
-      if ((overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") && ancestor.scrollHeight > ancestor.clientHeight) {
-        ancestor.scrollTo({ top: 0, behavior: "smooth" });
-        return;
-      }
-      ancestor = ancestor.parentElement;
-    }
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
   const copy = async (value: string) => {
     await navigator.clipboard.writeText(value);
     setCopied(true);
@@ -754,7 +741,7 @@ export function DatabaseWorkbenchModule() {
   });
 
   return (
-    <div ref={workbenchRef} className="space-y-5">
+    <div className="space-y-5">
       <header className="space-y-1">
         <div className="flex items-center gap-2">
           <div className="rounded-xl bg-primary/10 p-2 text-primary"><Database className="h-5 w-5" /></div>
@@ -1009,19 +996,6 @@ export function DatabaseWorkbenchModule() {
           <div className="flex gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground"><AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" /><p>Примеры в основном читают данные (SELECT). Перед использованием проверь имена таблиц и полей, права доступа и тестовую среду. Не запускай изменяющие данные команды на production без разрешения.</p></div>
         </section>
       )}
-
-      {tab === "reference" || tab === "memo" ? (
-        <button
-          type="button"
-          onClick={scrollToTop}
-          aria-label="Вернуться в начало страницы"
-          title="Наверх"
-          className="fixed bottom-5 right-5 z-50 inline-flex items-center gap-2 rounded-full border border-border bg-card/95 px-4 py-3 text-sm font-medium text-foreground shadow-lg backdrop-blur transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-        >
-          <ArrowUp className="h-4 w-4" />
-          <span>Наверх</span>
-        </button>
-      ) : null}
 
       {tab === "checks" && (
         <section className="space-y-3">
