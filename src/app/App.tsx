@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import {
-  BarChart2, BookOpen, Brain, CheckSquare, Clipboard, Database, FileText,
+  ArrowUp, BarChart2, BookOpen, Brain, CheckSquare, Clipboard, Database, FileText,
   GraduationCap, Key, Menu, Moon, Play, Settings, Shield, Sun, TableProperties, Terminal,
 } from "lucide-react";
 import { ProjectWorkspace } from "./features/project-workspace/ProjectWorkspace";
@@ -94,6 +94,10 @@ export default function App() {
   );
   const [showApiModal, setShowApiModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const mainScrollRef = useRef<HTMLElement | null>(null);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const handleMainScroll = () => setShowBackToTop((mainScrollRef.current?.scrollTop ?? 0) > 320);
+  const scrollMainToTop = () => mainScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   const [requirementsText, setRequirementsText] = useLocalStorage<string>(
     STORAGE_KEYS.requirementsText,
     "",
@@ -209,9 +213,21 @@ export default function App() {
               <button aria-label="Переключить тему" onClick={toggleTheme} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">{theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}</button>
             </div>
           </header>
-          <main className="flex-1 overflow-y-auto"><div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">{renderModule()}</div></main>
+          <main ref={mainScrollRef} onScroll={handleMainScroll} className="flex-1 overflow-y-auto"><div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">{renderModule()}</div></main>
         </div>
       </div>
+      {showBackToTop && (
+        <button
+          type="button"
+          onClick={scrollMainToTop}
+          aria-label="Вернуться в начало страницы"
+          title="Наверх"
+          className="fixed bottom-5 right-5 z-50 inline-flex items-center gap-2 rounded-full border border-border bg-card/95 px-4 py-3 text-sm font-medium text-foreground shadow-lg backdrop-blur transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        >
+          <ArrowUp className="h-4 w-4" />
+          <span>Наверх</span>
+        </button>
+      )}
       <ApiModal open={showApiModal} onClose={() => setShowApiModal(false)} />
     </AppContext.Provider>
   );
