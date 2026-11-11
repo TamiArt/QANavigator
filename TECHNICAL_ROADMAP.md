@@ -2042,3 +2042,26 @@ Validation: source and regression assertions updated. Run the focused database-w
 - added regression assertions for tab visibility, scroll behavior and accessibility.
 
 Validation: implementation and regression assertions committed. Confirm the focused database-workbench test, full `npm run verify`, and current-head GitHub Actions before marking the change verified.
+
+
+### 7.1.74 App-wide back-to-top navigation — 2026-11-11
+
+- moved the floating “Наверх” action from the SQL reference tabs into the application shell so it is available across every module with a long page scroll;
+- the shared button appears after the main content has been scrolled more than 320 px and uses smooth scrolling to return to the top;
+- the shared behavior automatically covers the Knowledge Base and Learning Mode because both render inside the main application scroll container;
+- removed the SQL workbench's duplicate local button and its redundant scroll handler;
+- added regression coverage for the shared scroll listener, visibility threshold, smooth-scroll action and accessible label/icon.
+
+Validation: run the database-workbench regression test, full `npm run verify`, and current-head GitHub Actions. Confirm mobile and desktop behavior in a browser before marking visual QA complete.
+
+
+### 7.1.75 Beginner-friendly advanced SELECT builder — 2026-11-11
+
+- restructured the advanced SELECT form into seven numbered steps with plain-language questions: output columns, optional related table (JOIN), grouping (GROUP BY), filtering groups (HAVING), conditional labels (CASE), sorting (ORDER BY), and pagination (LIMIT/OFFSET);
+- added a complete JOIN example and explained the purpose of each table/column reference in everyday language;
+- added a one-click CASE example insertion into the SELECT expressions;
+- explained which sections can be skipped and what each optional field changes;
+- removed the prefilled multi-table aggregation example: the mode now starts with simple `id` and `email` columns and leaves JOIN/GROUP BY/HAVING/ORDER BY empty;
+- added regression coverage for the guided steps, JOIN explanation, CASE insertion and beginner defaults.
+
+Validation: advanced SELECT builder unit tests and full `npm run verify` must pass; inspect responsive layout at mobile and desktop widths before visual QA sign-off.

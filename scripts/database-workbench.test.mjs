@@ -10,6 +10,7 @@ import { adaptSqlForSqlite, registerSqlCompatibilityFunctions } from "../src/app
 import { SQL_TRAINER_SEED_SQL } from "../src/app/features/database-workbench/sql-seed.mjs";
 
 const source = await readFile("src/app/features/database-workbench/DatabaseWorkbenchModule.tsx", "utf8");
+const appSource = await readFile("src/app/App.tsx", "utf8");
 const nestedBuilderSource = await readFile("src/app/features/database-workbench/nested-subquery-builder.mjs", "utf8");
 const ddlDmlBuilderSource = await readFile("src/app/features/database-workbench/ddl-dml-builder.mjs", "utf8");
 
@@ -381,6 +382,24 @@ test("advanced SELECT mode is integrated with the shared WHERE editor and SQL pr
   assert.ok(source.includes('operation === "select" || operation === "advancedSelect" || operation === "aggregate"'));
 });
 
+
+test("advanced SELECT mode explains every field in beginner-friendly steps", () => {
+  assert.ok(source.includes('Собираем запрос по шагам'), "advanced SELECT must introduce a guided sequence");
+  for (const heading of [
+    "Шаг 1. Какие данные показать?",
+    "Шаг 2. Нужно взять данные ещё из одной таблицы?",
+    "Шаг 3. Нужно объединить одинаковые значения в группы?",
+    "Шаг 4. Оставить только группы, подходящие по количеству или сумме?",
+    "Шаг 5. Показать разные подписи в зависимости от условия?",
+    "Шаг 6. В каком порядке показать результат?",
+    "Шаг 7. Сколько строк показать?",
+  ]) assert.ok(source.includes(heading), "missing beginner step: " + heading);
+  assert.ok(source.includes('Готовый пример:'), "JOIN field must explain a complete concrete example");
+  assert.ok(source.includes('Добавить пример CASE в шаг 1'), "CASE must be insertable as a ready-made example");
+  assert.ok(source.includes('COUNT(*) &gt; 1'), "HAVING must explain a simple count condition");
+  assert.ok(source.includes('aria-label="Какие столбцы показать"'), "advanced fields must have descriptive accessible labels");
+  assert.ok(source.includes('advancedFromAlias: ""') && source.includes('advancedJoins: ""') && source.includes('advancedGroupBy: ""') && source.includes('advancedHaving: ""') && source.includes('advancedOrderBy: ""'), "advanced SELECT must start without prefilled complex JOIN/grouping clauses");
+});
 
 test("advanced SELECT validates join alias scope and rejects unsupported MySQL FULL OUTER JOIN", () => {
   const base = { table: "users", fromAlias: "u", selectItems: "u.id" };
@@ -800,12 +819,13 @@ test("SQL cheat sheet presents each query as a compact responsive card", () => {
 });
 
 
-test("SQL cheat sheet and SQL memo provide an accessible floating back-to-top button", () => {
-  assert.ok(source.includes('const workbenchRef = useRef<HTMLDivElement>(null)'), "the workbench root must be available to locate a scrollable page ancestor");
-  assert.ok(source.includes('const scrollToTop = () => {'), "the back-to-top action must have a scroll handler");
-  assert.ok(source.includes('ancestor.scrollTo({ top: 0, behavior: "smooth" })'), "the button must smoothly scroll an internal page container to the top when present");
-  assert.ok(source.includes('window.scrollTo({ top: 0, behavior: "smooth" })'), "the button must smoothly scroll the window when the page itself scrolls");
-  assert.ok(source.includes('{tab === "reference" || tab === "memo" ? ('), "the floating action must appear in the SQL cheat sheet and memo tabs");
-  assert.ok(source.includes('aria-label="Вернуться в начало страницы"'), "the back-to-top button must have an accessible name");
-  assert.ok(source.includes('<ArrowUp className="h-4 w-4" />'), "the back-to-top button must show an upward arrow");
+test("the app provides a shared accessible back-to-top button for every long module", () => {
+  assert.ok(appSource.includes('const mainScrollRef = useRef<HTMLElement | null>(null)'), "the shared main scroll container must be referenced");
+  assert.ok(appSource.includes('const handleMainScroll = () => setShowBackToTop((mainScrollRef.current?.scrollTop ?? 0) > 320)'), "the button must appear after meaningful downward scrolling");
+  assert.ok(appSource.includes('<main ref={mainScrollRef} onScroll={handleMainScroll}'), "all modules must share the main scroll listener");
+  assert.ok(appSource.includes('mainScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })'), "the shared action must smoothly return the page to the top");
+  assert.ok(appSource.includes('aria-label="Вернуться в начало страницы"'), "the button must have an accessible name");
+  assert.ok(appSource.includes('<ArrowUp className="h-4 w-4" />'), "the button must show an upward arrow");
+  assert.ok(appSource.includes('<span>Наверх</span>'), "the button must have a visible label");
+  assert.equal(source.includes("workbenchRef"), false, "the SQL workbench must not render a duplicate local back-to-top action");
 });
