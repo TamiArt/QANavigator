@@ -798,3 +798,14 @@ test("SQL cheat sheet presents each query as a compact responsive card", () => {
   assert.ok(reference.includes('<h4 className="min-w-0 text-xs font-semibold'), "each query must have a distinct title");
   assert.ok(reference.includes('<p className="text-[11px] leading-[1.55] text-muted-foreground">{item.note}</p>'), "each query explanation must be visually separated from its SQL");
 });
+
+
+test("SQL cheat sheet and SQL memo provide an accessible floating back-to-top button", () => {
+  assert.ok(source.includes('const workbenchRef = useRef<HTMLDivElement>(null)'), "the workbench root must be available to locate a scrollable page ancestor");
+  assert.ok(source.includes('const scrollToTop = () => {'), "the back-to-top action must have a scroll handler");
+  assert.ok(source.includes('ancestor.scrollTo({ top: 0, behavior: "smooth" })'), "the button must smoothly scroll an internal page container to the top when present");
+  assert.ok(source.includes('window.scrollTo({ top: 0, behavior: "smooth" })'), "the button must smoothly scroll the window when the page itself scrolls");
+  assert.ok(source.includes('{tab === "reference" || tab === "memo" ? ('), "the floating action must appear in the SQL cheat sheet and memo tabs");
+  assert.ok(source.includes('aria-label="Вернуться в начало страницы"'), "the back-to-top button must have an accessible name");
+  assert.ok(source.includes('<ArrowUp className="h-4 w-4" />'), "the back-to-top button must show an upward arrow");
+});
