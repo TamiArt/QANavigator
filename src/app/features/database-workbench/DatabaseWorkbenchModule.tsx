@@ -793,7 +793,71 @@ export function DatabaseWorkbenchModule() {
             <div className="space-y-4 rounded-xl border border-border bg-card p-4">
               <div className="flex items-center justify-between gap-2"><p className="text-sm font-semibold">2. Параметры запроса</p><select aria-label="Диалект SQL" value={dialect} onChange={(event) => setDialect(event.target.value as Dialect)} className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs"><option value="postgres">PostgreSQL</option><option value="mysql">MySQL</option></select></div>
               {operation !== "createTableAs" && <div><label className={labelClass}>Название таблицы</label><input value={form.table} onChange={(event) => update("table", event.target.value)} className={fieldClass} placeholder="users" /></div>}
-              {operation === "advancedSelect" && <div className="space-y-3 rounded-lg border border-primary/20 bg-muted/30 p-3"><p className="text-xs text-muted-foreground">Собирай сложный SELECT: по одному выражению на строку, каждый JOIN — отдельной строкой. WHERE использует общий редактор условий ниже.</p><label className={labelClass}>Псевдоним основной таблицы (необязательно)</label><input value={form.advancedFromAlias} onChange={(event) => update("advancedFromAlias", event.target.value)} className={fieldClass} placeholder="u" /><label className={labelClass}>SELECT — столбцы, агрегаты, арифметика, CASE WHEN (по одному выражению на строку)</label><textarea value={form.advancedSelectItems} onChange={(event) => update("advancedSelectItems", event.target.value)} className={fieldClass + " min-h-24"} placeholder={"u.id AS user_id\nu.email\nCOUNT(o.id) AS orders_count"} /><label className={labelClass}>JOIN (каждый с новой строки)</label><textarea value={form.advancedJoins} onChange={(event) => update("advancedJoins", event.target.value)} className={fieldClass + " min-h-20"} placeholder={"LEFT JOIN orders AS o ON o.user_id = u.id\nLEFT JOIN payments AS p ON p.order_id = o.id"} /><label className={labelClass}>GROUP BY (через запятую, необязательно)</label><input value={form.advancedGroupBy} onChange={(event) => update("advancedGroupBy", event.target.value)} className={fieldClass} placeholder="u.id, u.email" /><label className={labelClass}>HAVING (каждое условие с новой строки, агрегаты)</label><textarea value={form.advancedHaving} onChange={(event) => update("advancedHaving", event.target.value)} className={fieldClass + " min-h-16"} placeholder={"COUNT(o.id) > 1\nSUM(o.amount) >= 100"} /><label className={labelClass}>ORDER BY (через запятую, направление у каждого поля)</label><input value={form.advancedOrderBy} onChange={(event) => update("advancedOrderBy", event.target.value)} className={fieldClass} placeholder="orders_count DESC, u.email ASC" /><label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={form.distinct} onChange={(event) => update("distinct", event.target.checked)} />DISTINCT</label><div className="grid grid-cols-2 gap-2"><div><label className={labelClass}>LIMIT</label><input value={form.limit} onChange={(event) => update("limit", event.target.value)} className={fieldClass} /></div><div><label className={labelClass}>OFFSET</label><input value={form.offset} onChange={(event) => update("offset", event.target.value)} className={fieldClass} /></div></div></div>}
+
+              {operation === "advancedSelect" && (
+                <div className="space-y-4 rounded-xl border border-primary/20 bg-muted/20 p-4">
+                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+                    <p className="text-sm font-semibold">Собираем запрос по шагам</p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Представь, что таблица — это обычная таблица Excel. Сначала выбери столбцы для результата. Затем при необходимости подключи другую таблицу, объедини строки в группы и настрой сортировку. Необязательные шаги можно пропустить.</p>
+                  </div>
+                  <section className="space-y-2 rounded-lg border border-border bg-card p-3">
+                    <p className="text-sm font-semibold">Шаг 1. Какие данные показать?</p>
+                    <p className="text-xs text-muted-foreground">Напиши названия столбцов — каждый с новой строки. Это будущие столбцы результата.</p>
+                    <textarea aria-label="Какие столбцы показать" value={form.advancedSelectItems} onChange={(event) => update("advancedSelectItems", event.target.value)} className={fieldClass + " min-h-20"} placeholder={"id\nemail\ncreated_at"} />
+                    <p className="text-[11px] text-muted-foreground">Пример: <code>id</code> — покажет ID, <code>email</code> — почту. Можно вычислить новое значение: <code>price * quantity AS total</code> — цена × количество, назвать столбец total.</p>
+                    <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={form.distinct} onChange={(event) => update("distinct", event.target.checked)} />Показывать только уникальные строки (убрать повторы)</label>
+                  </section>
+                  <section className="space-y-2 rounded-lg border border-border bg-card p-3">
+                    <p className="text-sm font-semibold">Шаг 2. Нужно взять данные ещё из одной таблицы?</p>
+                    <p className="text-xs text-muted-foreground">Например, у пользователя есть заказы в другой таблице. JOIN соединяет записи по общему ID. Если нужна только одна таблица — оставь поле пустым.</p>
+                    <label className={labelClass}>Как подключить вторую таблицу? (JOIN)</label>
+                    <textarea aria-label="Как подключить связанную таблицу" value={form.advancedJoins} onChange={(event) => update("advancedJoins", event.target.value)} className={fieldClass + " min-h-16"} placeholder="LEFT JOIN orders AS o ON o.user_id = users.id" />
+                    <div className="rounded-md bg-muted/50 p-2 text-[11px] leading-relaxed text-muted-foreground">
+                      <p className="font-semibold">Готовый пример:</p>
+                      <p><code>LEFT JOIN orders AS o ON o.user_id = users.id</code></p>
+                      <p className="mt-1">Читается так: «покажи всех пользователей и добавь их заказы, если они есть».</p>
+                      <p className="mt-1"><code>orders</code> — вторая таблица; <code>o</code> — её короткое имя; <code>o.user_id</code> — поле связи в заказах; <code>users.id</code> — соответствующее поле пользователей.</p>
+                    </div>
+                    <label className={labelClass}>Короткое имя основной таблицы (необязательно)</label>
+                    <input aria-label="Короткое имя основной таблицы" value={form.advancedFromAlias} onChange={(event) => update("advancedFromAlias", event.target.value)} className={fieldClass} placeholder="Например: u" />
+                    <p className="text-[11px] text-muted-foreground">Если введёшь <code>u</code>, обращайся к столбцам основной таблицы как <code>u.id</code>. Если не понимаешь, зачем это нужно, оставь поле пустым.</p>
+                  </section>
+                  <section className="space-y-2 rounded-lg border border-border bg-card p-3">
+                    <p className="text-sm font-semibold">Шаг 3. Нужно объединить одинаковые значения в группы? (GROUP BY)</p>
+                    <p className="text-xs text-muted-foreground">Например, посчитать, сколько заказов каждого статуса. Если группировка не нужна — пропусти.</p>
+                    <label className={labelClass}>По какому столбцу объединять строки?</label>
+                    <input aria-label="Столбцы для группировки" value={form.advancedGroupBy} onChange={(event) => update("advancedGroupBy", event.target.value)} className={fieldClass} placeholder="Например: status или users.id, users.email" />
+                    <p className="text-[11px] text-muted-foreground">Пример: <code>status</code> — все записи с одинаковым статусом попадут в одну группу. Несколько столбцов разделяй запятой.</p>
+                  </section>
+                  <section className="space-y-2 rounded-lg border border-border bg-card p-3">
+                    <p className="text-sm font-semibold">Шаг 4. Оставить только группы, подходящие по количеству или сумме? (HAVING)</p>
+                    <p className="text-xs text-muted-foreground">Этот фильтр работает после группировки. Например, оставить только группы, где больше одного заказа.</p>
+                    <label className={labelClass}>Какое условие должна выполнить группа?</label>
+                    <textarea aria-label="Условие для готовых групп" value={form.advancedHaving} onChange={(event) => update("advancedHaving", event.target.value)} className={fieldClass + " min-h-16"} placeholder={"COUNT(*) > 1\nSUM(amount) >= 100"} />
+                    <p className="text-[11px] text-muted-foreground"><code>COUNT(*) &gt; 1</code> — оставить группы, где больше одной записи. <code>SUM(amount) &gt;= 100</code> — сумма не меньше 100. Каждое условие — с новой строки.</p>
+                  </section>
+                  <section className="space-y-2 rounded-lg border border-border bg-card p-3">
+                    <p className="text-sm font-semibold">Шаг 5. Показать разные подписи в зависимости от условия? (CASE)</p>
+                    <p className="text-xs text-muted-foreground">CASE — это «если условие выполнено, покажи одно, иначе — другое». Например, превратить технические статусы в понятные слова.</p>
+                    <button type="button" onClick={() => update("advancedSelectItems", [form.advancedSelectItems.trim(), "CASE WHEN status = 'paid' THEN 'Оплачен' WHEN status = 'new' THEN 'Новый' ELSE 'Другой статус' END AS status_name"].filter(Boolean).join("\n"))} className="rounded-md border border-primary/40 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/5">+ Добавить пример CASE в шаг 1</button>
+                    <p className="text-[11px] text-muted-foreground"><code>WHEN status = 'paid'</code> — если статус paid; <code>THEN 'Оплачен'</code> — показать «Оплачен»; <code>ELSE</code> — показать это значение во всех остальных случаях. После вставки замени status и значения на свои.</p>
+                  </section>
+                  <section className="space-y-2 rounded-lg border border-border bg-card p-3">
+                    <p className="text-sm font-semibold">Шаг 6. В каком порядке показать результат? (ORDER BY)</p>
+                    <p className="text-xs text-muted-foreground">Выбери столбец для сортировки. ASC — по возрастанию (А–Я), DESC — по убыванию (Я–А).</p>
+                    <label className={labelClass}>По какому столбцу сортировать?</label>
+                    <input aria-label="Столбцы для сортировки" value={form.advancedOrderBy} onChange={(event) => update("advancedOrderBy", event.target.value)} className={fieldClass} placeholder="Например: created_at DESC или email ASC" />
+                    <p className="text-[11px] text-muted-foreground">Несколько полей разделяй запятой: <code>status ASC, created_at DESC</code>.</p>
+                  </section>
+                  <section className="space-y-2 rounded-lg border border-border bg-card p-3">
+                    <p className="text-sm font-semibold">Шаг 7. Сколько строк показать?</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div><label className={labelClass}>Максимум строк (LIMIT)</label><input aria-label="Максимум строк" value={form.limit} onChange={(event) => update("limit", event.target.value)} className={fieldClass} placeholder="Например: 20" /><p className="mt-1 text-[11px] text-muted-foreground">Ограничивает число результатов.</p></div>
+                      <div><label className={labelClass}>Сколько первых пропустить (OFFSET)</label><input aria-label="Сколько строк пропустить" value={form.offset} onChange={(event) => update("offset", event.target.value)} className={fieldClass} placeholder="Например: 10" /><p className="mt-1 text-[11px] text-muted-foreground">Нужно для перехода на следующую страницу.</p></div>
+                    </div>
+                  </section>
+                </div>
+              )}
               {(operation === "select" || operation === "subquery" || operation === "cte" || operation === "insert" || operation === "alias") && <div><label className={labelClass}>Столбцы, которые нужно вывести через запятую</label><input value={form.columns} onChange={(event) => update("columns", event.target.value)} className={fieldClass} placeholder="id, email, created_at" /><p className="mt-1 text-[11px] text-muted-foreground">Для SELECT можно указать * — все столбцы.</p></div>}
               {operation === "aggregate" && <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
                 <div><label className={labelClass}>Группировать по (необязательно; пустое поле — один общий результат)</label><input value={form.groupBy} onChange={(event) => update("groupBy", event.target.value)} className={fieldClass} placeholder="status, department" /><label className={labelClass + " mt-2"}>Псевдонимы столбцов группировки (необязательно)</label><input value={form.groupAliases} onChange={(event) => update("groupAliases", event.target.value)} className={fieldClass} placeholder="Статус, Отдел" /><p className="mt-1 text-[11px] text-muted-foreground">Можно группировать по любым полям текущей таблицы. Перечисли несколько столбцов через запятую. Если псевдонимы не нужны, оставь поле пустым.</p></div>
