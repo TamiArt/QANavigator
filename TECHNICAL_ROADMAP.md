@@ -2032,3 +2032,13 @@ The parser improvement affects statement boundaries only. The local execution en
 - extended the SQL memo regression test to cover the syntax and explanations.
 
 Validation: source and regression assertions updated. Run the focused database-workbench test and full `npm run verify` before treating the work as fully verified.
+
+### 7.1.73 SQL Trainer — floating back-to-top navigation — 2026-11-11
+
+- added a compact floating “Наверх” button in both the “Шпаргалка SQL” and “Памятка по SQL” tabs;
+- positioned the action at the lower-right corner so it remains available while reading long reference lists;
+- added smooth scrolling for both an internal scrollable page container and the browser window;
+- provided an accessible button label and visible upward-arrow icon;
+- added regression assertions for tab visibility, scroll behavior and accessibility.
+
+Validation: implementation and regression assertions committed. Confirm the focused database-workbench test, full `npm run verify`, and current-head GitHub Actions before marking the change verified.
