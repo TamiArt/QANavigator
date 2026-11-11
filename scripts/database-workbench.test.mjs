@@ -383,6 +383,24 @@ test("advanced SELECT mode is integrated with the shared WHERE editor and SQL pr
 });
 
 
+test("advanced SELECT mode explains every field in beginner-friendly steps", () => {
+  assert.ok(source.includes('Собираем запрос по шагам'), "advanced SELECT must introduce a guided sequence");
+  for (const heading of [
+    "Шаг 1. Какие данные показать?",
+    "Шаг 2. Нужно взять данные ещё из одной таблицы?",
+    "Шаг 3. Нужно объединить одинаковые значения в группы?",
+    "Шаг 4. Оставить только группы, подходящие по количеству или сумме?",
+    "Шаг 5. Показать разные подписи в зависимости от условия?",
+    "Шаг 6. В каком порядке показать результат?",
+    "Шаг 7. Сколько строк показать?",
+  ]) assert.ok(source.includes(heading), "missing beginner step: " + heading);
+  assert.ok(source.includes('Готовый пример:'), "JOIN field must explain a complete concrete example");
+  assert.ok(source.includes('Добавить пример CASE в шаг 1'), "CASE must be insertable as a ready-made example");
+  assert.ok(source.includes('COUNT(*) &gt; 1'), "HAVING must explain a simple count condition");
+  assert.ok(source.includes('aria-label="Какие столбцы показать"'), "advanced fields must have descriptive accessible labels");
+  assert.ok(source.includes('advancedFromAlias: "", advancedSelectItems: "id\\nemail"'), "advanced SELECT must start with a simple example rather than a prefilled multi-join query");
+});
+
 test("advanced SELECT validates join alias scope and rejects unsupported MySQL FULL OUTER JOIN", () => {
   const base = { table: "users", fromAlias: "u", selectItems: "u.id" };
   assert.throws(() => buildAdvancedSelect({ ...base, joins: "LEFT JOIN orders AS o ON o.user_id = missing.id" }), /неизвестный псевдоним/);
