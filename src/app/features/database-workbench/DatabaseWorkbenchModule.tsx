@@ -117,7 +117,7 @@ const initial: BuilderState = {
   ctasSubqueryLevels: [{ id: 2, table: "book", selectKind: "aggregate", aggregate: "AVG", column: "amount", filterEnabled: false, filterColumn: "amount", filterOperator: ">", filterValue: "0" }], ctasAppendSelect: true,
   setColumn: "status", setValue: "active", newColumn: "display_name",
   oldColumn: "name", alias: "u",
-  advancedFromAlias: "", advancedSelectItems: "id\\nemail",
+  advancedFromAlias: "", advancedSelectItems: "id\nemail",
   advancedJoins: "", advancedGroupBy: "", advancedHaving: "", advancedOrderBy: "",
   ddlColumns: "id BIGINT PRIMARY KEY\nemail VARCHAR(255) NOT NULL UNIQUE\nstatus VARCHAR(30) DEFAULT 'active'\ncreated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
   alterAction: "add", alterColumn: "phone", alterDefinition: "phone VARCHAR(30)", alterDataType: "VARCHAR", alterTypeSize: "255", alterNewName: "display_name",
@@ -817,7 +817,7 @@ export function DatabaseWorkbenchModule() {
                       <p><code>LEFT JOIN orders AS o ON o.user_id = users.id</code></p>
                       <p className="mt-1">Читается так: «покажи всех пользователей и добавь их заказы, если они есть».</p>
                       <p className="mt-1">Можно подключить не только одну, но и несколько таблиц: каждый следующий JOIN пиши с новой строки. В его ON можно использовать таблицу, которую подключили на предыдущем шаге.</p>
-                      <button type="button" onClick={() => { update("table", "users"); update("advancedFromAlias", ""); update("advancedSelectItems", "users.name\\norders.product\\npayments.amount\\npayments.status"); update("advancedJoins", "INNER JOIN orders ON users.id = orders.user_id\\nINNER JOIN payments ON orders.id = payments.order_id"); }} className="mt-2 rounded-md border border-primary/40 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/5">Заполнить пример: объединить три таблицы</button>
+                      <button type="button" onClick={() => { update("table", "users"); update("advancedFromAlias", ""); update("advancedSelectItems", "users.name\norders.product\npayments.amount\npayments.status"); update("advancedJoins", "INNER JOIN orders ON users.id = orders.user_id\nINNER JOIN payments ON orders.id = payments.order_id"); }} className="mt-2 rounded-md border border-primary/40 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/5">Заполнить пример: объединить три таблицы</button>
                       <p className="mt-1">Кнопка заполнит поля конструктора готовым примером с <code>users</code>, <code>orders</code> и <code>payments</code>. После этого можно менять названия таблиц и столбцов на свои.</p>
                       <p className="mt-1"><code>orders</code> — вторая таблица; <code>o</code> — её короткое имя; <code>o.user_id</code> — поле связи в заказах; <code>users.id</code> — соответствующее поле пользователей.</p>
                     </div>
