@@ -174,6 +174,7 @@ const memoOperatorGroups = [
       { title: "DISTINCT", syntax: "SELECT DISTINCT column", note: "Убирает повторяющиеся строки результата по комбинации всех выбранных столбцов." },
       { title: "FROM", syntax: "FROM table_name", note: "Указывает источник данных: таблицу, представление или подзапрос." },
       { title: "JOIN", syntax: "JOIN table_name ON condition", note: "Соединяет строки из нескольких таблиц по условию связи." },
+      { title: "Объединение трех таблиц", syntax: "SELECT users.name, orders.product, payments.amount, payments.status\nFROM users\nINNER JOIN orders ON users.id = orders.user_id\nINNER JOIN payments ON orders.id = payments.order_id;", note: "Показывает данные сразу из трёх таблиц. SELECT перечисляет нужные столбцы; точка в users.name означает «столбец name из таблицы users». FROM задаёт первую таблицу. Первый INNER JOIN подключает orders к users по users.id = orders.user_id. Второй INNER JOIN подключает payments к уже найденным orders по orders.id = payments.order_id. Каждый следующий JOIN добавляет ещё одну таблицу к цепочке. Если в таблицах повторяются имена столбцов (например, id), всегда указывай таблицу перед точкой. INNER JOIN оставляет только строки, для которых найдена связь в обеих таблицах." },
       { title: "ON", syntax: "ON a.id = b.a_id", note: "Задаёт условие соединения таблиц в JOIN." },
       { title: "USING", syntax: "JOIN other_table USING (id)", note: "Краткая форма условия JOIN, когда столбец связи имеет одинаковое имя в обеих таблицах. Поддержка зависит от СУБД." },
       { title: "WHERE", syntax: "WHERE condition", note: "Фильтрует отдельные строки до группировки и агрегирования." },
@@ -815,6 +816,9 @@ export function DatabaseWorkbenchModule() {
                       <p className="font-semibold">Готовый пример:</p>
                       <p><code>LEFT JOIN orders AS o ON o.user_id = users.id</code></p>
                       <p className="mt-1">Читается так: «покажи всех пользователей и добавь их заказы, если они есть».</p>
+                      <p className="mt-1">Можно подключить не только одну, но и несколько таблиц: каждый следующий JOIN пиши с новой строки. В его ON можно использовать таблицу, которую подключили на предыдущем шаге.</p>
+                      <button type="button" onClick={() => { update("table", "users"); update("advancedFromAlias", ""); update("advancedSelectItems", "users.name\\norders.product\\npayments.amount\\npayments.status"); update("advancedJoins", "INNER JOIN orders ON users.id = orders.user_id\\nINNER JOIN payments ON orders.id = payments.order_id"); }} className="mt-2 rounded-md border border-primary/40 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/5">Заполнить пример: объединить три таблицы</button>
+                      <p className="mt-1">Кнопка заполнит поля конструктора готовым примером с <code>users</code>, <code>orders</code> и <code>payments</code>. После этого можно менять названия таблиц и столбцов на свои.</p>
                       <p className="mt-1"><code>orders</code> — вторая таблица; <code>o</code> — её короткое имя; <code>o.user_id</code> — поле связи в заказах; <code>users.id</code> — соответствующее поле пользователей.</p>
                     </div>
                     <label className={labelClass}>Короткое имя основной таблицы (необязательно)</label>
