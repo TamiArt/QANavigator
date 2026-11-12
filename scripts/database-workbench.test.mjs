@@ -360,6 +360,20 @@ test("advanced SELECT supports INNER, RIGHT and FULL OUTER joins in a multi-join
   assert.match(sql, /FULL OUTER JOIN publishers AS p/);
 });
 
+
+
+test("advanced SELECT can build the beginner three-table users-orders-payments chain", () => {
+  const result = buildAdvancedSelect({
+    table: "users",
+    selectItems: "users.name\norders.product\npayments.amount\npayments.status",
+    joins: "INNER JOIN orders ON users.id = orders.user_id\nINNER JOIN payments ON orders.id = payments.order_id",
+  });
+  assert.match(result.sql, /SELECT users\.name,\s+orders\.product,\s+payments\.amount,\s+payments\.status/);
+  assert.match(result.sql, /FROM users\s+INNER JOIN orders ON users\.id = orders\.user_id/);
+  assert.match(result.sql, /INNER JOIN payments ON orders\.id = payments\.order_id/);
+  assert.equal(result.joinCount, 2);
+});
+
 test("advanced SELECT rejects unsafe expressions, malformed joins, invalid grouping and unsafe pagination", () => {
   const base = { table: "users", selectItems: "id" };
   assert.throws(() => buildAdvancedSelect({ ...base, selectItems: "id; DROP TABLE users" }), /Недопустимое SELECT-выражение/);
@@ -791,6 +805,10 @@ test("database workbench exposes a searchable SQL operator memo with the main co
     "EXISTS",
     "UNION ALL",
     "INNER JOIN",
+    "Объединение трех таблиц",
+    "payments.amount",
+    "orders.id = payments.order_id",
+    "Заполнить пример: объединить три таблицы",
     "LEFT [OUTER] JOIN",
     "COUNT(DISTINCT column)",
     "ROW_NUMBER",
