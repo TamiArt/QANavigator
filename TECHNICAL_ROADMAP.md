@@ -2065,3 +2065,14 @@ Validation: run the database-workbench regression test, full `npm run verify`, a
 - added regression coverage for the guided steps, JOIN explanation, CASE insertion and beginner defaults.
 
 Validation: advanced SELECT builder unit tests and full `npm run verify` must pass; inspect responsive layout at mobile and desktop widths before visual QA sign-off.
+
+
+### 7.1.76 SQL Trainer — three-table JOIN reference and guided construction — 2026-11-12
+
+- added the “Объединение трех таблиц” card to the existing SQL memo card catalogue, using the same title, SQL example, explanation and copy-action layout as the other reference entries;
+- documented SELECT, FROM, INNER JOIN and ON with a complete users → orders → payments example, including qualified column names and the purpose of each link in the chain;
+- added a one-click example loader to the advanced SELECT JOIN step; it fills the main table, four selected columns and two consecutive INNER JOIN clauses;
+- clarified that each JOIN is entered on a separate line and may reference a table connected by the preceding JOIN;
+- added a regression test that builds the exact three-table query and verifies both joins and the selected columns.
+
+Validation: run the focused database-workbench test, full `npm run verify`, and current-head GitHub Actions. Confirm the example loader visually in desktop and mobile layouts before visual QA sign-off.
