@@ -365,12 +365,12 @@ test("advanced SELECT supports INNER, RIGHT and FULL OUTER joins in a multi-join
 test("advanced SELECT can build the beginner three-table users-orders-payments chain", () => {
   const result = buildAdvancedSelect({
     table: "users",
-    selectItems: "users.name\\norders.product\\npayments.amount\\npayments.status",
-    joins: "INNER JOIN orders ON users.id = orders.user_id\\nINNER JOIN payments ON orders.id = payments.order_id",
+    selectItems: "users.name\norders.product\npayments.amount\npayments.status",
+    joins: "INNER JOIN orders ON users.id = orders.user_id\nINNER JOIN payments ON orders.id = payments.order_id",
   });
-  assert.match(result.sql, /SELECT users\\.name,\\s+orders\\.product,\\s+payments\\.amount,\\s+payments\\.status/);
-  assert.match(result.sql, /FROM users\\s+INNER JOIN orders ON users\\.id = orders\\.user_id/);
-  assert.match(result.sql, /INNER JOIN payments ON orders\\.id = payments\\.order_id/);
+  assert.match(result.sql, /SELECT users\.name,\s+orders\.product,\s+payments\.amount,\s+payments\.status/);
+  assert.match(result.sql, /FROM users\s+INNER JOIN orders ON users\.id = orders\.user_id/);
+  assert.match(result.sql, /INNER JOIN payments ON orders\.id = payments\.order_id/);
   assert.equal(result.joinCount, 2);
 });
 
