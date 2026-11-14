@@ -2076,3 +2076,15 @@ Validation: advanced SELECT builder unit tests and full `npm run verify` must pa
 - added a regression test that builds the exact three-table query and verifies both joins and the selected columns.
 
 Validation: run the focused database-workbench test, full `npm run verify`, and current-head GitHub Actions. Confirm the example loader visually in desktop and mobile layouts before visual QA sign-off.
+
+
+### 7.1.77 Learning Mode — Module 8: Mobile QA — 2026-11-14
+
+- created a new continuation branch from the current SQL Trainer development head and registered module-8-mobile-testing after Module 7 without changing earlier modules;
+- added eight ordered lessons based on the supplied Mobile QA material: mobile fundamentals/sensors/interruptions/builds; application types and WebView; push notifications; Android vs iOS; Charles Proxy and Proxyman; Git setup; ADB/Firebase/Developer Options/root and jailbreak; interview questions;
+- expanded the source into structured learning notes with practical QA checklists, examples and platform-aware qualifications;
+- added a dedicated visual summary model for each of the eight lessons;
+- added a focused Module 8 curriculum/content/infographic regression test and included it in npm run verify;
+- clarified the ADB file-copy direction (pull copies from device to computer; push copies from computer to device), and qualified platform- and version-dependent behavior for push notifications, PWA, certificates, sideloading and payments.
+
+Validation: run npm run test:module8-learning, full npm run verify, and current-head GitHub Actions. Browser-based visual QA on desktop and mobile remains a separate check.
