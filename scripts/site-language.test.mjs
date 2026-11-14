@@ -13,6 +13,8 @@ test("language preference is persistent and validated", () => {
   assert.match(app, /useLocalStorage<Language>\(STORAGE_KEYS\.language, "ru", isLanguageStorageValue\)/);
   assert.match(app, /setLanguage\(language === "en" \? "ru" : "en"\)/);
   assert.match(app, /language\.toUpperCase\(\)/);
+  assert.match(app, /document\.documentElement\.lang = language/);
+  assert.match(app, /aria-pressed=\{language === "en"\}/);
 });
 
 test("English navigation labels cover all application sections", () => {
