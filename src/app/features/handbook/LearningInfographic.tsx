@@ -1185,7 +1185,7 @@ function TestingDefinitionDiagram({ language }: { language: Language }) {
                   <h6 className="text-[11px] font-extrabold leading-tight text-blue-950">{step.title}</h6>
                   <p className="mt-1.5 text-[10px] leading-[1.4] text-slate-600">{step.text}</p>
                 </article>
-                {index < steps.length - 1 ? <ArrowLeftRight className="mx-auto hidden h-4 w-4 self-center text-blue-300 sm:block" aria-hidden="true" /> : null}
+                {index < steps.length - 1 ? <><ArrowDown className="mx-auto h-4 w-4 text-blue-300 sm:hidden" aria-hidden="true" /><ArrowLeftRight className="mx-auto hidden h-4 w-4 self-center text-blue-300 sm:block" aria-hidden="true" /></> : null}
               </React.Fragment>
             );
           })}
