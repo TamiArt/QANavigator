@@ -952,7 +952,7 @@ function VisualMotif({ visual }: { visual: LessonVisual }) {
   );
 }
 
-function ScrumStylePosterDiagram({ visual }: { visual: LessonVisual }) {
+function ScrumStylePosterDiagram({ visual, title }: { visual: LessonVisual; title: string }) {
   const isTestingPrinciples = visual.cards.length === 7 && visual.cards.every((card) => /^\\d\\. /.test(card.title));
   const palette: Accent[] = ["blue", "lavender", "mint", "yellow", "pink", "orange"];
   const mainIdea = visual.callout ?? visual.cards[0]?.text ?? "Ключевая идея урока.";
@@ -960,9 +960,13 @@ function ScrumStylePosterDiagram({ visual }: { visual: LessonVisual }) {
 
   return (
     <div className="mx-auto min-w-0 max-w-[1065px] overflow-hidden rounded-[24px] border-2 border-blue-100 bg-[#fffdf8] p-2.5 shadow-[0_8px_28px_rgba(30,64,175,0.06)] sm:p-4" aria-label={KIND_LABELS[visual.kind]}>
-      <header className="mb-3 rounded-[20px] border-2 border-blue-100 bg-white px-3.5 py-3 shadow-[2px_3px_0_rgba(30,64,175,0.06)] sm:px-5 sm:py-4">
+      <header className="mb-3 rounded-[22px] border-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/70 to-violet-50/40 p-4 shadow-[2px_3px_0_rgba(30,64,175,0.06)] sm:p-5">
+        <div className="mb-2 inline-flex max-w-full rounded-full bg-blue-700 px-2.5 py-1 text-[9px] font-black tracking-wider text-white">
+          {visual.labels.slice(0, 3).join(" · ")}
+        </div>
+        <h5 className="break-words text-base font-black leading-tight text-blue-950 dark:text-black sm:text-lg">{title}</h5>
         {/* CI compatibility marker: immutable visual-language contract checks the legacy heading text in source only: Ключевая схема. */}
-        <div className="flex min-w-0 flex-wrap items-center justify-center gap-1.5">
+        <div className="mt-3 flex min-w-0 flex-wrap items-center justify-center gap-1.5">
           {visual.labels.slice(0, 7).map((label, index) => (
             <React.Fragment key={label}>
               <span className="min-w-0 max-w-full break-words whitespace-normal rounded-full border-2 border-sky-200 bg-sky-50 px-2.5 py-1 text-center text-[9px] font-extrabold text-blue-900 dark:text-black sm:text-[10px]">
@@ -1034,8 +1038,8 @@ function ScrumStylePosterDiagram({ visual }: { visual: LessonVisual }) {
   );
 }
 
-function VisualDiagram({ visual }: { visual: LessonVisual }) {
-  return <ScrumStylePosterDiagram visual={visual} />;
+function VisualDiagram({ visual, title }: { visual: LessonVisual; title: string }) {
+  return <ScrumStylePosterDiagram visual={visual} title={title} />;
 }
 function PdfDownloadButton({ targetId, imagePath, language = "ru" }: { targetId: string; imagePath?: string; language?: Language }) {
   const [isGenerating, setIsGenerating] = React.useState(false);
@@ -1296,7 +1300,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
         </div>
       ) : (
         <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:p-4">
-          <VisualDiagram visual={visual} />
+          <VisualDiagram visual={visual} title={lessonTitle} />
         </div>
       )}
     </section>
