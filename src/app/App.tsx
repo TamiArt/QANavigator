@@ -146,6 +146,10 @@ export default function App() {
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
 
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
+
   const hasApiKey = Boolean(apiKeys[apiKeys.provider]);
 
   const ctx = {
@@ -213,7 +217,7 @@ export default function App() {
             <div className="flex-1 min-w-0"><h1 className="font-semibold text-base text-foreground truncate">{language === "en" ? NAV_ITEMS.find((n) => n.id === activeModule)?.labelEn : NAV_ITEMS.find((n) => n.id === activeModule)?.label}</h1></div>
             <div className="flex items-center gap-2">
               {!hasApiKey && <Tooltip tip={language === "en" ? "Set up an API key to use AI features" : "Настройте API ключ для использования AI функций"}><button onClick={() => setShowApiModal(true)} className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 hover:opacity-80 transition-opacity"><span className="hidden sm:inline">{translate(language, "app.configureAI")}</span></button></Tooltip>}
-              <button type="button" aria-label={language === "en" ? "Switch language to Russian" : "Switch language to English"} title={language === "en" ? "Switch to Russian" : "Switch to English"} onClick={() => setLanguage(language === "en" ? "ru" : "en")} className="min-w-10 rounded-lg border border-border px-2 py-1.5 text-xs font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">{language.toUpperCase()}</button>
+              <button type="button" aria-pressed={language === "en"} aria-label={language === "en" ? "Switch language to Russian" : "Switch language to English"} title={language === "en" ? "Switch to Russian" : "Switch to English"} onClick={() => setLanguage(language === "en" ? "ru" : "en")} className="min-w-10 rounded-lg border border-border px-2 py-1.5 text-xs font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">{language.toUpperCase()}</button>
               <button aria-label={translate(language, "app.toggleTheme")} onClick={toggleTheme} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">{theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}</button>
             </div>
           </header>
