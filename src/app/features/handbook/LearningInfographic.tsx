@@ -4,8 +4,12 @@ import {
   CheckCircle2, ClipboardCheck, Cloud, Code2, Database, FileText, GitBranch,
   Globe, Layers3, ListChecks, Network, PlayCircle, Route, Server, ShieldCheck,
   Smartphone, Target, TestTube2, Users, Workflow, Zap,
+  Monitor, ArrowLeftRight, Search, Rocket, Gauge, ClipboardList, FileSearch, ClipboardCheck,
 } from "lucide-react";
 import type { LearningLesson, LearningModule } from "./handbook-learning";
+import { useApp } from "../../core/app-context";
+import { getLearningLessonTitle } from "./handbook-learning";
+import type { Language } from "../../core/i18n";
 
 type VisualKind =
   | "flow"
@@ -1129,7 +1133,103 @@ function PdfDownloadButton({ targetId, imagePath }: { targetId: string; imagePat
     </>
   );
 }
+
+function TestingDefinitionDiagram({ language }: { language: Language }) {
+  const steps = language === "en"
+    ? [
+        { title: "Requirement", text: "Product requirements, rules, and agreed acceptance criteria.", icon: FileText },
+        { title: "Expected result", text: "Define what the system should do before running the check.", icon: Target },
+        { title: "Run the check", text: "Perform the planned test and observe the system.", icon: PlayCircle },
+        { title: "Actual result", text: "Record what the system really did.", icon: Monitor },
+        { title: "Compare", text: "Compare actual behavior with the expected result.", icon: ArrowLeftRight },
+      ]
+    : [
+        { title: "Требование", text: "Требования, правила продукта и согласованные критерии.", icon: FileText },
+        { title: "Ожидаемый результат", text: "Заранее определить, как должна работать система.", icon: Target },
+        { title: "Выполнение проверки", text: "Провести проверку и наблюдать за поведением системы.", icon: PlayCircle },
+        { title: "Фактический результат", text: "Зафиксировать, что система сделала на самом деле.", icon: Monitor },
+        { title: "Сравнение", text: "Сопоставить фактическое поведение с ожидаемым.", icon: ArrowLeftRight },
+      ];
+  const purposes = language === "en"
+    ? [
+        { title: "Find issues early", text: "Detect mismatches before they become expensive.", icon: Search },
+        { title: "Build confidence", text: "Understand product quality and reliability.", icon: ShieldCheck },
+        { title: "Assess release risks", text: "Evaluate risks and release readiness.", icon: Gauge },
+        { title: "Serve users", text: "Check that the product solves real user problems.", icon: Users },
+        { title: "Review more than code", text: "Check requirements, documentation, and design too.", icon: FileSearch },
+      ]
+    : [
+        { title: "Найти раньше", text: "Обнаружить несоответствия до того, как их исправление станет дорогим.", icon: Search },
+        { title: "Повысить уверенность", text: "Оценить качество и работоспособность продукта.", icon: ShieldCheck },
+        { title: "Оценить риски релиза", text: "Понять риски и готовность продукта к выпуску.", icon: Gauge },
+        { title: "Решать задачи пользователя", text: "Проверить, помогает ли продукт пользователю.", icon: Users },
+        { title: "Проверять не только код", text: "Анализировать требования, документацию и дизайн.", icon: FileSearch },
+      ];
+  return (
+    <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:p-5">
+      <section className="rounded-[22px] border-2 border-blue-100 bg-white p-3 shadow-sm sm:p-4">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h5 className="text-sm font-extrabold text-blue-950 sm:text-base">{language === "en" ? "How testing works" : "Как работает тестирование"}</h5>
+          <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[9px] font-bold text-blue-800">{language === "en" ? "TEST FLOW" : "СХЕМА ПРОВЕРКИ"}</span>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-5">
+          {steps.map((step, index) => {
+            const Icon = step.icon;
+            return (
+              <React.Fragment key={step.title}>
+                <article className="flex min-w-0 flex-col items-center rounded-[16px] border-2 border-sky-100 bg-sky-50/70 px-2.5 py-3 text-center">
+                  <span className="mb-2 flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-blue-200 bg-white text-blue-700 shadow-sm">
+                    <Icon className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                  <span className="mb-1 text-[9px] font-black text-blue-500">{String(index + 1).padStart(2, "0")}</span>
+                  <h6 className="text-[11px] font-extrabold leading-tight text-blue-950">{step.title}</h6>
+                  <p className="mt-1.5 text-[10px] leading-[1.4] text-slate-600">{step.text}</p>
+                </article>
+                {index < steps.length - 1 ? <ArrowLeftRight className="mx-auto hidden h-4 w-4 self-center text-blue-300 sm:block" aria-hidden="true" /> : null}
+              </React.Fragment>
+            );
+          })}
+        </div>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2">
+            <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
+            <div><p className="text-[11px] font-extrabold text-emerald-800">{language === "en" ? "Match — test passed" : "Совпадает — проверка пройдена"}</p><p className="text-[10px] text-emerald-700">{language === "en" ? "Actual result matches expectations." : "Фактический результат соответствует ожидаемому."}</p></div>
+          </div>
+          <div className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2">
+            <Bug className="h-5 w-5 shrink-0 text-rose-600" />
+            <div><p className="text-[11px] font-extrabold text-rose-800">{language === "en" ? "Mismatch — record a defect" : "Есть отличие — фиксируем дефект"}</p><p className="text-[10px] text-rose-700">{language === "en" ? "Actual result does not meet the expected result." : "Фактический результат не соответствует ожидаемому."}</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-3 rounded-[22px] border-2 border-violet-100 bg-white p-3 shadow-sm sm:p-4">
+        <div className="mb-3 flex items-center gap-2">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 text-violet-700"><ClipboardList className="h-5 w-5" /></span>
+          <div><h5 className="text-sm font-extrabold text-blue-950">{language === "en" ? "Why do we test?" : "Зачем тестируют?"}</h5><p className="text-[10px] text-slate-500">{language === "en" ? "Five practical goals" : "Пять практических целей"}</p></div>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+          {purposes.map((item, index) => {
+            const Icon = item.icon;
+            return <article key={item.title} className="flex min-w-0 items-start gap-2 rounded-xl border border-violet-100 bg-violet-50/50 p-2.5">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-violet-700 shadow-sm"><Icon className="h-4 w-4" /></span>
+              <div className="min-w-0"><h6 className="text-[10px] font-extrabold leading-tight text-blue-950">{index + 1}. {item.title}</h6><p className="mt-1 text-[9px] leading-[1.4] text-slate-600">{item.text}</p></div>
+            </article>;
+          })}
+        </div>
+      </section>
+
+      <div className="mt-3 flex items-start gap-3 rounded-[18px] border-2 border-amber-200 bg-amber-50 px-3.5 py-3">
+        <Rocket className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
+        <div><p className="text-[11px] font-extrabold text-amber-900">{language === "en" ? "QA starts before coding is finished" : "QA начинается до завершения разработки"}</p><p className="mt-1 text-[10px] leading-[1.5] text-amber-900">{language === "en" ? "Analyze requirements, find ambiguity, and prepare checks early. Testing is not just bug hunting in a finished application." : "Анализируй требования, находи неоднозначности и готовь проверки заранее. Тестирование — это не только поиск багов в уже готовой программе."}</p></div>
+      </div>
+    </div>
+  );
+}
+
 function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
+  const { language } = useApp();
+  const lessonTitle = getLearningLessonTitle(lesson, language);
+  const isIntroInfographic = lesson.id === "m1-01";
   const visual = getVisual(lesson);
   const infographicId = `learning-infographic-${lesson.id}`;
   const isTestTypesInfographic = lesson.id === "m1-09";
@@ -1168,14 +1268,16 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
     <section
       id={infographicId}
       className="overflow-hidden rounded-[28px] border-2 border-blue-100 bg-white shadow-[0_8px_30px_rgba(30,64,175,0.08)]"
-      aria-label={`Инфографика урока: ${lesson.title}`}
+      aria-label={`${language === "en" ? "Lesson infographic" : "Инфографика урока"}: ${lessonTitle}`}
     >
       <div className="flex items-center justify-between gap-3 border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-2 sm:px-5">
-        <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{lesson.title}</h4>
+        <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{lessonTitle}</h4>
         <PdfDownloadButton targetId={infographicId} imagePath={infographicImagePath} />
       </div>
 
-      {module5ImagePath || isTestTypesInfographic || isScrumContextInfographic || isSprintPlanningInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? (
+      {isIntroInfographic ? (
+        <TestingDefinitionDiagram language={language} />
+      ) : module5ImagePath || isTestTypesInfographic || isScrumContextInfographic || isSprintPlanningInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? (
         <div className="min-w-0 overflow-hidden bg-white p-2 sm:p-4">
           <div
             className="mx-auto w-full max-w-[1065px] overflow-hidden rounded-[18px] bg-white"
