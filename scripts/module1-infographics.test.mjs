@@ -16,4 +16,15 @@ test("Module 1 lessons 2–11 have dedicated source-grounded infographic layouts
   assert.match(infographic, /STLC/);
   assert.match(infographic, /Acceptance \/ UAT/);
   assert.match(infographic, /Shift-Left/);
+  for (const title of [
+    "Тестирование показывает наличие дефектов, но не их отсутствие",
+    "Исчерпывающее тестирование невозможно",
+    "Раннее тестирование экономит время (Shift-Left)",
+    "Скопление дефектов (Defect Clustering)",
+    "Парадокс пестицида",
+    "Тестирование зависит от контекста",
+    "Заблуждение об отсутствии дефектов",
+  ]) {
+    assert.ok(infographic.includes(title), "Missing original ISTQB principle name: " + title);
+  }
 });
