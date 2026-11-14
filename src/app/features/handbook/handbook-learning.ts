@@ -5,6 +5,7 @@ import { HANDBOOK_LEARNING_MODULE_4_LESSONS } from "./handbook-learning-module4"
 import { HANDBOOK_LEARNING_MODULE_5_LESSONS } from "./handbook-learning-module5";
 import { HANDBOOK_LEARNING_MODULE_6_LESSONS } from "./handbook-learning-module6";
 import { HANDBOOK_LEARNING_MODULE_7_LESSONS } from "./handbook-learning-module7";
+import { HANDBOOK_LEARNING_MODULE_8_LESSONS } from "./handbook-learning-module8";
 
 
 export interface LearningLesson {
@@ -76,6 +77,11 @@ export const HANDBOOK_LEARNING_MODULES: readonly LearningModule[] = [
     id: "module-7-sql",
     title: "Модуль 7 — SQL",
     lessons: HANDBOOK_LEARNING_MODULE_7_LESSONS,
+  },
+  {
+    id: "module-8-mobile-testing",
+    title: "Модуль 8 — Мобильное тестирование",
+    lessons: HANDBOOK_LEARNING_MODULE_8_LESSONS,
   },
 ];
 
