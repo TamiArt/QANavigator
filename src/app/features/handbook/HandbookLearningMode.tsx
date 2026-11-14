@@ -110,7 +110,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
           onClick={onBack}
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="w-4 h-4" /> К базе знаний
+          <ArrowLeft className="w-4 h-4" /> {translate(language, "learning.back")}
         </button>
         <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-2">
@@ -129,7 +129,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
       </div>
 
       <nav
-        aria-label="Навигация по модулям и темам"
+        aria-label={language === "en" ? "Module and lesson navigation" : "Навигация по модулям и темам"}
         className="sticky top-2 z-20 rounded-2xl border border-border bg-card/95 p-3 shadow-sm backdrop-blur"
       >
         <div className="flex items-center gap-2 mb-3">
@@ -152,7 +152,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
                   ? "min-w-0 w-full rounded-lg border border-primary bg-primary/10 px-2.5 py-2 text-left text-[11px] font-semibold leading-tight text-primary"
                   : "min-w-0 w-full rounded-lg border border-border px-2.5 py-2 text-left text-[11px] leading-tight text-muted-foreground hover:bg-muted/30"}
               >
-                <span className="block">{item.title.replace(/^Модуль \d+\. /, "Модуль ")}</span>
+                <span className="block">{getModuleTitle(language, item.id, item.title).replace(/^(Модуль|Module) \d+\s*[—.-]\s*/, language === "en" ? "Module " : "Модуль ")}</span>
                 <span className="mt-0.5 block text-[10px] opacity-80">{itemCompleted}/{item.lessons.length} {translate(language, "learning.studied")}</span>
               </button>
             );
