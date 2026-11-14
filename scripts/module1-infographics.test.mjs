@@ -16,6 +16,7 @@ test("Module 1 lessons 2–11 have dedicated source-grounded infographic layouts
   assert.match(infographic, /STLC/);
   assert.match(infographic, /Acceptance \/ UAT/);
   assert.match(infographic, /Shift-Left/);
+  assert.ok(infographic.includes('lessonId === "m1-03" ? "sm:grid-flow-col sm:grid-cols-2 sm:grid-rows-[repeat(4,auto)]"'), "Lesson 3 must use column-first desktop layout");
   for (const title of [
     "Тестирование показывает наличие дефектов, но не их отсутствие",
     "Исчерпывающее тестирование невозможно",
