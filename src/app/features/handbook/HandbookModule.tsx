@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState, useMemo } from "react";
 import { BookOpen, Search, Star, ChevronDown, ArrowRight, ChevronUp, GraduationCap } from "lucide-react";
 import { useApp } from "../../core/app-context";
+import { translate } from "../../core/i18n";
 import { CopyButton, Badge, EmptyState, MarkdownView } from "../../components/shared";
 import { CATEGORIES } from "../../core/constants";
 import { HANDBOOK } from "../../handbook-data";
@@ -13,7 +14,7 @@ import { HighlightedText, normalizeSearchQuery, SearchMatches } from "../../comp
 // MODULE 7: QA HANDBOOK
 // ══════════════════════════════════════════════════════
 export function HandbookModule() {
-  const { bookmarks, toggleBookmark, setSelectedTechnique, setActiveModule } = useApp();
+  const { bookmarks, toggleBookmark, setSelectedTechnique, setActiveModule, language } = useApp();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [levelFilter, setLevelFilter] = useState<string | null>(null);
@@ -44,8 +45,8 @@ export function HandbookModule() {
       <div>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="text-xl font-semibold text-foreground mb-1">📚 База знаний QA</h2>
-            <p className="text-sm text-muted-foreground">Интерактивный справочник по теории тестирования.</p>
+            <h2 className="text-xl font-semibold text-foreground mb-1">{translate(language, "handbook.title")}</h2>
+            <p className="text-sm text-muted-foreground">{translate(language, "handbook.description")}</p>
           </div>
           <button
             type="button"
@@ -53,7 +54,7 @@ export function HandbookModule() {
             onClick={() => setLearningMode(true)}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground px-3 py-2 text-sm font-medium sm:w-auto"
           >
-            <GraduationCap className="w-4 h-4" /> Режим обучения
+            <GraduationCap className="w-4 h-4" /> {translate(language, "handbook.learningMode")}
           </button>
         </div>
         
@@ -66,7 +67,7 @@ export function HandbookModule() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Поиск по темам, тегам, содержанию..."
+            placeholder={translate(language, "handbook.search")}
             className="w-full bg-input-background border border-border rounded-xl pl-9 pr-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary focus:outline-none"
           />
         </div>
@@ -88,7 +89,7 @@ export function HandbookModule() {
               cheatSheet ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground"
             }`}
           >
-            <Star className="w-3.5 h-3.5" /> Избранное
+            <Star className="w-3.5 h-3.5" /> {translate(language, "handbook.favorites")}
           </button>
         </div>
       </div>
