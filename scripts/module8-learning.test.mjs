@@ -4,7 +4,7 @@ import test from "node:test";
 
 const modulePath = "src/app/features/handbook/handbook-learning-module8.ts";
 const expected = [
-  "База мобильного тестирования и сенсоры",
+  "База мобильного тестирования и сенсоры (Touchscreen)",
   "Виды мобильных приложений и WebView",
   "Push-уведомления и их тестирование",
   "Android vs iOS: особенности платформ",
