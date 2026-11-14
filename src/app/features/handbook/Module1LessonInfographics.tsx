@@ -3,7 +3,7 @@ import {
   ShieldCheck, ClipboardCheck, Bug, Search, Clock3, Target, Users, FileText,
   Gauge, Layers3, GitBranch, Rocket, BookOpen, CheckCircle2, AlertTriangle,
   ListChecks, FlaskConical, Network, Code2, Workflow, Repeat2, Lightbulb,
-  Table2, LockKeyhole, Zap, ArrowRight, ArrowDown, Eye, Puzzle, Scale,
+  Table2, LockKeyhole, Zap, ArrowRight, ArrowDown, Eye, Puzzle, Scale, Monitor,
 } from "lucide-react";
 
 type IconType = React.ComponentType<{ className?: string }>;
@@ -149,7 +149,7 @@ const LESSONS: Record<string, LessonVisual> = {
     tiles: [
       tile("🧱", "Unit · Модульное", "Проверяем отдельную функцию, метод, класс или небольшой компонент в изоляции. Обычно таких проверок много, они быстрые.", Code2, "mint"),
       tile("🔗", "Integration · Интеграционное", "Проверяем взаимодействие модулей, сервисов, БД и внешних систем.", Network, "blue"),
-      tile("🖥️", "System · Системное", "Проверяем систему как единое целое на соответствие системным и пользовательским требованиям.", MonitorIcon, "violet"),
+      tile("🖥️", "System · Системное", "Проверяем систему как единое целое на соответствие системным и пользовательским требованиям.", Monitor, "violet"),
       tile("🎯", "Acceptance / UAT · Приёмочное", "Проверяем соответствие критериям приёмки, бизнес-потребностям и ожиданиям заказчика или пользователей.", Users, "yellow"),
     ],
     takeaway: "От Unit к Acceptance обычно растут охват, сложность и стоимость проверки. Уровни дополняют друг друга."
