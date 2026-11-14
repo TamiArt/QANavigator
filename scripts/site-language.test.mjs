@@ -20,7 +20,7 @@ test("language preference is persistent and validated", () => {
 test("English navigation labels cover all application sections", () => {
   const navigation = read("src/app/domain/navigation.ts");
   const app = read("src/app/App.tsx");
-  assert.equal((navigation.match(/^\\s*\\{ id: .*labelEn:/gm) ?? []).length, 12);
+  assert.equal((navigation.match(/^\s*\{ id: .*labelEn:/gm) ?? []).length, 12);
   assert.match(app, /language === "en" \? item\.labelEn : item\.label/);
   assert.match(app, /language === "en" \? NAV_ITEMS\.find/);
 });
