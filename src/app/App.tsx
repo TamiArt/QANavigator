@@ -30,12 +30,14 @@ import {
   isTestCasesStorageValue,
   isTextStorageValue,
   isThemeStorageValue,
+  isLanguageStorageValue,
 } from "./core/storage-validators";
 import { APP_NAVIGATION } from "./domain/navigation";
 import { createProject as buildProject, removeProject as removeProjectFromList, resolveActiveProjectId, updateProject as updateProjectList } from "./domain/project";
 import { useLocalStorage } from "./hooks/use-local-storage";
-import type { ApiKeys, BugReport, ChecklistItem, Module, TestCase, Theme } from "./domain/types";
+import type { ApiKeys, BugReport, ChecklistItem, Language, Module, TestCase, Theme } from "./domain/types";
 import type { QAProject } from "./domain/project";
+import { translate } from "./core/i18n";
 
 const NAV_ICONS: Record<Module, ReactNode> = {
   workspace: <Clipboard className="w-4 h-4" />,
@@ -55,6 +57,7 @@ const NAV_ITEMS = APP_NAVIGATION.map((item) => ({ ...item, icon: NAV_ICONS[item.
 
 export default function App() {
   const [theme, setTheme] = useLocalStorage<Theme>(STORAGE_KEYS.theme, "dark", isThemeStorageValue);
+  const [language, setLanguage] = useLocalStorage<Language>(STORAGE_KEYS.language, "ru", isLanguageStorageValue);
   const [activeModule, setActiveModule] = useState<Module>("requirements");
   const [selectedTechnique, setSelectedTechnique] = useState<string | null>(null);
   const [apiKeys, setApiKeys] = useLocalStorage<ApiKeys>(
@@ -143,11 +146,15 @@ export default function App() {
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
 
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
+
   const hasApiKey = Boolean(apiKeys[apiKeys.provider]);
 
   const ctx = {
     activeModule, setActiveModule, selectedTechnique, setSelectedTechnique,
-    theme, toggleTheme, apiKeys, setApiKeys,
+    theme, toggleTheme, language, setLanguage, apiKeys, setApiKeys,
     projects, activeProjectId, setActiveProjectId, createProject, updateProject, removeProject,
     checklists, setChecklists, testCases, setTestCases, bugReports, setBugReports,
     bookmarks, toggleBookmark, showApiModal, setShowApiModal,
@@ -183,7 +190,7 @@ export default function App() {
           <div className="px-4 py-3 border-b border-sidebar-border">
             <button onClick={() => setShowApiModal(true)} className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all ${hasApiKey ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400" : "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"}`}>
               <div className={`w-2 h-2 rounded-full ${hasApiKey ? "bg-emerald-500" : "bg-amber-500"} animate-pulse`} />
-              <span className="flex-1 text-left">{hasApiKey ? "AI подключён" : "Настроить AI ключ"}</span>
+              <span className="flex-1 text-left">{hasApiKey ? translate(language, "app.aiConnected") : translate(language, "app.setupAI")}</span>
               <Key className="w-3 h-3" />
             </button>
           </div>
@@ -191,7 +198,7 @@ export default function App() {
             {NAV_ITEMS.map((item) => (
               <button key={item.id} onClick={() => { setActiveModule(item.id); setSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${activeModule === item.id ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"}`}>
                 {item.icon}
-                <span className="truncate">{item.label}</span>
+                <span className="truncate">{language === "en" ? item.labelEn : item.label}</span>
                 {item.id === "test-execution" && checklists.some((c) => c.status === "failed") && <span className="ml-auto text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full font-mono">{checklists.filter((c) => c.status === "failed").length}</span>}
                 {item.id === "handbook" && bookmarks.length > 0 && <span className="ml-auto text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded-full font-mono">{bookmarks.length}</span>}
               </button>
@@ -200,17 +207,18 @@ export default function App() {
           <div className="px-4 py-3 border-t border-sidebar-border">
             <button onClick={toggleTheme} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-all">
               {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              {theme === "dark" ? "Светлая тема" : "Тёмная тема"}
+              {translate(language, theme === "dark" ? "app.lightTheme" : "app.darkTheme")}
             </button>
           </div>
         </aside>
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           <header className="flex items-center gap-3 px-4 sm:px-6 py-3 border-b border-border bg-card shrink-0">
-            <button aria-label="Открыть меню" onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground"><Menu className="w-5 h-5" /></button>
-            <div className="flex-1 min-w-0"><h1 className="font-semibold text-base text-foreground truncate">{NAV_ITEMS.find((n) => n.id === activeModule)?.label}</h1></div>
+            <button aria-label={translate(language, "app.openMenu")} onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground"><Menu className="w-5 h-5" /></button>
+            <div className="flex-1 min-w-0"><h1 className="font-semibold text-base text-foreground truncate">{language === "en" ? NAV_ITEMS.find((n) => n.id === activeModule)?.labelEn : NAV_ITEMS.find((n) => n.id === activeModule)?.label}</h1></div>
             <div className="flex items-center gap-2">
-              {!hasApiKey && <Tooltip tip="Настройте API ключ для использования AI функций"><button onClick={() => setShowApiModal(true)} className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 hover:opacity-80 transition-opacity"><span className="hidden sm:inline">Настроить AI</span></button></Tooltip>}
-              <button aria-label="Переключить тему" onClick={toggleTheme} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">{theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}</button>
+              {!hasApiKey && <Tooltip tip={language === "en" ? "Set up an API key to use AI features" : "Настройте API ключ для использования AI функций"}><button onClick={() => setShowApiModal(true)} className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 hover:opacity-80 transition-opacity"><span className="hidden sm:inline">{translate(language, "app.configureAI")}</span></button></Tooltip>}
+              <button type="button" aria-pressed={language === "en"} aria-label={language === "en" ? "Switch language to Russian" : "Switch language to English"} title={language === "en" ? "Switch to Russian" : "Switch to English"} onClick={() => setLanguage(language === "en" ? "ru" : "en")} className="min-w-10 rounded-lg border border-border px-2 py-1.5 text-xs font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">{language.toUpperCase()}</button>
+              <button aria-label={translate(language, "app.toggleTheme")} onClick={toggleTheme} className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">{theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}</button>
             </div>
           </header>
           <main ref={mainScrollRef} onScroll={handleMainScroll} className="flex-1 overflow-y-auto"><div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">{renderModule()}</div></main>
@@ -220,12 +228,12 @@ export default function App() {
         <button
           type="button"
           onClick={scrollMainToTop}
-          aria-label="Вернуться в начало страницы"
-          title="Наверх"
+          aria-label={translate(language, "app.backToTop")}
+          title={translate(language, "app.backToTop")}
           className="fixed bottom-5 right-5 z-50 inline-flex items-center gap-2 rounded-full border border-border bg-card/95 px-4 py-3 text-sm font-medium text-foreground shadow-lg backdrop-blur transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
           <ArrowUp className="h-4 w-4" />
-          <span>Наверх</span>
+          <span>{translate(language, "app.backToTop")}</span>
         </button>
       )}
       <ApiModal open={showApiModal} onClose={() => setShowApiModal(false)} />

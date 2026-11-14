@@ -6,6 +6,9 @@ import { STORAGE_KEYS } from "../../core/constants";
 import { isHandbookLearningProgressStorageValue } from "../../core/storage-validators";
 import { HANDBOOK_LEARNING_MODULES, getLearningLessonContent } from "./handbook-learning";
 import { LearningInfographic } from "./LearningInfographic";
+import { useApp } from "../../core/app-context";
+import { translate, getModuleTitle } from "../../core/i18n";
+import { getLearningLessonTitle } from "./handbook-learning";
 
 interface LearningProgress {
   completedLessonIds: string[];
@@ -14,6 +17,7 @@ interface LearningProgress {
 const INITIAL_PROGRESS: LearningProgress = { completedLessonIds: [] };
 
 export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
+  const { language } = useApp();
   const [progress, setProgress] = useLocalStorage<LearningProgress>(
     STORAGE_KEYS.handbookLearningProgress,
     INITIAL_PROGRESS,
@@ -106,34 +110,34 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
           onClick={onBack}
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="w-4 h-4" /> К базе знаний
+          <ArrowLeft className="w-4 h-4" /> {translate(language, "learning.back")}
         </button>
         <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-2">
             <GraduationCap className="w-4 h-4" />
-            Прогресс курса: {totalCompletedCount}/{allLessons.length} ({totalProgressPercent}%)
+            {translate(language, "learning.courseProgress")}: {totalCompletedCount}/{allLessons.length} ({totalProgressPercent}%)
           </span>
-          <span>Модуль: {completedCount}/{module.lessons.length} ({progressPercent}%)</span>
+          <span>{translate(language, "learning.moduleProgress")}: {completedCount}/{module.lessons.length} ({progressPercent}%)</span>
         </div>
       </div>
 
       <div>
-        <h2 className="text-xl font-semibold text-foreground">{module.title}</h2>
+        <h2 className="text-xl font-semibold text-foreground">{getModuleTitle(language, module.id, module.title)}</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Последовательное изучение тем из Базы знаний.
+          {translate(language, "learning.description")}
         </p>
       </div>
 
       <nav
-        aria-label="Навигация по модулям и темам"
+        aria-label={language === "en" ? "Module and lesson navigation" : "Навигация по модулям и темам"}
         className="sticky top-2 z-20 rounded-2xl border border-border bg-card/95 p-3 shadow-sm backdrop-blur"
       >
         <div className="flex items-center gap-2 mb-3">
           <PanelTop className="w-4 h-4 text-primary" />
-          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Быстрая навигация</span>
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{translate(language, "learning.quickNavigation")}</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5" role="group" aria-label="Выбор учебного модуля">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5" role="group" aria-label={translate(language, "learning.moduleChoice")}>
           {HANDBOOK_LEARNING_MODULES.map((item, index) => {
             const isActive = index === moduleIndex;
             const itemCompleted = item.lessons.filter((lesson) => completed.has(lesson.id)).length;
@@ -148,8 +152,8 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
                   ? "min-w-0 w-full rounded-lg border border-primary bg-primary/10 px-2.5 py-2 text-left text-[11px] font-semibold leading-tight text-primary"
                   : "min-w-0 w-full rounded-lg border border-border px-2.5 py-2 text-left text-[11px] leading-tight text-muted-foreground hover:bg-muted/30"}
               >
-                <span className="block">{item.title.replace(/^Модуль \d+\. /, "Модуль ")}</span>
-                <span className="mt-0.5 block text-[10px] opacity-80">{itemCompleted}/{item.lessons.length} изучено</span>
+                <span className="block">{getModuleTitle(language, item.id, item.title)}</span>
+                <span className="mt-0.5 block text-[10px] opacity-80">{itemCompleted}/{item.lessons.length} {translate(language, "learning.studied")}</span>
               </button>
             );
           })}
@@ -165,7 +169,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
                 <button
                   key={lesson.id}
                   type="button"
-                  aria-label={`Перейти к теме ${index + 1}: ${lesson.title}`}
+                  aria-label={`${language === "en" ? "Go to lesson" : "Перейти к теме"} ${index + 1}: ${getLearningLessonTitle(lesson, language)}`}
                   aria-current={isActive ? "step" : undefined}
                   onClick={() => selectLesson(index)}
                   className={isActive
@@ -173,7 +177,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
                     : isCompleted
                       ? "flex min-w-8 h-8 shrink-0 items-center justify-center rounded-full border border-primary/40 bg-primary/10 px-2 text-xs font-semibold text-primary"
                       : "flex min-w-8 h-8 shrink-0 items-center justify-center rounded-full border border-border bg-muted/50 px-2 text-xs font-semibold text-muted-foreground hover:border-primary/50 hover:text-foreground"}
-                  title={lesson.title}
+                  title={getLearningLessonTitle(lesson, language)}
                 >
                   {index + 1}
                 </button>
@@ -200,19 +204,19 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
           <>
             <div className="mb-3">
               <div className="text-xs text-muted-foreground mb-1">
-                Урок {activeIndex + 1} из {module.lessons.length}
+                {translate(language, "learning.lesson")} {activeIndex + 1} {translate(language, "learning.of")} {module.lessons.length}
               </div>
-              <h3 className="text-lg font-semibold text-foreground">{activeLesson.title}</h3>
+              <h3 className="text-lg font-semibold text-foreground">{getLearningLessonTitle(activeLesson, language)}</h3>
             </div>
             <div className="mt-3">
-              <MarkdownView content={getLearningLessonContent(activeLesson)} compact extraCompactLists={activeLesson.id === "m1-01"} />
+              <MarkdownView content={getLearningLessonContent(activeLesson, language)} compact extraCompactLists={activeLesson.id === "m1-01"} />
             </div>
             <div className="mt-4">
               <LearningInfographic mode="lesson" lesson={activeLesson} />
             </div>
           </>
         ) : (
-          <p className="text-sm text-muted-foreground">Материалы этого модуля будут добавлены позже.</p>
+          <p className="text-sm text-muted-foreground">{translate(language, "learning.noMaterials")}</p>
         )}
 
         <div className="flex flex-wrap justify-between gap-2 pt-4 mt-4 border-t border-border">
@@ -220,10 +224,10 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
             type="button"
             onClick={goPrevious}
             disabled={isFirstLesson}
-            aria-label="Перейти к предыдущей теме"
+            aria-label={translate(language, "learning.goPrevious")}
             className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs disabled:opacity-40"
           >
-            <ChevronLeft className="w-4 h-4" /> Предыдущая тема
+            <ChevronLeft className="w-4 h-4" /> {translate(language, "learning.previous")}
           </button>
 
           <button
@@ -233,7 +237,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
             className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs"
           >
             <Check className="w-4 h-4" />
-            {activeLesson && completed.has(activeLesson.id) ? "Изучено" : "Отметить как изученное"}
+            {activeLesson && completed.has(activeLesson.id) ? translate(language, "learning.studiedLabel") : translate(language, "learning.markStudied")}
           </button>
 
           <button
@@ -241,11 +245,11 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
             onClick={goNext}
             disabled={isLastLesson}
             aria-label={moduleIndex < HANDBOOK_LEARNING_MODULES.length - 1 && (module.lessons.length === 0 || activeIndex === module.lessons.length - 1)
-              ? "Перейти к следующему модулю"
-              : "Перейти к следующей теме"}
+              ? translate(language, "learning.goNextModule")
+              : translate(language, "learning.goNextTopic")}
             className="flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-2 text-xs disabled:opacity-40"
           >
-            {(module.lessons.length === 0 || activeIndex === module.lessons.length - 1) && !isLastLesson ? "Следующий модуль" : "Следующая тема"}
+            {(module.lessons.length === 0 || activeIndex === module.lessons.length - 1) && !isLastLesson ? translate(language, "learning.nextModule") : translate(language, "learning.nextTopic")}
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>

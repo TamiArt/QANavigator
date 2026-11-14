@@ -842,8 +842,8 @@ test("the app provides a shared accessible back-to-top button for every long mod
   assert.ok(appSource.includes('const handleMainScroll = () => setShowBackToTop((mainScrollRef.current?.scrollTop ?? 0) > 320)'), "the button must appear after meaningful downward scrolling");
   assert.ok(appSource.includes('<main ref={mainScrollRef} onScroll={handleMainScroll}'), "all modules must share the main scroll listener");
   assert.ok(appSource.includes('mainScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })'), "the shared action must smoothly return the page to the top");
-  assert.ok(appSource.includes('aria-label="Вернуться в начало страницы"'), "the button must have an accessible name");
+  assert.match(appSource, /aria-label=\{translate\(language, "app\.backToTop"\)\}/, "the button must have a localized accessible name");
   assert.ok(appSource.includes('<ArrowUp className="h-4 w-4" />'), "the button must show an upward arrow");
-  assert.ok(appSource.includes('<span>Наверх</span>'), "the button must have a visible label");
+  assert.match(appSource, /<span>\{translate\(language, "app\.backToTop"\)\}<\/span>/, "the button must have a localized visible label");
   assert.equal(source.includes("workbenchRef"), false, "the SQL workbench must not render a duplicate local back-to-top action");
 });

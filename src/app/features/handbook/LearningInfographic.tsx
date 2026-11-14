@@ -4,8 +4,14 @@ import {
   CheckCircle2, ClipboardCheck, Cloud, Code2, Database, FileText, GitBranch,
   Globe, Layers3, ListChecks, Network, PlayCircle, Route, Server, ShieldCheck,
   Smartphone, Target, TestTube2, Users, Workflow, Zap,
+  Monitor, ArrowLeftRight, Search, Rocket, Gauge, ClipboardList, FileSearch,
 } from "lucide-react";
 import type { LearningLesson, LearningModule } from "./handbook-learning";
+import { useApp } from "../../core/app-context";
+import { getLearningLessonTitle } from "./handbook-learning";
+import { getModuleTitle } from "../../core/i18n";
+import type { Language } from "../../core/i18n";
+import { Module1LessonInfographic } from "./Module1LessonInfographics";
 
 type VisualKind =
   | "flow"
@@ -819,10 +825,10 @@ function TimelineDiagram({ visual }: { visual: LessonVisual }) {
   return (
     <div aria-label="Временная последовательность">
       <DiagramLabelStrip visual={visual} />
-      <div className="relative grid gap-3 md:grid-cols-2">
+      <div className="relative columns-1 gap-3 md:columns-2">
         <div className="absolute left-5 top-5 bottom-5 hidden w-0.5 bg-blue-200 md:block" aria-hidden="true" />
         {visual.cards.map((card, index) => (
-          <div key={card.title} className="relative flex gap-3">
+          <div key={card.title} className="relative mb-3 flex break-inside-avoid gap-3">
             <span className={`z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-black ${styles.marker}`}>
               {index + 1}
             </span>
@@ -853,9 +859,9 @@ function ChecklistDiagram({ visual }: { visual: LessonVisual }) {
   return (
     <div aria-label="Чек-лист ключевых проверок">
       {!isTestingPrinciples && <DiagramLabelStrip visual={visual} />}
-      <div className={isTestingPrinciples ? "grid gap-2 sm:grid-cols-2" : "space-y-2"}>
+      <div className={isTestingPrinciples ? "columns-1 gap-2 sm:columns-2" : "space-y-2"}>
         {visual.cards.map((card, index) => (
-          <div key={card.title} className={`grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2.5 rounded-2xl border-2 bg-white p-2.5 ${styles.badge}`}>
+          <div key={card.title} className={`mb-2 inline-block w-full break-inside-avoid grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2.5 rounded-2xl border-2 bg-white p-2.5 ${styles.badge}`}>
             <div className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${styles.marker}`}>
               {isTestingPrinciples ? <PrincipleIllustration index={index} /> : <CardIllustration kind="checklist" index={index} />}
             </div>
@@ -899,9 +905,9 @@ function NetworkDiagram({ visual }: { visual: LessonVisual }) {
   return (
     <div aria-label="Карта взаимосвязанных понятий">
       <DiagramLabelStrip visual={visual} />
-      <div className="relative grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="relative columns-1 gap-2 sm:columns-2 lg:columns-3">
         {visual.cards.map((card, index) => (
-          <div key={card.title} className="relative">
+          <div key={card.title} className="relative mb-2 break-inside-avoid">
             <Card card={card} index={index} visual={visual} />
             {index < visual.cards.length - 1 && (
               <span className={`absolute -right-1 top-1/2 hidden h-2 w-2 -translate-y-1/2 rounded-full border-2 bg-white lg:block ${styles.badge}`} aria-hidden="true" />
@@ -946,22 +952,21 @@ function VisualMotif({ visual }: { visual: LessonVisual }) {
   );
 }
 
-function ScrumStylePosterDiagram({ visual }: { visual: LessonVisual }) {
+function ScrumStylePosterDiagram({ visual, title }: { visual: LessonVisual; title: string }) {
   const isTestingPrinciples = visual.cards.length === 7 && visual.cards.every((card) => /^\\d\\. /.test(card.title));
   const palette: Accent[] = ["blue", "lavender", "mint", "yellow", "pink", "orange"];
   const mainIdea = visual.callout ?? visual.cards[0]?.text ?? "Ключевая идея урока.";
-  const cardLayout = visual.cards.length === 3
-    ? "grid-cols-1 lg:grid-cols-2"
-    : visual.cards.length >= 7
-      ? "grid-cols-1 lg:grid-cols-2"
-      : "grid-cols-1 sm:grid-cols-2";
-  const heroCard = visual.cards.length === 3 ? "lg:col-span-2" : "";
+  const cardLayout = "sm:columns-2";
 
   return (
     <div className="mx-auto min-w-0 max-w-[1065px] overflow-hidden rounded-[24px] border-2 border-blue-100 bg-[#fffdf8] p-2.5 shadow-[0_8px_28px_rgba(30,64,175,0.06)] sm:p-4" aria-label={KIND_LABELS[visual.kind]}>
-      <header className="mb-3 rounded-[20px] border-2 border-blue-100 bg-white px-3.5 py-3 shadow-[2px_3px_0_rgba(30,64,175,0.06)] sm:px-5 sm:py-4">
+      <header className="mb-3 rounded-[22px] border-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/70 to-violet-50/40 p-4 shadow-[2px_3px_0_rgba(30,64,175,0.06)] sm:p-5">
+        <div className="mb-2 inline-flex max-w-full rounded-full bg-blue-700 px-2.5 py-1 text-[9px] font-black tracking-wider text-white">
+          {visual.labels.slice(0, 3).join(" · ")}
+        </div>
+        <h5 className="break-words text-base font-black leading-tight text-blue-950 dark:text-black sm:text-lg">{title}</h5>
         {/* CI compatibility marker: immutable visual-language contract checks the legacy heading text in source only: Ключевая схема. */}
-        <div className="flex min-w-0 flex-wrap items-center justify-center gap-1.5">
+        <div className="mt-3 flex min-w-0 flex-wrap items-center justify-center gap-1.5">
           {visual.labels.slice(0, 7).map((label, index) => (
             <React.Fragment key={label}>
               <span className="min-w-0 max-w-full break-words whitespace-normal rounded-full border-2 border-sky-200 bg-sky-50 px-2.5 py-1 text-center text-[9px] font-extrabold text-blue-900 dark:text-black sm:text-[10px]">
@@ -981,16 +986,14 @@ function ScrumStylePosterDiagram({ visual }: { visual: LessonVisual }) {
         </div>
       </header>
 
-      <div className={`grid min-w-0 gap-3 ${cardLayout}`}>
+      <div className={`min-w-0 columns-1 gap-3 ${cardLayout}`}>
         {visual.cards.map((card, index) => {
           const accent = palette[index % palette.length];
           const styles = ACCENT_STYLES[accent];
           const cardClass = [
-            "min-w-0 overflow-hidden rounded-[20px] border-2 p-3.5 shadow-[2px_3px_0_rgba(30,64,175,0.07)] sm:p-4",
+            "mb-3 inline-block w-full break-inside-avoid min-w-0 overflow-hidden rounded-[20px] border-2 p-3.5 shadow-[2px_3px_0_rgba(30,64,175,0.07)] sm:p-4",
             styles.card,
             styles.badge,
-            index % 2 === 0 ? "rotate-[-0.35deg]" : "rotate-[0.35deg]",
-            index === 0 ? heroCard : "",
           ].join(" ");
 
           return (
@@ -1035,10 +1038,10 @@ function ScrumStylePosterDiagram({ visual }: { visual: LessonVisual }) {
   );
 }
 
-function VisualDiagram({ visual }: { visual: LessonVisual }) {
-  return <ScrumStylePosterDiagram visual={visual} />;
+function VisualDiagram({ visual, title }: { visual: LessonVisual; title: string }) {
+  return <ScrumStylePosterDiagram visual={visual} title={title} />;
 }
-function PdfDownloadButton({ targetId, imagePath }: { targetId: string; imagePath?: string }) {
+function PdfDownloadButton({ targetId, imagePath, language = "ru" }: { targetId: string; imagePath?: string; language?: Language }) {
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [error, setError] = React.useState("");
 
@@ -1105,7 +1108,7 @@ function PdfDownloadButton({ targetId, imagePath }: { targetId: string; imagePat
       window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
     } catch (error) {
       console.error("Не удалось сохранить инфографику:", error);
-      setError("Не удалось сохранить файл. Попробуйте ещё раз.");
+      setError(language === "en" ? "Could not save the file. Please try again." : "Не удалось сохранить файл. Попробуйте ещё раз.");
     } finally {
       setIsGenerating(false);
     }
@@ -1118,18 +1121,114 @@ function PdfDownloadButton({ targetId, imagePath }: { targetId: string; imagePat
       data-pdf-ignore
       onClick={downloadPdf}
       disabled={isGenerating}
-      aria-label={imagePath ? "Скачать файл инфографики" : "Сохранить инфографику в PDF"}
-      title={imagePath ? "Скачать исходный файл инфографики" : "Сохранить инфографику в PDF"}
+      aria-label={language === "en" ? (imagePath ? "Download infographic image" : "Save infographic as PDF") : (imagePath ? "Скачать файл инфографики" : "Сохранить инфографику в PDF")}
+      title={language === "en" ? (imagePath ? "Download original infographic" : "Save infographic as PDF") : (imagePath ? "Скачать исходный файл инфографики" : "Сохранить инфографику в PDF")}
       className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-2.5 text-[10px] font-bold text-blue-800 shadow-sm transition hover:bg-blue-50 disabled:cursor-wait disabled:opacity-60"
     >
       <Download className="h-3.5 w-3.5" aria-hidden="true" />
-      <span>{isGenerating ? "Сохранение…" : "Сохранить"}</span>
+      <span>{isGenerating ? (language === "en" ? "Saving…" : "Сохранение…") : (language === "en" ? "Save" : "Сохранить")}</span>
     </button>
       {error ? <span className="ml-2 text-[10px] font-semibold text-red-600" role="alert">{error}</span> : null}
     </>
   );
 }
+
+function TestingDefinitionDiagram({ language }: { language: Language }) {
+  const steps = language === "en"
+    ? [
+        { title: "Requirement", text: "Product requirements, rules, and agreed acceptance criteria.", icon: FileText },
+        { title: "Expected result", text: "Define what the system should do before running the check.", icon: Target },
+        { title: "Run the check", text: "Perform the planned test and observe the system.", icon: PlayCircle },
+        { title: "Actual result", text: "Record what the system really did.", icon: Monitor },
+        { title: "Compare", text: "Compare actual behavior with the expected result.", icon: ArrowLeftRight },
+      ]
+    : [
+        { title: "Требование", text: "Требования, правила продукта и согласованные критерии.", icon: FileText },
+        { title: "Ожидаемый результат", text: "Заранее определить, как должна работать система.", icon: Target },
+        { title: "Выполнение проверки", text: "Провести проверку и наблюдать за поведением системы.", icon: PlayCircle },
+        { title: "Фактический результат", text: "Зафиксировать, что система сделала на самом деле.", icon: Monitor },
+        { title: "Сравнение", text: "Сопоставить фактическое поведение с ожидаемым.", icon: ArrowLeftRight },
+      ];
+  const purposes = language === "en"
+    ? [
+        { title: "Find issues early", text: "Detect mismatches before they become expensive.", icon: Search },
+        { title: "Build confidence", text: "Understand product quality and reliability.", icon: ShieldCheck },
+        { title: "Assess release risks", text: "Evaluate risks and release readiness.", icon: Gauge },
+        { title: "Serve users", text: "Check that the product solves real user problems.", icon: Users },
+        { title: "Review more than code", text: "Check requirements, documentation, and design too.", icon: FileSearch },
+      ]
+    : [
+        { title: "Найти раньше", text: "Обнаружить несоответствия до того, как их исправление станет дорогим.", icon: Search },
+        { title: "Повысить уверенность", text: "Оценить качество и работоспособность продукта.", icon: ShieldCheck },
+        { title: "Оценить риски релиза", text: "Понять риски и готовность продукта к выпуску.", icon: Gauge },
+        { title: "Решать задачи пользователя", text: "Проверить, помогает ли продукт пользователю.", icon: Users },
+        { title: "Проверять не только код", text: "Анализировать требования, документацию и дизайн.", icon: FileSearch },
+      ];
+  return (
+    <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:p-5">
+      <section className="rounded-[22px] border-2 border-blue-100 bg-white p-3 shadow-sm sm:p-4">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h5 className="text-sm font-extrabold text-blue-950 sm:text-base">{language === "en" ? "How testing works" : "Как работает тестирование"}</h5>
+          <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[9px] font-bold text-blue-800">{language === "en" ? "TEST FLOW" : "СХЕМА ПРОВЕРКИ"}</span>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-5">
+          {steps.map((step, index) => {
+            const Icon = step.icon;
+            return (
+              <React.Fragment key={step.title}>
+                <article className="flex min-w-0 flex-col items-center rounded-[16px] border-2 border-sky-100 bg-sky-50/70 px-2.5 py-3 text-center">
+                  <span className="mb-2 flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-blue-200 bg-white text-blue-700 shadow-sm">
+                    <Icon className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                  <span className="mb-1 text-[9px] font-black text-blue-500">{String(index + 1).padStart(2, "0")}</span>
+                  <h6 className="text-[11px] font-extrabold leading-tight text-blue-950">{step.title}</h6>
+                  <p className="mt-1.5 text-[10px] leading-[1.4] text-slate-600">{step.text}</p>
+                </article>
+                {index < steps.length - 1 ? <><ArrowDown className="mx-auto h-4 w-4 text-blue-300 sm:hidden" aria-hidden="true" /><ArrowLeftRight className="mx-auto hidden h-4 w-4 self-center text-blue-300 sm:block" aria-hidden="true" /></> : null}
+              </React.Fragment>
+            );
+          })}
+        </div>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2">
+            <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
+            <div><p className="text-[11px] font-extrabold text-emerald-800">{language === "en" ? "Match — test passed" : "Совпадает — проверка пройдена"}</p><p className="text-[10px] text-emerald-700">{language === "en" ? "Actual result matches expectations." : "Фактический результат соответствует ожидаемому."}</p></div>
+          </div>
+          <div className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2">
+            <Bug className="h-5 w-5 shrink-0 text-rose-600" />
+            <div><p className="text-[11px] font-extrabold text-rose-800">{language === "en" ? "Mismatch — record a defect" : "Есть отличие — фиксируем дефект"}</p><p className="text-[10px] text-rose-700">{language === "en" ? "Actual result does not meet the expected result." : "Фактический результат не соответствует ожидаемому."}</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-3 rounded-[22px] border-2 border-violet-100 bg-white p-3 shadow-sm sm:p-4">
+        <div className="mb-3 flex items-center gap-2">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 text-violet-700"><ClipboardList className="h-5 w-5" /></span>
+          <div><h5 className="text-sm font-extrabold text-blue-950">{language === "en" ? "Why do we test?" : "Зачем тестируют?"}</h5><p className="text-[10px] text-slate-500">{language === "en" ? "Five practical goals" : "Пять практических целей"}</p></div>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+          {purposes.map((item, index) => {
+            const Icon = item.icon;
+            return <article key={item.title} className="flex min-w-0 items-start gap-2 rounded-xl border border-violet-100 bg-violet-50/50 p-2.5">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-violet-700 shadow-sm"><Icon className="h-4 w-4" /></span>
+              <div className="min-w-0"><h6 className="text-[10px] font-extrabold leading-tight text-blue-950">{index + 1}. {item.title}</h6><p className="mt-1 text-[9px] leading-[1.4] text-slate-600">{item.text}</p></div>
+            </article>;
+          })}
+        </div>
+      </section>
+
+      <div className="mt-3 flex items-start gap-3 rounded-[18px] border-2 border-amber-200 bg-amber-50 px-3.5 py-3">
+        <Rocket className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
+        <div><p className="text-[11px] font-extrabold text-amber-900">{language === "en" ? "QA starts before coding is finished" : "QA начинается до завершения разработки"}</p><p className="mt-1 text-[10px] leading-[1.5] text-amber-900">{language === "en" ? "Analyze requirements, find ambiguity, and prepare checks early. Testing is not just bug hunting in a finished application." : "Анализируй требования, находи неоднозначности и готовь проверки заранее. Тестирование — это не только поиск багов в уже готовой программе."}</p></div>
+      </div>
+    </div>
+  );
+}
+
 function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
+  const { language } = useApp();
+  const lessonTitle = getLearningLessonTitle(lesson, language);
+  const isIntroInfographic = lesson.id === "m1-01";
   const visual = getVisual(lesson);
   const infographicId = `learning-infographic-${lesson.id}`;
   const isTestTypesInfographic = lesson.id === "m1-09";
@@ -1168,14 +1267,18 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
     <section
       id={infographicId}
       className="overflow-hidden rounded-[28px] border-2 border-blue-100 bg-white shadow-[0_8px_30px_rgba(30,64,175,0.08)]"
-      aria-label={`Инфографика урока: ${lesson.title}`}
+      aria-label={`${language === "en" ? "Lesson infographic" : "Инфографика урока"}: ${lessonTitle}`}
     >
       <div className="flex items-center justify-between gap-3 border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-2 sm:px-5">
-        <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{lesson.title}</h4>
-        <PdfDownloadButton targetId={infographicId} imagePath={infographicImagePath} />
+        <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{lessonTitle}</h4>
+        <PdfDownloadButton targetId={infographicId} imagePath={infographicImagePath} language={language} />
       </div>
 
-      {module5ImagePath || isTestTypesInfographic || isScrumContextInfographic || isSprintPlanningInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? (
+      {isIntroInfographic ? (
+        <TestingDefinitionDiagram language={language} />
+      ) : /^m1-(0[2-9]|10|11)$/.test(lesson.id) ? (
+        <Module1LessonInfographic lessonId={lesson.id} />
+      ) : module5ImagePath || isTestTypesInfographic || isScrumContextInfographic || isSprintPlanningInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? (
         <div className="min-w-0 overflow-hidden bg-white p-2 sm:p-4">
           <div
             className="mx-auto w-full max-w-[1065px] overflow-hidden rounded-[18px] bg-white"
@@ -1197,37 +1300,39 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
         </div>
       ) : (
         <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:p-4">
-          <VisualDiagram visual={visual} />
+          <VisualDiagram visual={visual} title={lessonTitle} />
         </div>
       )}
     </section>
   );
 }
 function ModuleInfographic({ module }: { module: LearningModule }) {
+  const { language } = useApp();
+  const moduleTitle = getModuleTitle(language, module.id, module.title);
   const moduleId = `learning-module-infographic-${module.id}`;
   return (
-    <section id={moduleId} className="overflow-hidden rounded-[28px] border-2 border-blue-100 bg-white shadow-[0_8px_30px_rgba(30,64,175,0.08)]" aria-label={`Инфографика модуля: ${module.title}`}>
+    <section id={moduleId} className="overflow-hidden rounded-[28px] border-2 border-blue-100 bg-white shadow-[0_8px_30px_rgba(30,64,175,0.08)]" aria-label={`${language === "en" ? "Module infographic" : "Инфографика модуля"}: ${moduleTitle}`}>
       <div className="border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-4 sm:px-6">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 border-blue-200 bg-white text-blue-800 shadow-[2px_3px_0_rgba(30,64,175,0.10)]"><BookOpen className="h-5 w-5" aria-hidden="true" /></div>
           <div className="min-w-0 flex-1">
-            <span className="mb-1 inline-flex rounded-full bg-blue-700 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] text-white">Инфографика модуля</span>
-            <h3 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{module.title}</h3>
+            <span className="mb-1 inline-flex rounded-full bg-blue-700 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] text-white">{language === "en" ? "Module infographic" : "Инфографика модуля"}</span>
+            <h3 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{moduleTitle}</h3>
           </div>
-          <PdfDownloadButton targetId={moduleId} />
+          <PdfDownloadButton targetId={moduleId} language={language} />
         </div>
       </div>
       <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:p-5">
         <div className="mb-3 flex items-center justify-between gap-2">
-          <span className="rounded-full bg-sky-100 px-3 py-1 text-[10px] font-extrabold text-blue-800 dark:text-black">Карта тем</span>
-          <span className="text-[10px] font-semibold text-slate-400 dark:text-black">темы → практика → закрепление</span>
+          <span className="rounded-full bg-sky-100 px-3 py-1 text-[10px] font-extrabold text-blue-800 dark:text-black">{language === "en" ? "Topic map" : "Карта тем"}</span>
+          <span className="text-[10px] font-semibold text-slate-400 dark:text-black">{language === "en" ? "topics → practice → reinforcement" : "темы → практика → закрепление"}</span>
         </div>
-        <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <ol className="columns-1 gap-2 sm:columns-2 lg:columns-3">
           {module.lessons.map((lesson, index) => {
             const visual = getVisual(lesson);
             const styles = ACCENT_STYLES[visual.accent];
             return (
-              <li key={lesson.id} className={`flex min-w-0 items-start gap-2.5 rounded-[18px] border-2 p-3 shadow-[2px_3px_0_rgba(30,64,175,0.06)] ${styles.card} ${styles.badge}`}>
+              <li key={lesson.id} className={`mb-2 inline-flex w-full break-inside-avoid min-w-0 items-start gap-2.5 rounded-[18px] border-2 p-3 shadow-[2px_3px_0_rgba(30,64,175,0.06)] ${styles.card} ${styles.badge}`}>
                 <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${styles.marker}`}>{String(index + 1).padStart(2, "0")}</span>
                 {/* CI contract: min-w-0 break-words whitespace-normal text-\[11px\] */}
               {/* CI regex compatibility: min-w-0 break-words whitespace-normal text-\1\ */}

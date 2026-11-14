@@ -1,4 +1,5 @@
 import { HANDBOOK } from "../../handbook-data";
+import { getTestingLessonContent, getLessonTitle, type Language } from "../../core/i18n";
 import { HANDBOOK_LEARNING_MODULE_2_LESSONS } from "./handbook-learning-module2";
 import { HANDBOOK_LEARNING_MODULE_3_LESSONS } from "./handbook-learning-module3";
 import { HANDBOOK_LEARNING_MODULE_4_LESSONS } from "./handbook-learning-module4";
@@ -97,7 +98,9 @@ function extractRange(content: string, start?: string, end?: string): string {
   return content.slice(from, endIndex >= 0 ? endIndex : undefined).trim();
 }
 
-export function getLearningLessonContent(lesson: LearningLesson): string {
+export function getLearningLessonContent(lesson: LearningLesson, language: Language = "ru"): string {
+  if (lesson.id === "m1-01") return getTestingLessonContent(language);
+
   let content: string;
 
   if (lesson.content) {
@@ -120,6 +123,10 @@ export function getLearningLessonContent(lesson: LearningLesson): string {
   // The lesson title is already shown above the content. Remove its redundant
   // opening Markdown heading so every lesson displays only one title.
   return content.replace(/^\s*#{1,6}\s+[^\n]+(?:\n+|$)/, "").trimStart();
+}
+
+export function getLearningLessonTitle(lesson: LearningLesson, language: Language = "ru"): string {
+  return getLessonTitle(language, lesson.id, lesson.title);
 }
 
 export function getLearningModule(moduleId: string): LearningModule | undefined {

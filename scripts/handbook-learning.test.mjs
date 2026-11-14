@@ -349,8 +349,8 @@ test("Lesson infographics expose semantic diagram structure", () => {
 
 test("Learning Mode provides direct module and lesson navigation", () => {
   const source = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
-  assert.match(source, /aria-label="Навигация по модулям и темам"/);
-  assert.match(source, /role="group" aria-label="Выбор учебного модуля"/);
+  assert.match(source, /aria-label=\{language === "en" \? "Module and lesson navigation" : "Навигация по модулям и темам"\}/);
+  assert.match(source, /role="group" aria-label=\{translate\(language, "learning\.moduleChoice"\)\}/);
   assert.match(source, /aria-current=\{isActive \? "step" : undefined\}/);
   assert.doesNotMatch(source, /role="tablist"|role="tab"/);
   assert.match(source, /Перейти к теме/);
@@ -387,7 +387,7 @@ test("Learning infographics use the illustrated QA poster visual language", () =
   assert.match(source, /Ключевая схема/);
   assert.match(source, /Инфографика модуля/);
   assert.match(source, /Сохранить/);
-  assert.match(source, /<h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">\{lesson.title\}<\/h4>/);
+  assert.match(source, /<h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">\{lessonTitle\}<\/h4>/);
   assert.match(source, /p-3 sm:p-4/);
   assert.match(source, /rounded-\[28px\]/);
   assert.match(source, /border-2/);
@@ -506,7 +506,7 @@ test("Learning Mode opens the active lesson without repeating the full topic lis
   assert.ok(!source.includes('<LearningInfographic mode="module"'), "Module topic overview must not appear before every lesson");
   assert.ok(!source.includes('<span className="text-sm text-foreground">{lesson.title}</span>'), "Full lesson-title list must not be repeated before the active lesson");
   assert.match(source, /<LearningInfographic mode="lesson" lesson=\{activeLesson\} \/>/);
-  assert.match(source, /<MarkdownView content=\{getLearningLessonContent\(activeLesson\)\} compact extraCompactLists=\{activeLesson\.id === "m1-01"\} \/>/);
+  assert.match(source, /<MarkdownView content=\{getLearningLessonContent\(activeLesson, language\)\} compact extraCompactLists=\{activeLesson\.id === "m1-01"\} \/>/);
 });
 
 
@@ -520,7 +520,7 @@ test("Learning Mode renders lesson Markdown with compact, normalized spacing", (
   assert.equal((renderer.match(/extraCompactLists \? "mb-0 leading-\[1\.05\] text-\[13px\]"/g) || []).length, 5, "All numbered, bulleted, and status lists should support extra-compact spacing");
   assert.match(learningMode, /extraCompactLists=\{activeLesson\.id === "m1-01"\}/, "Extra-compact list spacing must be limited to Lesson 1: What is testing?");
   assert.match(learningMode, /className="bg-card border border-border rounded-xl p-4 scroll-mt-24"/);
-  assert.match(learningMode, /className="mt-3"[\s\S]*MarkdownView content=\{getLearningLessonContent\(activeLesson\)\} compact/);
+  assert.match(learningMode, /className="mt-3"[\s\S]*MarkdownView content=\{getLearningLessonContent\(activeLesson, language\)\} compact/);
 });
 
 
@@ -536,13 +536,13 @@ test("Learning Mode navigation continues across module boundaries and preserves 
   assert.match(source, /else if \(activeIndex < module\.lessons\.length - 1\)/);
   assert.match(source, /disabled=\{isFirstLesson\}/);
   assert.match(source, /disabled=\{isLastLesson\}/);
-  assert.match(source, /Следующий модуль/);
-  assert.match(source, /aria-label="Перейти к предыдущей теме"/);
+  assert.match(source, /translate\(language, "learning\.nextModule"\)/);
+  assert.match(source, /aria-label=\{translate\(language, "learning\.goPrevious"\)\}/);
   assert.match(source, /aria-label=\{moduleIndex < HANDBOOK_LEARNING_MODULES\.length - 1/);
   assert.match(source, /aria-controls="learning-module-content"/);
-  assert.match(source, /role="group" aria-label="Выбор учебного модуля"/);
+  assert.match(source, /role="group" aria-label=\{translate\(language, "learning\.moduleChoice"\)\}/);
   assert.doesNotMatch(source, /role="tablist"|role="tab"/, "Module selector uses button semantics, not incomplete tab semantics");
-  assert.match(source, /Прогресс курса: \{totalCompletedCount\}\/\{allLessons\.length\}/);
+  assert.match(source, /\{translate\(language, "learning\.courseProgress"\)\}: \{totalCompletedCount\}\/\{allLessons\.length\}/);
   assert.match(source, /const totalProgressPercent = allLessons\.length/);
   assert.match(source, /id="learning-module-content"/);
   assert.match(source, /data-active-lesson-id=\{activeLesson\?\.id \?\? module\.id\}/);

@@ -2088,3 +2088,26 @@ Validation: run the focused database-workbench test, full `npm run verify`, and 
 - clarified the ADB file-copy direction (pull copies from device to computer; push copies from computer to device), and qualified platform- and version-dependent behavior for push notifications, PWA, certificates, sideloading and payments.
 
 Validation: run npm run test:module8-learning, full npm run verify, and current-head GitHub Actions. Browser-based visual QA on desktop and mobile remains a separate check.
+
+
+### 7.1.78 Site language preference and Module 1 testing infographic — 2026-11-14
+
+- added a persistent RU/EN language preference with a header switch; the selected locale is stored independently from theme and learning progress;
+- added English navigation labels for all twelve application sections and localized the app shell, Knowledge Base entry screen and Learning Mode navigation/progress controls;
+- added English module labels and a complete English version of Module 1, Lesson 1, while preserving the Russian source text and lesson order;
+- replaced the generic visual for Module 1, Lesson 1 with a responsive infographic: five illustrated testing workflow stages, pass/defect outcomes, five testing goals and an early-QA reminder;
+- added regression coverage for locale persistence, bilingual navigation, the English lesson text and the new infographic.
+
+Scope note: English copy is currently provided for the shared app shell, navigation, Knowledge Base/Learning Mode controls, module labels and Module 1, Lesson 1. Other feature-specific screens and lesson bodies still use their existing Russian content and require separate translation work.
+
+Validation: run npm run test:site-language, full npm run verify, and current-head GitHub Actions. Browser-based visual QA on desktop and mobile remains a separate check.
+
+
+### 7.1.79 Learning Mode — Module 1 lesson infographics — 2026-11-14
+
+- replaced the generic Module 1 lesson visuals for lessons 2–11 with dedicated illustrated layouts based on the actual lesson source topics;
+- added visual comparisons for QA/QC/Testing and Verification/Validation, seven ISTQB principles, requirement hierarchy and quality attributes, SDLC and STLC flows, Severity/Priority matrix, multidimensional testing classification, testing pyramid, and six test-design techniques;
+- used compact illustrated cards, semantic icons, matching emojis, responsive flow diagrams and key-takeaway callouts in the same visual language as the custom Lesson 1 infographic;
+- kept lesson text, lesson IDs, curriculum order and all other modules unchanged; added a focused regression test to npm run verify.
+
+Validation: run npm run test:module1-infographics and full npm run verify; inspect desktop and mobile layouts before visual QA sign-off.
