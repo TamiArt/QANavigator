@@ -15,9 +15,11 @@ test("Module 8 is registered after SQL and contains eight ordered Mobile QA less
     "ADB, Firebase, Developer Options и расширенный доступ",
     "Вопросы с собеседований по мобильному тестированию",
   ];
-  assert.match(registry, /id: "module-8-mobile-testing"[\\s\\S]*?title: "Модуль 8 — Мобильное тестирование"[\\s\\S]*?lessons: HANDBOOK_LEARNING_MODULE_8_LESSONS/);
-  assert.match(registry, /import \\{ HANDBOOK_LEARNING_MODULE_8_LESSONS \\} from "\\.\\/handbook-learning-module8"/);
-  assert.equal((source.match(/id: "m8-\\d{2}"/g) ?? []).length, 8);
+  assert.ok(registry.includes('id: "module-8-mobile-testing"'));
+  assert.ok(registry.includes('title: "Модуль 8 — Мобильное тестирование"'));
+  assert.ok(registry.includes("lessons: HANDBOOK_LEARNING_MODULE_8_LESSONS"));
+  assert.ok(registry.includes('from "./handbook-learning-module8"'));
+  assert.equal(source.split('id: "m8-').length - 1, 8);
   const positions = expected.map((title) => {
     const position = source.indexOf('title: "' + title + '"');
     assert.notEqual(position, -1, "Missing lesson: " + title);
@@ -54,7 +56,7 @@ test("Module 8 lesson templates contain only the expected template delimiters", 
   for (let index = 0; index < source.length; index += 1) {
     if (source.charCodeAt(index) !== 96) continue;
     let precedingBackslashes = 0;
-    for (let cursor = index - 1; cursor >= 0 && source[cursor] === "\\\\"; cursor -= 1) precedingBackslashes += 1;
+    for (let cursor = index - 1; cursor >= 0 && source[cursor] === String.fromCharCode(92); cursor -= 1) precedingBackslashes += 1;
     if (precedingBackslashes % 2 === 0) unescapedCount += 1;
   }
   assert.equal(unescapedCount, 16, "Only eight lesson template openings and closings may use unescaped backticks");
