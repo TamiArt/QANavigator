@@ -9,6 +9,7 @@ import {
 import type { LearningLesson, LearningModule } from "./handbook-learning";
 import { useApp } from "../../core/app-context";
 import { getLearningLessonTitle } from "./handbook-learning";
+import { getModuleTitle } from "../../core/i18n";
 import type { Language } from "../../core/i18n";
 
 type VisualKind =
@@ -1307,7 +1308,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
 }
 function ModuleInfographic({ module }: { module: LearningModule }) {
   const { language } = useApp();
-  const moduleTitle = getLearningModuleTitle(module, language);
+  const moduleTitle = getModuleTitle(language, module.id, module.title);
   const moduleId = `learning-module-infographic-${module.id}`;
   return (
     <section id={moduleId} className="overflow-hidden rounded-[28px] border-2 border-blue-100 bg-white shadow-[0_8px_30px_rgba(30,64,175,0.08)]" aria-label={`${language === "en" ? "Module infographic" : "Инфографика модуля"}: ${moduleTitle}`}>
