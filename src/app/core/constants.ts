@@ -46,6 +46,7 @@ export const CATEGORIES = [...new Set(HANDBOOK.map((t) => t.category))];
 
 export const STORAGE_KEYS = {
   theme: "qa_nav_theme",
+  language: "qa_nav_language",
   apiKeys: "qa_nav_apikeys",
   projects: "qa_navigator_projects",
   activeProject: "qa_navigator_active_project",
