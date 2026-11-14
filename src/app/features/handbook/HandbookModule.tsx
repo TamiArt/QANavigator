@@ -80,7 +80,7 @@ export function HandbookModule() {
                 levelFilter === l ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground"
               }`}
             >
-              {l === "beginner" ? "Новичок" : l === "intermediate" ? "Мидл" : "Эксперт"}
+              {l === "beginner" ? translate(language, "handbook.beginner") : l === "intermediate" ? translate(language, "handbook.intermediate") : translate(language, "handbook.expert")}
             </button>
           ))}
           <button
@@ -149,7 +149,7 @@ export function HandbookModule() {
                   <div className="flex flex-wrap items-center gap-2 mb-0.5">
                     <span className="font-medium text-sm text-foreground"><HighlightedText text={topic.title} query={search} /></span>
                     <Badge variant={topic.level as any}>
-                      {topic.level === "beginner" ? "Новичок" : topic.level === "intermediate" ? "Мидл" : "Эксперт"}
+                      {topic.level === "beginner" ? translate(language, "handbook.beginner") : topic.level === "intermediate" ? translate(language, "handbook.intermediate") : translate(language, "handbook.expert")}
                     </Badge>
                   </div>
                   <div className="flex flex-wrap gap-1">
