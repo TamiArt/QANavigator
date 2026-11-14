@@ -256,8 +256,8 @@ export function Module1LessonInfographic({ lessonId }: { lessonId: string }) {
     {visual.flow ? <div className="mb-3"><FlowStrip items={visual.flow} /></div> : null}
     {visual.layout === "pyramid" ? <div className="mb-3"><Pyramid tiles={visual.tiles} /></div> : null}
     {visual.layout === "matrix" ? <div className="mb-3"><SeverityPriorityMatrix /></div> : null}
-    <div className={"grid gap-2.5 " + (lessonId === "m1-03" ? "sm:grid-flow-col sm:grid-cols-2 sm:grid-rows-[repeat(4,auto)]" : visual.tiles.length >= 6 ? "sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-3")}>
-      {visual.tiles.map((item, index) => <TileCard key={item.title} item={item} index={index} />)}
+    <div className={"columns-1 gap-2.5 " + (visual.tiles.length >= 6 ? "sm:columns-2" : "sm:columns-2 lg:columns-3")}>
+      {visual.tiles.map((item, index) => <div key={item.title} className="mb-2.5 break-inside-avoid"><TileCard item={item} index={index} /></div>)}
     </div>
     <div className="mt-3 flex items-start gap-3 rounded-[18px] border-2 border-amber-200 bg-amber-50 px-3.5 py-3">
       <span className="text-xl" aria-hidden="true">💡</span>

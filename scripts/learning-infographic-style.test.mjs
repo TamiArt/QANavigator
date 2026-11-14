@@ -11,6 +11,8 @@ test("all Learning Mode lesson infographics use the Scrum-style poster shell", (
   assert.match(source, /Запомнить/);
   assert.match(source, /const palette: Accent\[\]/);
   assert.match(source, /PrincipleIllustration index=\{index\}/);
+  assert.match(source, /columns-1 gap-2\.5/);
+  assert.match(source, /break-inside-avoid/);
   assert.match(source, /CardIllustration kind=\{visual\.kind\}/);
 });
 
@@ -21,6 +23,8 @@ test("Scrum remains the dedicated visual master while other lessons use shared p
   assert.match(source, /m2-04-scrum-context\.svg/);
   assert.match(source, /m2-05-sprint-planning\.svg/);
   assert.match(source, /return <ScrumStylePosterDiagram visual=\{visual\} \/>/);
+  assert.match(source, /columns-1 gap-3/);
+  assert.match(source, /columns-1 gap-2 sm:columns-2/);
 });
 
 test("static infographic assets exist and lesson downloads use the original file", () => {

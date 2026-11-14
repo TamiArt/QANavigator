@@ -825,10 +825,10 @@ function TimelineDiagram({ visual }: { visual: LessonVisual }) {
   return (
     <div aria-label="Временная последовательность">
       <DiagramLabelStrip visual={visual} />
-      <div className="relative grid gap-3 md:grid-cols-2">
+      <div className="relative columns-1 gap-3 md:columns-2">
         <div className="absolute left-5 top-5 bottom-5 hidden w-0.5 bg-blue-200 md:block" aria-hidden="true" />
         {visual.cards.map((card, index) => (
-          <div key={card.title} className="relative flex gap-3">
+          <div key={card.title} className="relative mb-3 flex break-inside-avoid gap-3">
             <span className={`z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-black ${styles.marker}`}>
               {index + 1}
             </span>
@@ -859,9 +859,9 @@ function ChecklistDiagram({ visual }: { visual: LessonVisual }) {
   return (
     <div aria-label="Чек-лист ключевых проверок">
       {!isTestingPrinciples && <DiagramLabelStrip visual={visual} />}
-      <div className={isTestingPrinciples ? "grid gap-2 sm:grid-cols-2" : "space-y-2"}>
+      <div className={isTestingPrinciples ? "columns-1 gap-2 sm:columns-2" : "space-y-2"}>
         {visual.cards.map((card, index) => (
-          <div key={card.title} className={`grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2.5 rounded-2xl border-2 bg-white p-2.5 ${styles.badge}`}>
+          <div key={card.title} className={`mb-2 inline-block w-full break-inside-avoid grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2.5 rounded-2xl border-2 bg-white p-2.5 ${styles.badge}`}>
             <div className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${styles.marker}`}>
               {isTestingPrinciples ? <PrincipleIllustration index={index} /> : <CardIllustration kind="checklist" index={index} />}
             </div>
@@ -905,9 +905,9 @@ function NetworkDiagram({ visual }: { visual: LessonVisual }) {
   return (
     <div aria-label="Карта взаимосвязанных понятий">
       <DiagramLabelStrip visual={visual} />
-      <div className="relative grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="relative columns-1 gap-2 sm:columns-2 lg:columns-3">
         {visual.cards.map((card, index) => (
-          <div key={card.title} className="relative">
+          <div key={card.title} className="relative mb-2 break-inside-avoid">
             <Card card={card} index={index} visual={visual} />
             {index < visual.cards.length - 1 && (
               <span className={`absolute -right-1 top-1/2 hidden h-2 w-2 -translate-y-1/2 rounded-full border-2 bg-white lg:block ${styles.badge}`} aria-hidden="true" />
@@ -956,12 +956,7 @@ function ScrumStylePosterDiagram({ visual }: { visual: LessonVisual }) {
   const isTestingPrinciples = visual.cards.length === 7 && visual.cards.every((card) => /^\\d\\. /.test(card.title));
   const palette: Accent[] = ["blue", "lavender", "mint", "yellow", "pink", "orange"];
   const mainIdea = visual.callout ?? visual.cards[0]?.text ?? "Ключевая идея урока.";
-  const cardLayout = visual.cards.length === 3
-    ? "grid-cols-1 lg:grid-cols-2"
-    : visual.cards.length >= 7
-      ? "grid-cols-1 lg:grid-cols-2"
-      : "grid-cols-1 sm:grid-cols-2";
-  const heroCard = visual.cards.length === 3 ? "lg:col-span-2" : "";
+  const cardLayout = "sm:columns-2";
 
   return (
     <div className="mx-auto min-w-0 max-w-[1065px] overflow-hidden rounded-[24px] border-2 border-blue-100 bg-[#fffdf8] p-2.5 shadow-[0_8px_28px_rgba(30,64,175,0.06)] sm:p-4" aria-label={KIND_LABELS[visual.kind]}>
@@ -987,16 +982,14 @@ function ScrumStylePosterDiagram({ visual }: { visual: LessonVisual }) {
         </div>
       </header>
 
-      <div className={`grid min-w-0 gap-3 ${cardLayout}`}>
+      <div className={`min-w-0 columns-1 gap-3 ${cardLayout}`}>
         {visual.cards.map((card, index) => {
           const accent = palette[index % palette.length];
           const styles = ACCENT_STYLES[accent];
           const cardClass = [
-            "min-w-0 overflow-hidden rounded-[20px] border-2 p-3.5 shadow-[2px_3px_0_rgba(30,64,175,0.07)] sm:p-4",
+            "mb-3 inline-block w-full break-inside-avoid min-w-0 overflow-hidden rounded-[20px] border-2 p-3.5 shadow-[2px_3px_0_rgba(30,64,175,0.07)] sm:p-4",
             styles.card,
             styles.badge,
-            index % 2 === 0 ? "rotate-[-0.35deg]" : "rotate-[0.35deg]",
-            index === 0 ? heroCard : "",
           ].join(" ");
 
           return (
@@ -1330,12 +1323,12 @@ function ModuleInfographic({ module }: { module: LearningModule }) {
           <span className="rounded-full bg-sky-100 px-3 py-1 text-[10px] font-extrabold text-blue-800 dark:text-black">{language === "en" ? "Topic map" : "Карта тем"}</span>
           <span className="text-[10px] font-semibold text-slate-400 dark:text-black">{language === "en" ? "topics → practice → reinforcement" : "темы → практика → закрепление"}</span>
         </div>
-        <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <ol className="columns-1 gap-2 sm:columns-2 lg:columns-3">
           {module.lessons.map((lesson, index) => {
             const visual = getVisual(lesson);
             const styles = ACCENT_STYLES[visual.accent];
             return (
-              <li key={lesson.id} className={`flex min-w-0 items-start gap-2.5 rounded-[18px] border-2 p-3 shadow-[2px_3px_0_rgba(30,64,175,0.06)] ${styles.card} ${styles.badge}`}>
+              <li key={lesson.id} className={`mb-2 inline-flex w-full break-inside-avoid min-w-0 items-start gap-2.5 rounded-[18px] border-2 p-3 shadow-[2px_3px_0_rgba(30,64,175,0.06)] ${styles.card} ${styles.badge}`}>
                 <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${styles.marker}`}>{String(index + 1).padStart(2, "0")}</span>
                 {/* CI contract: min-w-0 break-words whitespace-normal text-\[11px\] */}
               {/* CI regex compatibility: min-w-0 break-words whitespace-normal text-\1\ */}
