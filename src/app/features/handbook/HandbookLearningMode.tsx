@@ -152,7 +152,7 @@ export function HandbookLearningMode({ onBack }: { onBack: () => void }) {
                   ? "min-w-0 w-full rounded-lg border border-primary bg-primary/10 px-2.5 py-2 text-left text-[11px] font-semibold leading-tight text-primary"
                   : "min-w-0 w-full rounded-lg border border-border px-2.5 py-2 text-left text-[11px] leading-tight text-muted-foreground hover:bg-muted/30"}
               >
-                <span className="block">{getModuleTitle(language, item.id, item.title).replace(/^(Модуль|Module) \d+\s*[—.-]\s*/, language === "en" ? "Module " : "Модуль ")}</span>
+                <span className="block">{getModuleTitle(language, item.id, item.title)}</span>
                 <span className="mt-0.5 block text-[10px] opacity-80">{itemCompleted}/{item.lessons.length} {translate(language, "learning.studied")}</span>
               </button>
             );
