@@ -22,7 +22,7 @@ test("Scrum remains the dedicated visual master while other lessons use shared p
   assert.match(source, /lesson\.id === "m2-05"/);
   assert.match(source, /m2-04-scrum-context\.svg/);
   assert.match(source, /m2-05-sprint-planning\.svg/);
-  assert.match(source, /return <ScrumStylePosterDiagram visual=\{visual\} \/>/);
+  assert.match(source, /return <ScrumStylePosterDiagram visual=\{visual\} title=\{title\} \/>/);
   assert.match(source, /columns-1 gap-3/);
   assert.match(source, /columns-1 gap-2 sm:columns-2/);
 });
