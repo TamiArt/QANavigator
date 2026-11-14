@@ -4,7 +4,7 @@ import {
   CheckCircle2, ClipboardCheck, Cloud, Code2, Database, FileText, GitBranch,
   Globe, Layers3, ListChecks, Network, PlayCircle, Route, Server, ShieldCheck,
   Smartphone, Target, TestTube2, Users, Workflow, Zap,
-  Monitor, ArrowLeftRight, Search, Rocket, Gauge, ClipboardList, FileSearch, ClipboardCheck,
+  Monitor, ArrowLeftRight, Search, Rocket, Gauge, ClipboardList, FileSearch,
 } from "lucide-react";
 import type { LearningLesson, LearningModule } from "./handbook-learning";
 import { useApp } from "../../core/app-context";
