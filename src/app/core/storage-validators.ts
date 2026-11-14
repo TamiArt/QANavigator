@@ -98,6 +98,11 @@ function unwrapCurrentStorageValue(value: unknown): unknown {
   return value.version === 1 ? value.data : UNSUPPORTED_VERSION;
 }
 
+export function isLanguageStorageValue(value: unknown): boolean {
+  const data = unwrapCurrentStorageValue(value);
+  return data === "ru" || data === "en";
+}
+
 export function isThemeStorageValue(value: unknown): boolean {
   const data = unwrapCurrentStorageValue(value);
   return data === "light" || data === "dark";
