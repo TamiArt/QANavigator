@@ -1042,7 +1042,7 @@ function ScrumStylePosterDiagram({ visual }: { visual: LessonVisual }) {
 function VisualDiagram({ visual }: { visual: LessonVisual }) {
   return <ScrumStylePosterDiagram visual={visual} />;
 }
-function PdfDownloadButton({ targetId, imagePath }: { targetId: string; imagePath?: string }) {
+function PdfDownloadButton({ targetId, imagePath, language = "ru" }: { targetId: string; imagePath?: string; language?: Language }) {
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [error, setError] = React.useState("");
 
@@ -1109,7 +1109,7 @@ function PdfDownloadButton({ targetId, imagePath }: { targetId: string; imagePat
       window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
     } catch (error) {
       console.error("Не удалось сохранить инфографику:", error);
-      setError("Не удалось сохранить файл. Попробуйте ещё раз.");
+      setError(language === "en" ? "Could not save the file. Please try again." : "Не удалось сохранить файл. Попробуйте ещё раз.");
     } finally {
       setIsGenerating(false);
     }
@@ -1122,12 +1122,12 @@ function PdfDownloadButton({ targetId, imagePath }: { targetId: string; imagePat
       data-pdf-ignore
       onClick={downloadPdf}
       disabled={isGenerating}
-      aria-label={imagePath ? "Скачать файл инфографики" : "Сохранить инфографику в PDF"}
-      title={imagePath ? "Скачать исходный файл инфографики" : "Сохранить инфографику в PDF"}
+      aria-label={language === "en" ? (imagePath ? "Download infographic image" : "Save infographic as PDF") : (imagePath ? "Скачать файл инфографики" : "Сохранить инфографику в PDF")}
+      title={language === "en" ? (imagePath ? "Download original infographic" : "Save infographic as PDF") : (imagePath ? "Скачать исходный файл инфографики" : "Сохранить инфографику в PDF")}
       className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-blue-200 bg-white px-2.5 text-[10px] font-bold text-blue-800 shadow-sm transition hover:bg-blue-50 disabled:cursor-wait disabled:opacity-60"
     >
       <Download className="h-3.5 w-3.5" aria-hidden="true" />
-      <span>{isGenerating ? "Сохранение…" : "Сохранить"}</span>
+      <span>{isGenerating ? (language === "en" ? "Saving…" : "Сохранение…") : (language === "en" ? "Save" : "Сохранить")}</span>
     </button>
       {error ? <span className="ml-2 text-[10px] font-semibold text-red-600" role="alert">{error}</span> : null}
     </>
@@ -1272,7 +1272,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
     >
       <div className="flex items-center justify-between gap-3 border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-2 sm:px-5">
         <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{lessonTitle}</h4>
-        <PdfDownloadButton targetId={infographicId} imagePath={infographicImagePath} />
+        <PdfDownloadButton targetId={infographicId} imagePath={infographicImagePath} language={language} />
       </div>
 
       {isIntroInfographic ? (
@@ -1306,23 +1306,25 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
   );
 }
 function ModuleInfographic({ module }: { module: LearningModule }) {
+  const { language } = useApp();
+  const moduleTitle = getLearningModuleTitle(module, language);
   const moduleId = `learning-module-infographic-${module.id}`;
   return (
-    <section id={moduleId} className="overflow-hidden rounded-[28px] border-2 border-blue-100 bg-white shadow-[0_8px_30px_rgba(30,64,175,0.08)]" aria-label={`Инфографика модуля: ${module.title}`}>
+    <section id={moduleId} className="overflow-hidden rounded-[28px] border-2 border-blue-100 bg-white shadow-[0_8px_30px_rgba(30,64,175,0.08)]" aria-label={`${language === "en" ? "Module infographic" : "Инфографика модуля"}: ${moduleTitle}`}>
       <div className="border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-4 sm:px-6">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 border-blue-200 bg-white text-blue-800 shadow-[2px_3px_0_rgba(30,64,175,0.10)]"><BookOpen className="h-5 w-5" aria-hidden="true" /></div>
           <div className="min-w-0 flex-1">
-            <span className="mb-1 inline-flex rounded-full bg-blue-700 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] text-white">Инфографика модуля</span>
-            <h3 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{module.title}</h3>
+            <span className="mb-1 inline-flex rounded-full bg-blue-700 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] text-white">{language === "en" ? "Module infographic" : "Инфографика модуля"}</span>
+            <h3 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{moduleTitle}</h3>
           </div>
-          <PdfDownloadButton targetId={moduleId} />
+          <PdfDownloadButton targetId={moduleId} language={language} />
         </div>
       </div>
       <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:p-5">
         <div className="mb-3 flex items-center justify-between gap-2">
-          <span className="rounded-full bg-sky-100 px-3 py-1 text-[10px] font-extrabold text-blue-800 dark:text-black">Карта тем</span>
-          <span className="text-[10px] font-semibold text-slate-400 dark:text-black">темы → практика → закрепление</span>
+          <span className="rounded-full bg-sky-100 px-3 py-1 text-[10px] font-extrabold text-blue-800 dark:text-black">{language === "en" ? "Topic map" : "Карта тем"}</span>
+          <span className="text-[10px] font-semibold text-slate-400 dark:text-black">{language === "en" ? "topics → practice → reinforcement" : "темы → практика → закрепление"}</span>
         </div>
         <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {module.lessons.map((lesson, index) => {
