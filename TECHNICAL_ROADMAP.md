@@ -2101,3 +2101,13 @@ Validation: run npm run test:module8-learning, full npm run verify, and current-
 Scope note: English copy is currently provided for the shared app shell, navigation, Knowledge Base/Learning Mode controls, module labels and Module 1, Lesson 1. Other feature-specific screens and lesson bodies still use their existing Russian content and require separate translation work.
 
 Validation: run npm run test:site-language, full npm run verify, and current-head GitHub Actions. Browser-based visual QA on desktop and mobile remains a separate check.
+
+
+### 7.1.79 Learning Mode — Module 1 lesson infographics — 2026-11-14
+
+- replaced the generic Module 1 lesson visuals for lessons 2–11 with dedicated illustrated layouts based on the actual lesson source topics;
+- added visual comparisons for QA/QC/Testing and Verification/Validation, seven ISTQB principles, requirement hierarchy and quality attributes, SDLC and STLC flows, Severity/Priority matrix, multidimensional testing classification, testing pyramid, and six test-design techniques;
+- used compact illustrated cards, semantic icons, matching emojis, responsive flow diagrams and key-takeaway callouts in the same visual language as the custom Lesson 1 infographic;
+- kept lesson text, lesson IDs, curriculum order and all other modules unchanged; added a focused regression test to npm run verify.
+
+Validation: run npm run test:module1-infographics and full npm run verify; inspect desktop and mobile layouts before visual QA sign-off.

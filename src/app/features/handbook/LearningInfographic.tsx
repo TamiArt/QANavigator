@@ -11,6 +11,7 @@ import { useApp } from "../../core/app-context";
 import { getLearningLessonTitle } from "./handbook-learning";
 import { getModuleTitle } from "../../core/i18n";
 import type { Language } from "../../core/i18n";
+import { Module1LessonInfographic } from "./Module1LessonInfographics";
 
 type VisualKind =
   | "flow"
@@ -1278,6 +1279,8 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
 
       {isIntroInfographic ? (
         <TestingDefinitionDiagram language={language} />
+      ) : /^m1-(0[2-9]|10|11)$/.test(lesson.id) ? (
+        <Module1LessonInfographic lessonId={lesson.id} />
       ) : module5ImagePath || isTestTypesInfographic || isScrumContextInfographic || isSprintPlanningInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? (
         <div className="min-w-0 overflow-hidden bg-white p-2 sm:p-4">
           <div
