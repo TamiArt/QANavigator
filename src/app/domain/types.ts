@@ -3,6 +3,7 @@
 import type { QAProject } from "./project";
 
 export type Theme = "light" | "dark";
+export type Language = "ru" | "en";
 export type Module =
   | "workspace" | "beginner-wizard" | "requirements" | "test-design" | "test-execution"
   | "automation" | "release-report" | "test-data" | "database-workbench" | "handbook" | "documentation" | "settings";
@@ -61,6 +62,8 @@ export interface AppCtx {
   setSelectedTechnique: (t: string | null) => void;
   theme: Theme;
   toggleTheme: () => void;
+  language: Language;
+  setLanguage: (language: Language) => void;
   apiKeys: ApiKeys;
   setApiKeys: (k: ApiKeys) => void;
   projects: QAProject[];
