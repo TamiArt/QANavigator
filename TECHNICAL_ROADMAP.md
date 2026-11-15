@@ -92,15 +92,17 @@ Completed:
 - `tt2` testing-types content/template boundary fixed;
 - PR #14 handbook hierarchy refactor merged into `main`.
 
-Current development branch:
-`feat/learning-block-completion`
+Current development baseline (2026-11-15):
+- Product-code baseline branch: `feat/site-english-toggle-module1-infographic`.
+- Baseline HEAD: `12cd36be926d0e58349a5237dd385874ffb72b1b`.
+- Current documentation-only branch: `docs/browser-qa-platform-roadmap`.
+- The documentation branch records product direction and aligns README/APP_OVERVIEW with the checked application entry point and package scripts. No product feature implementation is included in this documentation task.
 
-Current active milestone:
-- finish Learning Mode navigation and accessibility hardening;
-- verify Module 6 title-only placeholder and Module 7 SQL lessons in the deployed UI;
-- enable continuous forward/backward navigation across module boundaries;
-- validate cross-module completion tracking and the full Learning Mode regression suite;
-- continue semantic infographic refinement without changing lesson source content.
+Current active documentation milestone:
+- keep the handbook/Learning Mode curriculum intact while adding official links to the named external tools;
+- distinguish implemented browser functionality from planned modules;
+- record the browser-only product blueprint and future roadmap;
+- do not start implementation until a separate explicit request.
 
 Verification baseline:
 - repository contains focused regression tests for architecture, storage, project context, handbook hierarchy and Learning Mode;
