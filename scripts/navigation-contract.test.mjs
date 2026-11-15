@@ -20,7 +20,7 @@ const navigation = await loadModule("src/app/domain/navigation.ts");
 
 test("navigation contract contains every application module exactly once", () => {
   const ids = navigation.APP_NAVIGATION_IDS;
-  assert.equal(ids.length, 12);
+  assert.equal(ids.length, 15);
   assert.equal(new Set(ids).size, ids.length);
   assert.deepEqual(JSON.parse(JSON.stringify(ids)), [
     "workspace",
@@ -31,7 +31,10 @@ test("navigation contract contains every application module exactly once", () =>
     "automation",
     "release-report",
     "test-data",
+    "api-testing",
     "database-workbench",
+    "backend-logs",
+    "integrations",
     "handbook",
     "documentation",
     "settings",
@@ -57,6 +60,10 @@ test("sidebar exposes the requested product areas and routes existing modules in
     "ИНТЕГРАЦИИ",
     "НАСТРОЙКИ",
   ]);
+  assert.equal(sections.find((section) => section.label === "API TESTING").directItemId, "api-testing");
+  assert.equal(sections.find((section) => section.label === "BACKEND & LOGS").directItemId, "backend-logs");
+  assert.equal(sections.find((section) => section.label === "ИНТЕГРАЦИИ").directItemId, "integrations");
+  assert.equal(sections.find((section) => section.label === "DATABASE & SQL").collapsible, true);
   assert.ok(sections.find((section) => section.label === "DATABASE & SQL").itemIds.includes("database-workbench"));
   assert.equal(sections.find((section) => section.label === "ГЕНЕРАТОР ТЕСТОВЫХ ДАННЫХ").directItemId, "test-data");
   assert.equal(sections.find((section) => section.label === "НАСТРОЙКИ").directItemId, "settings");
