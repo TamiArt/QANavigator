@@ -233,3 +233,58 @@ Java:
 - Документация и `TECHNICAL_ROADMAP.md` обновлены.
 - `npm run verify` проходит.
 - `main` не меняется до отдельного решения о merge.
+
+
+## 10. Verified integration capabilities and implementation rules (2026-11-15)
+
+This section records a documentation-level capability check against official vendor documentation. A capability being available in the vendor product does not mean the QA Navigator connector is already implemented.
+
+### Integration matrix
+
+| Service | Verified capability | Browser-only path | Important limits |
+|---|---|---|---|
+| Postman | Import/export of collections and environments as JSON; import of OpenAPI definitions; account REST API for collections/workspaces/environments | Primary: Postman Collection JSON + environment JSON import/export. Optional: open Postman web app. | Postman account API requires an API key and has plan/region/rate limits. It must not be required for core QA Navigator functionality. |
+| Swagger / OpenAPI | OpenAPI YAML/JSON; open-source Swagger Editor and Swagger UI; editor validation and interactive API documentation | Strongest direct integration: parse/validate OpenAPI locally, render Swagger UI or compatible docs, generate API Workbench requests; import/export spec files. | No account API is needed for local OpenAPI files. Actual endpoint "Try it" calls still depend on endpoint CORS/auth/network access. Swagger hosted team products may have plan constraints. |
+| Elasticsearch | HTTP REST API; CORS can be enabled by the Elasticsearch administrator and restricted to allowed origins | Optional direct read/search connection from browser to an instance with explicit CORS allowlist and appropriate authentication. Always support local log-file import as fallback. | CORS is disabled by default. Never recommend wildcard CORS for production. Do not ask users to weaken instance security. Authentication, TLS, permissions and deployment policy apply. |
+| Kibana | Documented REST API for resources such as data views, connectors and saved objects; CORS can be configured | Optional links/deep links and direct calls to documented public APIs where CORS and auth allow. Main integration should ingest exported logs/data into Log Analyzer. | CORS is disabled by default. Internal APIs may be restricted; only documented public APIs are acceptable. Kibana is not itself the log storage engine. |
+| Test IT | Public REST API, Swagger API documentation, API tokens; public methods can create tests and upload test execution results. Official docs describe API clients and Postman collection use cases. | Optional direct connector using user's Test IT instance URL and token, subject to browser CORS. Also support file-based exchange where the vendor/export format is confirmed. | API token required for authenticated API use; access and capabilities depend on instance/version/permissions. Do not embed or persist tokens in plain browser storage. Verify CORS on each instance. |
+
+### Official documentation checked
+
+- Postman import/export: https://learning.postman.com/docs/getting-started/importing-and-exporting/importing-and-exporting-overview
+- Postman API reference (API key requirement): https://learning.postman.com/api-docs/api-reference
+- Swagger Editor: https://swagger.io/open-source/swagger-editor/
+- Swagger UI: https://swagger.io/open-source/swagger-ui/
+- OpenAPI specification overview: https://swagger.io/docs/specification/v3_0/about/
+- Elasticsearch CORS/network settings: https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/networking-settings
+- Kibana REST API: https://www.elastic.co/docs/api/doc/kibana
+- Kibana CORS settings: https://www.elastic.co/docs/reference/kibana/configuration-reference/general-settings
+- Test IT public API: https://docs.testit.software/user-guide/work-with-api.html
+- Test IT API clients and integrations: https://docs.testit.software/user-guide/integrations/api-clients.html
+
+### Rules for all external integrations
+
+1. Every integration must have a useful no-connection path: file import/export, copyable configuration, or external link.
+2. Direct connection is opt-in and must explain required URL, permissions, authentication, CORS and data transfer before connecting.
+3. Do not require API keys for QA Navigator core features. A third-party connector may optionally require that vendor's token, but must never block local workflows.
+4. Do not store long-lived tokens in plain localStorage or IndexedDB. Prefer session-only credentials; explain browser storage limitations and allow users to clear them.
+5. Never bypass CORS, SSO, firewall, TLS, tenant policy or access control. Do not recommend wildcard CORS in production.
+6. Use only documented, supported vendor APIs; do not depend on internal endpoints or undocumented response shapes.
+7. Add per-connector capability detection and clear diagnostics: connected, CORS blocked, unauthorized, forbidden, unsupported API/version, network unavailable.
+8. Keep vendor integrations optional and avoid vendor lock-in. QAProject remains the source of truth; import/export should preserve portable data.
+9. Validate imported files, show an import preview, report unsupported fields and avoid silent data loss.
+10. Treat direct integrations as future work until implemented and tested against real supported instances.
+
+## 11. WebLLM and optional in-browser AI
+
+WebLLM is a JavaScript runtime for running open-weight language models inside the browser with WebGPU. It does not require installing a separate desktop application, but the browser must download model weights on first use and cache them locally. Depending on the model, this can require hundreds of MB to multiple GB, plus suitable GPU memory and browser support. Subsequent sessions may reuse the cached model, but browser storage can be cleared or evicted.
+
+Implementation rules:
+- AI stays disabled/optional by default; no core workflow depends on it.
+- Show model name, download size, progress, storage requirements and hardware compatibility before download.
+- Check WebGPU capability and provide a graceful fallback when unavailable.
+- Run inference in a Web Worker so the UI remains responsive.
+- Make it explicit that the first model download needs internet; after caching, inference can run locally/offline.
+- Do not claim that every browser/device will support local inference or that all models are small/fast.
+- Do not send user project data to a cloud provider without explicit consent.
+- Research license and model-specific usage terms before bundling or recommending a model.
