@@ -23,6 +23,8 @@ function flattenPostmanItems(items: unknown[], result: ImportedRequest[]) {
 export function IntegrationsModule() {
   const [summary, setSummary] = useState<ImportSummary | null>(null);
   const [requests, setRequests] = useState<ImportedRequest[]>([]);
+  const [postmanCollection, setPostmanCollection] = useState<unknown | null>(null);
+  const [sourceType, setSourceType] = useState<"postman" | "openapi" | null>(null);
   const [error, setError] = useState("");
   const [openApiText, setOpenApiText] = useState("");
   const [openApiName, setOpenApiName] = useState("");
@@ -42,6 +44,8 @@ export function IntegrationsModule() {
       const list: ImportedRequest[] = [];
       flattenPostmanItems((parsed as { item: unknown[] }).item, list);
       setRequests(list);
+      setPostmanCollection(parsed);
+      setSourceType("postman");
       setSummary({ kind: "Postman Collection", fileName: file.name, details: [`Найдено запросов: ${list.length}`, `Коллекция: ${String(((parsed as { info: Record<string, unknown> }).info).name ?? "без названия")}`] });
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Не удалось прочитать коллекцию."); }
     finally { setBusy(false); }
@@ -71,7 +75,7 @@ export function IntegrationsModule() {
   };
 
   const exportRequests = () => {
-    const collection = {
+    const collection = postmanCollection ?? {
       info: { name: "QA Navigator export", schema: "https://schema.getpostman.com/json/collection/v2.1.0/collection.json" },
       item: requests.map((request) => ({ name: request.name, request: { method: request.method, url: request.url } })),
     };
@@ -90,7 +94,7 @@ export function IntegrationsModule() {
         <div className="rounded-2xl border border-border bg-card p-4 space-y-3"><div className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary" /><h3 className="font-semibold">Test IT</h3></div><p className="text-sm text-muted-foreground">Поддержка API зависит от версии, прав и CORS конкретного экземпляра. На этом этапе доступна документация; прямое подключение и синхронизация ещё не реализованы.</p><a href="https://docs.testit.software/user-guide/work-with-api.html" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-primary">Документация Test IT API <ArrowUpRight className="h-3 w-3" /></a></div>
       </section>
       {error && <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{error}</div>}
-      {summary && <section className="rounded-2xl border border-border bg-card p-4 space-y-3"><div className="flex flex-wrap items-center justify-between gap-2"><div><p className="text-xs text-muted-foreground">Последний импорт</p><h3 className="font-semibold">{summary.kind}</h3><p className="text-xs text-muted-foreground">{summary.fileName}</p></div><CheckCircle2 className="h-5 w-5 text-emerald-500" /></div><ul className="space-y-1 text-sm">{summary.details.map((detail) => <li key={detail}>• {detail}</li>)}</ul>{requests.length > 0 && <><div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3"><p className="text-xs text-muted-foreground">Методы: {Object.entries(requestMethods).map(([method, count]) => `${method} ${count}`).join(" · ")}</p><button type="button" onClick={exportRequests} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground"><Download className="h-3.5 w-3.5" />Экспорт Postman JSON</button></div><div className="max-h-72 overflow-auto rounded-lg border border-border">{requests.map((request, index) => <div key={index} className="flex flex-wrap gap-2 border-b border-border p-2 text-xs last:border-0"><span className="w-16 font-bold text-primary">{request.method}</span><span className="min-w-0 flex-1 break-all">{request.name} — {request.url}</span></div>)}</div></>}</section>}
+      {summary && <section className="rounded-2xl border border-border bg-card p-4 space-y-3"><div className="flex flex-wrap items-center justify-between gap-2"><div><p className="text-xs text-muted-foreground">Последний импорт</p><h3 className="font-semibold">{summary.kind}</h3><p className="text-xs text-muted-foreground">{summary.fileName}</p></div><CheckCircle2 className="h-5 w-5 text-emerald-500" /></div><ul className="space-y-1 text-sm">{summary.details.map((detail) => <li key={detail}>• {detail}</li>)}</ul>{requests.length > 0 && <><div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3"><p className="text-xs text-muted-foreground">Методы: {Object.entries(requestMethods).map(([method, count]) => `${method} ${count}`).join(" · ")}</p>{sourceType === "postman" && <button type="button" onClick={exportRequests} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground"><Download className="h-3.5 w-3.5" />Экспорт исходной коллекции</button>}</div><div className="max-h-72 overflow-auto rounded-lg border border-border">{requests.map((request, index) => <div key={index} className="flex flex-wrap gap-2 border-b border-border p-2 text-xs last:border-0"><span className="w-16 font-bold text-primary">{request.method}</span><span className="min-w-0 flex-1 break-all">{request.name} — {request.url}</span></div>)}</div></>}</section>}
       {openApiText && <details className="rounded-xl border border-border bg-card p-4"><summary className="cursor-pointer text-sm font-medium">Просмотр спецификации: {openApiName}</summary><pre className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-muted p-3 text-xs">{openApiText}</pre></details>}
       <div className="rounded-xl border border-border bg-muted/30 p-3 text-xs text-muted-foreground"><strong className="text-foreground">Безопасность и совместимость.</strong> Прямые API-подключения к сторонним сервисам пока не реализованы. Не вставляйте долговременные токены в общие браузеры; не ослабляйте CORS и не обходите SSO, TLS, firewall или права доступа. Перед импортом проверяйте данные и предупреждения о неподдерживаемых полях.</div>
     </div>
