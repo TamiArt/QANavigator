@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { Activity, Clock3, Copy, Plus, Send, Trash2 } from "lucide-react";
+import { STORAGE_KEYS } from "../../core/constants";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
 type HeaderRow = { id: string; key: string; value: string };
 type SavedRequest = { id: string; name: string; method: HttpMethod; url: string; headers: HeaderRow[]; body: string; savedAt: string };
 type ApiResponse = { status: number; statusText: string; duration: number; size: number; headers: [string, string][]; body: string; ok: boolean; statusAssertion: boolean | null; bodyAssertion: boolean | null };
 
-const STORAGE_KEY = "qa_navigator_api_workbench_v1";
+const STORAGE_KEY = STORAGE_KEYS.apiWorkbench;
 const METHODS: HttpMethod[] = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"];
 const makeId = () => globalThis.crypto?.randomUUID?.() ?? `req-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
