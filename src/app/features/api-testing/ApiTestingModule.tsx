@@ -32,15 +32,19 @@ function sanitizeSavedRequest(request: SavedRequest): SavedRequest {
   const safeUrl = (() => {
     try {
       const parsed = new URL(request.url);
-      for (const key of [...parsed.searchParams.keys()]) {
+      const queryKeys: string[] = [];
+      parsed.searchParams.forEach((_value, key) => queryKeys.push(key));
+      for (const key of queryKeys) {
         if (/token|key|secret|password|auth/i.test(key)) parsed.searchParams.set(key, "[REDACTED]");
       }
+      if (parsed.username) parsed.username = "[REDACTED]";
+      if (parsed.password) parsed.password = "[REDACTED]";
       return parsed.toString();
     } catch { return request.url; }
   })();
   const safeHeaders = request.headers.map((header) => ({
     ...header,
-    value: /^(authorization|cookie|set-cookie|x-api-key|api-key)$/i.test(header.key.trim())
+    value: /authorization|cookie|api[-_]?key|token|secret/i.test(header.key.trim())
       ? "[REDACTED — введите повторно]" : header.value,
   }));
   let safeBody = request.body;
@@ -57,7 +61,7 @@ function sanitizeSavedRequest(request: SavedRequest): SavedRequest {
   } catch {
     safeBody = request.body.replace(/(password|token|secret|api[_-]?key)(\s*[:=]\s*)("[^"]*"|'[^']*'|[^\s,;]+)/gi, "$1$2[REDACTED]");
   }
-  return { ...request, url: safeUrl, headers: safeHeaders, body: safeBody };
+  return { ...request, name: request.name.replace(/([?&](?:token|key|secret|password|auth)=)[^&]+/gi, "$1[REDACTED]"), url: safeUrl, headers: safeHeaders, body: safeBody };
 }
 
 function escapeShell(value: string): string {
