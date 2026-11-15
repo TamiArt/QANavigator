@@ -151,3 +151,25 @@ export function isHandbookLearningProgressStorageValue(value: unknown): boolean 
   const data = unwrapCurrentStorageValue(value);
   return isRecord(data) && isStringArray(data.completedLessonIds);
 }
+
+export function isApiWorkbenchStorageValue(value: unknown): boolean {
+  const data = unwrapCurrentStorageValue(value);
+  const methods = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"];
+  return Array.isArray(data) && data.length <= 50 && data.every((item) => {
+    if (!isRecord(item)) return false;
+    return (
+      typeof item.id === "string" &&
+      typeof item.name === "string" &&
+      typeof item.method === "string" &&
+      methods.includes(item.method) &&
+      typeof item.url === "string" &&
+      typeof item.body === "string" &&
+      typeof item.savedAt === "string" &&
+      Array.isArray(item.headers) &&
+      item.headers.every((header) => isRecord(header) &&
+        typeof header.id === "string" &&
+        typeof header.key === "string" &&
+        typeof header.value === "string")
+    );
+  });
+}
