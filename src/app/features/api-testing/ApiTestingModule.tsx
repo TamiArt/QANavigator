@@ -4,7 +4,7 @@ import { Activity, Clock3, Copy, Plus, Send, Trash2 } from "lucide-react";
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
 type HeaderRow = { id: string; key: string; value: string };
 type SavedRequest = { id: string; name: string; method: HttpMethod; url: string; headers: HeaderRow[]; body: string; savedAt: string };
-type ApiResponse = { status: number; statusText: string; duration: number; size: number; headers: [string, string][]; body: string; ok: boolean };
+type ApiResponse = { status: number; statusText: string; duration: number; size: number; headers: [string, string][]; body: string; ok: boolean; statusAssertion: boolean | null; bodyAssertion: boolean | null };
 
 const STORAGE_KEY = "qa_navigator_api_workbench_v1";
 const METHODS: HttpMethod[] = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"];
@@ -73,11 +73,14 @@ export function ApiTestingModule() {
   const [url, setUrl] = useState("");
   const [headers, setHeaders] = useState<HeaderRow[]>([{ id: makeId(), key: "Accept", value: "application/json" }]);
   const [body, setBody] = useState('{\n  "example": true\n}');
+  const [environmentText, setEnvironmentText] = useState("{}");
+  const [expectedStatus, setExpectedStatus] = useState("");
+  const [responseContains, setResponseContains] = useState("");
   const [response, setResponse] = useState<ApiResponse | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState<SavedRequest[]>(readSaved);
-  const [activeTab, setActiveTab] = useState<"headers" | "body" | "history">("headers");
+  const [activeTab, setActiveTab] = useState<"headers" | "body" | "environment" | "history">("headers");
 
   const requestCount = saved.length;
   const curl = useMemo(() => {
@@ -96,9 +99,21 @@ export function ApiTestingModule() {
   const sendRequest = async () => {
     setError("");
     setResponse(null);
+    let variables: Record<string, string>;
+    try {
+      const parsedEnvironment: unknown = JSON.parse(environmentText);
+      if (!parsedEnvironment || typeof parsedEnvironment !== "object" || Array.isArray(parsedEnvironment)) throw new Error("Окружение должно быть JSON-объектом.");
+      variables = Object.fromEntries(Object.entries(parsedEnvironment as Record<string, unknown>).map(([key, value]) => [key, String(value)]));
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Проверьте JSON окружения.");
+      return;
+    }
+    const resolveVariables = (value: string) => value.replace(/\{\{([^{}]+)\}\}/g, (match, key: string) => variables[key.trim()] ?? match);
+    const resolvedUrl = resolveVariables(url);
+    const resolvedBody = resolveVariables(body);
     let parsedUrl: URL;
     try {
-      parsedUrl = new URL(url);
+      parsedUrl = new URL(resolvedUrl);
       if (!["http:", "https:"].includes(parsedUrl.protocol)) throw new Error("Поддерживаются только HTTP и HTTPS.");
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Укажите корректный URL, включая https://.");
@@ -106,13 +121,13 @@ export function ApiTestingModule() {
     }
 
     let requestHeaders: Headers;
-    try { requestHeaders = parseHeaders(headers); }
+    try { requestHeaders = parseHeaders(headers.map((item) => ({ ...item, value: resolveVariables(item.value) }))); }
     catch { setError("Проверьте названия и значения HTTP-заголовков."); return; }
 
     if (!["GET", "HEAD"].includes(method) && body.trim()) {
       const contentType = requestHeaders.get("content-type");
       if (contentType?.includes("application/json")) {
-        try { JSON.parse(body); } catch { setError("Тело запроса не является корректным JSON."); return; }
+        try { JSON.parse(resolvedBody); } catch { setError("Тело запроса не является корректным JSON."); return; }
       }
     }
 
@@ -124,7 +139,7 @@ export function ApiTestingModule() {
       const result = await fetch(parsedUrl, {
         method,
         headers: requestHeaders,
-        body: ["GET", "HEAD"].includes(method) ? undefined : body || undefined,
+        body: ["GET", "HEAD"].includes(method) ? undefined : resolvedBody || undefined,
         signal: controller.signal,
       });
       const raw = method === "HEAD" ? "" : await result.text();
@@ -140,6 +155,8 @@ export function ApiTestingModule() {
         headers: responseHeaders,
         body: formatted,
         ok: result.ok,
+        statusAssertion: expectedStatus.trim() ? result.status === Number(expectedStatus) : null,
+        bodyAssertion: responseContains.trim() ? formatted.includes(responseContains) : null,
       });
       const record: SavedRequest = { id: makeId(), name: `${method} ${parsedUrl.pathname}`, method, url, headers, body, savedAt: new Date().toISOString() };
       updateSaved([sanitizeSavedRequest(record), ...saved].slice(0, 50));
@@ -192,7 +209,7 @@ export function ApiTestingModule() {
         </div>
 
         <div className="flex flex-wrap gap-2 border-b border-border">
-          {(["headers", "body", "history"] as const).map((tab) => <button key={tab} type="button" onClick={() => setActiveTab(tab)} className={`px-3 py-2 text-sm border-b-2 -mb-px ${activeTab === tab ? "border-primary text-primary font-medium" : "border-transparent text-muted-foreground"}`}>{tab === "headers" ? `Headers (${headers.length})` : tab === "body" ? "Body" : `История (${requestCount})`}</button>)}
+          {(["headers", "body", "environment", "history"] as const).map((tab) => <button key={tab} type="button" onClick={() => setActiveTab(tab)} className={`px-3 py-2 text-sm border-b-2 -mb-px ${activeTab === tab ? "border-primary text-primary font-medium" : "border-transparent text-muted-foreground"}`}>{tab === "headers" ? `Headers (${headers.length})` : tab === "body" ? "Body" : tab === "environment" ? "Environment" : `История (${requestCount})`}</button>)}
         </div>
 
         {activeTab === "headers" && <div className="space-y-2">
@@ -206,6 +223,8 @@ export function ApiTestingModule() {
 
         {activeTab === "body" && <div className="space-y-2"><p className="text-xs text-muted-foreground">Для GET и HEAD тело запроса не отправляется. JSON проверяется перед отправкой, если указан Content-Type: application/json.</p><textarea value={body} onChange={(event) => setBody(event.target.value)} rows={9} spellCheck={false} className="w-full rounded-lg border border-border bg-background p-3 font-mono text-xs" /></div>}
 
+        {activeTab === "environment" && <div className="space-y-2"><p className="text-xs text-muted-foreground">JSON-объект переменных окружения. Подставляйте значения в URL, заголовки и тело через синтаксис <code>{'{{variable}}'}</code>. Значения хранятся только в памяти текущей страницы и не записываются в историю.</p><textarea value={environmentText} onChange={(event) => setEnvironmentText(event.target.value)} rows={8} spellCheck={false} className="w-full rounded-lg border border-border bg-background p-3 font-mono text-xs" placeholder='{"baseUrl":"https://api.example.com","token":"..."}' /></div>}
+
         {activeTab === "history" && <div className="space-y-2">{saved.length === 0 ? <p className="text-sm text-muted-foreground py-5 text-center">История пока пуста. Отправьте запрос или сохраните его вручную.</p> : saved.map((item) => <div key={item.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-border p-3">
           <span className="rounded bg-muted px-2 py-1 text-[11px] font-bold">{item.method}</span><span className="min-w-0 flex-1 truncate text-sm">{item.url}</span><span className="text-xs text-muted-foreground">{new Date(item.savedAt).toLocaleString()}</span><button type="button" onClick={() => loadRequest(item)} className="text-xs text-primary">Загрузить</button><button type="button" aria-label="Удалить запрос из истории" onClick={() => updateSaved(saved.filter((entry) => entry.id !== item.id))} className="p-1 text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
         </div>)}</div>}
@@ -218,8 +237,11 @@ export function ApiTestingModule() {
 
       {error && <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{error}</div>}
 
+      <section className="rounded-2xl border border-border bg-card p-4 space-y-3"><h3 className="font-semibold text-sm">Проверки ответа (Assertions)</h3><div className="grid gap-2 sm:grid-cols-2"><label className="text-xs text-muted-foreground">Ожидаемый HTTP status<input inputMode="numeric" value={expectedStatus} onChange={(event) => setExpectedStatus(event.target.value.replace(/[^0-9]/g, ""))} placeholder="Например, 200" className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground" /></label><label className="text-xs text-muted-foreground">Ответ должен содержать<input value={responseContains} onChange={(event) => setResponseContains(event.target.value)} placeholder='Например, "success"' className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground" /></label></div></section>
+
       {response && <section className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3"><h3 className="font-semibold">Ответ сервера</h3><div className="flex flex-wrap gap-2 text-xs"><span className={`rounded-lg px-2.5 py-1.5 font-semibold ${response.ok ? "bg-emerald-500/10 text-emerald-600" : "bg-destructive/10 text-destructive"}`}>HTTP {response.status} {response.statusText}</span><span className="rounded-lg bg-muted px-2.5 py-1.5"><Clock3 className="inline w-3 h-3 mr-1" />{response.duration} ms</span><span className="rounded-lg bg-muted px-2.5 py-1.5">{response.size.toLocaleString()} bytes</span></div></div>
+        {(response.statusAssertion !== null || response.bodyAssertion !== null) && <div className="flex flex-wrap gap-2 text-xs">{response.statusAssertion !== null && <span className={response.statusAssertion ? "rounded-lg bg-emerald-500/10 px-2.5 py-1.5 text-emerald-600" : "rounded-lg bg-destructive/10 px-2.5 py-1.5 text-destructive"}>Status assertion: {response.statusAssertion ? "PASS" : "FAIL"}</span>}{response.bodyAssertion !== null && <span className={response.bodyAssertion ? "rounded-lg bg-emerald-500/10 px-2.5 py-1.5 text-emerald-600" : "rounded-lg bg-destructive/10 px-2.5 py-1.5 text-destructive"}>Body contains: {response.bodyAssertion ? "PASS" : "FAIL"}</span>}</div>}
         <div><div className="mb-2 flex items-center justify-between"><h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Response body</h4><button type="button" onClick={() => void copy(response.body)} className="text-xs text-primary"><Copy className="inline w-3 h-3 mr-1" />Копировать</button></div><pre className="max-h-[520px] overflow-auto rounded-xl bg-muted/60 p-4 text-xs leading-relaxed whitespace-pre-wrap break-words">{response.body || "(пустое тело ответа)"}</pre></div>
         <details className="rounded-lg border border-border p-3"><summary className="cursor-pointer text-sm font-medium">Response headers ({response.headers.length})</summary><div className="mt-3 space-y-2">{response.headers.map(([key, value]) => <div key={key} className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-1 text-xs"><span className="font-mono text-muted-foreground">{key}</span><span className="break-all">{value}</span></div>)}</div></details>
       </section>}
