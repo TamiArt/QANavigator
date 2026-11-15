@@ -14,6 +14,17 @@ const appSource = await readFile("src/app/App.tsx", "utf8");
 const nestedBuilderSource = await readFile("src/app/features/database-workbench/nested-subquery-builder.mjs", "utf8");
 const ddlDmlBuilderSource = await readFile("src/app/features/database-workbench/ddl-dml-builder.mjs", "utf8");
 
+test("DATABASE & SQL is a direct sidebar destination and the database page has three separate work areas", () => {
+  assert.ok(appSource.includes('case "database-workbench": return <DatabaseWorkbenchModule />;'));
+  assert.ok(source.includes('useState<"builder" | "reference" | "qa-queries">("builder")'));
+  assert.ok(source.includes('title: "Шпаргалка SQL"'));
+  assert.ok(source.includes('title: "Частые SQL-запросы для QA"'));
+  assert.ok(source.includes('Наиболее частые SQL-запросы для тестировщика'));
+  assert.ok(source.includes('const filteredQaQueries = frequentQueries.filter'));
+  assert.ok(source.includes('tab === "qa-queries"'));
+  assert.ok(source.includes('Что сверять после проверки'));
+});
+
 test("database workbench exposes practical SQL operations", () => {
   for (const operation of ["SELECT", "JOIN", "INSERT", "UPDATE", "DELETE", "RENAME", "AS"]) {
     assert.ok(source.includes(operation), "workbench is missing " + operation);
