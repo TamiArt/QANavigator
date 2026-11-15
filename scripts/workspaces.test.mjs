@@ -25,9 +25,13 @@ test("integrations page supports Postman JSON import/export and distinguishes pl
   }
 });
 
-test("application shell routes all new pages and keeps the database workbench under an expandable section", async () => {
+test("application shell routes all new pages and exposes DATABASE & SQL as a direct sidebar item", async () => {
   const app = await read("../src/app/App.tsx");
-  for (const token of ["<ApiTestingModule />", "<BackendLogsModule />", "<IntegrationsModule />", "section.collapsible", "aria-expanded"]) {
-    assert.ok(app.includes(token), `Missing application navigation wiring: ${token}`);
+  const navigation = await read("../src/app/domain/navigation.ts");
+  for (const token of ["<ApiTestingModule />", "<BackendLogsModule />", "<IntegrationsModule />", "case \"database-workbench\": return <DatabaseWorkbenchModule />;"]) {
+    assert.ok(app.includes(token), `Missing application module wiring: ${token}`);
   }
+  assert.ok(navigation.includes('{ label: "DATABASE & SQL", directItemId: "database-workbench" }'), "DATABASE & SQL must open directly from the sidebar");
+  assert.ok(navigation.includes('{ id: "database-workbench", label: "DATABASE & SQL", labelEn: "DATABASE & SQL" }'), "The direct sidebar item must keep the DATABASE & SQL label");
+  assert.equal(app.includes("section.collapsible"), false, "DATABASE & SQL is not an expandable section");
 });
