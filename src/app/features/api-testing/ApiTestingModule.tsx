@@ -28,6 +28,37 @@ function parseHeaders(rows: HeaderRow[]): Headers {
   return headers;
 }
 
+function sanitizeSavedRequest(request: SavedRequest): SavedRequest {
+  const safeUrl = (() => {
+    try {
+      const parsed = new URL(request.url);
+      for (const key of [...parsed.searchParams.keys()]) {
+        if (/token|key|secret|password|auth/i.test(key)) parsed.searchParams.set(key, "[REDACTED]");
+      }
+      return parsed.toString();
+    } catch { return request.url; }
+  })();
+  const safeHeaders = request.headers.map((header) => ({
+    ...header,
+    value: /^(authorization|cookie|set-cookie|x-api-key|api-key)$/i.test(header.key.trim()) ? "[REDACTED — введите повторно]" : header.value,
+  }));
+  let safeBody = request.body;
+  try {
+    const redact = (value: unknown): unknown => {
+      if (Array.isArray(value)) return value.map(redact);
+      if (!value || typeof value !== "object") return value;
+      return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, item]) =>
+        [/password|token|secret|api[_-]?key|client_secret|authorization/i.test(key) ? key : "", key].filter(Boolean).length
+          ? [key, "[REDACTED]"] : [key, redact(item)]
+      ));
+    };
+    safeBody = JSON.stringify(redact(JSON.parse(request.body)), null, 2);
+  } catch {
+    safeBody = request.body.replace(/(password|token|secret|api[_-]?key)(\\s*[:=]\\s*)("[^"]*"|'[^']*'|[^\\s,;]+)/gi, "$1$2[REDACTED]");
+  }
+  return { ...request, url: safeUrl, headers: safeHeaders, body: safeBody };
+}
+
 function escapeShell(value: string): string {
   return "'" + value.replace(/'/g, "'\\''") + "'";
 }
@@ -106,7 +137,7 @@ export function ApiTestingModule() {
         ok: result.ok,
       });
       const record: SavedRequest = { id: makeId(), name: `${method} ${parsedUrl.pathname}`, method, url, headers, body, savedAt: new Date().toISOString() };
-      updateSaved([record, ...saved].slice(0, 50));
+      updateSaved([sanitizeSavedRequest(record), ...saved].slice(0, 50));
     } catch (reason) {
       const message = reason instanceof Error ? reason.message : "Неизвестная ошибка запроса.";
       setError(controller.signal.aborted
@@ -120,7 +151,7 @@ export function ApiTestingModule() {
 
   const saveCurrent = () => {
     if (!url.trim()) { setError("Сначала укажите URL запроса."); return; }
-    updateSaved([{ id: makeId(), name: `${method} ${url}`, method, url, headers, body, savedAt: new Date().toISOString() }, ...saved].slice(0, 50));
+    updateSaved([sanitizeSavedRequest({ id: makeId(), name: `${method} ${url}`, method, url, headers, body, savedAt: new Date().toISOString() }), ...saved].slice(0, 50));
     setError("");
   };
 
@@ -188,7 +219,7 @@ export function ApiTestingModule() {
         <details className="rounded-lg border border-border p-3"><summary className="cursor-pointer text-sm font-medium">Response headers ({response.headers.length})</summary><div className="mt-3 space-y-2">{response.headers.map(([key, value]) => <div key={key} className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-1 text-xs"><span className="font-mono text-muted-foreground">{key}</span><span className="break-all">{value}</span></div>)}</div></details>
       </section>}
 
-      <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-muted-foreground"><strong className="text-foreground">Ограничения браузера.</strong> Запросы выполняются напрямую с текущего сайта. Если сервер не разрешает CORS, браузер заблокирует чтение ответа. Это нельзя исправить настройкой внутри QA Navigator. Не вставляйте production-секреты в запросы на общедоступных устройствах.</div>
+      <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-muted-foreground"><strong className="text-foreground">Ограничения браузера.</strong> Запросы выполняются напрямую с текущего сайта. Если сервер не разрешает CORS, браузер заблокирует чтение ответа. Это нельзя исправить настройкой внутри QA Navigator. Заголовки Authorization/Cookie/API-Key, секретные query-параметры и чувствительные поля JSON маскируются в локальной истории; при повторной загрузке их нужно ввести заново. Не вставляйте production-секреты на общедоступных устройствах.</div>
     </div>
   );
 }
