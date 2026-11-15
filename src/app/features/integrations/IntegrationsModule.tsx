@@ -82,7 +82,7 @@ export function IntegrationsModule() {
     try {
       if (file.size > 5 * 1024 * 1024) throw new Error("Файл больше 5 МБ.");
       const text = await file.text();
-      const isYaml = /\\.ya?ml$/i.test(file.name);
+      const isYaml = /\.ya?ml$/i.test(file.name);
       const parsed: unknown = isYaml ? parseYaml(text) : JSON.parse(text);
       setPostmanCollection(null);
       setSourceType("openapi");
