@@ -150,20 +150,20 @@ const memoOperatorGroups = [
   {
     group: "Группы SQL-команд",
     items: [
-      { title: " — чтение данных", syntax: "SELECT", note: "Получает данные из таблиц, представлений или подзапросов. Не изменяет сохранённые данные." },
-      { title: " — изменение данных", syntax: "INSERT", note: "Добавляет новые строки в таблицу." },
-      { title: " — изменение данных", syntax: "UPDATE имя_таблицы\nSET столбец1 = значение1,\n    столбец2 = значение2\nWHERE условие;", note: "Обновляет значения в одной или нескольких существующих строках. UPDATE указывает таблицу, SET задаёт новые значения столбцов, а WHERE ограничивает строки для изменения. Без WHERE будут обновлены все строки таблицы." },
+      { title: "Чтение данных", syntax: "SELECT", note: "Получает данные из таблиц, представлений или подзапросов. Не изменяет сохранённые данные." },
+      { title: "Добавление данных", syntax: "INSERT", note: "Добавляет новые строки в таблицу." },
+      { title: "Изменение данных", syntax: "UPDATE имя_таблицы\nSET столбец1 = значение1,\n    столбец2 = значение2\nWHERE условие;", note: "Обновляет значения в одной или нескольких существующих строках. UPDATE указывает таблицу, SET задаёт новые значения столбцов, а WHERE ограничивает строки для изменения. Без WHERE будут обновлены все строки таблицы." },
       { title: "SET — присвоение значений", syntax: "SET столбец1 = значение1, столбец2 = значение2", note: "Ключевое слово внутри UPDATE: задаёт новые значения одного или нескольких столбцов. Пары «столбец = значение» разделяются запятыми. SET не является самостоятельной командой изменения данных — используется вместе с UPDATE." },
-      { title: " — изменение данных", syntax: "DELETE", note: "Удаляет строки из таблицы. Без WHERE может удалить все строки." },
-      { title: " — структура БД", syntax: "CREATE", note: "Создаёт объект БД: таблицу, представление, индекс, схему и другие объекты." },
-      { title: " — структура БД", syntax: "ALTER", note: "Изменяет структуру существующего объекта: добавляет, удаляет или меняет столбцы и ограничения." },
-      { title: " — структура БД", syntax: "DROP", note: "Удаляет объект БД целиком, например таблицу или представление, вместе с его структурой." },
-      { title: " — структура БД", syntax: "TRUNCATE", note: "Быстро удаляет все строки таблицы, сохраняя саму таблицу. Детали отката и счётчиков зависят от СУБД." },
-      { title: " — права доступа", syntax: "GRANT / REVOKE", note: "GRANT выдаёт права пользователю или роли; REVOKE отзывает ранее выданные права." },
-      { title: " — транзакции", syntax: "BEGIN / START TRANSACTION", note: "Начинает транзакцию — логически объединённую последовательность операций." },
-      { title: " — транзакции", syntax: "COMMIT", note: "Подтверждает транзакцию и сохраняет её изменения." },
-      { title: " — транзакции", syntax: "ROLLBACK", note: "Отменяет неподтверждённые изменения текущей транзакции." },
-      { title: " — транзакции", syntax: "SAVEPOINT / ROLLBACK TO SAVEPOINT", note: "Создаёт точку сохранения внутри транзакции и позволяет откатиться к ней, не отменяя всю транзакцию." },
+      { title: "Удаление данных", syntax: "DELETE", note: "Удаляет строки из таблицы. Без WHERE может удалить все строки." },
+      { title: "Создание объекта БД", syntax: "CREATE", note: "Создаёт объект БД: таблицу, представление, индекс, схему и другие объекты." },
+      { title: "Изменение структуры БД", syntax: "ALTER", note: "Изменяет структуру существующего объекта: добавляет, удаляет или меняет столбцы и ограничения." },
+      { title: "Удаление объекта БД", syntax: "DROP", note: "Удаляет объект БД целиком, например таблицу или представление, вместе с его структурой." },
+      { title: "Очистка таблицы", syntax: "TRUNCATE", note: "Быстро удаляет все строки таблицы, сохраняя саму таблицу. Детали отката и счётчиков зависят от СУБД." },
+      { title: "Управление правами доступа", syntax: "GRANT / REVOKE", note: "GRANT выдаёт права пользователю или роли; REVOKE отзывает ранее выданные права." },
+      { title: "Начало транзакции", syntax: "BEGIN / START TRANSACTION", note: "Начинает транзакцию — логически объединённую последовательность операций." },
+      { title: "Подтверждение транзакции", syntax: "COMMIT", note: "Подтверждает транзакцию и сохраняет её изменения." },
+      { title: "Отмена изменений", syntax: "ROLLBACK", note: "Отменяет неподтверждённые изменения текущей транзакции." },
+      { title: "Точка сохранения транзакции", syntax: "SAVEPOINT / ROLLBACK TO SAVEPOINT", note: "Создаёт точку сохранения внутри транзакции и позволяет откатиться к ней, не отменяя всю транзакцию." },
     ],
   },
   {
@@ -741,17 +741,21 @@ export function DatabaseWorkbenchModule() {
   const filteredMemoGroups = memoOperatorGroups.map((group) => ({
     ...group,
     items: group.items.filter((item) => {
+      const matchesSearch = (group.group + item.title + item.syntax + item.note).toLocaleLowerCase("ru").includes(search.toLocaleLowerCase("ru"));
+      if (!matchesSearch) return false;
       const keys = [normalizeReference(item.title), normalizeReference(item.syntax)];
       if (keys.some((key) => referenceKeys.has(key))) return false;
       keys.forEach((key) => referenceKeys.add(key));
-      return (group.group + item.title + item.syntax + item.note).toLocaleLowerCase("ru").includes(search.toLocaleLowerCase("ru"));
+      return true;
     }),
   })).filter((group) => group.items.length > 0);
   const filteredFrequentQueries = frequentQueries.filter((item) => {
+    const matchesSearch = (item.title + item.group + item.sql + item.note).toLocaleLowerCase("ru").includes(search.toLocaleLowerCase("ru"));
+    if (!matchesSearch) return false;
     const keys = [normalizeReference(item.title), normalizeReference(item.sql)];
     if (keys.some((key) => referenceKeys.has(key))) return false;
     keys.forEach((key) => referenceKeys.add(key));
-    return (item.title + item.group + item.sql + item.note).toLocaleLowerCase("ru").includes(search.toLocaleLowerCase("ru"));
+    return true;
   });
 
   return (
