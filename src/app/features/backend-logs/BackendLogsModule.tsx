@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { AlertTriangle, Download, FileSearch, Filter, Search, ShieldCheck, Trash2 } from "lucide-react";
+import { AlertTriangle, Download, FileSearch, Search, ShieldCheck, Trash2 } from "lucide-react";
 
 type LogLevel = "ERROR" | "WARN" | "INFO" | "DEBUG" | "TRACE" | "UNKNOWN";
 type LogEntry = { id: number; timestamp: string; level: LogLevel; service: string; message: string; raw: string; requestId: string };
