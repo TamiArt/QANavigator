@@ -61,7 +61,7 @@ function sanitizeSavedRequest(request: SavedRequest): SavedRequest {
   } catch {
     safeBody = request.body.replace(/(password|token|secret|api[_-]?key)(\s*[:=]\s*)("[^"]*"|'[^']*'|[^\s,;]+)/gi, "$1$2[REDACTED]");
   }
-  return { ...request, name: request.name.replace(/([?&](?:token|key|secret|password|auth)=)[^&]+/gi, "$1[REDACTED]"), url: safeUrl, headers: safeHeaders, body: safeBody };
+  return { ...request, name: request.name.replace(/:\/\/[^/@\\s]+@/g, "://[REDACTED]@").replace(/([?&](?:token|key|secret|password|auth)=)[^&]+/gi, "$1[REDACTED]"), url: safeUrl, headers: safeHeaders, body: safeBody };
 }
 
 function escapeShell(value: string): string {
