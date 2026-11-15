@@ -20,7 +20,7 @@ test("backend log analyzer processes selected files locally and masks common sen
 
 test("integrations page supports Postman JSON import/export and distinguishes planned direct connectors", async () => {
   const source = await read("../src/app/features/integrations/IntegrationsModule.tsx");
-  for (const token of ["Postman Collection", "schema.getpostman.com", "OpenAPI JSON", "Структурный разбор YAML", "CORS", "Test IT"]) {
+  for (const token of ["Postman Collection", "schema.getpostman.com", "OpenAPI JSON", "parseYaml", "CORS", "Test IT"]) {
     assert.ok(source.includes(token), `Missing integration capability or limitation: ${token}`);
   }
 });
