@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import {
-  ArrowUp, BarChart2, BookOpen, Brain, CheckSquare, Clipboard, Database, FileText,
-  GraduationCap, Key, Menu, Moon, Play, Settings, Shield, Sun, TableProperties, Terminal,
+  ArrowUp, BarChart2, BookOpen, Brain, CheckSquare, Clipboard, Code2, Database, FileText,
+  GraduationCap, Key, Menu, Moon, Play, Plug, Server, Settings, Shield, Sun, TableProperties, Terminal,
+  ChevronDown, ChevronRight,
 } from "lucide-react";
 import { ProjectWorkspace } from "./features/project-workspace/ProjectWorkspace";
 import { BeginnerWizard } from "./features/beginner-wizard/BeginnerWizard";
@@ -16,6 +17,9 @@ import { DatabaseWorkbenchModule } from "./features/database-workbench/DatabaseW
 import { HandbookModule } from "./features/handbook/HandbookModule";
 import { DocumentationModule } from "./features/documentation/DocumentationModule";
 import { SettingsModule } from "./features/settings/SettingsModule";
+import { ApiTestingModule } from "./features/api-testing/ApiTestingModule";
+import { BackendLogsModule } from "./features/backend-logs/BackendLogsModule";
+import { IntegrationsModule } from "./features/integrations/IntegrationsModule";
 import { ApiModal } from "./components/ApiModal";
 import { Tooltip } from "./components/shared";
 import { AppContext } from "./core/app-context";
@@ -49,6 +53,9 @@ const NAV_ICONS: Record<Module, ReactNode> = {
   "release-report": <BarChart2 className="w-4 h-4" />,
   "test-data": <Database className="w-4 h-4" />,
   "database-workbench": <TableProperties className="w-4 h-4" />,
+  "api-testing": <Code2 className="w-4 h-4" />,
+  "backend-logs": <Server className="w-4 h-4" />,
+  integrations: <Plug className="w-4 h-4" />,
   handbook: <BookOpen className="w-4 h-4" />,
   documentation: <FileText className="w-4 h-4" />,
   settings: <Settings className="w-4 h-4" />,
@@ -97,6 +104,7 @@ export default function App() {
   );
   const [showApiModal, setShowApiModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({ "DATABASE & SQL": true });
   const mainScrollRef = useRef<HTMLElement | null>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const handleMainScroll = () => setShowBackToTop((mainScrollRef.current?.scrollTop ?? 0) > 320);
@@ -172,6 +180,9 @@ export default function App() {
       case "release-report": return <ReleaseReportModule />;
       case "test-data": return <TestDataModule />;
       case "database-workbench": return <DatabaseWorkbenchModule />;
+      case "api-testing": return <ApiTestingModule />;
+      case "backend-logs": return <BackendLogsModule />;
+      case "integrations": return <IntegrationsModule />;
       case "handbook": return <HandbookModule />;
       case "documentation": return <DocumentationModule />;
       case "settings": return <SettingsModule />;
@@ -204,17 +215,25 @@ export default function App() {
                 : undefined;
               if (directItem) {
                 return (
-                  <button key={section.label} onClick={() => { setActiveModule(directItem.id); setSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${activeModule === directItem.id ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"}`}>
+                  <button key={section.label} type="button" aria-current={activeModule === directItem.id ? "page" : undefined} onClick={() => { setActiveModule(directItem.id); setSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${activeModule === directItem.id ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"}`}>
                     {directItem.icon}
                     <span className="truncate">{language === "en" ? directItem.labelEn : directItem.label}</span>
                   </button>
                 );
               }
+              const expanded = Boolean(expandedSections[section.label]);
               return (
                 <section key={section.label} className="space-y-0.5">
-                  <h2 className="px-3 pt-3 pb-1 text-[10px] font-semibold tracking-wider text-muted-foreground/80">{section.label}</h2>
-                  {sectionItems.map((item) => (
-                    <button key={item.id} onClick={() => { setActiveModule(item.id); setSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${activeModule === item.id ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"}`}>
+                  {section.collapsible ? (
+                    <button type="button" aria-expanded={expanded} onClick={() => setExpandedSections((current) => ({ ...current, [section.label]: !current[section.label] }))} className="flex w-full items-center justify-between rounded-lg px-3 pt-3 pb-1 text-left text-[10px] font-semibold tracking-wider text-muted-foreground/80 hover:text-foreground">
+                      <span>{language === "en" ? section.labelEn ?? section.label : section.label}</span>
+                      {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                    </button>
+                  ) : (
+                    <h2 className="px-3 pt-3 pb-1 text-[10px] font-semibold tracking-wider text-muted-foreground/80">{language === "en" ? section.labelEn ?? section.label : section.label}</h2>
+                  )}
+                  {(!section.collapsible || expanded) && sectionItems.map((item) => (
+                    <button key={item.id} type="button" aria-current={activeModule === item.id ? "page" : undefined} onClick={() => { setActiveModule(item.id); setSidebarOpen(false); }} className={`w-full flex items-center gap-3 rounded-xl py-2.5 pl-5 pr-3 text-sm transition-all ${activeModule === item.id ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"}`}>
                       {item.icon}
                       <span className="truncate">{language === "en" ? item.labelEn : item.label}</span>
                       {item.id === "test-execution" && checklists.some((c) => c.status === "failed") && <span className="ml-auto text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full font-mono">{checklists.filter((c) => c.status === "failed").length}</span>}

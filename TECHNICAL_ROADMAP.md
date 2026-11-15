@@ -2165,3 +2165,24 @@ Validation: run npm run test:module1-infographics and full npm run verify; inspe
 - Never bypass CORS, SSO, TLS, firewall or vendor permissions. Do not recommend wildcard CORS for production. Use only documented public APIs.
 - Direct integrations remain planned until implemented and verified against supported instances. Always retain file/link fallback and import preview.
 - Browser-only AI such as WebLLM is optional. Explain first model download, browser cache, WebGPU/hardware requirements and offline inference limitations. Core functionality must work without it.
+
+
+## 12. Initial implementation — API, Backend & Logs, Integrations (2026-11-15)
+
+**Status: FUNCTIONAL FOUNDATION IMPLEMENTED; full target scope remains in progress.**
+
+- Added three first-class application destinations: `api-testing`, `backend-logs`, and `integrations`; each is routed through the application shell like other feature modules.
+- Converted DATABASE & SQL into an expandable sidebar group with the existing `database-workbench` page nested under it. The existing SQL workbench and its data model were not replaced.
+- API Workbench now sends browser HTTP requests for common methods, supports editable headers and request body, in-memory environment variables, basic status/body assertions, JSON validation when JSON content type is selected, response status/body/headers/size/duration, bounded local request history with sensitive-value redaction, and cURL copy. CORS and network restrictions are reported as browser limitations.
+- Backend & Logs reads user-selected files locally, supports plain text and JSON-line style parsing, extracts common timestamp/level/service/request/trace fields, masks common secrets and email addresses in displayed/exported rows, filters events, groups repeated errors and exports filtered CSV. Input is limited to 20 MB and 250,000 non-empty lines; raw files are not persisted.
+- Integrations supports Postman Collection v2.1 JSON import and round-trip export of the original collection, OpenAPI 3.x YAML/JSON parsing and operation extraction, plus Postman Environment JSON import/export. It provides official links for Postman, Swagger Editor, Elasticsearch, Kibana and Test IT.
+- Added navigation and workspace regression assertions and included `test:workspaces` in `npm run verify`; added an API-history storage validator and included the new history key in backup export/import.
+
+Known scope still to implement before these areas match the complete Product Blueprint:
+- API collections/folders, authentication helpers, reusable schema/business assertions, sequential collection runner, linking requests/results to QAProject entities.
+- Full OpenAPI schema validation, generated API requests in the API Workbench, contract assertions and specification diff.
+- Log parsing profiles for structured CSV and vendor-specific formats, large-file streaming/Web Worker, richer correlation and time-window analytics.
+- Direct external connectors only where documented APIs, CORS, authentication and security policy permit; Test IT/Elasticsearch/Kibana synchronization is not implemented.
+- IndexedDB-backed project-scoped persistence and migrations for new large QA entities remain part of the shared data-foundation work.
+
+Validation status: source and regression tests have been added, but this remote editing session has not run `npm run verify`, TypeScript, or a production build. Do not mark the milestone production-verified until those checks and desktop/mobile browser QA pass.

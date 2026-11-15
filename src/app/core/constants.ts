@@ -48,6 +48,7 @@ export const STORAGE_KEYS = {
   theme: "qa_nav_theme",
   language: "qa_nav_language",
   apiKeys: "qa_nav_apikeys",
+  apiWorkbench: "qa_navigator_api_workbench_v1",
   projects: "qa_navigator_projects",
   activeProject: "qa_navigator_active_project",
   checklists: "qa_navigator_checklists",
@@ -68,6 +69,7 @@ export const EXPORTABLE_STORAGE_KEYS = [
   "qa_navigator_bookmarks",
   "qa_navigator_req_text",
   "qa_navigator_req_result",
+  "qa_navigator_api_workbench_v1",
 ] as const;
 
 // ══════════════════════════════════════════════════════
