@@ -196,10 +196,23 @@ export default function App() {
           </div>
           <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
             {APP_NAVIGATION_SECTIONS.map((section) => {
-              const sectionItems = NAV_ITEMS.filter((item) => item.section === section);
+              const sectionItems = section.itemIds
+                ? NAV_ITEMS.filter((item) => section.itemIds?.includes(item.id))
+                : [];
+              const directItem = section.directItemId
+                ? NAV_ITEMS.find((item) => item.id === section.directItemId)
+                : undefined;
+              if (directItem) {
+                return (
+                  <button key={section.label} onClick={() => { setActiveModule(directItem.id); setSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${activeModule === directItem.id ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"}`}>
+                    {directItem.icon}
+                    <span className="truncate">{language === "en" ? directItem.labelEn : directItem.label}</span>
+                  </button>
+                );
+              }
               return (
-                <section key={section} className="space-y-0.5">
-                  <h2 className="px-3 pt-3 pb-1 text-[10px] font-semibold tracking-wider text-muted-foreground/80">{section}</h2>
+                <section key={section.label} className="space-y-0.5">
+                  <h2 className="px-3 pt-3 pb-1 text-[10px] font-semibold tracking-wider text-muted-foreground/80">{section.label}</h2>
                   {sectionItems.map((item) => (
                     <button key={item.id} onClick={() => { setActiveModule(item.id); setSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${activeModule === item.id ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"}`}>
                       {item.icon}

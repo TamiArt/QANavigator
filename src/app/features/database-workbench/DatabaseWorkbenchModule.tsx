@@ -4,8 +4,7 @@ import { buildAdvancedSelect } from "./advanced-select-builder.mjs";
 import { buildCreateTable, buildAlterTable, buildDropTable, buildTruncateTable, buildInsert, buildUpdate, buildDelete } from "./ddl-dml-builder.mjs";
 import { SqlExecutionConsole } from "./SqlExecutionConsole";
 import {
-  AlertTriangle, BookOpen, CheckCircle2, ClipboardList, Code2, Copy,
-  Database, Info, Search, ShieldCheck, WandSparkles,
+  AlertTriangle, BookOpen, Code2, Copy, Database, Search, WandSparkles,
 } from "lucide-react";
 
 type Dialect = "postgres" | "mysql";
