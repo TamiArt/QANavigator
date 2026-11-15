@@ -4,7 +4,7 @@ import { buildAdvancedSelect } from "./advanced-select-builder.mjs";
 import { buildCreateTable, buildAlterTable, buildDropTable, buildTruncateTable, buildInsert, buildUpdate, buildDelete } from "./ddl-dml-builder.mjs";
 import { SqlExecutionConsole } from "./SqlExecutionConsole";
 import {
-  AlertTriangle, BookOpen, CheckCircle2, Code2, Copy, Database, Search, WandSparkles,
+  AlertTriangle, BookOpen, CheckCircle2, ClipboardCheck, Code2, Copy, Database, Search, WandSparkles,
 } from "lucide-react";
 
 type Dialect = "postgres" | "mysql";
@@ -714,7 +714,7 @@ const fieldClass = "w-full rounded-lg border border-border bg-background px-3 py
 const labelClass = "mb-1.5 block text-xs font-medium text-muted-foreground";
 
 export function DatabaseWorkbenchModule() {
-  const [tab, setTab] = useState<"builder" | "reference">("builder");
+  const [tab, setTab] = useState<"builder" | "reference" | "qa-queries">("builder");
   const [dialect, setDialect] = useState<Dialect>("postgres");
   const [operation, setOperation] = useState<Operation>("select");
   const [form, setForm] = useState<BuilderState>(initial);
@@ -749,14 +749,9 @@ export function DatabaseWorkbenchModule() {
       return true;
     }),
   })).filter((group) => group.items.length > 0);
-  const filteredFrequentQueries = frequentQueries.filter((item) => {
-    const matchesSearch = (item.title + item.group + item.sql + item.note).toLocaleLowerCase("ru").includes(search.toLocaleLowerCase("ru"));
-    if (!matchesSearch) return false;
-    const keys = [normalizeReference(item.title), normalizeReference(item.sql)];
-    if (keys.some((key) => referenceKeys.has(key))) return false;
-    keys.forEach((key) => referenceKeys.add(key));
-    return true;
-  });
+  const filteredQaQueries = frequentQueries.filter((item) =>
+    (item.title + item.group + item.sql + item.note).toLocaleLowerCase("ru").includes(search.toLocaleLowerCase("ru")),
+  );
 
   return (
     <div className="space-y-5">
@@ -768,11 +763,12 @@ export function DatabaseWorkbenchModule() {
         <p className="text-sm text-muted-foreground">Инструмент для QA: собери SQL-запрос, выполни его на учебных данных и проверь результат.</p>
       </header>
 
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
         {[
           { id: "builder" as const, title: "Конструктор запросов", desc: "Собрать SQL по полям", icon: <WandSparkles className="h-4 w-4" /> },
-          { id: "reference" as const, title: "Шпаргалка SQL", desc: "Команды и примеры", icon: <BookOpen className="h-4 w-4" /> },
-                                      ].map((item) => (
+          { id: "reference" as const, title: "Шпаргалка SQL", desc: "Команды и синтаксис", icon: <BookOpen className="h-4 w-4" /> },
+          { id: "qa-queries" as const, title: "Частые SQL-запросы для QA", desc: "Готовые проверки в работе тестировщика", icon: <ClipboardCheck className="h-4 w-4" /> },
+        ].map((item) => (
           <button key={item.id} onClick={() => setTab(item.id)} className={"rounded-xl border p-3 text-left transition-colors " + (tab === item.id ? "border-primary bg-primary/5" : "border-border bg-card hover:bg-muted/40")}>
             <span className="mb-2 flex items-center gap-2 text-sm font-semibold">{item.icon}{item.title}</span>
             <span className="text-xs text-muted-foreground">{item.desc}</span>
@@ -1025,23 +1021,6 @@ export function DatabaseWorkbenchModule() {
                 </div>
               </section>
             ))}
-            {[...new Set(filteredFrequentQueries.map((item) => item.group))].map((group) => (
-              <section key={group} className="space-y-3">
-                <h3 className="border-b border-border pb-2 text-sm font-semibold text-foreground">{group}</h3>
-                <div className="grid gap-2.5 sm:grid-cols-2">
-                  {filteredFrequentQueries.filter((item) => item.group === group).map((item) => (
-                    <article key={item.title} className="group flex min-w-0 flex-col gap-2 rounded-xl border border-border/80 bg-card p-3 transition-colors hover:border-primary/35 hover:bg-muted/20">
-                      <div className="flex items-start justify-between gap-2">
-                        <h4 className="min-w-0 text-xs font-semibold leading-5 text-foreground">{item.title}</h4>
-                        <button type="button" onClick={() => copy(item.sql)} aria-label={"Копировать запрос: " + item.title} title="Копировать запрос" className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[10px] text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"><Copy className="h-3 w-3" /><span>Копировать</span></button>
-                      </div>
-                      <pre className="overflow-x-auto rounded-lg border border-border/50 bg-muted/50 px-2.5 py-2 text-[11px] leading-5 text-foreground"><code>{item.sql}</code></pre>
-                      <p className="text-[11px] leading-[1.55] text-muted-foreground">{item.note}</p>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            ))}
             <section className="space-y-3">
               <h3 className="border-b border-border pb-2 text-sm font-semibold text-foreground">Проверки данных для QA</h3>
               <div className="rounded-xl border border-border bg-card p-4">
@@ -1059,9 +1038,61 @@ export function DatabaseWorkbenchModule() {
                 </ul>
               </div>
             </section>
-            {!filteredSnippets.length && !filteredMemoGroups.length && !filteredFrequentQueries.length && search.trim() && <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">По запросу ничего не найдено.</p>}
+            {!filteredSnippets.length && !filteredMemoGroups.length && search.trim() && <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">По запросу ничего не найдено.</p>}
           </div>
           <div className="flex gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground"><AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" /><p>Перед изменением данных сначала выполни SELECT с тем же условием и проверь количество строк. Не запускай команды изменения данных или структуры в production либо общей staging-среде без явного разрешения. Для безопасных изменений используй тестовую БД и транзакции, если СУБД поддерживает откат операции.</p></div>
+        </section>
+      )}
+
+      {tab === "qa-queries" && (
+        <section className="space-y-5">
+          <div className="space-y-1">
+            <h2 className="text-lg font-semibold text-foreground">Наиболее частые SQL-запросы для тестировщика</h2>
+            <p className="text-xs text-muted-foreground">Практические запросы для проверки данных после действий в интерфейсе и API: создание, изменение, удаление, статусы, связи, дубликаты и корректность расчётов. Имена таблиц и полей в примерах нужно адаптировать под схему конкретного проекта.</p>
+          </div>
+          <div className="relative"><Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" /><input value={search} onChange={(event) => setSearch(event.target.value)} className={fieldClass + " pl-9"} placeholder="Найти проверку: запись, статус, NULL, дубликаты, JOIN..." /></div>
+          <div className="space-y-6">
+            {[...new Set(filteredQaQueries.map((item) => item.group))].map((group) => (
+              <section key={group} className="space-y-3">
+                <div className="flex items-center gap-2 border-b border-border pb-2">
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                  <h3 className="text-sm font-semibold text-foreground">{group}</h3>
+                  <span className="ml-auto text-[10px] text-muted-foreground">{filteredQaQueries.filter((item) => item.group === group).length}</span>
+                </div>
+                <div className="grid gap-2.5 sm:grid-cols-2">
+                  {filteredQaQueries.filter((item) => item.group === group).map((item) => (
+                    <article key={item.title} className="group flex min-w-0 flex-col gap-2 rounded-xl border border-border/80 bg-card p-3 transition-colors hover:border-primary/35 hover:bg-muted/20">
+                      <div className="flex items-start justify-between gap-2">
+                        <h4 className="min-w-0 text-xs font-semibold leading-5 text-foreground">{item.title}</h4>
+                        <button type="button" onClick={() => copy(item.sql)} aria-label={"Копировать запрос: " + item.title} title="Копировать запрос" className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[10px] text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"><Copy className="h-3 w-3" /><span>Копировать</span></button>
+                      </div>
+                      <pre className="overflow-x-auto rounded-lg border border-border/50 bg-muted/50 px-2.5 py-2 text-[11px] leading-5 text-foreground"><code>{item.sql}</code></pre>
+                      <p className="text-[11px] leading-[1.55] text-muted-foreground">{item.note}</p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            ))}
+            {!filteredQaQueries.length && search.trim() && <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">По запросу ничего не найдено.</p>}
+            <section className="space-y-3">
+              <h3 className="border-b border-border pb-2 text-sm font-semibold text-foreground">Что сверять после проверки</h3>
+              <div className="rounded-xl border border-border bg-card p-4">
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  {[
+                    "После создания записи проверь, что она появилась и поля заполнены корректно.",
+                    "После изменения статуса проверь новое значение и историю изменений, если она предусмотрена.",
+                    "Для связей проверь существование родительской записи и отсутствие записей без родителя.",
+                    "Для списков сравни COUNT(*) с количеством элементов в UI/API с учётом фильтров и пагинации.",
+                    "Проверь дубликаты в полях, которые по требованиям должны быть уникальными.",
+                    "Проверь NULL, пустую строку и пробелы отдельно — это разные значения.",
+                    "Для денежных расчётов сравни сумму заказа с суммой позиций и правилами округления.",
+                    "Для удаления проверь, что удалена только нужная запись и связанные данные обработаны согласно требованиям."
+                  ].filter((item) => item.toLocaleLowerCase("ru").includes(search.toLocaleLowerCase("ru")) || !search.trim()).map((item) => <li key={item} className="flex gap-2"><span className="text-primary">•</span>{item}</li>)}
+                </ul>
+              </div>
+            </section>
+            <div className="flex gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground"><AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" /><p>Перед UPDATE или DELETE сначала выполни SELECT с тем же условием и проверь количество строк. Не запускай команды изменения данных в production или общей staging-среде без разрешения. Для безопасных проверок используй тестовую БД и транзакции, если СУБД поддерживает откат.</p></div>
+          </div>
         </section>
       )}
     </div>
