@@ -2111,3 +2111,45 @@ Validation: run npm run test:site-language, full npm run verify, and current-hea
 - kept lesson text, lesson IDs, curriculum order and all other modules unchanged; added a focused regression test to npm run verify.
 
 Validation: run npm run test:module1-infographics and full npm run verify; inspect desktop and mobile layouts before visual QA sign-off.
+
+
+## 10. Product direction update — browser-only QA workspace (2026-11-15)
+
+**Статус: ЗАПИСАНО В БУДУЩУЮ РАЗРАБОТКУ; реализация не начиналась.** Подробная спецификация: [docs/PRODUCT_BLUEPRINT.md](docs/PRODUCT_BLUEPRINT.md).
+
+Целевая формулировка: **бесплатное браузерное рабочее пространство для ручного тестирования, API, SQL-проверок, диагностики backend и обучения QA.** Продукт должен объединять востребованные сценарии backend testing и написания автотестов на Python/Java.
+
+### Обязательные ограничения
+- Только browser-only: не вводить обязательный Local Agent, desktop companion, локальный сервер или установку пользователем.
+- Ни одна основная функция не должна требовать AI или API-ключа. AI — только необязательное расширение; бесплатные облачные квоты не считаются гарантией.
+- Не вводить обязательные платные сервисы, API, backend или подписки.
+- Все пользовательские данные остаются экспортируемыми; новые большие коллекции проектировать под IndexedDB, сохраняя совместимость текущего localStorage/backup.
+- Прямые интеграции с внешними сервисами не должны обходить CORS, SSO или сетевые политики. Базовый надёжный путь — ссылки, импорт/экспорт и форматы обмена.
+
+### Единая модель QAProject
+
+Единый проект должен объединять требования, тест-кейсы, тестовые наборы, планы и прогоны, API-коллекции, OpenAPI-спецификации, окружения, SQL-сценарии, логи, дефекты и отчёты. Между сущностями нужна трассируемость: требование → проверка → evidence → дефект → релиз.
+
+### Будущие продуктовые направления
+1. **Test Management** — полноценная система ручного тестирования: библиотека тест-кейсов, suites, plans, runs, параметры, shared steps, история, traceability, coverage и отчётность.
+2. **API Workbench** — HTTP client, collections, environments, auth, history, assertions, runner и Postman import/export.
+3. **OpenAPI Studio** — импорт YAML/JSON, валидация, документация, генерация запросов и contract testing.
+4. **SQL Workbench for QA** — развивать практическую браузерную SQLite/WASM среду и QA-проверки. **SQL-тренажёр с учебными заданиями не создавать.**
+5. **Log Analyzer** — анализ загруженных лог-файлов, парсинг, фильтры, группировка, trace/request ID correlation и защита чувствительных данных.
+6. **Генератор тестовых данных** — boundary/negative values, schema-driven data, CSV/JSON/API payloads и masking.
+7. **Генератор автотестов** — редактируемые шаблоны и код для Python (pytest, requests/httpx) и Java (JUnit 5, REST Assured), включая backend API, SQL и проверки бизнес-правил. Браузер генерирует и экспортирует код; локальный запуск Python/Java без установки не обещать.
+8. **Релизный отчёт** — объединить ручные прогоны, API/SQL результаты, дефекты, JUnit XML и диагностические данные; объяснять источники метрик.
+9. **Интеграции** — Postman Collection JSON, OpenAPI YAML/JSON, импорт логов Elasticsearch/Kibana и изучение совместимости с Test IT. Прямые API-коннекторы — только при поддержке CORS/API и явном разрешении.
+10. **Optional browser AI** — исследовать WebLLM/Transformers.js; модель загружается в браузер, может требовать WebGPU и значительную память. AI не блокирует основные сценарии.
+
+### Browser-only technical boundaries
+
+В браузере реально выполнять SQLite/WASM, анализ выбранных пользователем файлов, локальные алгоритмы, OpenAPI parsing/validation, генерацию данных и запросы к CORS-разрешённым API. Нельзя обещать универсальный доступ к PostgreSQL/MySQL, произвольным файлам, локальным CLI, Python/Java runtime или любому защищённому Elasticsearch/Kibana/Test IT instance без соответствующей инфраструктуры/разрешений.
+
+### Приоритеты
+
+Порядок целевых этапов: foundation + QAProject/data model → Test Management → API Workbench → OpenAPI Studio → SQL Workbench for QA → Log Analyzer → Test Data Generator → Python/Java automation → Release Report → verified external integrations → optional browser AI. Подробные критерии и ограничения находятся в Product Blueprint.
+
+### Documentation status
+
+Эта ветка обновляет только документацию и учебные ссылки. Функциональность, UI, storage schema, зависимости и поведение приложения не изменяются. Фактический текущий состав приложения отражён в APP_OVERVIEW.md и README.md; планы не выдаются за реализованный функционал.
