@@ -6,7 +6,7 @@ const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
 test("API workbench provides a real browser HTTP request workflow and explains CORS limits", async () => {
   const source = await read("../src/app/features/api-testing/ApiTestingModule.tsx");
-  for (const token of ["fetch(parsedUrl", "AbortController", "CORS", "cURL", "localStorage", "Response headers"]) {
+  for (const token of ["fetch(parsedUrl", "AbortController", "CORS", "cURL", "localStorage", "Response headers", "environmentText", "statusAssertion", "bodyAssertion", "sanitizeSavedRequest"]) {
     assert.ok(source.includes(token), `Missing API workbench capability: ${token}`);
   }
 });
