@@ -2175,12 +2175,12 @@ Validation: run npm run test:module1-infographics and full npm run verify; inspe
 - Converted DATABASE & SQL into an expandable sidebar group with the existing `database-workbench` page nested under it. The existing SQL workbench and its data model were not replaced.
 - API Workbench now sends browser HTTP requests for common methods, supports editable headers and request body, validates JSON when JSON content type is selected, shows response status/body/headers/size/duration, keeps a bounded local request history, and copies a cURL command. CORS and network restrictions are reported as browser limitations.
 - Backend & Logs reads user-selected files locally, supports plain text and JSON-line style parsing, extracts common timestamp/level/service/request/trace fields, masks common secrets and email addresses in displayed/exported rows, filters events, groups repeated errors and exports filtered CSV. Input is limited to 20 MB and 250,000 non-empty lines; raw files are not persisted.
-- Integrations supports Postman Collection v2.1 JSON import and round-trip export of the original collection, OpenAPI 3.x JSON inspection/operation extraction, and text preview of YAML files. It provides official links for Postman, Swagger Editor, Elasticsearch, Kibana and Test IT.
+- Integrations supports Postman Collection v2.1 JSON import and round-trip export of the original collection, OpenAPI 3.x YAML/JSON parsing and operation extraction, plus Postman Environment JSON import/export. It provides official links for Postman, Swagger Editor, Elasticsearch, Kibana and Test IT.
 - Added navigation and workspace regression assertions and included `test:workspaces` in `npm run verify`.
 
 Known scope still to implement before these areas match the complete Product Blueprint:
-- API collections/folders, environment variables, authentication helpers, reusable assertions, sequential collection runner, Postman environment import/export, and linking requests/results to QAProject entities.
-- OpenAPI YAML parsing, full schema validation, generated API requests in the API Workbench, contract assertions and specification diff.
+- API collections/folders, environment variables, authentication helpers, reusable assertions, sequential collection runner, linking requests/results to QAProject entities.
+- Full OpenAPI schema validation, generated API requests in the API Workbench, contract assertions and specification diff.
 - Log parsing profiles for structured CSV and vendor-specific formats, large-file streaming/Web Worker, richer correlation and time-window analytics.
 - Direct external connectors only where documented APIs, CORS, authentication and security policy permit; Test IT/Elasticsearch/Kibana synchronization is not implemented.
 - IndexedDB-backed project-scoped persistence and migrations for new large QA entities remain part of the shared data-foundation work.
