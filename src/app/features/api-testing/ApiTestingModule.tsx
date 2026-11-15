@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Activity, Clock3, Copy, Download, Plus, Send, Trash2 } from "lucide-react";
+import { Activity, Clock3, Copy, Plus, Send, Trash2 } from "lucide-react";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
 type HeaderRow = { id: string; key: string; value: string };
