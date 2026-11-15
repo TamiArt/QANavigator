@@ -6,7 +6,8 @@ export type Theme = "light" | "dark";
 export type Language = "ru" | "en";
 export type Module =
   | "workspace" | "beginner-wizard" | "requirements" | "test-design" | "test-execution"
-  | "automation" | "release-report" | "test-data" | "database-workbench" | "handbook" | "documentation" | "settings";
+  | "automation" | "release-report" | "test-data" | "api-testing" | "database-workbench"
+  | "backend-logs" | "integrations" | "handbook" | "documentation" | "settings";
 export type TestStatus = "pending" | "passed" | "failed" | "blocked";
 export type Severity = "critical" | "high" | "medium" | "low";
 export type AutoStack =
