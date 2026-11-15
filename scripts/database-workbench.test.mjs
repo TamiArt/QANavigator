@@ -806,7 +806,7 @@ SELECT 2; /* outer ; /* nested ; */ still outer ; */ SELECT 3;`;
 
 test("database workbench merges the SQL memo into the main cheat sheet without category abbreviations", () => {
   for (const token of [
-    'useState<"builder" | "reference">("builder")',
+    'useState<"builder" | "reference" | "qa-queries">("builder")',
     "memoOperatorGroups",
     "filteredMemoGroups.map",
     "filteredFrequentQueries",
