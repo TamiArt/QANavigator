@@ -2155,3 +2155,13 @@ Validation: run npm run test:module1-infographics and full npm run verify; inspe
 ### Documentation status
 
 Эта ветка обновляет только документацию и учебные ссылки. Функциональность, UI, storage schema, зависимости и поведение приложения не изменяются. Фактический текущий состав приложения отражён в APP_OVERVIEW.md и README.md; планы не выдаются за реализованный функционал.
+
+
+## External integration rules and capability review (2026-11-15)
+
+- All external tools must support a browser-friendly baseline: official link, portable file import/export, or copyable configuration. Direct connectors are optional enhancements.
+- Verified vendor capabilities and caveats are documented in `docs/PRODUCT_BLUEPRINT.md`: Postman Collection/environment JSON and optional API; OpenAPI YAML/JSON and Swagger Editor/UI; Elasticsearch REST API with administrator-enabled CORS; Kibana documented REST APIs with CORS/auth constraints; Test IT public REST API, Swagger docs and API tokens.
+- Third-party API tokens may be required by that specific external service, but no QA Navigator core function may require an API key. Never store long-lived secrets in plain localStorage/IndexedDB.
+- Never bypass CORS, SSO, TLS, firewall or vendor permissions. Do not recommend wildcard CORS for production. Use only documented public APIs.
+- Direct integrations remain planned until implemented and verified against supported instances. Always retain file/link fallback and import preview.
+- Browser-only AI such as WebLLM is optional. Explain first model download, browser cache, WebGPU/hardware requirements and offline inference limitations. Core functionality must work without it.
