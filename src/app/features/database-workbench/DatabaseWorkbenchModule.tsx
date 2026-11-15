@@ -4,7 +4,7 @@ import { buildAdvancedSelect } from "./advanced-select-builder.mjs";
 import { buildCreateTable, buildAlterTable, buildDropTable, buildTruncateTable, buildInsert, buildUpdate, buildDelete } from "./ddl-dml-builder.mjs";
 import { SqlExecutionConsole } from "./SqlExecutionConsole";
 import {
-  AlertTriangle, BookOpen, Code2, Copy, Database, Search, WandSparkles,
+  AlertTriangle, BookOpen, CheckCircle2, Code2, Copy, Database, Search, WandSparkles,
 } from "lucide-react";
 
 type Dialect = "postgres" | "mysql";
@@ -719,7 +719,6 @@ export function DatabaseWorkbenchModule() {
   const [operation, setOperation] = useState<Operation>("select");
   const [form, setForm] = useState<BuilderState>(initial);
   const [search, setSearch] = useState("");
-  const [frequentSearch, setFrequentSearch] = useState("");
   const [copied, setCopied] = useState(false);
   const generated = useMemo(() => buildSql(operation, dialect, form), [operation, dialect, form]);
   const update = (key: keyof BuilderState, value: string | boolean | CorrelatedSubqueryLevel[]) => setForm((current) => ({ ...current, [key]: value } as BuilderState));

@@ -44,3 +44,21 @@ test("navigation contract has non-empty labels", () => {
     true,
   );
 });
+
+test("sidebar exposes the requested product areas and routes existing modules into them", () => {
+  const sections = navigation.APP_NAVIGATION_SECTIONS;
+  const labels = sections.map((section) => section.label);
+  assert.deepEqual(JSON.parse(JSON.stringify(labels)), [
+    "УПРАВЛЕНИЕ ТЕСТИРОВАНИЕМ",
+    "API TESTING",
+    "DATABASE & SQL",
+    "BACKEND & LOGS",
+    "ГЕНЕРАТОР ТЕСТОВЫХ ДАННЫХ",
+    "ИНТЕГРАЦИИ",
+    "НАСТРОЙКИ",
+  ]);
+  assert.ok(sections.find((section) => section.label === "DATABASE & SQL").itemIds.includes("database-workbench"));
+  assert.equal(sections.find((section) => section.label === "ГЕНЕРАТОР ТЕСТОВЫХ ДАННЫХ").directItemId, "test-data");
+  assert.equal(sections.find((section) => section.label === "НАСТРОЙКИ").directItemId, "settings");
+  assert.equal(navigation.APP_NAVIGATION.find((item) => item.id === "documentation").label, "Тестовая документация");
+});

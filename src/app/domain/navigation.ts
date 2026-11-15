@@ -20,10 +20,10 @@ export const APP_NAVIGATION: readonly AppNavigationItem[] = [
   { id: "test-execution", label: "Выполнение тестов", labelEn: "Test execution" },
   { id: "automation", label: "Автотесты", labelEn: "Automation" },
   { id: "release-report", label: "Релизный отчёт", labelEn: "Release report" },
+  { id: "test-data", label: "Генератор тестовых данных", labelEn: "Test data generator" },
+  { id: "database-workbench", label: "Работа с БД", labelEn: "Database workbench" },
   { id: "handbook", label: "База знаний QA", labelEn: "QA knowledge base" },
   { id: "documentation", label: "Тестовая документация", labelEn: "Test documentation" },
-  { id: "database-workbench", label: "Работа с БД", labelEn: "Database workbench" },
-  { id: "test-data", label: "Генератор тестовых данных", labelEn: "Test data generator" },
   { id: "settings", label: "Настройки", labelEn: "Settings" },
 ];
 
