@@ -40,21 +40,22 @@ function sanitizeSavedRequest(request: SavedRequest): SavedRequest {
   })();
   const safeHeaders = request.headers.map((header) => ({
     ...header,
-    value: /^(authorization|cookie|set-cookie|x-api-key|api-key)$/i.test(header.key.trim()) ? "[REDACTED — введите повторно]" : header.value,
+    value: /^(authorization|cookie|set-cookie|x-api-key|api-key)$/i.test(header.key.trim())
+      ? "[REDACTED — введите повторно]" : header.value,
   }));
   let safeBody = request.body;
   try {
     const redact = (value: unknown): unknown => {
       if (Array.isArray(value)) return value.map(redact);
       if (!value || typeof value !== "object") return value;
-      return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, item]) =>
-        [/password|token|secret|api[_-]?key|client_secret|authorization/i.test(key) ? key : "", key].filter(Boolean).length
-          ? [key, "[REDACTED]"] : [key, redact(item)]
-      ));
+      return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, item]) => {
+        if (/password|token|secret|api[_-]?key|client_secret|authorization/i.test(key)) return [key, "[REDACTED]"];
+        return [key, redact(item)];
+      }));
     };
     safeBody = JSON.stringify(redact(JSON.parse(request.body)), null, 2);
   } catch {
-    safeBody = request.body.replace(/(password|token|secret|api[_-]?key)(\\s*[:=]\\s*)("[^"]*"|'[^']*'|[^\\s,;]+)/gi, "$1$2[REDACTED]");
+    safeBody = request.body.replace(/(password|token|secret|api[_-]?key)(\s*[:=]\s*)("[^"]*"|'[^']*'|[^\s,;]+)/gi, "$1$2[REDACTED]");
   }
   return { ...request, url: safeUrl, headers: safeHeaders, body: safeBody };
 }
