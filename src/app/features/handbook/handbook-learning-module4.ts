@@ -605,6 +605,7 @@ export const HANDBOOK_LEARNING_MODULE_4_LESSONS: readonly LearningLesson[] = [
 ### Инструменты
 
 - [Postman](https://www.postman.com/) — тестирование API;
+- [Test IT](https://testit.software/) — управление тест-кейсами, тест-планами и ручными прогонами;
 - Jira — управление задачами и баг-трекинг;
 - MySQL Workbench — проверка данных в БД.
 
