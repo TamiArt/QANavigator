@@ -29,6 +29,7 @@ test("DATABASE & SQL is a direct sidebar destination and the database page has t
   const referenceStart = source.indexOf('{tab === "reference" && (');
   const qaTabStart = source.indexOf('{tab === "qa-queries" && (', referenceStart);
   assert.equal(source.slice(referenceStart, qaTabStart).includes("Проверки данных для QA"), false);
+  assert.ok(source.slice(qaTabStart).includes("Проверки данных для QA"), "the QA query tab must show the data-checks section heading");
 });
 
 test("database workbench exposes practical SQL operations", () => {
