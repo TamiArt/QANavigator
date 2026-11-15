@@ -24,7 +24,7 @@ test("DATABASE & SQL is a direct sidebar destination and the database page has t
   assert.ok(source.includes('tab === "qa-queries"'));
   assert.ok(source.includes('Что сверять после проверки'));
   const qaQueryStart = source.indexOf("const frequentQueries = [");
-  const qaQueryEnd = source.indexOf("\\n];", qaQueryStart);
+  const qaQueryEnd = source.indexOf("\n];", qaQueryStart);
   assert.equal([...source.slice(qaQueryStart, qaQueryEnd).matchAll(/title: "/g)].length, 19);
   const referenceStart = source.indexOf('{tab === "reference" && (');
   const qaTabStart = source.indexOf('{tab === "qa-queries" && (', referenceStart);
