@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import {
   ArrowUp, BarChart2, BookOpen, Brain, CheckSquare, Clipboard, Code2, Database, FileText,
   GraduationCap, Key, Menu, Moon, Play, Plug, Server, Settings, Shield, Sun, TableProperties, Terminal,
-  ChevronDown, ChevronRight,
 } from "lucide-react";
 import { ProjectWorkspace } from "./features/project-workspace/ProjectWorkspace";
 import { BeginnerWizard } from "./features/beginner-wizard/BeginnerWizard";
@@ -104,8 +103,7 @@ export default function App() {
   );
   const [showApiModal, setShowApiModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({ "DATABASE & SQL": true });
-  const mainScrollRef = useRef<HTMLElement | null>(null);
+    const mainScrollRef = useRef<HTMLElement | null>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const handleMainScroll = () => setShowBackToTop((mainScrollRef.current?.scrollTop ?? 0) > 320);
   const scrollMainToTop = () => mainScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -221,18 +219,10 @@ export default function App() {
                   </button>
                 );
               }
-              const expanded = Boolean(expandedSections[section.label]);
               return (
                 <section key={section.label} className="space-y-0.5">
-                  {section.collapsible ? (
-                    <button type="button" aria-expanded={expanded} onClick={() => setExpandedSections((current) => ({ ...current, [section.label]: !current[section.label] }))} className="flex w-full items-center justify-between rounded-lg px-3 pt-3 pb-1 text-left text-[10px] font-semibold tracking-wider text-muted-foreground/80 hover:text-foreground">
-                      <span>{language === "en" ? section.labelEn ?? section.label : section.label}</span>
-                      {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-                    </button>
-                  ) : (
-                    <h2 className="px-3 pt-3 pb-1 text-[10px] font-semibold tracking-wider text-muted-foreground/80">{language === "en" ? section.labelEn ?? section.label : section.label}</h2>
-                  )}
-                  {(!section.collapsible || expanded) && sectionItems.map((item) => (
+                  <h2 className="px-3 pt-3 pb-1 text-[10px] font-semibold tracking-wider text-muted-foreground/80">{language === "en" ? section.labelEn ?? section.label : section.label}</h2>
+                  {sectionItems.map((item) => (
                     <button key={item.id} type="button" aria-current={activeModule === item.id ? "page" : undefined} onClick={() => { setActiveModule(item.id); setSidebarOpen(false); }} className={`w-full flex items-center gap-3 rounded-xl py-2.5 pl-5 pr-3 text-sm transition-all ${activeModule === item.id ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"}`}>
                       {item.icon}
                       <span className="truncate">{language === "en" ? item.labelEn : item.label}</span>
