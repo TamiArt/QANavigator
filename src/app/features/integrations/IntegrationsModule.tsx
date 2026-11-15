@@ -41,7 +41,7 @@ export function IntegrationsModule() {
     try {
       if (file.size > 5 * 1024 * 1024) throw new Error("Файл больше 5 МБ.");
       const parsed: unknown = JSON.parse(await file.text());
-      if (!parsed || typeof parsed !== "object" || !("info" in parsed) || !("item" in parsed) || !Array.isArray((parsed as { item: unknown }).item)) {
+      if (!parsed || typeof parsed !== "object" || !("info" in parsed) || !("item" in parsed) || !Array.isArray((parsed as { item: unknown }).item) || !(parsed as { info: unknown }).info || typeof (parsed as { info: unknown }).info !== "object") {
         throw new Error("Файл не похож на Postman Collection v2.1 JSON.");
       }
       const list: ImportedRequest[] = [];
@@ -90,12 +90,15 @@ export function IntegrationsModule() {
         throw new Error("Ожидается OpenAPI 3.x YAML или JSON со свойствами openapi и paths.");
       }
       const spec = parsed as { openapi: string; info?: { title?: string; version?: string }; paths: Record<string, Record<string, unknown>> };
-      if (!spec.openapi.startsWith("3.") || !spec.paths || typeof spec.paths !== "object" || Array.isArray(spec.paths)) {
+      if (typeof spec.openapi !== "string" || !spec.openapi.startsWith("3.") || !spec.paths || typeof spec.paths !== "object" || Array.isArray(spec.paths)) {
         throw new Error("Поддерживается OpenAPI 3.x с объектом paths.");
       }
-      const operations = Object.entries(spec.paths).flatMap(([path, methods]) => Object.entries(methods)
-        .filter(([method, value]) => ["get", "post", "put", "patch", "delete", "head", "options"].includes(method.toLowerCase()) && Boolean(value && typeof value === "object"))
-        .map(([method, value]) => ({ name: String((value as Record<string, unknown>).summary ?? `${method.toUpperCase()} ${path}`), method: method.toUpperCase(), url: path })));
+      const operations = Object.entries(spec.paths).flatMap(([path, methods]) => {
+        if (!methods || typeof methods !== "object" || Array.isArray(methods)) return [];
+        return Object.entries(methods)
+          .filter(([method, value]) => ["get", "post", "put", "patch", "delete", "head", "options"].includes(method.toLowerCase()) && Boolean(value && typeof value === "object"))
+          .map(([method, value]) => ({ name: String((value as Record<string, unknown>).summary ?? `${method.toUpperCase()} ${path}`), method: method.toUpperCase(), url: path }));
+      });
       setOpenApiText(text); setOpenApiName(file.name); setRequests(operations);
       setSummary({ kind: isYaml ? "OpenAPI YAML" : "OpenAPI JSON", fileName: file.name, details: [`Версия: ${spec.openapi}`, `Спецификация: ${spec.info?.title ?? "без названия"}`, `Операций найдено: ${operations.length}`] });
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Не удалось прочитать OpenAPI."); }
