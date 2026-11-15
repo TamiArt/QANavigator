@@ -69,6 +69,23 @@ test("storage validators accept current versioned application values", () => {
   assert.equal(validators.isTextStorageValue({ version: 1, data: "requirements" }), true);
 });
 
+test("API workbench history validator accepts sanitized requests and rejects malformed entries", () => {
+  const request = {
+    id: "req-1",
+    name: "GET https://api.example.com/users",
+    method: "GET",
+    url: "https://api.example.com/users",
+    headers: [{ id: "h-1", key: "Accept", value: "application/json" }],
+    body: "",
+    savedAt: "2026-11-15T00:00:00.000Z",
+  };
+  assert.equal(validators.isApiWorkbenchStorageValue([request]), true);
+  assert.equal(validators.isApiWorkbenchStorageValue({ version: 1, data: [request] }), true);
+  assert.equal(validators.isApiWorkbenchStorageValue([{ ...request, method: "CONNECT" }]), false);
+  assert.equal(validators.isApiWorkbenchStorageValue([{ ...request, headers: "broken" }]), false);
+  assert.equal(validators.isApiWorkbenchStorageValue(Array(51).fill(request)), false);
+});
+
 test("storage validators keep legacy raw values compatible", () => {
   assert.equal(validators.isThemeStorageValue("dark"), true);
   assert.equal(validators.isBookmarksStorageValue(["topic-1", "topic-2"]), true);
