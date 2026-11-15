@@ -1033,6 +1033,7 @@ export function DatabaseWorkbenchModule() {
             <p className="text-xs text-muted-foreground">Практические запросы для проверки данных после действий в интерфейсе и API: создание, изменение, удаление, статусы, связи, дубликаты и корректность расчётов. Имена таблиц и полей в примерах нужно адаптировать под схему конкретного проекта.</p>
           </div>
           <div className="relative"><Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" /><input value={search} onChange={(event) => setSearch(event.target.value)} className={fieldClass + " pl-9"} placeholder="Найти проверку: запись, статус, NULL, дубликаты, JOIN..." /></div>
+          <h3 className="text-sm font-semibold text-foreground">Проверки данных для QA</h3>
           <div className="space-y-6">
             {[...new Set(filteredQaQueries.map((item) => item.group))].map((group) => (
               <section key={group} className="space-y-3">
