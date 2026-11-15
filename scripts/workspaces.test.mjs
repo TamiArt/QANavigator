@@ -13,7 +13,7 @@ test("API workbench provides a real browser HTTP request workflow and explains C
 
 test("backend log analyzer processes selected files locally and masks common sensitive values", async () => {
   const source = await read("../src/app/features/backend-logs/BackendLogsModule.tsx");
-  for (const token of ["file.text()", "MAX_FILE_BYTES", "maskSensitive", "requestId", "traceId", "Экспорт CSV", "localStorage"]) {
+  for (const token of ["file.text()", "MAX_FILE_BYTES", "maskSensitive", "requestId", "traceId", "Экспорт CSV", "не сохраняются"]) {
     assert.ok(source.includes(token), `Missing log analyzer capability: ${token}`);
   }
 });
