@@ -271,7 +271,7 @@ jobs:
 #### Application Server
 Бизнес-логика, генерация ответов.
 - **500 Internal Server Error** — ошибка в коде приложения
-- **Диагностика:** логи сервера (Kibana, CloudWatch, Datadog)
+- **Диагностика:** логи сервера ([Kibana](https://www.elastic.co/kibana), CloudWatch, Datadog)
 
 #### Database
 - **Проблема:** медленные запросы (N+1 query problem, отсутствие индексов)
@@ -286,7 +286,7 @@ jobs:
 4. Проверить Status Code (4xx = клиент, 5xx = сервер)
 5. Посмотреть Response Body (текст ошибки)
 6. Проверить Request Headers (Authorization есть? Content-Type верный?)
-7. Попробовать тот же запрос в Postman
+7. Попробовать тот же запрос в [Postman](https://www.postman.com/)
 8. Сообщить разработчику: URL, метод, headers, body запроса, status code, body ответа
 \`\`\`
 
@@ -453,7 +453,7 @@ subscription OnMessageAdded {
 - Авторизация: доступ только к своим данным
 
 ### Инструменты
-- **Postman** — поддерживает GraphQL нативно
+- **[Postman](https://www.postman.com/)** — поддерживает GraphQL нативно
 - **Insomnia** — отличный GraphQL-клиент
 - **GraphQL Playground / GraphiQL** — встроен в многие сервисы
 
@@ -469,7 +469,7 @@ Google's Remote Procedure Call. Использует **Protocol Buffers** (би�
 ### Инструменты для gRPC тестирования
 \`\`\`
 grpcurl  — аналог curl для gRPC
-Postman  — поддержка gRPC (с 2022)
+[Postman](https://www.postman.com/)  — поддержка gRPC (с 2022)
 Kreya    — GUI-клиент для gRPC
 BloomRPC — (устарел) GUI-клиент
 \`\`\`
