@@ -809,7 +809,7 @@ test("database workbench merges the SQL memo into the main cheat sheet without c
     'useState<"builder" | "reference" | "qa-queries">("builder")',
     "memoOperatorGroups",
     "filteredMemoGroups.map",
-    "filteredFrequentQueries",
+    "filteredQaQueries",
     "Выборка и фильтрация",
     "Изменение данных",
     "Структура базы данных",
