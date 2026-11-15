@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Activity, Clock3, Copy, Plus, Send, Trash2 } from "lucide-react";
 import { STORAGE_KEYS } from "../../core/constants";
+import { isApiWorkbenchStorageValue } from "../../core/storage-validators";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
 type HeaderRow = { id: string; key: string; value: string };
@@ -14,9 +15,7 @@ const makeId = () => globalThis.crypto?.randomUUID?.() ?? `req-${Date.now()}-${M
 function readSaved(): SavedRequest[] {
   try {
     const value: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
-    return Array.isArray(value) ? value.filter((item): item is SavedRequest =>
-      Boolean(item && typeof item === "object" && typeof item.url === "string" && typeof item.method === "string")
-    ).slice(0, 50) : [];
+    return isApiWorkbenchStorageValue(value) ? value as SavedRequest[] : [];
   } catch { return []; }
 }
 
