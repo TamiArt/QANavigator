@@ -1021,26 +1021,8 @@ export function DatabaseWorkbenchModule() {
                 </div>
               </section>
             ))}
-            <section className="space-y-3">
-              <h3 className="border-b border-border pb-2 text-sm font-semibold text-foreground">Проверки данных для QA</h3>
-              <div className="rounded-xl border border-border bg-card p-4">
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  {[
-                    "После создания записи проверь, что она появилась и поля заполнены корректно.",
-                    "После изменения статуса проверь новое значение и историю изменений, если она предусмотрена.",
-                    "Для связей проверь существование родительской записи и отсутствие записей без родителя.",
-                    "Для списков сравни COUNT(*) с количеством элементов в UI/API с учётом фильтров и пагинации.",
-                    "Проверь дубликаты в полях, которые по требованиям должны быть уникальными.",
-                    "Проверь NULL, пустую строку и пробелы отдельно — это разные значения.",
-                    "Для денежных расчётов сравни сумму заказа с суммой позиций и правилами округления.",
-                    "Для удаления проверь, что удалена только нужная запись и связанные данные обработаны согласно требованиям."
-                  ].filter((item) => item.toLocaleLowerCase("ru").includes(search.toLocaleLowerCase("ru")) || !search.trim()).map((item) => <li key={item} className="flex gap-2"><span className="text-primary">•</span>{item}</li>)}
-                </ul>
-              </div>
-            </section>
             {!filteredSnippets.length && !filteredMemoGroups.length && search.trim() && <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">По запросу ничего не найдено.</p>}
           </div>
-          <div className="flex gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground"><AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" /><p>Перед изменением данных сначала выполни SELECT с тем же условием и проверь количество строк. Не запускай команды изменения данных или структуры в production либо общей staging-среде без явного разрешения. Для безопасных изменений используй тестовую БД и транзакции, если СУБД поддерживает откат операции.</p></div>
         </section>
       )}
 
