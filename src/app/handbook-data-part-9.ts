@@ -46,7 +46,7 @@ DEV часто нестабилен и может содержать незав�
 
 - **Functional Testing:** проверка соответствия функций требованиям. Например, создаётся ли заказ после нажатия кнопки.
 - **GUI / UI Testing:** кнопки, поля, валидация, вёрстка, отображение и соответствие утверждённому макету.
-- **API Testing:** запросы и ответы backend через Postman, DevTools, curl или автотесты.
+- **API Testing:** запросы и ответы backend через [Postman](https://www.postman.com/), DevTools, curl или автотесты.
 - **Positive Testing:** корректные входные данные и успешные сценарии.
 - **Negative Testing:** пустые поля, некорректные значения, специальные символы и обработка ошибок.
 - **Regression Testing:** проверка ранее работавшего функционала после изменений.
@@ -124,11 +124,11 @@ E2E также может выполняться на TEST/QA или STAGE — �
 | Тест-кейсы | Kiwi TCMS, TestLink, Allure TestOps alternatives via reports | Наборы кейсов, прогоны, история результатов; простой проект может хранить versioned Markdown |
 | Web-интерфейс | Chrome / Firefox DevTools | DOM и CSS, Console, Network, Storage, производительность, responsive-режим |
 | Сверка дизайна | Figma inspect, PixelPerfect extensions, ImageMagick | Размеры, цвета, шрифты и визуальное сравнение скриншотов |
-| REST / GraphQL API | Bruno, Insomnia, Postman desktop, curl | Запросы, заголовки, авторизация, переменные окружений и проверки ответов |
+| REST / GraphQL API | Bruno, Insomnia, [Postman](https://www.postman.com/) desktop, curl | Запросы, заголовки, авторизация, переменные окружений и проверки ответов |
 | SOAP | SoapUI Open Source | Импорт WSDL, XML-запросы, схемы и SOAP Fault |
 | Перехват трафика | mitmproxy, Fiddler Classic, Charles alternative tools | Просмотр и модификация HTTP(S)-трафика; только на разрешённых стендах |
 | Базы данных | DBeaver Community, pgAdmin, MySQL Workbench, sqlite3 | SQL-проверки данных, схем, ограничений и транзакций |
-| Логи и метрики | OpenSearch Dashboards, Kibana, Grafana, Sentry self-hosted | Поиск ошибки по времени, request / trace ID, построение графиков и алертов |
+| Логи и метрики | OpenSearch Dashboards, [Kibana](https://www.elastic.co/kibana), Grafana, Sentry self-hosted | Поиск ошибки по времени, request / trace ID, построение графиков и алертов |
 | Очереди сообщений | Kafka UI, Redpanda Console, RabbitMQ Management | Топики и очереди, сообщения, consumer lag, повторная доставка и DLQ |
 | Командная строка | Bash / PowerShell, ssh, jq | Файлы, процессы, HTTP-запросы, фильтрация JSON и чтение серверных логов |
 | Версии и review | Git, GitLab / GitHub | Ветки, diff, история изменения тестов и участие в code review |
