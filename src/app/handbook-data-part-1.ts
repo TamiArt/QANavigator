@@ -830,6 +830,6 @@ def test_valid_login(page):
 ✅ SQL-инъекция → 422 (не 500!)
 \`\`\`
 
-> 💡 **Совет:** Используйте Postman Collections или Bruno для хранения API-тестов в команде.`,
+> 💡 **Совет:** Используйте [Postman](https://www.postman.com/) Collections или Bruno для хранения API-тестов в команде.`,
   },
 ];

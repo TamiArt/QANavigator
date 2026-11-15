@@ -32,7 +32,7 @@ import {
   isThemeStorageValue,
   isLanguageStorageValue,
 } from "./core/storage-validators";
-import { APP_NAVIGATION } from "./domain/navigation";
+import { APP_NAVIGATION, APP_NAVIGATION_SECTIONS } from "./domain/navigation";
 import { createProject as buildProject, removeProject as removeProjectFromList, resolveActiveProjectId, updateProject as updateProjectList } from "./domain/project";
 import { useLocalStorage } from "./hooks/use-local-storage";
 import type { ApiKeys, BugReport, ChecklistItem, Language, Module, TestCase, Theme } from "./domain/types";
@@ -194,15 +194,36 @@ export default function App() {
               <Key className="w-3 h-3" />
             </button>
           </div>
-          <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
-            {NAV_ITEMS.map((item) => (
-              <button key={item.id} onClick={() => { setActiveModule(item.id); setSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${activeModule === item.id ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"}`}>
-                {item.icon}
-                <span className="truncate">{language === "en" ? item.labelEn : item.label}</span>
-                {item.id === "test-execution" && checklists.some((c) => c.status === "failed") && <span className="ml-auto text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full font-mono">{checklists.filter((c) => c.status === "failed").length}</span>}
-                {item.id === "handbook" && bookmarks.length > 0 && <span className="ml-auto text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded-full font-mono">{bookmarks.length}</span>}
-              </button>
-            ))}
+          <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
+            {APP_NAVIGATION_SECTIONS.map((section) => {
+              const sectionItems = section.itemIds
+                ? NAV_ITEMS.filter((item) => section.itemIds?.includes(item.id))
+                : [];
+              const directItem = section.directItemId
+                ? NAV_ITEMS.find((item) => item.id === section.directItemId)
+                : undefined;
+              if (directItem) {
+                return (
+                  <button key={section.label} onClick={() => { setActiveModule(directItem.id); setSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${activeModule === directItem.id ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"}`}>
+                    {directItem.icon}
+                    <span className="truncate">{language === "en" ? directItem.labelEn : directItem.label}</span>
+                  </button>
+                );
+              }
+              return (
+                <section key={section.label} className="space-y-0.5">
+                  <h2 className="px-3 pt-3 pb-1 text-[10px] font-semibold tracking-wider text-muted-foreground/80">{section.label}</h2>
+                  {sectionItems.map((item) => (
+                    <button key={item.id} onClick={() => { setActiveModule(item.id); setSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${activeModule === item.id ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"}`}>
+                      {item.icon}
+                      <span className="truncate">{language === "en" ? item.labelEn : item.label}</span>
+                      {item.id === "test-execution" && checklists.some((c) => c.status === "failed") && <span className="ml-auto text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full font-mono">{checklists.filter((c) => c.status === "failed").length}</span>}
+                      {item.id === "handbook" && bookmarks.length > 0 && <span className="ml-auto text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded-full font-mono">{bookmarks.length}</span>}
+                    </button>
+                  ))}
+                </section>
+              );
+            })}
           </nav>
           <div className="px-4 py-3 border-t border-sidebar-border">
             <button onClick={toggleTheme} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-all">

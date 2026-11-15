@@ -92,15 +92,17 @@ Completed:
 - `tt2` testing-types content/template boundary fixed;
 - PR #14 handbook hierarchy refactor merged into `main`.
 
-Current development branch:
-`feat/learning-block-completion`
+Current development baseline (2026-11-15):
+- Product-code baseline branch: `feat/site-english-toggle-module1-infographic`.
+- Baseline HEAD: `12cd36be926d0e58349a5237dd385874ffb72b1b`.
+- Current documentation-only branch: `docs/browser-qa-platform-roadmap`.
+- The documentation branch records product direction and aligns README/APP_OVERVIEW with the checked application entry point and package scripts. No product feature implementation is included in this documentation task.
 
-Current active milestone:
-- finish Learning Mode navigation and accessibility hardening;
-- verify Module 6 title-only placeholder and Module 7 SQL lessons in the deployed UI;
-- enable continuous forward/backward navigation across module boundaries;
-- validate cross-module completion tracking and the full Learning Mode regression suite;
-- continue semantic infographic refinement without changing lesson source content.
+Current active documentation milestone:
+- keep the handbook/Learning Mode curriculum intact while adding official links to the named external tools;
+- distinguish implemented browser functionality from planned modules;
+- record the browser-only product blueprint and future roadmap;
+- do not start implementation until a separate explicit request.
 
 Verification baseline:
 - repository contains focused regression tests for architecture, storage, project context, handbook hierarchy and Learning Mode;
@@ -2111,3 +2113,55 @@ Validation: run npm run test:site-language, full npm run verify, and current-hea
 - kept lesson text, lesson IDs, curriculum order and all other modules unchanged; added a focused regression test to npm run verify.
 
 Validation: run npm run test:module1-infographics and full npm run verify; inspect desktop and mobile layouts before visual QA sign-off.
+
+
+## 10. Product direction update — browser-only QA workspace (2026-11-15)
+
+**Статус: ЗАПИСАНО В БУДУЩУЮ РАЗРАБОТКУ; реализация не начиналась.** Подробная спецификация: [docs/PRODUCT_BLUEPRINT.md](docs/PRODUCT_BLUEPRINT.md).
+
+Целевая формулировка: **бесплатное браузерное рабочее пространство для ручного тестирования, API, SQL-проверок, диагностики backend и обучения QA.** Продукт должен объединять востребованные сценарии backend testing и написания автотестов на Python/Java.
+
+### Обязательные ограничения
+- Только browser-only: не вводить обязательный Local Agent, desktop companion, локальный сервер или установку пользователем.
+- Ни одна основная функция не должна требовать AI или API-ключа. AI — только необязательное расширение; бесплатные облачные квоты не считаются гарантией.
+- Не вводить обязательные платные сервисы, API, backend или подписки.
+- Все пользовательские данные остаются экспортируемыми; новые большие коллекции проектировать под IndexedDB, сохраняя совместимость текущего localStorage/backup.
+- Прямые интеграции с внешними сервисами не должны обходить CORS, SSO или сетевые политики. Базовый надёжный путь — ссылки, импорт/экспорт и форматы обмена.
+
+### Единая модель QAProject
+
+Единый проект должен объединять требования, тест-кейсы, тестовые наборы, планы и прогоны, API-коллекции, OpenAPI-спецификации, окружения, SQL-сценарии, логи, дефекты и отчёты. Между сущностями нужна трассируемость: требование → проверка → evidence → дефект → релиз.
+
+### Будущие продуктовые направления
+1. **Test Management** — полноценная система ручного тестирования: библиотека тест-кейсов, suites, plans, runs, параметры, shared steps, история, traceability, coverage и отчётность.
+2. **API Workbench** — HTTP client, collections, environments, auth, history, assertions, runner и Postman import/export.
+3. **OpenAPI Studio** — импорт YAML/JSON, валидация, документация, генерация запросов и contract testing.
+4. **SQL Workbench for QA** — развивать практическую браузерную SQLite/WASM среду и QA-проверки. **SQL-тренажёр с учебными заданиями не создавать.**
+5. **Log Analyzer** — анализ загруженных лог-файлов, парсинг, фильтры, группировка, trace/request ID correlation и защита чувствительных данных.
+6. **Генератор тестовых данных** — boundary/negative values, schema-driven data, CSV/JSON/API payloads и masking.
+7. **Генератор автотестов** — редактируемые шаблоны и код для Python (pytest, requests/httpx) и Java (JUnit 5, REST Assured), включая backend API, SQL и проверки бизнес-правил. Браузер генерирует и экспортирует код; локальный запуск Python/Java без установки не обещать.
+8. **Релизный отчёт** — объединить ручные прогоны, API/SQL результаты, дефекты, JUnit XML и диагностические данные; объяснять источники метрик.
+9. **Интеграции** — Postman Collection JSON, OpenAPI YAML/JSON, импорт логов Elasticsearch/Kibana и изучение совместимости с Test IT. Прямые API-коннекторы — только при поддержке CORS/API и явном разрешении.
+10. **Optional browser AI** — исследовать WebLLM/Transformers.js; модель загружается в браузер, может требовать WebGPU и значительную память. AI не блокирует основные сценарии.
+
+### Browser-only technical boundaries
+
+В браузере реально выполнять SQLite/WASM, анализ выбранных пользователем файлов, локальные алгоритмы, OpenAPI parsing/validation, генерацию данных и запросы к CORS-разрешённым API. Нельзя обещать универсальный доступ к PostgreSQL/MySQL, произвольным файлам, локальным CLI, Python/Java runtime или любому защищённому Elasticsearch/Kibana/Test IT instance без соответствующей инфраструктуры/разрешений.
+
+### Приоритеты
+
+Порядок целевых этапов: foundation + QAProject/data model → Test Management → API Workbench → OpenAPI Studio → SQL Workbench for QA → Log Analyzer → Test Data Generator → Python/Java automation → Release Report → verified external integrations → optional browser AI. Подробные критерии и ограничения находятся в Product Blueprint.
+
+### Documentation status
+
+Эта ветка обновляет только документацию и учебные ссылки. Функциональность, UI, storage schema, зависимости и поведение приложения не изменяются. Фактический текущий состав приложения отражён в APP_OVERVIEW.md и README.md; планы не выдаются за реализованный функционал.
+
+
+## External integration rules and capability review (2026-11-15)
+
+- All external tools must support a browser-friendly baseline: official link, portable file import/export, or copyable configuration. Direct connectors are optional enhancements.
+- Verified vendor capabilities and caveats are documented in `docs/PRODUCT_BLUEPRINT.md`: Postman Collection/environment JSON and optional API; OpenAPI YAML/JSON and Swagger Editor/UI; Elasticsearch REST API with administrator-enabled CORS; Kibana documented REST APIs with CORS/auth constraints; Test IT public REST API, Swagger docs and API tokens.
+- Third-party API tokens may be required by that specific external service, but no QA Navigator core function may require an API key. Never store long-lived secrets in plain localStorage/IndexedDB.
+- Never bypass CORS, SSO, TLS, firewall or vendor permissions. Do not recommend wildcard CORS for production. Use only documented public APIs.
+- Direct integrations remain planned until implemented and verified against supported instances. Always retain file/link fallback and import preview.
+- Browser-only AI such as WebLLM is optional. Explain first model download, browser cache, WebGPU/hardware requirements and offline inference limitations. Core functionality must work without it.

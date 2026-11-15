@@ -1,0 +1,290 @@
+# QA Navigator — Product Blueprint
+
+> Статус документа: целевое направление и будущая разработка. Это план, а не заявление о реализованных функциях. В рамках документационной ветки функциональность приложения не меняется.
+
+## 1. Продуктовая цель
+
+**Бесплатное браузерное рабочее пространство для ручного тестирования, API, SQL-проверок, диагностики backend и обучения QA.**
+
+QA Navigator должен объединять востребованные повседневные сценарии тестировщика в одном проектном контексте: требования → тест-кейсы → ручной прогон → API-проверки → SQL-проверки → анализ логов → дефект → релизный отчёт.
+
+Ключевая ценность — не копировать один в один Postman, Test IT или Swagger, а связать их основные сценарии и учебную базу в единую систему, сохраняя локальность, переносимость данных и отсутствие обязательной подписки.
+
+## 2. Обязательные продуктовые принципы
+
+1. **Browser-only.** Основной продукт работает в современном браузере. Не требовать Local Agent, desktop companion, локального сервера или установки пользователем.
+2. **No mandatory API key.** Ни одна основная функция не требует API-ключа. AI — только дополнительная возможность.
+3. **Бесплатность.** Не вводить обязательные платные SaaS, API, backend или подписки. Проверять лицензии и стоимость зависимостей перед добавлением.
+4. **Local-first и privacy.** По умолчанию обрабатывать рабочие данные локально; передавать их внешним системам только по явному действию пользователя.
+5. **Импорт/экспорт и отсутствие vendor lock-in.** Поддерживать открытые форматы и сохранять возможность забрать свои данные.
+6. **Надёжность.** Версионирование схем, миграции, backup, восстановление, тесты совместимости.
+7. **Модульность.** Изолированные feature-модули, общие доменные контракты, максимум 1500 строк в исходном файле.
+8. **Без ложных обещаний.** Чётко различать локальную SQLite/WASM среду, реальную внешнюю СУБД, локальный анализ файлов и удалённые интеграции.
+
+## 3. Единая модель проекта
+
+Ввести единый доменный объект **QAProject**, который объединяет связанные сущности:
+
+- требования;
+- тест-кейсы;
+- тестовые наборы (Test Suites);
+- тест-планы и прогоны (Test Plans / Test Runs);
+- API-коллекции и запросы;
+- OpenAPI-спецификации и версии контрактов;
+- окружения и переменные (без хранения секретов в открытом виде);
+- SQL-сценарии и результаты проверок;
+- импортированные логи и диагностические события;
+- дефекты/баг-репорты;
+- релизные отчёты и историю результатов;
+- связи между требованиями, проверками, дефектами и релизами.
+
+Каждая сущность должна иметь стабильный ID, projectId, timestamps и историю изменений там, где это необходимо. Ссылки между объектами должны обеспечивать traceability: требование → тест-кейс → прогон → API/SQL evidence → лог → дефект → релиз.
+
+### Хранение в браузере
+
+- IndexedDB — целевое хранилище для проектов, тест-кейсов, прогонов, API-коллекций, спецификаций, результатов, больших логов и истории.
+- localStorage — только небольшие настройки интерфейса и миграционный/совместимый слой.
+- Экспорт/импорт проекта в переносимый архив/JSON с версией схемы, проверкой целостности и preview перед импортом.
+- Миграции должны сохранять текущие localStorage keys и существующие backup форматы.
+- Секреты не хранить в открытом виде в IndexedDB/localStorage. Для browser-only версии использовать маскированные/временные значения в сессии и предупреждать, что браузерное хранилище не является vault.
+
+## 4. Browser-only архитектура и технические границы
+
+Целевой стек остаётся React + TypeScript + Vite.
+
+### Что реально выполнять в браузере
+
+- SQL-проверки на SQLite/WASM через sql.js; импорт SQLite-файлов и CSV/JSON datasets.
+- API-запросы к endpoint, если браузерная политика сервера разрешает CORS; для остальных случаев давать понятную инструкцию использовать внешний клиент/экспортируемую коллекцию.
+- Разбор загруженных пользователем файлов логов: text, JSON, JSONL, CSV; большие файлы обрабатывать потоково/в Web Worker.
+- OpenAPI YAML/JSON parsing, schema validation, генерация документации и подготовка запросов.
+- Локальные алгоритмы тест-дизайна, тестовых данных, assertions и статических проверок.
+- Импорт/экспорт тест-кейсов, коллекций, спецификаций, результатов и отчётов.
+
+### Что нельзя обещать без backend/agent
+
+- Универсальное подключение к любому PostgreSQL/MySQL напрямую из браузера.
+- Чтение произвольных файлов пользователя без выбора файла через браузер.
+- Обход CORS, корпоративных firewall, SSO и политик доступа.
+- Прямое подключение к каждому Elasticsearch/Kibana/Test IT instance без API, CORS и разрешений.
+- Доступ к локальным CLI и запуску Python/Java тестов на машине пользователя без установки/внешней среды.
+
+Для backend-подключений и Python/Java запусков предоставлять переносимые конфигурации, примеры кода, команды и импорт результатов. Это честнее, чем добавлять скрытый сервер или обещать недостижимую browser-only интеграцию.
+
+## 5. Основные продуктовые модули
+
+### 5.1 Test Management — рабочая система ручного тестирования
+
+- библиотека тест-кейсов, папки, теги, приоритеты и версии;
+- Test Suites, Test Plans, Test Runs;
+- шаги, expected/actual result, статусы, вложения и комментарии;
+- параметры тестов и тестовые данные;
+- shared steps и повторное использование сценариев;
+- связь с требованиями, дефектами, API/SQL evidence;
+- история запусков, повторный прогон failed/blocked;
+- покрытие требований и статистика по релизам;
+- импорт/экспорт распространённых форматов;
+- индивидуальный local-first сценарий в первую очередь; командные роли и синхронизация — только после отдельного решения.
+
+### 5.2 API Workbench
+
+- HTTP методы GET/POST/PUT/PATCH/DELETE/HEAD/OPTIONS;
+- URL, query params, headers, cookies, JSON/XML/form-urlencoded body;
+- Basic, Bearer, API Key и поддерживаемые OAuth2 сценарии;
+- просмотр status, time, size, headers и response body;
+- коллекции, папки, environments, переменные и история;
+- повтор запросов, assertions и последовательный runner;
+- импорт/экспорт Postman Collection JSON и совместимых форматов;
+- связка запроса с проектом, тест-кейсом, дефектом и релизом;
+- CORS-ошибки показывать как ограничение браузера, а не как ошибку endpoint.
+
+### 5.3 OpenAPI Studio
+
+- импорт OpenAPI YAML/JSON;
+- синтаксическая и структурная валидация;
+- просмотр paths, methods, parameters, request/response schemas и examples;
+- генерация человекочитаемой документации;
+- создание API-запроса в API Workbench из operation;
+- проверка реального ответа по OpenAPI/JSON Schema;
+- сравнение версий спецификаций и подсветка breaking changes.
+
+### 5.4 SQL Workbench для QA (не тренажёр)
+
+SQL-тренажёр с учебными уровнями, заданиями и проверкой ответов **не нужен и не входит в roadmap**.
+
+Оставить и развивать практический Database Workbench:
+- SQLite/WASM в браузере;
+- импорт SQLite database, CSV и JSON;
+- схема таблиц, колонки, типы, PK/FK и связи;
+- SQL editor, форматирование и история запросов;
+- read-only режим по умолчанию для импортированных данных;
+- запуск проверок целостности и бизнес-правил;
+- шаблоны SQL для QA: дубликаты, NULL, orphan records, статусы, суммы, сверка API ↔ DB;
+- экспорт результата в CSV/JSON;
+- честная маркировка диалекта: SQLite, не полноценная эмуляция PostgreSQL/MySQL.
+
+### 5.5 Log Analyzer
+
+- загрузка .log, .txt, .json, .jsonl, CSV;
+- автоматическое распознавание timestamp, level, service, message, HTTP status, requestId/traceId;
+- фильтры по времени, уровню, сервису, endpoint, коду ответа и идентификаторам корреляции;
+- поиск и группировка повторяющихся ошибок;
+- всплески ошибок и временная шкала;
+- связь с API-запросом, тест-кейсом и баг-репортом;
+- локальная обработка без отправки файлов на сервер;
+- маскирование токенов, паролей, cookies, email и персональных данных;
+- Web Worker и ограничения памяти для больших файлов.
+
+### 5.6 Генератор тестовых данных
+
+- валидные, невалидные и граничные значения;
+- email, телефоны, даты, UUID, строки, числа, валюты и идентификаторы;
+- наборы для boundary, null/empty, длины, unicode, спецсимволов;
+- генерация CSV/JSON и payload для API;
+- зависимые поля и повторяемый seed;
+- генерация на основе OpenAPI/JSON Schema;
+- маскирование и синтетическая замена персональных данных;
+- экспорт и прикрепление набора к Test Run/API коллекции.
+
+### 5.7 Генератор автотестов и backend QA
+
+Сфокусироваться на востребованных backend-сценариях и написании автотестов на **Python и Java**.
+
+Python:
+- pytest;
+- requests/httpx;
+- проверки status, headers, JSON schema и бизнес-правил;
+- фикстуры, параметры, подготовка/очистка данных;
+- интеграция с SQL-проверками и логами;
+- экспорт JUnit XML.
+
+Java:
+- JUnit 5;
+- REST Assured;
+- проверки status, headers, JSON body/schema и бизнес-правил;
+- подготовка данных, setup/teardown и параметризованные тесты;
+- SQL assertions и обработка результатов;
+- экспорт JUnit XML.
+
+Генератор должен создавать редактируемые шаблоны кода из API-спецификации, запроса, тест-кейса или пользовательского описания. Генерация должна работать без AI на шаблонах и структурированных данных. AI-улучшение — только opt-in.
+
+Браузерная версия не запускает Python/Java на устройстве пользователя. Она генерирует, редактирует и экспортирует код; результаты внешнего запуска пользователь импортирует в проект.
+
+### 5.8 Релизный отчёт
+
+Объединять данные из:
+- требований и traceability;
+- ручных Test Runs;
+- API collection runs;
+- SQL-проверок;
+- дефектов и их severity/status;
+- импортированных automation results (JUnit XML);
+- диагностических логов.
+
+Показывать pass/fail/blocked/not-run, покрытие требований, дефекты по severity, регрессии, тренд относительно предыдущего запуска и known risks. Каждая метрика должна иметь объяснимый источник и формулу. Отчёт экспортировать в HTML/Markdown/CSV/PDF без AI.
+
+## 6. Интеграции с существующими инструментами
+
+### Базовый уровень — ссылки и переносимые файлы
+
+- Postman: https://www.postman.com/ — импорт/экспорт Postman Collection JSON и environment JSON.
+- Swagger / OpenAPI: https://swagger.io/ — импорт/экспорт OpenAPI YAML/JSON.
+- Elasticsearch: https://www.elastic.co/elasticsearch — импорт выгрузок логов JSON/JSONL/CSV.
+- Kibana: https://www.elastic.co/kibana — ссылка на интерфейс пользователя и анализ экспортированных логов.
+- Test IT: https://testit.software/ — изучить реальные поддерживаемые форматы экспорта/импорта и API; не выдумывать совместимость до проверки.
+
+### Продвинутый уровень — прямые подключения
+
+Реализовывать только когда есть публично документированный API, допустимый CORS, подходящая авторизация и разрешение пользователя. Не хранить токены в открытом виде и не обходить корпоративные политики. Если браузерный прямой доступ невозможен, оставлять импорт/экспорт и deep links как надёжный fallback.
+
+## 7. AI: локально и необязательно
+
+- Основной функционал не зависит от LLM и API-ключей.
+- Первые интеллектуальные функции реализовать детерминированно: статические правила, schema validation, поиск пропусков, assertions, diff и группировка.
+- Исследовать WebLLM и Transformers.js как опциональные browser-side inference engines. Они могут загружать модель в браузер, требуют WebGPU/память и не гарантируют одинаковую производительность.
+- Облачные free tiers не считать гарантированно бесплатными; не использовать их как критическую зависимость.
+- Перед локальным AI показывать размер модели, требования и факт загрузки; не отправлять данные наружу без явного согласия.
+
+## 8. Предлагаемые этапы реализации
+
+1. **Foundation и browser-only контракт:** аудит фактических функций, единая модель QAProject, связи сущностей, IndexedDB migration design, backup/restore и сохранение текущих данных.
+2. **Test Management:** библиотека тестов, suites, plans, runs, статусы, история и traceability.
+3. **API Workbench:** HTTP client, коллекции, окружения, история, assertions, runner, Postman import/export.
+4. **OpenAPI Studio:** импорт, валидация, документация, генерация запросов и contract checks.
+5. **SQL Workbench for QA:** укрепить текущий SQLite/WASM workbench и QA SQL templates; SQL-тренажёр не создавать.
+6. **Log Analyzer:** загрузка файлов, parsing, filtering, grouping, correlation, privacy.
+7. **Test Data Generator:** schema-driven generation, boundary/negative sets, export.
+8. **Python/Java automation:** генератор кода, шаблоны, JUnit result import и связи с проектом.
+9. **Release Report:** объединённая аналитика, coverage, risks и сравнение запусков.
+10. **Integrations polish:** улучшение совместимости с Postman, Swagger/OpenAPI, Elasticsearch/Kibana и Test IT на основе проверенных форматов/API.
+11. **Optional browser AI:** прототип WebLLM/Transformers.js после завершения надёжных no-AI workflows.
+
+Приоритеты и порядок уточняются по результатам еженедельного контроля. Этап не считается завершённым без критериев приёмки и регрессионных тестов.
+
+## 9. Definition of Done
+
+- Функция полностью доступна без API-ключа и платного сервиса.
+- Работает в браузере без Local Agent/desktop installation.
+- Импорт/экспорт валидируется и не теряет данные.
+- Данные связаны с конкретным проектом и сохраняются после reload.
+- Есть unit/integration/regression coverage.
+- Есть понятные ограничения CORS, форматов и SQL dialects.
+- Проверены лицензии зависимостей.
+- Документация и `TECHNICAL_ROADMAP.md` обновлены.
+- `npm run verify` проходит.
+- `main` не меняется до отдельного решения о merge.
+
+
+## 10. Verified integration capabilities and implementation rules (2026-11-15)
+
+This section records a documentation-level capability check against official vendor documentation. A capability being available in the vendor product does not mean the QA Navigator connector is already implemented.
+
+### Integration matrix
+
+| Service | Verified capability | Browser-only path | Important limits |
+|---|---|---|---|
+| Postman | Import/export of collections and environments as JSON; import of OpenAPI definitions; account REST API for collections/workspaces/environments | Primary: Postman Collection JSON + environment JSON import/export. Optional: open Postman web app. | Postman account API requires an API key and has plan/region/rate limits. It must not be required for core QA Navigator functionality. |
+| Swagger / OpenAPI | OpenAPI YAML/JSON; open-source Swagger Editor and Swagger UI; editor validation and interactive API documentation | Strongest direct integration: parse/validate OpenAPI locally, render Swagger UI or compatible docs, generate API Workbench requests; import/export spec files. | No account API is needed for local OpenAPI files. Actual endpoint "Try it" calls still depend on endpoint CORS/auth/network access. Swagger hosted team products may have plan constraints. |
+| Elasticsearch | HTTP REST API; CORS can be enabled by the Elasticsearch administrator and restricted to allowed origins | Optional direct read/search connection from browser to an instance with explicit CORS allowlist and appropriate authentication. Always support local log-file import as fallback. | CORS is disabled by default. Never recommend wildcard CORS for production. Do not ask users to weaken instance security. Authentication, TLS, permissions and deployment policy apply. |
+| Kibana | Documented REST API for resources such as data views, connectors and saved objects; CORS can be configured | Optional links/deep links and direct calls to documented public APIs where CORS and auth allow. Main integration should ingest exported logs/data into Log Analyzer. | CORS is disabled by default. Internal APIs may be restricted; only documented public APIs are acceptable. Kibana is not itself the log storage engine. |
+| Test IT | Public REST API, Swagger API documentation, API tokens; public methods can create tests and upload test execution results. Official docs describe API clients and Postman collection use cases. | Optional direct connector using user's Test IT instance URL and token, subject to browser CORS. Also support file-based exchange where the vendor/export format is confirmed. | API token required for authenticated API use; access and capabilities depend on instance/version/permissions. Do not embed or persist tokens in plain browser storage. Verify CORS on each instance. |
+
+### Official documentation checked
+
+- Postman import/export: https://learning.postman.com/docs/getting-started/importing-and-exporting/importing-and-exporting-overview
+- Postman API reference (API key requirement): https://learning.postman.com/api-docs/api-reference
+- Swagger Editor: https://swagger.io/open-source/swagger-editor/
+- Swagger UI: https://swagger.io/open-source/swagger-ui/
+- OpenAPI specification overview: https://swagger.io/docs/specification/v3_0/about/
+- Elasticsearch CORS/network settings: https://www.elastic.co/docs/reference/elasticsearch/configuration-reference/networking-settings
+- Kibana REST API: https://www.elastic.co/docs/api/doc/kibana
+- Kibana CORS settings: https://www.elastic.co/docs/reference/kibana/configuration-reference/general-settings
+- Test IT public API: https://docs.testit.software/user-guide/work-with-api.html
+- Test IT API clients and integrations: https://docs.testit.software/user-guide/integrations/api-clients.html
+
+### Rules for all external integrations
+
+1. Every integration must have a useful no-connection path: file import/export, copyable configuration, or external link.
+2. Direct connection is opt-in and must explain required URL, permissions, authentication, CORS and data transfer before connecting.
+3. Do not require API keys for QA Navigator core features. A third-party connector may optionally require that vendor's token, but must never block local workflows.
+4. Do not store long-lived tokens in plain localStorage or IndexedDB. Prefer session-only credentials; explain browser storage limitations and allow users to clear them.
+5. Never bypass CORS, SSO, firewall, TLS, tenant policy or access control. Do not recommend wildcard CORS in production.
+6. Use only documented, supported vendor APIs; do not depend on internal endpoints or undocumented response shapes.
+7. Add per-connector capability detection and clear diagnostics: connected, CORS blocked, unauthorized, forbidden, unsupported API/version, network unavailable.
+8. Keep vendor integrations optional and avoid vendor lock-in. QAProject remains the source of truth; import/export should preserve portable data.
+9. Validate imported files, show an import preview, report unsupported fields and avoid silent data loss.
+10. Treat direct integrations as future work until implemented and tested against real supported instances.
+
+## 11. WebLLM and optional in-browser AI
+
+WebLLM is a JavaScript runtime for running open-weight language models inside the browser with WebGPU. It does not require installing a separate desktop application, but the browser must download model weights on first use and cache them locally. Depending on the model, this can require hundreds of MB to multiple GB, plus suitable GPU memory and browser support. Subsequent sessions may reuse the cached model, but browser storage can be cleared or evicted.
+
+Implementation rules:
+- AI stays disabled/optional by default; no core workflow depends on it.
+- Show model name, download size, progress, storage requirements and hardware compatibility before download.
+- Check WebGPU capability and provide a graceful fallback when unavailable.
+- Run inference in a Web Worker so the UI remains responsive.
+- Make it explicit that the first model download needs internet; after caching, inference can run locally/offline.
+- Do not claim that every browser/device will support local inference or that all models are small/fast.
+- Do not send user project data to a cloud provider without explicit consent.
+- Research license and model-specific usage terms before bundling or recommending a model.

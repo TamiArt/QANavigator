@@ -77,7 +77,7 @@ Refresh Token:
   Дефект: 200 OK — нарушение авторизации!
 \`\`\`
 
-**Тест через Postman:**
+**Тест через [Postman](https://www.postman.com/):**
 \`\`\`javascript
 // Pre-request: залогиниться как User A
 pm.sendRequest({

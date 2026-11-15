@@ -243,9 +243,13 @@ created >= -7d AND issuetype = Bug AND priority in (Blocker, Critical)
 #### TestIT
 Российская платформа управления тестированием. Популярна в enterprise-проектах РФ.
 
+### Управление тестированием
+
+**[Test IT](https://testit.software/)** — система управления тестированием (TMS): библиотека тест-кейсов, тест-планы, прогоны и отчётность. Возможности импорта/экспорта и интеграции зависят от редакции и настроек сервиса.
+
 ### API-тестирование
 
-#### Postman
+#### [Postman](https://www.postman.com/)
 Де-факто стандарт для ручного и полуавтоматического API-тестирования.
 
 **Ключевые возможности:**
@@ -267,22 +271,22 @@ pm.environment.set("auth_token", token);
 
 **Collections** — группируют запросы по модулям. **Environments** — переменные (url, token) для разных сред (dev/stage/prod).
 
-**Newman** — запуск коллекций Postman из CLI:
+**Newman** — запуск коллекций [Postman](https://www.postman.com/) из CLI:
 \`\`\`bash
 newman run collection.json -e staging.json --reporters html
 \`\`\`
 
 #### Bruno / Insomnia
-Open source альтернативы Postman (без обязательной авторизации).
+Open source альтернативы [Postman](https://www.postman.com/) (без обязательной авторизации).
 
 ### Мониторинг и логи
 
-#### Kibana / ELK Stack
-- **Elasticsearch** — хранение и поиск логов
+#### [Kibana](https://www.elastic.co/kibana) / ELK Stack
+- **[Elasticsearch](https://www.elastic.co/elasticsearch)** — хранение и поиск логов
 - **Logstash** — сбор и обработка логов
-- **Kibana** — визуализация и поиск
+- **[Kibana](https://www.elastic.co/kibana)** — визуализация и поиск
 
-**Для QA:** при воспроизведении бага смотреть логи в Kibana:
+**Для QA:** при воспроизведении бага смотреть логи в [Kibana](https://www.elastic.co/kibana):
 \`\`\`
 поиск: request_id:"abc-123-xyz" AND level:ERROR
 временной фильтр: "Last 15 minutes"
@@ -363,7 +367,7 @@ Connection: Upgrade
 - Видны все фреймы (входящие ↓ и исходящие ↑)
 - Можно смотреть payload каждого сообщения
 
-#### Postman (v10+)
+#### [Postman](https://www.postman.com/) (v10+)
 Поддерживает WebSocket. Можно слать и принимать сообщения в GUI.
 
 #### websocat — CLI-клиент

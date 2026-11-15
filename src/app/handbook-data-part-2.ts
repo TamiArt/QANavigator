@@ -385,7 +385,7 @@ CPU / RAM                  — утилизация ресурсов
 | White Box | Unit-тесты, code review, security audit |
 | Grey Box | API-тестирование, интеграционное, большинство QA-задач |
 
-> 💡 Большинство QA-инженеров работают в **grey box** режиме — они видят Swagger/OpenAPI, схему БД, Kibana-логи, но не разбирают каждую строку кода.`,
+> 💡 Большинство QA-инженеров работают в **grey box** режиме — они видят [[Swagger](https://swagger.io/) / OpenAPI](https://swagger.io/), схему БД, [Kibana](https://www.elastic.co/kibana)-логи, но не разбирают каждую строку кода.`,
   },
   {
     id: "tt6",

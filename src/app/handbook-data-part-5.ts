@@ -321,7 +321,7 @@ Accept: application/json
     category: "Тестирование API",
     level: "beginner",
     tags: ["Postman", "коллекции", "переменные", "Newman", "автоматизация"],
-    content: `## Postman: полное руководство
+    content: `## [Postman](https://www.postman.com/): полное руководство
 
 ### Базовые концепции
 
@@ -462,13 +462,13 @@ MyApp API Collection/
     category: "Тестирование API",
     level: "beginner",
     tags: ["Swagger", "OpenAPI", "документация", "спецификация", "контракт"],
-    content: `## Swagger / OpenAPI для QA
+    content: `## [[Swagger](https://swagger.io/) / OpenAPI](https://swagger.io/) для QA
 
 ### Что такое OpenAPI Specification (OAS)?
 
-Формальное описание REST API в формате YAML или JSON. Swagger UI — интерактивная документация на основе OAS. QA использует её как **основной источник требований** при тестировании API.
+Формальное описание REST API в формате YAML или JSON. [[Swagger](https://swagger.io/) UI](https://swagger.io/tools/swagger-ui/) — интерактивная документация на основе OAS. QA использует её как **основной источник требований** при тестировании API.
 
-### Как читать Swagger UI
+### Как читать [[Swagger](https://swagger.io/) UI](https://swagger.io/tools/swagger-ui/)
 
 \`\`\`
 GET /api/v1/users/{id}
@@ -507,7 +507,7 @@ GET /api/v1/users/{id}
 **Решение:** тест проверяет соответствие реального ответа спецификации.
 
 \`\`\`javascript
-// Postman: проверка против OpenAPI схемы
+// [Postman](https://www.postman.com/): проверка против OpenAPI схемы
 const ajv = require('ajv');
 const validate = new ajv().compile(pm.environment.get("user_schema"));
 pm.test("Response matches contract", () => {

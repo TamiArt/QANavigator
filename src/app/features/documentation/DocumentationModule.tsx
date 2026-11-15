@@ -1039,7 +1039,7 @@ export function DocumentationModule() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-semibold text-foreground mb-1">📄 Документация</h2>
+        <h2 className="text-xl font-semibold text-foreground mb-1">📄 Тестовая документация</h2>
         <p className="text-sm text-muted-foreground">Шаблоны тестовой документации по IEEE 829 / ISO/IEC/IEEE 29119. Поля со <span className="text-destructive font-medium">*</span> обязательны.</p>
       </div>
 

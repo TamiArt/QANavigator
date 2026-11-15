@@ -6,6 +6,12 @@ export interface AppNavigationItem {
   labelEn: string;
 }
 
+export interface AppNavigationSection {
+  label: string;
+  itemIds?: readonly Module[];
+  directItemId?: Module;
+}
+
 export const APP_NAVIGATION: readonly AppNavigationItem[] = [
   { id: "workspace", label: "Рабочее пространство", labelEn: "Workspace" },
   { id: "beginner-wizard", label: "Мастер для новичка", labelEn: "Beginner guide" },
@@ -14,11 +20,24 @@ export const APP_NAVIGATION: readonly AppNavigationItem[] = [
   { id: "test-execution", label: "Выполнение тестов", labelEn: "Test execution" },
   { id: "automation", label: "Автотесты", labelEn: "Automation" },
   { id: "release-report", label: "Релизный отчёт", labelEn: "Release report" },
-  { id: "test-data", label: "Генератор данных", labelEn: "Test data generator" },
+  { id: "test-data", label: "Генератор тестовых данных", labelEn: "Test data generator" },
   { id: "database-workbench", label: "Работа с БД", labelEn: "Database workbench" },
   { id: "handbook", label: "База знаний QA", labelEn: "QA knowledge base" },
-  { id: "documentation", label: "Документация", labelEn: "Documentation" },
+  { id: "documentation", label: "Тестовая документация", labelEn: "Test documentation" },
   { id: "settings", label: "Настройки", labelEn: "Settings" },
+];
+
+export const APP_NAVIGATION_SECTIONS: readonly AppNavigationSection[] = [
+  {
+    label: "УПРАВЛЕНИЕ ТЕСТИРОВАНИЕМ",
+    itemIds: ["workspace", "beginner-wizard", "requirements", "test-design", "test-execution", "automation", "release-report", "handbook", "documentation"],
+  },
+  { label: "API TESTING" },
+  { label: "DATABASE & SQL", itemIds: ["database-workbench"] },
+  { label: "BACKEND & LOGS" },
+  { label: "ГЕНЕРАТОР ТЕСТОВЫХ ДАННЫХ", directItemId: "test-data" },
+  { label: "ИНТЕГРАЦИИ" },
+  { label: "НАСТРОЙКИ", directItemId: "settings" },
 ];
 
 export const APP_NAVIGATION_IDS = APP_NAVIGATION.map((item) => item.id);

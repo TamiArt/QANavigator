@@ -787,19 +787,21 @@ SELECT 2; /* outer ; /* nested ; */ still outer ; */ SELECT 3;`;
 });
 
 
-test("database workbench exposes a searchable SQL operator memo with the main command groups", () => {
+test("database workbench merges the SQL memo into the main cheat sheet without category abbreviations", () => {
   for (const token of [
-    'id: "memo" as const',
+    'useState<"builder" | "reference">("builder")',
     "memoOperatorGroups",
-    "DQL — чтение данных",
-    "DML — изменение данных",
+    "filteredMemoGroups.map",
+    "filteredFrequentQueries",
+    "Выборка и фильтрация",
+    "Изменение данных",
+    "Структура базы данных",
+    "Права доступа",
+    "Транзакции",
     "UPDATE имя_таблицы",
     "SET столбец1 = значение1, столбец2 = значение2",
     "SET — присвоение значений",
     "WHERE ограничивает строки для изменения",
-    "DDL — структура БД",
-    "DCL — права доступа",
-    "TCL — транзакции",
     "BETWEEN",
     "IS NULL",
     "EXISTS",
@@ -815,19 +817,20 @@ test("database workbench exposes a searchable SQL operator memo with the main co
     "PRIMARY KEY",
     "FOREIGN KEY",
     "ROLLBACK",
+    "Проверки данных для QA",
     "Копировать",
   ]) {
-    assert.ok(source.includes(token), "SQL memo is missing " + token);
+    assert.ok(source.includes(token), "SQL cheat sheet is missing " + token);
   }
-  assert.ok(source.includes("value.replace(/'/g, \"''\")"), "the shared copy helper must remain available");
+  assert.doesNotMatch(source, /\b(?:DQL|DML|DDL|DCL|TCL)\b/, "category abbreviations must not be displayed in the cheat sheet");
+  assert.ok(source.includes("value.replace"), "the shared copy helper must remain available");
 });
 
 
 test("SQL cheat sheet presents each query as a compact responsive card", () => {
   const referenceStart = source.indexOf('{tab === "reference" && (');
-  const referenceEnd = source.indexOf('{tab === "memo" && (', referenceStart);
-  assert.ok(referenceStart >= 0 && referenceEnd > referenceStart, "the SQL cheat sheet tab must remain available");
-  const reference = source.slice(referenceStart, referenceEnd);
+  assert.ok(referenceStart >= 0, "the SQL cheat sheet tab must remain available");
+  const reference = source.slice(referenceStart);
   assert.ok(reference.includes('grid gap-2.5 sm:grid-cols-2'), "query cards must use a compact responsive grid");
   assert.ok(reference.includes('rounded-xl border border-border/80 bg-card p-3'), "each query must have a distinct compact card surface");
   assert.ok(reference.includes('<pre className="overflow-x-auto rounded-lg border'), "SQL must be visually separated in a readable code block");
