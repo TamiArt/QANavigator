@@ -1027,13 +1027,14 @@ function ScrumStylePosterDiagram({ visual, title }: { visual: LessonVisual; titl
             <Zap className="h-4 w-4" aria-hidden="true" />
           </div>
           <div className="min-w-0">
-            <div className="mb-1 text-[9px] font-extrabold uppercase tracking-[0.14em] text-blue-500">Запомнить</div>
+            <div className="mb-1 text-[9px] font-extrabold uppercase tracking-[0.14em] text-blue-500">Запомни</div>
             <p className="min-w-0 break-words whitespace-normal text-[11px] font-bold leading-[1.5] text-blue-950 dark:text-black sm:text-xs">
               {mainIdea}
             </p>
           </div>
         </div>
       </footer>
+      <div className="pt-2 text-right text-[9px] font-semibold tracking-wide text-slate-400">QA Navigator</div>
     </div>
   );
 }

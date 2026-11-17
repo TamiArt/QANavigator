@@ -8,7 +8,8 @@ test("all Learning Mode lesson infographics use the Scrum-style poster shell", (
   assert.match(source, /bg-\[#fffdf8\]/);
   assert.match(source, /rounded-\[20px\] border-2 bg-white/);
   assert.match(source, /tracking-\[0\.14em\]/);
-  assert.match(source, /Запомнить/);
+  assert.match(source, /Запомни/);
+  assert.match(source, /text-\[9px\] font-semibold tracking-wide text-slate-400">QA Navigator/);
   assert.match(source, /const palette: Accent\[\]/);
   assert.match(source, /PrincipleIllustration index=\{index\}/);
   assert.match(source, /columns-1 gap-2\.5/);
