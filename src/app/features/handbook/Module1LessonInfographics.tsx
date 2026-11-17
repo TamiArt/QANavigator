@@ -18,7 +18,7 @@ export type Module1InfographicVisual = {
   layout?: "compare" | "steps" | "pyramid" | "matrix" | "grid";
 };
 
-const tile = (emoji: string, title: string, text: string, icon: IconType, tone = "blue"): Tile =>
+const tile = (emoji: string, title: string, text: string, icon: IconType, tone = "blue"): Module1InfographicTile =>
   ({ emoji, title, text, icon, tone });
 
 const LESSONS: Record<string, Module1InfographicVisual> = {
