@@ -1252,15 +1252,27 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
     "m5-10": "/infographics/m5-11-13 swagger i postman.jpg",
     "m5-12": "/infographics/m5-11-13 swagger i postman.jpg",
   } as Record<string, string>)[lesson.id];
-  const infographicImagePath = module5ImagePath ?? (
+  const module2ImagePath: string | undefined = ({
+    "m2-01": "/infographics/m2-01-project-stack.svg",
+    "m2-02": "/infographics/m2-02-project-team.svg",
+    "m2-03": "/infographics/m2-03-development-methodologies.svg",
+    "m2-06": "/infographics/m2-06-planning-poker.svg",
+    "m2-07": "/infographics/m2-07-sprint-retrospective.svg",
+    "m2-08": "/infographics/m2-08-scrum-video-guide.svg",
+    "m2-09": "/infographics/m2-09-methodologies-video-guide.svg",
+    "m2-10": "/infographics/m2-10-kanban.svg",
+    "m2-11": "/infographics/m2-11-hybrid-models.svg",
+    "m2-12": "/infographics/m2-12-company-types-topic.svg",
+    "m2-04": "/infographics/m2-04-scrum-context.svg",
+    "m2-05": "/infographics/m2-05-sprint-planning.svg",
+  } as Record<string, string>)[lesson.id];
+  const infographicImagePath = module2ImagePath ?? module5ImagePath ?? (
     isTestTypesInfographic ? "/infographics/m1-09-vidi-testirovaniya.png"
       : isTestDocumentationInfographic ? "/infographics/m4-01-test documentation.png"
         : isTestPlanInfographic ? "/infographics/m4-02-vajnost.png"
           : isTestPlanDetailsInfographic ? "/infographics/m4-03-testplan.png"
             : isTestCasesInfographic ? "/infographics/m4-04-teskeys.png"
-              : isScrumContextInfographic ? "/infographics/m2-04-scrum-context.svg"
-                : isSprintPlanningInfographic ? "/infographics/m2-05-sprint-planning.svg"
-                  : undefined
+              : undefined
   );
 
   return (
@@ -1278,7 +1290,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
         <TestingDefinitionDiagram language={language} />
       ) : /^m1-(0[2-9]|10|11)$/.test(lesson.id) ? (
         <Module1LessonInfographic lessonId={lesson.id} />
-      ) : module5ImagePath || isTestTypesInfographic || isScrumContextInfographic || isSprintPlanningInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? (
+      ) : module2ImagePath || module5ImagePath || isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? (
         <div className="min-w-0 overflow-hidden bg-white p-2 sm:p-4">
           <div
             className="mx-auto w-full max-w-[1065px] overflow-hidden rounded-[18px] bg-white"
@@ -1290,7 +1302,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
           >
             <img
               src={infographicImagePath}
-              alt={module5ImagePath ? `Инфографика: ${lesson.title}` : isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"}
+              alt={module2ImagePath || module5ImagePath ? `Инфографика: ${lesson.title}` : isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"}
               width={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1054 : 1065}
               height={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1492 : 1476}
               decoding="async"
