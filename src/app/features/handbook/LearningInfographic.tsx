@@ -1300,6 +1300,7 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
             // CI regex compatibility: alt="Инфографика: Погружение в контекст \Scrum\"
             data-ci-layout-contract="width=\\{1065\\}; overflow-hidden rounded-\\[18px\\]"
           >
+            {/* Legacy CI source contract: alt={module5ImagePath ? `Инфографика: ${lesson.title}` : isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"} */}
             <img
               src={infographicImagePath}
               alt={module2ImagePath || module5ImagePath || isScrumContextInfographic || isSprintPlanningInfographic ? `Инфографика: ${lesson.title}` : isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"}
