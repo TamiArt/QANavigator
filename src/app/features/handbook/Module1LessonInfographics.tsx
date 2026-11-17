@@ -7,13 +7,13 @@ import {
 } from "lucide-react";
 
 type IconType = React.ComponentType<{ className?: string }>;
-type Tile = { emoji: string; title: string; text: string; icon: IconType; tone?: string };
-type LessonVisual = {
+export type Module1InfographicTile = { emoji?: string; title: string; text: string; icon: IconType; tone?: string };
+export type Module1InfographicVisual = {
   eyebrow: string;
   headline: string;
   description: string;
   flow?: string[];
-  tiles: Tile[];
+  tiles: Module1InfographicTile[];
   takeaway: string;
   layout?: "compare" | "steps" | "pyramid" | "matrix" | "grid";
 };
@@ -21,7 +21,7 @@ type LessonVisual = {
 const tile = (emoji: string, title: string, text: string, icon: IconType, tone = "blue"): Tile =>
   ({ emoji, title, text, icon, tone });
 
-const LESSONS: Record<string, LessonVisual> = {
+const LESSONS: Record<string, Module1InfographicVisual> = {
   "m1-02": {
     eyebrow: "ТРИ ПОНЯТИЯ — ТРИ УРОВНЯ РАБОТЫ С КАЧЕСТВОМ",
     headline: "QA → QC → Testing",
@@ -193,7 +193,7 @@ function FlowStrip({ items }: { items: string[] }) {
   </div>;
 }
 
-function TileCard({ item, index }: { item: Tile; index: number }) {
+function TileCard({ item, index }: { item: Module1InfographicTile; index: number }) {
   const Icon = item.icon;
   return <article className="flex min-w-0 gap-3 rounded-[18px] border-2 border-blue-100 bg-white p-3 shadow-[2px_3px_0_rgba(30,64,175,0.05)]">
     <div className="flex shrink-0 flex-col items-center gap-1">
@@ -204,7 +204,7 @@ function TileCard({ item, index }: { item: Tile; index: number }) {
     </div>
     <div className="min-w-0">
       <div className="mb-1 flex flex-wrap items-center gap-1.5">
-        <span className="text-base leading-none" aria-hidden="true">{item.emoji}</span>
+        {item.emoji ? <span className="text-base leading-none" aria-hidden="true">{item.emoji}</span> : null}
         <h5 className="text-[12px] font-extrabold leading-tight text-blue-950">{item.title}</h5>
       </div>
       <p className="text-[10px] leading-[1.55] text-slate-600">{item.text}</p>
@@ -212,7 +212,7 @@ function TileCard({ item, index }: { item: Tile; index: number }) {
   </article>;
 }
 
-function Pyramid({ tiles }: { tiles: Tile[] }) {
+function Pyramid({ tiles }: { tiles: Module1InfographicTile[] }) {
   return <div className="rounded-2xl border-2 border-blue-100 bg-white p-3 sm:p-4">
     <div className="mx-auto flex max-w-2xl flex-col items-center gap-1.5">
       {tiles.slice().reverse().map((item, index) => {
@@ -244,9 +244,7 @@ function SeverityPriorityMatrix() {
   </div>;
 }
 
-export function Module1LessonInfographic({ lessonId }: { lessonId: string }) {
-  const visual = LESSONS[lessonId];
-  if (!visual) return null;
+export function Module1StyleInfographic({ visual }: { visual: Module1InfographicVisual }) {
   return <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:p-5">
     <div className="mb-3 rounded-[22px] border-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/70 to-violet-50/40 p-4 sm:p-5">
       <div className="mb-2 inline-flex rounded-full bg-blue-700 px-2.5 py-1 text-[9px] font-black tracking-wider text-white">{visual.eyebrow}</div>
@@ -264,4 +262,9 @@ export function Module1LessonInfographic({ lessonId }: { lessonId: string }) {
       <div><p className="text-[11px] font-extrabold text-amber-950">Главное, что нужно запомнить</p><p className="mt-1 text-[10px] leading-[1.5] text-amber-900">{visual.takeaway}</p></div>
     </div>
   </div>;
+}
+
+export function Module1LessonInfographic({ lessonId }: { lessonId: string }) {
+  const visual = LESSONS[lessonId];
+  return visual ? <Module1StyleInfographic visual={visual} /> : null;
 }

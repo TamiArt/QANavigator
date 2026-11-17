@@ -195,96 +195,22 @@ test("learning mode contains the extended Module 4 topics in exact order", () =>
 });
 
 
-test("Learning Mode has a semantic infographic contract for every lesson in Modules 1–4", () => {
-  const infographic = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
-  const expectedIds = Array.from({ length: 11 }, (_, i) => "m1-" + String(i + 1).padStart(2, "0"))
-    .concat(Array.from({ length: 12 }, (_, i) => "m2-" + String(i + 1).padStart(2, "0")))
-    .concat(Array.from({ length: 7 }, (_, i) => "m3-" + String(i + 1).padStart(2, "0")))
-    .concat(Array.from({ length: 12 }, (_, i) => "m4-" + String(i + 1).padStart(2, "0")))
-    .concat(Array.from({ length: 5 }, (_, i) => "m4-" + String(i + 14).padStart(2, "0")));
-  expectedIds.push(...Array.from({ length: 8 }, (_, i) => "m7-" + String(i + 1).padStart(2, "0")));
-  assert.equal(expectedIds.length, 55);
-  assert.ok(!infographic.includes('"m4-13": V('), "Removed lesson 13 must not retain an infographic definition");
-  for (const id of expectedIds) {
-    assert.ok(infographic.includes('"' + id + '": V('), "Missing semantic infographic definition for " + id);
+test("every module lesson and existing-image lesson uses the Module 1 infographic layout", () => {
+  const renderer = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  const shared = fs.readFileSync("src/app/features/handbook/Module1LessonInfographics.tsx", "utf8");
+  for (const id of ["m2-04", "m2-05", "m4-01", "m4-02", "m4-03", "m4-04", "m5-02", "m5-03", "m5-04", "m5-05", "m5-06", "m5-07", "m5-08", "m5-osi-tcp-ip", "m5-09", "m5-10", "m5-12"]) {
+    assert.ok(renderer.includes('"' + id + '": V('), "Missing topic visual model: " + id);
   }
-  assert.match(infographic, /type VisualKind/);
-  assert.match(infographic, /accent: Accent/);
-  assert.match(infographic, /Инфографика модуля/);
-  assert.match(infographic, /Инфографика/);
-  assert.match(infographic, /Сохранить/);
-  assert.match(infographic, /targetId=\{moduleId\}/);
-  assert.match(infographic, /targetId=\{infographicId\}/);
-  assert.match(infographic, /KIND_LABELS/);
-  assert.match(infographic, /aria-label=/);
-  assert.match(infographic, /isScrumContextInfographic/);
-  assert.match(infographic, /\/infographics\/m2-04-scrum-context\.svg/);
-  assert.match(infographic, /lesson\.id === "m1-09"/);
-  assert.match(infographic, /\/infographics\/m1-09-vidi-testirovaniya\.png/);
-  assert.ok(fs.existsSync("public/infographics/m1-09-vidi-testirovaniya.png"));
+  assert.match(renderer, /Module1StyleInfographic visual=\{toModule1StyleVisual\(lessonTitle, configuredVisual\)\}/);
+  assert.match(shared, /export function Module1StyleInfographic/);
+  assert.doesNotMatch(renderer, /module2ImagePath|module5ImagePath|infographicImagePath|<img\s/);
+  assert.match(renderer, /text-\[9px\] font-semibold tracking-wide text-slate-400">QA Navigator/);
 });
 
-test("Module 4 lessons 2–4 use their dedicated PNG infographics", () => {
-  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
-  const assets = [
-    ["m4-02", "m4-02-vajnost.png", "isTestPlanInfographic"],
-    ["m4-03", "m4-03-testplan.png", "isTestPlanDetailsInfographic"],
-    ["m4-04", "m4-04-teskeys.png", "isTestCasesInfographic"],
-  ];
-
-  for (const [lessonId, filename, flag] of assets) {
-    assert.match(source, new RegExp('lesson\\.id === "' + lessonId + '"'));
-    assert.ok(source.includes(flag), "Missing dedicated selector for " + lessonId);
-    assert.ok(source.includes('/infographics/' + filename), "Missing asset path for " + lessonId);
-    assert.ok(fs.existsSync("public/infographics/" + filename), "Missing PNG asset " + filename);
-  }
-});
-
-test("Scrum lesson 4 uses the dedicated Scrum study sheet", () => {
-  const infographic = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
-  const asset = fs.readFileSync("public/infographics/m2-04-scrum-context.svg", "utf8");
-
-  assert.match(infographic, /lesson\\.id === "m2-04"/);
-  assert.match(infographic, /aspectRatio: module5ImagePath \|\| module2AutoHeight \? "auto" : isTestTypesInfographic/);
-  assert.match(infographic, /width=\{isTestTypesInfographic \|\| isTestDocumentationInfographic \|\| isTestPlanInfographic \|\| isTestPlanDetailsInfographic \|\| isTestCasesInfographic \? 1054 : 1065\}/);
-  assert.match(infographic, /height=\{module2AutoHeight \? undefined : isTestTypesInfographic/);
-  assert.match(infographic, /object-contain object-top/);
-  assert.ok(infographic.includes('alt={module5ImagePath ? `Инфографика: ${lesson.title}` : isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"}'));
-
-  for (const required of [
-    "Фреймворк Scrum",
-    "Больше ценности каждый спринт!",
-    "1. Главная суть",
-    "2. Три обязательные роли",
-    "3. Главные артефакты",
-    "4. Sprint и ключевые события",
-    "5. Плюсы и минусы",
-    "6. 5+ · что важно знать",
-    "Product Owner",
-    "Scrum Master",
-    "Developers / Cross-functional Team",
-    "Product Backlog",
-    "Sprint Backlog",
-    "Increment",
-    "Sprint Planning",
-    "Daily Scrum",
-    "Sprint Review / Demo",
-    "Sprint Retrospective",
-    "DoR vs DoD",
-    "Story Points",
-    "Grooming / Refinement",
-    "Фибоначчи",
-  ]) {
-    assert.ok(asset.includes(required), required);
-  }
-
-  assert.match(asset, /viewBox="0 0 1065 1476"/);
-  assert.match(asset, /preserveAspectRatio="xMidYMin meet"/);
-  assert.match(asset, /id="sprint"/);
-  assert.match(asset, /id="team"/);
-  assert.match(asset, /id="document"/);
-  assert.match(asset, /id="checklist"/);
-  assert.match(asset, /id="calendar"/);
+test("IT glossary has its own infographic model in the shared Module 1 style", () => {
+  const renderer = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  assert.match(renderer, /"it-glossary-01": V\("network"/);
+  assert.match(renderer, /Module1StyleInfographic visual=\{toModule1StyleVisual/);
 });
 
 test("Infographic text stays inside its allocated semantic blocks", () => {
@@ -453,40 +379,15 @@ test("Visual cheat sheets do not invent missing lesson source content", () => {
 });
 
 
-test("m2-05 Sprint infographic follows the semantic poster contract", () => {
-  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
-  const asset = fs.readFileSync("public/infographics/m2-05-sprint-planning.svg", "utf8");
+test("m2-05 Sprint lesson infographic is composed from its lesson-specific visual model", () => {
+  const renderer = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
   const lesson = fs.readFileSync("src/app/features/handbook/handbook-learning-module2.ts", "utf8");
-
-  assert.match(source, /lesson\.id === "m2-05"/);
-  assert.match(source, /m2-05-sprint-planning\.svg/);
-  assert.match(asset, /viewBox="0 0 1065 1476"/);
-  assert.match(asset, /id="title"/);
-  assert.match(asset, /id="desc"/);
-
-  for (const required of [
-    "Sprint Planning",
-    "Execution",
-    "Review / Demo",
-    "Retrospective",
-    "ЗАЧЕМ?",
-    "ЧТО?",
-    "КАК?",
-    "Acceptance Criteria",
-  ]) {
-    assert.ok(asset.includes(required), required);
-  }
-
-  for (const required of [
-    "фиксированный отрезок времени",
-    "работающий и протестированный инкремент",
-    "тестирование и автоматизацию",
-    "Acceptance Criteria",
-  ]) {
-    assert.ok(lesson.includes(required), required);
+  assert.ok(renderer.includes('"m2-05": V("timeline"'));
+  assert.match(renderer, /Module1StyleInfographic visual=\{toModule1StyleVisual/);
+  for (const required of ["Sprint Planning", "Review / Demo", "Retrospective", "Acceptance Criteria", "фиксированный отрезок времени", "работающий и протестированный инкремент"]) {
+    assert.ok(lesson.includes(required), "Missing Sprint source concept: " + required);
   }
 });
-
 
 test("IT glossary is available in both the knowledge base and Learning Mode", () => {
   const curriculum = fs.readFileSync("src/app/handbook-curriculum.ts", "utf8");

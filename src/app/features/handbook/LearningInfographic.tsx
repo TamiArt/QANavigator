@@ -11,7 +11,7 @@ import { useApp } from "../../core/app-context";
 import { getLearningLessonTitle } from "./handbook-learning";
 import { getModuleTitle } from "../../core/i18n";
 import type { Language } from "../../core/i18n";
-import { Module1LessonInfographic } from "./Module1LessonInfographics";
+import { Module1LessonInfographic, Module1StyleInfographic, type Module1InfographicVisual } from "./Module1LessonInfographics";
 
 type VisualKind =
   | "flow"
@@ -53,7 +53,7 @@ const V = (
  * One visual model per Learning Mode lesson.
  * This is presentation metadata only: lesson source text, IDs and curriculum order stay untouched.
  */
-const LESSON_VISUALS: Record<string, LessonVisual> = {
+const LESSON_VISUALS: Partial<Record<string, LessonVisual>> = {
   "it-glossary-01": V("network", ["Термины", "Роли", "Процессы", "Качество", "Инструменты"], BookOpen, "lavender", [
     { icon: BookOpen, title: "Рабочие термины", text: "Аппка, шерить, апрув — понимать разговорную лексику команды и переводить её в точные действия." },
     { icon: Users, title: "Роли команды", text: "QA, разработчик, аналитик и менеджер отвечают за разные части совместного результата." },
@@ -677,6 +677,38 @@ function getVisual(lesson: LearningLesson): LessonVisual {
   ]);
 }
 
+function toModule1StyleVisual(title: string, visual: LessonVisual): Module1InfographicVisual {
+  const sequence = visual.kind === "flow" || visual.kind === "timeline" || visual.kind === "cycle";
+  const labels = visual.labels.filter(Boolean);
+  const kindLabels: Record<VisualKind, string> = {
+    flow: "ПОСЛЕДОВАТЕЛЬНОСТЬ",
+    layers: "УРОВНИ И СТРУКТУРА",
+    cycle: "РАБОЧИЙ ЦИКЛ",
+    compare: "СРАВНЕНИЕ ПОНЯТИЙ",
+    checklist: "ЧЕК-ЛИСТ ПРОВЕРКИ",
+    network: "СВЯЗИ И ВЗАИМОДЕЙСТВИЯ",
+    timeline: "ЭТАПЫ ПРОЦЕССА",
+    pyramid: "УРОВНИ ИЕРАРХИИ",
+  };
+  const toneByAccent: Record<Accent, string> = {
+    blue: "blue", lavender: "violet", mint: "mint", yellow: "yellow", pink: "rose", orange: "yellow",
+  };
+  return {
+    eyebrow: (kindLabels[visual.kind] + (labels.length ? " · " + labels.slice(0, 3).join(" · ") : "")).toUpperCase(),
+    headline: title,
+    description: labels.length ? "Ключевые элементы темы: " + labels.join(" · ") + "." : "Ключевые понятия и практические ориентиры урока.",
+    flow: sequence ? labels : undefined,
+    tiles: visual.cards.map((card) => ({
+      title: card.title,
+      text: card.text,
+      icon: card.icon ?? visual.icon,
+      tone: toneByAccent[visual.accent],
+    })),
+    takeaway: visual.callout ?? ("Ключевые элементы темы: " + labels.join(" · ") + "."),
+    layout: sequence ? "steps" : visual.kind === "compare" ? "compare" : visual.kind === "pyramid" ? "pyramid" : "grid",
+  };
+}
+
 function CardIllustration({ kind, index }: { kind: VisualKind; index: number }) {
   const palettes = [
     ["#DBEAFE", "#2563EB", "#34D399"],
@@ -1229,53 +1261,9 @@ function TestingDefinitionDiagram({ language }: { language: Language }) {
 function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
   const { language } = useApp();
   const lessonTitle = getLearningLessonTitle(lesson, language);
-  const isIntroInfographic = lesson.id === "m1-01";
-  const visual = getVisual(lesson);
   const infographicId = `learning-infographic-${lesson.id}`;
-  const isTestTypesInfographic = lesson.id === "m1-09";
-  const isScrumContextInfographic = lesson.id === "m2-04";
-  // CI contract: lesson\.id === "m2-04"
-  const isSprintPlanningInfographic = lesson.id === "m2-05";
-  const isTestDocumentationInfographic = lesson.id === "m4-01";
-  const isTestPlanInfographic = lesson.id === "m4-02";
-  const isTestPlanDetailsInfographic = lesson.id === "m4-03";
-  const isTestCasesInfographic = lesson.id === "m4-04";
-  const module5ImagePath: string | undefined = ({
-    "m5-02": "/infographics/m5-02-klient-servernaya arhitectura.jpg",
-    "m5-03": "/infographics/m5-03-TCP.jpg",
-    "m5-04": "/infographics/m5-04-DNS.jpg",
-    "m5-05": "/infographics/m5-05-API i metodi.jpg",
-    "m5-06": "/infographics/m5-06-07-08 http i kodi.jpg",
-    "m5-07": "/infographics/m5-06-07-08 http i kodi.jpg",
-    "m5-08": "/infographics/m5-06-07-08 http i kodi.jpg",
-    "m5-osi-tcp-ip": "/infographics/m5-09 oci i tcp ip.jpg",
-    "m5-09": "/infographics/m5-10 rest i restful.jpg",
-    "m5-10": "/infographics/m5-11-13 swagger i postman.jpg",
-    "m5-12": "/infographics/m5-11-13 swagger i postman.jpg",
-  } as Record<string, string>)[lesson.id];
-  const module2ImagePath: string | undefined = ({
-    "m2-01": "/infographics/m2-01-project-stack.svg",
-    "m2-02": "/infographics/m2-02-project-team.svg",
-    "m2-03": "/infographics/m2-03-development-methodologies.svg",
-    "m2-06": "/infographics/m2-06-planning-poker.svg",
-    "m2-07": "/infographics/m2-07-sprint-retrospective.svg",
-    "m2-08": "/infographics/m2-08-scrum-video-guide.svg",
-    "m2-09": "/infographics/m2-09-methodologies-video-guide.svg",
-    "m2-10": "/infographics/m2-10-kanban.svg",
-    "m2-11": "/infographics/m2-11-hybrid-models.svg",
-    "m2-12": "/infographics/m2-12-company-types-topic.svg",
-    "m2-04": "/infographics/m2-04-scrum-context.svg",
-    "m2-05": "/infographics/m2-05-sprint-planning.svg",
-  } as Record<string, string>)[lesson.id];
-  const module2AutoHeight = Boolean(module2ImagePath && !isScrumContextInfographic && !isSprintPlanningInfographic);
-  const infographicImagePath = module2ImagePath ?? module5ImagePath ?? (
-    isTestTypesInfographic ? "/infographics/m1-09-vidi-testirovaniya.png"
-      : isTestDocumentationInfographic ? "/infographics/m4-01-test documentation.png"
-        : isTestPlanInfographic ? "/infographics/m4-02-vajnost.png"
-          : isTestPlanDetailsInfographic ? "/infographics/m4-03-testplan.png"
-            : isTestCasesInfographic ? "/infographics/m4-04-teskeys.png"
-              : undefined
-  );
+  const configuredVisual = LESSON_VISUALS[lesson.id];
+  const visual = getVisual(lesson);
 
   return (
     <section
@@ -1285,45 +1273,25 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
     >
       <div className="flex items-center justify-between gap-3 border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-2 sm:px-5">
         <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{lessonTitle}</h4>
-        <PdfDownloadButton targetId={infographicId} imagePath={infographicImagePath} language={language} />
+        <PdfDownloadButton targetId={infographicId} language={language} />
       </div>
 
-      {isIntroInfographic ? (
+      {lesson.id === "m1-01" ? (
         <TestingDefinitionDiagram language={language} />
       ) : /^m1-(0[2-9]|10|11)$/.test(lesson.id) ? (
         <Module1LessonInfographic lessonId={lesson.id} />
-      ) : module2ImagePath || module5ImagePath || isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? (
-        <div className="min-w-0 overflow-hidden bg-white p-2 sm:p-4">
-          <div
-            className="mx-auto w-full max-w-[1065px] overflow-hidden rounded-[18px] bg-white"
-            style={{ aspectRatio: module5ImagePath || module2AutoHeight ? "auto" : isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? "1054 / 1492" : "1065 / 1476" }}
-            // CI regex compatibility for the immutable source contracts:
-            // width=\{1065\}, height=\{1476\}, and overflow-hidden rounded-\[18px\]
-            // CI regex compatibility: alt="Инфографика: Погружение в контекст \Scrum\"
-            data-ci-layout-contract="width=\\{1065\\}; overflow-hidden rounded-\\[18px\\]"
-          >
-            {/* Legacy CI source contract: alt={module5ImagePath ? `Инфографика: ${lesson.title}` : isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"} */}
-            <img
-              src={infographicImagePath}
-              alt={module2ImagePath || module5ImagePath || isScrumContextInfographic || isSprintPlanningInfographic ? `Инфографика: ${lesson.title}` : isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"}
-              width={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1054 : 1065}
-              height={module2AutoHeight ? undefined : isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1492 : 1476}
-              decoding="async"
-              className={`block ${module5ImagePath || module2AutoHeight ? "h-auto" : "h-full"} w-full max-w-none object-contain object-top`}
-            />
-          </div>
-        </div>
+      ) : configuredVisual ? (
+        <Module1StyleInfographic visual={toModule1StyleVisual(lessonTitle, configuredVisual)} />
       ) : (
         <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:p-4">
           <VisualDiagram visual={visual} title={lessonTitle} />
         </div>
       )}
-      {lesson.id.startsWith("m1-") ? (
-        <div className="px-4 pb-3 text-right text-[9px] font-semibold tracking-wide text-slate-400">QA Navigator</div>
-      ) : null}
+      <div className="px-4 pb-3 text-right text-[9px] font-semibold tracking-wide text-slate-400">QA Navigator</div>
     </section>
   );
 }
+
 function ModuleInfographic({ module }: { module: LearningModule }) {
   const { language } = useApp();
   const moduleTitle = getModuleTitle(language, module.id, module.title);

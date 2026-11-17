@@ -35,5 +35,5 @@ test("Module 1 infographics do not render empty matrix cells and keep only the s
   assert.match(infographic, />Критерий<\/div>/);
   assert.doesNotMatch(infographic, /<div[^>]*>\s*<\/div>/);
   assert.match(renderer, /lesson\.id\.startsWith\("m1-"\)/);
-  assert.match(renderer, /text-\[9px\][^>]*>QA Navigator<\/div>/);
+  assert.match(renderer, /text-\[9px\] font-semibold tracking-wide text-slate-400">QA Navigator<\/div>/);
 });
