@@ -59,8 +59,8 @@ test("Module 5 static infographic mappings are lesson-specific and preserve intr
   ]) {
     assert.ok(mapping.includes('"' + lessonId + '": "/infographics/' + filename + '"'), "Incorrect or missing image mapping for " + lessonId);
   }
-  assert.match(source, /style=\{\{ aspectRatio: module5ImagePath \? "auto"/);
-  assert.match(source, /module5ImagePath \? "h-auto" : "h-full"/);
+  assert.match(source, /aspectRatio: module5ImagePath \|\| module2AutoHeight \? "auto"/);
+  assert.match(source, /module5ImagePath \|\| module2AutoHeight \? "h-auto" : "h-full"/);
 });
 
 

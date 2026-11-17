@@ -30,3 +30,10 @@ test("Module 1 lessons 2–11 have dedicated source-grounded infographic layouts
     assert.ok(infographic.includes(title), "Missing original ISTQB principle name: " + title);
   }
 });
+
+test("Module 1 infographics do not render empty matrix cells and keep only the small QA Navigator signature", () => {
+  assert.match(infographic, />Критерий<\/div>/);
+  assert.doesNotMatch(infographic, /<div[^>]*>\s*<\/div>/);
+  assert.match(renderer, /lesson\.id\.startsWith\("m1-"\)/);
+  assert.match(renderer, /text-\[9px\][^>]*>QA Navigator<\/div>/);
+});

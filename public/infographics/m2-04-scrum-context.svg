@@ -191,4 +191,5 @@
 <text x="180" y="1375" class="body">Scrum = роли + артефакты + события → короткий Sprint →</text>
 <text x="180" y="1397" class="body">готовый Increment + обратная связь + улучшение следующего цикла.</text>
 <text x="180" y="1418" class="small">PO отвечает за ценность · Scrum Master помогает процессу · команда создаёт Increment</text>
+<text x="34" y="1458" font-family="Arial, sans-serif" font-size="12" font-weight="700" letter-spacing=".2" fill="#8aa5c5">QA Navigator</text>
 </svg>

@@ -230,7 +230,7 @@ function SeverityPriorityMatrix() {
   return <div className="rounded-2xl border-2 border-blue-100 bg-white p-3 sm:p-4">
     <p className="mb-2 text-center text-[10px] font-black uppercase tracking-wider text-blue-700">ДВА КРИТЕРИЯ ОЦЕНИВАЮТСЯ ОТДЕЛЬНО</p>
     <div className="grid grid-cols-[auto_1fr_1fr] gap-1.5 text-center">
-      <div className="flex items-center justify-center rounded-lg bg-slate-50 p-2 text-[9px] font-bold text-slate-500"> </div>
+      <div className="flex items-center justify-center rounded-lg bg-slate-50 p-2 text-[9px] font-bold text-slate-500">Критерий</div>
       <div className="rounded-lg bg-sky-50 p-2 text-[10px] font-extrabold text-blue-800">Низкий Priority</div>
       <div className="rounded-lg bg-amber-50 p-2 text-[10px] font-extrabold text-amber-800">Высокий Priority</div>
       <div className="flex items-center justify-center rounded-lg bg-rose-50 p-2 text-[10px] font-extrabold text-rose-800">Высокий Severity</div>

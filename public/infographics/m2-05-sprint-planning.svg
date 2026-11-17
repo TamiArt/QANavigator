@@ -94,4 +94,5 @@
 <use href="#target" x="75" y="1374" width="49" height="49"/>
 <text x="145" y="1398" class="h2" font-size="14.5">Хорошее планирование спринта связывает цель, задачи и способ</text>
 <text x="145" y="1419" class="h2" font-size="14.5">проверки результата — ещё до начала разработки.</text>
+<text x="34" y="1458" font-family="Arial, sans-serif" font-size="12" font-weight="700" letter-spacing=".2" fill="#8aa5c5">QA Navigator</text>
 </svg>
