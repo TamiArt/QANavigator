@@ -175,10 +175,53 @@ test("Module 7 is registered and every SQL lesson has a dedicated visual model",
   const noSqlVisual = visuals.slice(visuals.indexOf('"m7-03": V('), visuals.indexOf('"m7-04": V('));
   assert.ok(noSqlVisual.includes("Документоориентированные"), "NoSQL infographic must use the full document-oriented model name");
   assert.ok(!noSqlVisual.includes('"Документы"'), "NoSQL infographic must not use the shortened label");
-  const acidVisual = visuals.slice(visuals.indexOf('"m7-07": V('), visuals.indexOf('"m7-08": V('));
-  for (const term of ["Atomicity", "Consistency", "Isolation", "Durability", "ROLLBACK", "COMMIT", "Проверки QA"]) {
-    assert.ok(acidVisual.includes(term), "ACID infographic is missing: " + term);
+  const sqlLessonVisual = visuals.slice(visuals.indexOf('"m7-07": V('), visuals.indexOf('"m7-08": V('));
+  for (const term of [
+    "SQL (Structured Query Language — язык структурированных запросов)",
+    "Декларативный язык для определения структуры реляционной базы",
+    "Зачем SQL тестировщику",
+    "SQL-запрос",
+    "SELECT name FROM users WHERE status = 'active';",
+    "SELECT → FROM → JOIN → ON → WHERE",
+    "SELECT выбирает столбцы и выражения",
+    "FROM указывает исходную таблицу",
+    "JOIN присоединяет данные из другой таблицы",
+    "ON задаёт условие соединения таблиц",
+    "WHERE фильтрует строки по условию",
+    "SELECT → FROM → WHERE",
+    "BETWEEN",
+    "IN",
+    "INSERT INTO ... VALUES",
+    "UPDATE ... SET ... WHERE",
+    "DELETE FROM ... WHERE",
+    "CREATE DATABASE",
+    "SHOW DATABASES",
+    "USE mydb",
+    "DROP DATABASE",
+    "CREATE TABLE",
+    "DROP TABLE",
+    "DESC",
+    "GRANT",
+    "REVOKE",
+    "COMMIT",
+    "ROLLBACK",
+    "Транзакция",
+    "списания с одного счёта",
+    "Atomicity (атомарность)",
+    "Consistency (согласованность)",
+    "Isolation (изолированность)",
+    "Durability (долговечность)",
+    "PRIMARY KEY",
+    "FOREIGN KEY",
+    "CHECK",
+    "два пользователя одновременно покупают последний товар",
+    "подтверждённый заказ остаётся в базе после перезагрузки сервера",
+    "банковских операций, бухгалтерии, заказов, платежей и остатков товаров",
+    "SHOW DATABASES и USE — команды MySQL"
+  ]) {
+    assert.ok(sqlLessonVisual.includes(term), "SQL lesson infographic is missing: " + term);
   }
+  assert.ok((sqlLessonVisual.match(/\\{ title:/g) ?? []).length >= 16, "SQL lesson infographic must cover all lesson sections");
   for (let i = 1; i <= 12; i += 1) {
     const id = "m7-" + String(i).padStart(2, "0");
     assert.ok(visuals.includes('"' + id + '": V('), "Missing infographic model for " + id);
