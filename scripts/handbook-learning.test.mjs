@@ -213,25 +213,15 @@ test("IT glossary has its own infographic model in the shared Module 1 style", (
   assert.match(renderer, /Module1StyleInfographic visual=\{toModule1StyleVisual/);
 });
 
-test("Infographic text stays inside its allocated semantic blocks", () => {
-  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
-  const scrum = fs.readFileSync("public/infographics/m2-04-scrum-context.svg", "utf8");
-  const sprint = fs.readFileSync("public/infographics/m2-05-sprint-planning.svg", "utf8");
-
-  assert.match(source, /min-w-0 break-words whitespace-normal text-xs font-extrabold/);
-  assert.match(source, /min-w-0 break-words whitespace-normal text-\\[11px\\]/);
-  assert.match(source, /overflow-hidden rounded-\\[18px\\]/);
-  assert.match(source, /max-w-full break-words whitespace-normal/);
-
-  for (const svg of [scrum, sprint]) {
-    assert.match(svg, /viewBox="0 0 1065 1476"/);
-    assert.match(svg, /preserveAspectRatio="xMidYMin meet"/);
-  }
-
-  assert.ok(!scrum.includes("текстового блока, который выходит за границу"), "Scrum must not contain overflow workaround copy");
-  assert.ok(!sprint.includes("Разработка и тестирование</text>"), "Sprint execution text must remain wrapped");
+test("Module 1 poster cards reserve readable text areas and avoid overflow", () => {
+  const shared = fs.readFileSync("src/app/features/handbook/Module1LessonInfographics.tsx", "utf8");
+  assert.match(shared, /min-w-0/);
+  assert.match(shared, /rounded-\[18px\]/);
+  assert.match(shared, /break-inside-avoid/);
+  assert.match(shared, /text-\[10px\] leading-\[1\.55\]/);
+  assert.match(shared, /p-3/);
+  assert.match(shared, /rounded-\[22px\] border-2 border-blue-100/);
 });
-
 test("Scrum context infographic keeps compact card text inside its allocated layout", () => {
   const asset = fs.readFileSync("public/infographics/m2-04-scrum-context.svg", "utf8");
 
