@@ -2172,7 +2172,7 @@ Validation: run npm run test:module1-infographics and full npm run verify; inspe
 **Status: FUNCTIONAL FOUNDATION IMPLEMENTED; full target scope remains in progress.**
 
 - Added three first-class application destinations: `api-testing`, `backend-logs`, and `integrations`; each is routed through the application shell like other feature modules.
-- Converted DATABASE & SQL into an expandable sidebar group with the existing `database-workbench` page nested under it. The existing SQL workbench and its data model were not replaced.
+- DATABASE & SQL is a direct sidebar destination and opens the existing `database-workbench` page. Inside the page, the work area is titled «Работа с базами данных»; SQL builder and SQLite/WASM execution remain available.
 - API Workbench now sends browser HTTP requests for common methods, supports editable headers and request body, in-memory environment variables, basic status/body assertions, JSON validation when JSON content type is selected, response status/body/headers/size/duration, bounded local request history with sensitive-value redaction, and cURL copy. CORS and network restrictions are reported as browser limitations.
 - Backend & Logs reads user-selected files locally, supports plain text and JSON-line style parsing, extracts common timestamp/level/service/request/trace fields, masks common secrets and email addresses in displayed/exported rows, filters events, groups repeated errors and exports filtered CSV. Input is limited to 20 MB and 250,000 non-empty lines; raw files are not persisted.
 - Integrations supports Postman Collection v2.1 JSON import and round-trip export of the original collection, OpenAPI 3.x YAML/JSON parsing and operation extraction, plus Postman Environment JSON import/export. It provides official links for Postman, Swagger Editor, Elasticsearch, Kibana and Test IT.
@@ -2186,3 +2186,16 @@ Known scope still to implement before these areas match the complete Product Blu
 - IndexedDB-backed project-scoped persistence and migrations for new large QA entities remain part of the shared data-foundation work.
 
 Validation status: source and regression tests have been added, but this remote editing session has not run `npm run verify`, TypeScript, or a production build. Do not mark the milestone production-verified until those checks and desktop/mobile browser QA pass.
+
+
+## 13. Database & SQL navigation and QA query reference (2026-11-15)
+
+**Status: IMPLEMENTED IN FEATURE BRANCH; automated verification pending.**
+
+- Changed DATABASE & SQL from an expandable sidebar group with a nested «Работа с БД» entry into one direct sidebar item. Selecting it opens the database page.
+- Kept the page heading «Работа с базами данных» and the existing SQL builder / in-browser SQLite execution.
+- Added a separate «Частые SQL-запросы для QA» tab alongside «Шпаргалка SQL». It contains grouped practical queries for record lookup, counts and aggregates, NULL/empty values, duplicate detection, invalid ranges, related/orphan records, and verification of create/update/delete and calculated totals.
+- Moved the existing QA-oriented query examples out of the general SQL reference so the cheat sheet remains focused on SQL syntax and command explanations. Added search, copy actions, QA verification reminders, and a warning before destructive operations.
+- No storage schema or existing user data was changed. Query examples are templates: table and column names must be adapted to the target database. The in-app execution console remains an isolated SQLite/WASM environment, not a direct PostgreSQL/MySQL connection.
+
+Validation still required: npm run test:navigation, npm run test:database-workbench, npm run typecheck, and full npm run verify; inspect desktop and mobile layouts before considering the change production-verified.

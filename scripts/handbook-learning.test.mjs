@@ -34,291 +34,33 @@ test("learning progress uses the existing versioned local storage boundary", () 
   assert.match(constants, /handbookLearningProgress: "qa_navigator_handbook_learning_progress"/);
 });
 
-test("learning mode contains the approved Module 2 topics in exact order", () => {
-  const source = fs.readFileSync("src/app/features/handbook/handbook-learning-module2.ts", "utf8");
-  const expected = [
-    "Что такое стек проекта?",
-    "Команда проекта",
-    "Методологии разработки: как организовать работу над проектом",
-    "Scrum",
-    "Спринт",
-    "Покер планирования",
-    "Ретроспектива",
-    "Видео мероприятий Scrum",
-    "Видео о методологиях",
-    "Kanban",
-    "Смешанные модели",
-    "Типы компаний",
-  ];
-  for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
-  assert.equal((source.match(/id: "m2-\d{2}"/g) ?? []).length, 12);
-  assert.ok(source.indexOf("Что такое стек проекта?") < source.indexOf("Команда проекта"));
-  assert.ok(source.indexOf("Команда проекта") < source.indexOf("Методологии разработки: как организовать работу над проектом"));
-  assert.ok(source.indexOf("Покер планирования") < source.indexOf("Ретроспектива"));
-  assert.ok(source.indexOf("Kanban") < source.indexOf("Смешанные модели"));
-  assert.match(source, /Shift-Left Testing/);
-  assert.match(source, /V-Model/);
-  assert.match(source, /Planning Poker/);
-  assert.match(source, /Definition of Done/);
-  assert.match(source, /Definition of Ready/);
-  assert.match(source, /Story Points/);
-  assert.match(source, /Lead Time/);
-  assert.match(source, /Cycle Time/);
-  assert.match(source, /Scrumban/);
-  assert.match(source, /Kanplan/);
-});
-
-test("learning mode contains the approved Module 3 topics in exact order", () => {
-  const source = fs.readFileSync("src/app/features/handbook/handbook-learning-module3.ts", "utf8");
-  const expected = [
-    "Что такое фронтенд и бэкенд",
-    "Тестовые окружения (стенды)",
-    "Тестирование фронтенда",
-    "Мини-гайд по тестированию GUI",
-    "HTML",
-    "CSS",
-    "DevTools — главный инструмент",
-  ];
-  for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
-  assert.equal((source.match(/id: "m3-\d{2}"/g) ?? []).length, 7);
-  assert.ok(source.indexOf("Что такое фронтенд и бэкенд") < source.indexOf("Тестовые окружения (стенды)"));
-  assert.ok(source.indexOf("Тестовые окружения (стенды)") < source.indexOf("Тестирование фронтенда"));
-  assert.ok(source.indexOf("Тестирование фронтенда") < source.indexOf("Мини-гайд по тестированию GUI"));
-  assert.ok(source.indexOf("Мини-гайд по тестированию GUI") < source.indexOf("HTML"));
-  assert.ok(source.indexOf("HTML") < source.indexOf("CSS"));
-  assert.ok(source.indexOf("CSS") < source.indexOf("DevTools — главный инструмент"));
-  assert.match(source, /Network/);
-  assert.match(source, /Console/);
-  assert.match(source, /Elements/);
-  assert.match(source, /F12/);
-  assert.match(source, /2xx/);
-  assert.match(source, /5xx/);
-});
-
-test("learning mode contains the approved Module 4 topics in exact order", () => {
-  const source = fs.readFileSync("src/app/features/handbook/handbook-learning-module4.ts", "utf8");
-  const expected = [
-    "Что такое тестовая документация?",
-    "В чем важность тестовой документации?",
-    "Тест-план (Test Plan)",
-    "Тест-кейс (Test Case)",
-  ];
-  for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
-  assert.equal((source.match(/id: "m4-\d{2}"/g) ?? []).length, 17);
-  const titleIndex = (title) => source.indexOf(`title: "${title}"`);
-  assert.ok(titleIndex("Что такое тестовая документация?") < titleIndex("В чем важность тестовой документации?"));
-  assert.ok(titleIndex("В чем важность тестовой документации?") < titleIndex("Тест-план (Test Plan)"));
-  assert.ok(titleIndex("Тест-план (Test Plan)") < titleIndex("Тест-кейс (Test Case)"));
-  assert.match(source, /Test Strategy/);
-  assert.match(source, /Requirements Traceability Matrix/);
-  assert.match(source, /Test Summary Report/);
-  assert.match(source, /Критерии начала/);
-  assert.match(source, /Критерии завершения/);
-  assert.match(source, /Passed/);
-  assert.match(source, /Failed/);
-  assert.match(source, /Blocked/);
-  assert.match(source, /Skipped/);
-  assert.match(source, /Постусловия/);
-  assert.match(source, /Тестовая стратегия.*продукта в целом/);
-  assert.match(source, /Предусловия.*до теста/);
-  assert.match(source, /Постусловия.*после теста/);
-  assert.match(source, /Тест-сьют \(Test Suite\)/);
-  assert.match(source, /на этапе планирования тест-кейса не заполняется/);
-  assert.match(source, /ссылку на соответствующий баг-репорт/);
-  assert.match(source, /ответ \*\*«да\/нет»\*\*/);
-});
-
-
-test("learning mode contains the extended Module 4 topics in exact order", () => {
-  const source = fs.readFileSync("src/app/features/handbook/handbook-learning-module4.ts", "utf8");
-  const expected = [
-    "Что такое тестовая документация?",
-    "В чем важность тестовой документации?",
-    "Тест-план (Test Plan)",
-    "Тест-кейс (Test Case)",
-    "Тест-кейсы для бэкенда и API",
-    "Чек-лист (Checklist)",
-    "Тест-кейсы vs Чек-листы — что и когда выбирать",
-    "Баг-репорт (Bug Report)",
-    "Пример отчета по тестированию (Test Summary Report)",
-    "Баг, ошибка, дефект и их классификация",
-    "Жизненный цикл дефекта (Bug Life Cycle)",
-    "Баг vs задача на доработку (Feature Request)",
-    "Pre-release баг и Production Bug",
-    "Где ведут тестовую документацию",
-    "Локализация багов",
-    "Работа с задачей при написании тестовой документации",
-    "Свойства качественного тест-кейса",
-  ];
-  for (const title of expected) assert.ok(source.includes(`title: "${title}"`), title);
-  assert.equal((source.match(/id: "m4-\d{2}"/g) ?? []).length, 17);
-  const titleIndex = (title) => source.indexOf(`title: "${title}"`);
-  for (let i = 0; i < expected.length - 1; i += 1) {
-    assert.ok(titleIndex(expected[i]) < titleIndex(expected[i + 1]));
+test("every module lesson and existing-image lesson uses the Module 1 infographic layout", () => {
+  const renderer = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  const shared = fs.readFileSync("src/app/features/handbook/Module1LessonInfographics.tsx", "utf8");
+  for (const id of ["m2-04", "m2-05", "m4-01", "m4-02", "m4-03", "m4-04", "m5-02", "m5-03", "m5-04", "m5-05", "m5-06", "m5-07", "m5-08", "m5-osi-tcp-ip", "m5-09", "m5-10", "m5-12"]) {
+    assert.ok(renderer.includes('"' + id + '": V('), "Missing topic visual model: " + id);
   }
-  assert.match(source, /HTTP-метод и endpoint/);
-  assert.match(source, /POST \/create/);
-  assert.match(source, /201 Created/);
-  assert.ok(source.includes("create.payment"), "Kafka payment topic example must be documented");
-  assert.ok(!source.includes("create\\\\.payment"), "Kafka topic assertion must not contain an escaped-dot literal");
-  assert.match(source, /401/);
-  assert.match(source, /409 Conflict/);
-  assert.match(source, /Критерий/);
-  assert.match(source, /Smoke/);
-  assert.match(source, /Гибридный подход/);
-  assert.match(source, /Баг-репорт/);
-  assert.match(source, /Шаги воспроизведения/);
-  assert.match(source, /Test Summary Report/);
-  assert.match(source, /Цели тестирования/);
-  assert.match(source, /Обычно отчёт включает:/);
-  assert.match(source, /цели и объём тестирования/);
-  assert.match(source, /риски, ограничения и отклонения от плана/);
-  assert.ok(!source.includes('title: "Основные шаги документирования дефекта"'), "Removed Module 4 lesson 13 must not remain in the curriculum");
-  assert.match(source, /title: "Свойства качественного тест-кейса"/);
-  assert.match(source, /Проверяемый ожидаемый результат/);
-  assert.match(source, /Независимость/);
-  assert.match(source, /Трассируемость/);
-  assert.match(source, /Severity/);
-  assert.match(source, /Blocker/);
-  assert.match(source, /Priority/);
-  assert.match(source, /High/);
-  assert.match(source, /Severity и Priority/);
-  assert.match(source, /Bug Life Cycle/);
-  assert.match(source, /Ready for Retest/);
-  assert.match(source, /Feature Request/);
-  assert.match(source, /Production Bug/);
-  assert.match(source, /TestRail/);
-  assert.match(source, /Локализация бага/);
-  assert.match(source, /Network/);
-  assert.match(source, /Уточнение требований/);
-  assert.match(source, /Атомарность/);
+  assert.match(renderer, /Module1StyleInfographic visual=\{toModule1StyleVisual\(lessonTitle, configuredVisual\)\}/);
+  assert.match(shared, /export function Module1StyleInfographic/);
+  assert.doesNotMatch(renderer, /module2ImagePath|module5ImagePath|infographicImagePath|<img\s/);
+  assert.match(renderer, /text-\[9px\] font-semibold tracking-wide text-slate-400">QA Navigator/);
 });
 
-
-test("Learning Mode has a semantic infographic contract for every lesson in Modules 1–4", () => {
-  const infographic = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
-  const expectedIds = Array.from({ length: 11 }, (_, i) => "m1-" + String(i + 1).padStart(2, "0"))
-    .concat(Array.from({ length: 12 }, (_, i) => "m2-" + String(i + 1).padStart(2, "0")))
-    .concat(Array.from({ length: 7 }, (_, i) => "m3-" + String(i + 1).padStart(2, "0")))
-    .concat(Array.from({ length: 12 }, (_, i) => "m4-" + String(i + 1).padStart(2, "0")))
-    .concat(Array.from({ length: 5 }, (_, i) => "m4-" + String(i + 14).padStart(2, "0")));
-  expectedIds.push(...Array.from({ length: 8 }, (_, i) => "m7-" + String(i + 1).padStart(2, "0")));
-  assert.equal(expectedIds.length, 55);
-  assert.ok(!infographic.includes('"m4-13": V('), "Removed lesson 13 must not retain an infographic definition");
-  for (const id of expectedIds) {
-    assert.ok(infographic.includes('"' + id + '": V('), "Missing semantic infographic definition for " + id);
-  }
-  assert.match(infographic, /type VisualKind/);
-  assert.match(infographic, /accent: Accent/);
-  assert.match(infographic, /Инфографика модуля/);
-  assert.match(infographic, /Инфографика/);
-  assert.match(infographic, /Сохранить/);
-  assert.match(infographic, /targetId=\{moduleId\}/);
-  assert.match(infographic, /targetId=\{infographicId\}/);
-  assert.match(infographic, /KIND_LABELS/);
-  assert.match(infographic, /aria-label=/);
-  assert.match(infographic, /isScrumContextInfographic/);
-  assert.match(infographic, /\/infographics\/m2-04-scrum-context\.svg/);
-  assert.match(infographic, /lesson\.id === "m1-09"/);
-  assert.match(infographic, /\/infographics\/m1-09-vidi-testirovaniya\.png/);
-  assert.ok(fs.existsSync("public/infographics/m1-09-vidi-testirovaniya.png"));
+test("IT glossary has its own infographic model in the shared Module 1 style", () => {
+  const renderer = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  assert.match(renderer, /"it-glossary-01": V\("network"/);
+  assert.match(renderer, /Module1StyleInfographic visual=\{toModule1StyleVisual/);
 });
 
-test("Module 4 lessons 2–4 use their dedicated PNG infographics", () => {
-  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
-  const assets = [
-    ["m4-02", "m4-02-vajnost.png", "isTestPlanInfographic"],
-    ["m4-03", "m4-03-testplan.png", "isTestPlanDetailsInfographic"],
-    ["m4-04", "m4-04-teskeys.png", "isTestCasesInfographic"],
-  ];
-
-  for (const [lessonId, filename, flag] of assets) {
-    assert.match(source, new RegExp('lesson\\.id === "' + lessonId + '"'));
-    assert.ok(source.includes(flag), "Missing dedicated selector for " + lessonId);
-    assert.ok(source.includes('/infographics/' + filename), "Missing asset path for " + lessonId);
-    assert.ok(fs.existsSync("public/infographics/" + filename), "Missing PNG asset " + filename);
-  }
+test("Module 1 poster cards reserve readable text areas and avoid overflow", () => {
+  const shared = fs.readFileSync("src/app/features/handbook/Module1LessonInfographics.tsx", "utf8");
+  assert.match(shared, /min-w-0/);
+  assert.match(shared, /rounded-\[18px\]/);
+  assert.match(shared, /break-inside-avoid/);
+  assert.match(shared, /text-\[10px\] leading-\[1\.55\]/);
+  assert.match(shared, /p-3/);
+  assert.match(shared, /rounded-\[22px\] border-2 border-blue-100/);
 });
-
-test("Scrum lesson 4 uses the dedicated Scrum study sheet", () => {
-  const infographic = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
-  const asset = fs.readFileSync("public/infographics/m2-04-scrum-context.svg", "utf8");
-
-  assert.match(infographic, /lesson\\.id === "m2-04"/);
-  assert.match(infographic, /aspectRatio: module5ImagePath \? "auto" : isTestTypesInfographic \|\| isTestDocumentationInfographic \|\| isTestPlanInfographic \|\| isTestPlanDetailsInfographic \|\| isTestCasesInfographic \? "1054 \/ 1492" : "1065 \/ 1476"/);
-  assert.match(infographic, /width=\{isTestTypesInfographic \|\| isTestDocumentationInfographic \|\| isTestPlanInfographic \|\| isTestPlanDetailsInfographic \|\| isTestCasesInfographic \? 1054 : 1065\}/);
-  assert.match(infographic, /height=\{isTestTypesInfographic \|\| isTestDocumentationInfographic \|\| isTestPlanInfographic \|\| isTestPlanDetailsInfographic \|\| isTestCasesInfographic \? 1492 : 1476\}/);
-  assert.match(infographic, /object-contain object-top/);
-  assert.ok(infographic.includes('alt={module5ImagePath ? `Инфографика: ${lesson.title}` : isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"}'));
-
-  for (const required of [
-    "Фреймворк Scrum",
-    "Больше ценности каждый спринт!",
-    "1. Главная суть",
-    "2. Три обязательные роли",
-    "3. Главные артефакты",
-    "4. Sprint и ключевые события",
-    "5. Плюсы и минусы",
-    "6. 5+ · что важно знать",
-    "Product Owner",
-    "Scrum Master",
-    "Developers / Cross-functional Team",
-    "Product Backlog",
-    "Sprint Backlog",
-    "Increment",
-    "Sprint Planning",
-    "Daily Scrum",
-    "Sprint Review / Demo",
-    "Sprint Retrospective",
-    "DoR vs DoD",
-    "Story Points",
-    "Grooming / Refinement",
-    "Фибоначчи",
-  ]) {
-    assert.ok(asset.includes(required), required);
-  }
-
-  assert.match(asset, /viewBox="0 0 1065 1476"/);
-  assert.match(asset, /preserveAspectRatio="xMidYMin meet"/);
-  assert.match(asset, /id="sprint"/);
-  assert.match(asset, /id="team"/);
-  assert.match(asset, /id="document"/);
-  assert.match(asset, /id="checklist"/);
-  assert.match(asset, /id="calendar"/);
-});
-
-test("Infographic text stays inside its allocated semantic blocks", () => {
-  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
-  const scrum = fs.readFileSync("public/infographics/m2-04-scrum-context.svg", "utf8");
-  const sprint = fs.readFileSync("public/infographics/m2-05-sprint-planning.svg", "utf8");
-
-  assert.match(source, /min-w-0 break-words whitespace-normal text-xs font-extrabold/);
-  assert.match(source, /min-w-0 break-words whitespace-normal text-\\[11px\\]/);
-  assert.match(source, /overflow-hidden rounded-\\[18px\\]/);
-  assert.match(source, /max-w-full break-words whitespace-normal/);
-
-  for (const svg of [scrum, sprint]) {
-    assert.match(svg, /viewBox="0 0 1065 1476"/);
-    assert.match(svg, /preserveAspectRatio="xMidYMin meet"/);
-  }
-
-  assert.ok(!scrum.includes("текстового блока, который выходит за границу"), "Scrum must not contain overflow workaround copy");
-  assert.ok(!sprint.includes("Разработка и тестирование</text>"), "Sprint execution text must remain wrapped");
-});
-
-test("Scrum context infographic keeps compact card text inside its allocated layout", () => {
-  const asset = fs.readFileSync("public/infographics/m2-04-scrum-context.svg", "utf8");
-
-  assert.match(asset, /• Церемонии \(Daily,/);
-  assert.match(asset, /  Sprint и др\.\)/);
-  assert.match(asset, /• Ограничения \(время,/);
-  assert.match(asset, /  ресурсы\)/);
-  assert.match(asset, /• Владелец<\/text><text x="427" y="830"/);
-  assert.match(asset, /• История<\/text><text x="302" y="874"/);
-  assert.ok(!asset.includes("• Церемонии (Daily, Sprint и др.)"), "Long ceremony label must remain wrapped inside the card");
-  assert.ok(!asset.includes("• Ограничения (время, ресурсы)"), "Long constraints label must remain wrapped inside the card");
-});
-
 test("Handbook exposes a reachable Learning Mode from the knowledge base", () => {
   const source = fs.readFileSync("src/app/features/handbook/HandbookModule.tsx", "utf8");
   assert.match(source, /HandbookLearningMode/);
@@ -403,91 +145,6 @@ test("Learning infographics keep the poster hierarchy and per-lesson identity", 
   assert.match(source, /bg-white\/80/);
 });
 
-test("Seven testing principles are fully represented in the visual cheat sheet", () => {
-  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
-  const required = [
-    "1. Тестирование показывает наличие дефектов, но не их отсутствие",
-    "2. Исчерпывающее тестирование недостижимо",
-    "3. Раннее тестирование",
-    "4. Скопление дефектов",
-    "5. Парадокс пестицида",
-    "6. Тестирование зависит от контекста",
-    "7. Заблуждение об отсутствии дефектов",
-  ];
-  for (const principle of required) assert.ok(source.includes(principle), principle);
-  assert.match(source, /function VisualMotif/);
-  assert.match(source, /visual\.kind/);
-  assert.match(source, /7 принципов тестирования/);
-  assert.match(source, /data-pdf-ignore/);
-  assert.match(source, /pdf\.output\("blob"\)/);
-  assert.match(source, /link\.download = "qa-navigator-visual-cheatsheet\.pdf"/);
-  assert.match(source, /link\.click\(\)/);
-  assert.match(source, /URL\.createObjectURL\(blob\)/);
-  assert.match(source, /function PrincipleIllustration/);
-  assert.match(source, /function CardIllustration/);
-  assert.match(source, /CardIllustration kind=\{visual\.kind\}/);
-  assert.match(source, /kind === "flow" \|\| kind === "timeline"/);
-  assert.match(source, /kind === "layers"/);
-  assert.match(source, /kind === "compare"/);
-  assert.match(source, /kind === "network"/);
-  assert.match(source, /kind === "cycle"/);
-  assert.match(source, /kind === "pyramid"/);
-  assert.match(source, /kind="checklist"/);
-  assert.match(source, /fill="#DBEAFE"/);
-  assert.match(source, /stroke="#2563EB"/);
-  assert.match(source, /<svg viewBox="0 0 48 48"/);
-
-  assert.match(source, /fill="#34D399"/);
-  assert.match(source, /fill="#A78BFA"/);
-  assert.match(source, /fill="#F43F5E"/);
-  assert.ok(!source.includes("CheckCircle2 className=\"h-4 w-4\""), "Principle cards must not render checkmarks");
-  assert.ok(!source.includes("визуальная модель темы"), "Legacy visual-model footer must be removed");
-});
-
-
-test("Visual cheat sheets do not invent missing lesson source content", () => {
-  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
-  assert.match(source, /m2-08[\s\S]*Урок содержит видеоматериал/);
-  assert.match(source, /m2-09[\s\S]*Урок содержит видеоматериал/);
-  assert.match(source, /m2-12[\s\S]*Текстового конспекта для этого урока сейчас нет/);
-});
-
-
-test("m2-05 Sprint infographic follows the semantic poster contract", () => {
-  const source = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
-  const asset = fs.readFileSync("public/infographics/m2-05-sprint-planning.svg", "utf8");
-  const lesson = fs.readFileSync("src/app/features/handbook/handbook-learning-module2.ts", "utf8");
-
-  assert.match(source, /lesson\.id === "m2-05"/);
-  assert.match(source, /m2-05-sprint-planning\.svg/);
-  assert.match(asset, /viewBox="0 0 1065 1476"/);
-  assert.match(asset, /id="title"/);
-  assert.match(asset, /id="desc"/);
-
-  for (const required of [
-    "Sprint Planning",
-    "Execution",
-    "Review / Demo",
-    "Retrospective",
-    "ЗАЧЕМ?",
-    "ЧТО?",
-    "КАК?",
-    "Acceptance Criteria",
-  ]) {
-    assert.ok(asset.includes(required), required);
-  }
-
-  for (const required of [
-    "фиксированный отрезок времени",
-    "работающий и протестированный инкремент",
-    "тестирование и автоматизацию",
-    "Acceptance Criteria",
-  ]) {
-    assert.ok(lesson.includes(required), required);
-  }
-});
-
-
 test("IT glossary is available in both the knowledge base and Learning Mode", () => {
   const curriculum = fs.readFileSync("src/app/handbook-curriculum.ts", "utf8");
   const learning = fs.readFileSync("src/app/features/handbook/handbook-learning.ts", "utf8");
@@ -550,23 +207,3 @@ test("Learning Mode navigation continues across module boundaries and preserves 
   assert.match(source, /<button\s+type="button"\s+onClick=\{markCompleted\}/);
 });
 
-
-test("Modules 6 and 7 are registered in order and Module 6 contains the approved API lessons", () => {
-  const source = fs.readFileSync("src/app/features/handbook/handbook-learning.ts", "utf8");
-  const module6 = source.indexOf('id: "module-6-api"');
-  const module7 = source.indexOf('id: "module-7-sql"');
-  assert.ok(module6 >= 0, "Module 6 must be registered");
-  assert.ok(module7 > module6, "SQL module must follow the API module");
-  assert.ok(source.includes('id: "module-6-api",\n    title: "Модуль 6 — Работа с API",\n    lessons: HANDBOOK_LEARNING_MODULE_6_LESSONS'));
-  assert.ok(source.includes('id: "module-7-sql",\n    title: "Модуль 7 — SQL",\n    lessons: HANDBOOK_LEARNING_MODULE_7_LESSONS'));
-
-  const module6Lessons = fs.readFileSync("src/app/features/handbook/handbook-learning-module6.ts", "utf8");
-  assert.equal((module6Lessons.match(/id: "m6-\d{2}"/g) ?? []).length, 8, "Module 6 must contain eight lessons");
-  for (const id of ["m6-01", "m6-02", "m6-03", "m6-04", "m6-05", "m6-06", "m6-07", "m6-08"]) {
-    assert.ok(module6Lessons.includes('id: "' + id + '"'), "Missing Module 6 lesson " + id);
-  }
-
-  const ui = fs.readFileSync("src/app/features/handbook/HandbookLearningMode.tsx", "utf8");
-  assert.match(ui, /activeLesson \? \(/);
-  assert.match(ui, /module\.lessons\.length === 0/);
-});

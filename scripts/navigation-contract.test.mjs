@@ -63,8 +63,9 @@ test("sidebar exposes the requested product areas and routes existing modules in
   assert.equal(sections.find((section) => section.label === "API TESTING").directItemId, "api-testing");
   assert.equal(sections.find((section) => section.label === "BACKEND & LOGS").directItemId, "backend-logs");
   assert.equal(sections.find((section) => section.label === "ИНТЕГРАЦИИ").directItemId, "integrations");
-  assert.equal(sections.find((section) => section.label === "DATABASE & SQL").collapsible, true);
-  assert.ok(sections.find((section) => section.label === "DATABASE & SQL").itemIds.includes("database-workbench"));
+  assert.equal(sections.find((section) => section.label === "DATABASE & SQL").directItemId, "database-workbench");
+  assert.equal(sections.find((section) => section.label === "DATABASE & SQL").collapsible, undefined);
+  assert.equal(navigation.APP_NAVIGATION.find((item) => item.id === "database-workbench").label, "DATABASE & SQL");
   assert.equal(sections.find((section) => section.label === "ГЕНЕРАТОР ТЕСТОВЫХ ДАННЫХ").directItemId, "test-data");
   assert.equal(sections.find((section) => section.label === "НАСТРОЙКИ").directItemId, "settings");
   assert.equal(navigation.APP_NAVIGATION.find((item) => item.id === "documentation").label, "Тестовая документация");

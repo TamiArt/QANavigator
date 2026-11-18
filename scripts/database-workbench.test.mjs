@@ -14,6 +14,24 @@ const appSource = await readFile("src/app/App.tsx", "utf8");
 const nestedBuilderSource = await readFile("src/app/features/database-workbench/nested-subquery-builder.mjs", "utf8");
 const ddlDmlBuilderSource = await readFile("src/app/features/database-workbench/ddl-dml-builder.mjs", "utf8");
 
+test("DATABASE & SQL is a direct sidebar destination and the database page has three separate work areas", () => {
+  assert.ok(appSource.includes('case "database-workbench": return <DatabaseWorkbenchModule />;'));
+  assert.ok(source.includes('useState<"builder" | "reference" | "qa-queries">("builder")'));
+  assert.ok(source.includes('title: "Шпаргалка SQL"'));
+  assert.ok(source.includes('title: "Частые SQL-запросы для QA"'));
+  assert.ok(source.includes('Наиболее частые SQL-запросы для тестировщика'));
+  assert.ok(source.includes('const filteredQaQueries = frequentQueries.filter'));
+  assert.ok(source.includes('tab === "qa-queries"'));
+  assert.ok(source.includes('Что сверять после проверки'));
+  const qaQueryStart = source.indexOf("const frequentQueries = [");
+  const qaQueryEnd = source.indexOf("\n];", qaQueryStart);
+  assert.equal([...source.slice(qaQueryStart, qaQueryEnd).matchAll(/title: "/g)].length, 19);
+  const referenceStart = source.indexOf('{tab === "reference" && (');
+  const qaTabStart = source.indexOf('{tab === "qa-queries" && (', referenceStart);
+  assert.equal(source.slice(referenceStart, qaTabStart).includes("Проверки данных для QA"), false);
+  assert.ok(source.slice(qaTabStart).includes("Проверки данных для QA"), "the QA query tab must show the data-checks section heading");
+});
+
 test("database workbench exposes practical SQL operations", () => {
   for (const operation of ["SELECT", "JOIN", "INSERT", "UPDATE", "DELETE", "RENAME", "AS"]) {
     assert.ok(source.includes(operation), "workbench is missing " + operation);
@@ -784,46 +802,6 @@ SELECT 2; /* outer ; /* nested ; */ still outer ; */ SELECT 3;`;
     "/* outer ; /* nested ; */ still outer ; */ SELECT 3",
   ]);
   assert.throws(() => splitSqlStatements("SELECT 1; /* outer /* nested */"), /незакрытый комментарий/);
-});
-
-
-test("database workbench merges the SQL memo into the main cheat sheet without category abbreviations", () => {
-  for (const token of [
-    'useState<"builder" | "reference">("builder")',
-    "memoOperatorGroups",
-    "filteredMemoGroups.map",
-    "filteredFrequentQueries",
-    "Выборка и фильтрация",
-    "Изменение данных",
-    "Структура базы данных",
-    "Права доступа",
-    "Транзакции",
-    "UPDATE имя_таблицы",
-    "SET столбец1 = значение1, столбец2 = значение2",
-    "SET — присвоение значений",
-    "WHERE ограничивает строки для изменения",
-    "BETWEEN",
-    "IS NULL",
-    "EXISTS",
-    "UNION ALL",
-    "INNER JOIN",
-    "Объединение трех таблиц",
-    "payments.amount",
-    "orders.id = payments.order_id",
-    "Заполнить пример: объединить три таблицы",
-    "LEFT [OUTER] JOIN",
-    "COUNT(DISTINCT column)",
-    "ROW_NUMBER",
-    "PRIMARY KEY",
-    "FOREIGN KEY",
-    "ROLLBACK",
-    "Проверки данных для QA",
-    "Копировать",
-  ]) {
-    assert.ok(source.includes(token), "SQL cheat sheet is missing " + token);
-  }
-  assert.doesNotMatch(source, /\b(?:DQL|DML|DDL|DCL|TCL)\b/, "category abbreviations must not be displayed in the cheat sheet");
-  assert.ok(source.includes("value.replace"), "the shared copy helper must remain available");
 });
 
 

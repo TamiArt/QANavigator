@@ -4,7 +4,7 @@ import { buildAdvancedSelect } from "./advanced-select-builder.mjs";
 import { buildCreateTable, buildAlterTable, buildDropTable, buildTruncateTable, buildInsert, buildUpdate, buildDelete } from "./ddl-dml-builder.mjs";
 import { SqlExecutionConsole } from "./SqlExecutionConsole";
 import {
-  AlertTriangle, BookOpen, CheckCircle2, Code2, Copy, Database, Search, WandSparkles,
+  AlertTriangle, BookOpen, CheckCircle2, ClipboardCheck, Code2, Copy, Database, Search, WandSparkles,
 } from "lucide-react";
 
 type Dialect = "postgres" | "mysql";
@@ -173,6 +173,8 @@ const memoOperatorGroups = [
       { title: "DISTINCT", syntax: "SELECT DISTINCT column", note: "Убирает повторяющиеся строки результата по комбинации всех выбранных столбцов." },
       { title: "FROM", syntax: "FROM table_name", note: "Указывает источник данных: таблицу, представление или подзапрос." },
       { title: "JOIN", syntax: "JOIN table_name ON condition", note: "Соединяет строки из нескольких таблиц по условию связи." },
+      { title: "JOIN и INNER JOIN — одно и то же", syntax: "JOIN table_name ON condition\n-- то же самое, что:\nINNER JOIN table_name ON condition", note: "Если тип соединения не указан, JOIN означает INNER JOIN. Обе записи возвращают только те строки, для которых найдено совпадение по условию ON. Поэтому JOIN и INNER JOIN в таком запросе работают одинаково." },
+      { title: "JOIN таблицы с самой собой (Self JOIN)", syntax: "SELECT e.name AS name\nFROM Employee AS e\nJOIN Employee AS c ON e.chief_id = c.id\nWHERE e.salary > c.salary;", note: "Self JOIN соединяет таблицу Employee саму с собой, чтобы сопоставить сотрудников и их руководителей. Таблица используется дважды под разными псевдонимами: e — сотрудник, c — его руководитель. Условие e.chief_id = c.id связывает сотрудника с руководителем, а WHERE e.salary > c.salary оставляет сотрудников, чья зарплата выше зарплаты их руководителя." },
       { title: "Объединение трех таблиц", syntax: "SELECT users.name, orders.product, payments.amount, payments.status\nFROM users\nINNER JOIN orders ON users.id = orders.user_id\nINNER JOIN payments ON orders.id = payments.order_id;", note: "Показывает данные сразу из трёх таблиц. SELECT перечисляет нужные столбцы; точка в users.name означает «столбец name из таблицы users». FROM задаёт первую таблицу. Первый INNER JOIN подключает orders к users по users.id = orders.user_id. Второй INNER JOIN подключает payments к уже найденным orders по orders.id = payments.order_id. Каждый следующий JOIN добавляет ещё одну таблицу к цепочке. Если в таблицах повторяются имена столбцов (например, id), всегда указывай таблицу перед точкой. INNER JOIN оставляет только строки, для которых найдена связь в обеих таблицах." },
       { title: "ON", syntax: "ON a.id = b.a_id", note: "Задаёт условие соединения таблиц в JOIN." },
       { title: "USING", syntax: "JOIN other_table USING (id)", note: "Краткая форма условия JOIN, когда столбец связи имеет одинаковое имя в обеих таблицах. Поддержка зависит от СУБД." },
@@ -714,7 +716,7 @@ const fieldClass = "w-full rounded-lg border border-border bg-background px-3 py
 const labelClass = "mb-1.5 block text-xs font-medium text-muted-foreground";
 
 export function DatabaseWorkbenchModule() {
-  const [tab, setTab] = useState<"builder" | "reference">("builder");
+  const [tab, setTab] = useState<"builder" | "reference" | "qa-queries">("builder");
   const [dialect, setDialect] = useState<Dialect>("postgres");
   const [operation, setOperation] = useState<Operation>("select");
   const [form, setForm] = useState<BuilderState>(initial);
@@ -749,14 +751,9 @@ export function DatabaseWorkbenchModule() {
       return true;
     }),
   })).filter((group) => group.items.length > 0);
-  const filteredFrequentQueries = frequentQueries.filter((item) => {
-    const matchesSearch = (item.title + item.group + item.sql + item.note).toLocaleLowerCase("ru").includes(search.toLocaleLowerCase("ru"));
-    if (!matchesSearch) return false;
-    const keys = [normalizeReference(item.title), normalizeReference(item.sql)];
-    if (keys.some((key) => referenceKeys.has(key))) return false;
-    keys.forEach((key) => referenceKeys.add(key));
-    return true;
-  });
+  const filteredQaQueries = frequentQueries.filter((item) =>
+    (item.title + item.group + item.sql + item.note).toLocaleLowerCase("ru").includes(search.toLocaleLowerCase("ru")),
+  );
 
   return (
     <div className="space-y-5">
@@ -768,11 +765,12 @@ export function DatabaseWorkbenchModule() {
         <p className="text-sm text-muted-foreground">Инструмент для QA: собери SQL-запрос, выполни его на учебных данных и проверь результат.</p>
       </header>
 
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
         {[
           { id: "builder" as const, title: "Конструктор запросов", desc: "Собрать SQL по полям", icon: <WandSparkles className="h-4 w-4" /> },
-          { id: "reference" as const, title: "Шпаргалка SQL", desc: "Команды и примеры", icon: <BookOpen className="h-4 w-4" /> },
-                                      ].map((item) => (
+          { id: "reference" as const, title: "Шпаргалка SQL", desc: "Команды и синтаксис", icon: <BookOpen className="h-4 w-4" /> },
+          { id: "qa-queries" as const, title: "Частые SQL-запросы для QA", desc: "Готовые проверки в работе тестировщика", icon: <ClipboardCheck className="h-4 w-4" /> },
+        ].map((item) => (
           <button key={item.id} onClick={() => setTab(item.id)} className={"rounded-xl border p-3 text-left transition-colors " + (tab === item.id ? "border-primary bg-primary/5" : "border-border bg-card hover:bg-muted/40")}>
             <span className="mb-2 flex items-center gap-2 text-sm font-semibold">{item.icon}{item.title}</span>
             <span className="text-xs text-muted-foreground">{item.desc}</span>
@@ -1025,11 +1023,29 @@ export function DatabaseWorkbenchModule() {
                 </div>
               </section>
             ))}
-            {[...new Set(filteredFrequentQueries.map((item) => item.group))].map((group) => (
+            {!filteredSnippets.length && !filteredMemoGroups.length && search.trim() && <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">По запросу ничего не найдено.</p>}
+          </div>
+        </section>
+      )}
+
+      {tab === "qa-queries" && (
+        <section className="space-y-5">
+          <div className="space-y-1">
+            <h2 className="text-lg font-semibold text-foreground">Наиболее частые SQL-запросы для тестировщика</h2>
+            <p className="text-xs text-muted-foreground">Практические запросы для проверки данных после действий в интерфейсе и API: создание, изменение, удаление, статусы, связи, дубликаты и корректность расчётов. Имена таблиц и полей в примерах нужно адаптировать под схему конкретного проекта.</p>
+          </div>
+          <div className="relative"><Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" /><input value={search} onChange={(event) => setSearch(event.target.value)} className={fieldClass + " pl-9"} placeholder="Найти проверку: запись, статус, NULL, дубликаты, JOIN..." /></div>
+          <h3 className="text-sm font-semibold text-foreground">Проверки данных для QA</h3>
+          <div className="space-y-6">
+            {[...new Set(filteredQaQueries.map((item) => item.group))].map((group) => (
               <section key={group} className="space-y-3">
-                <h3 className="border-b border-border pb-2 text-sm font-semibold text-foreground">{group}</h3>
+                <div className="flex items-center gap-2 border-b border-border pb-2">
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                  <h3 className="text-sm font-semibold text-foreground">{group}</h3>
+                  <span className="ml-auto text-[10px] text-muted-foreground">{filteredQaQueries.filter((item) => item.group === group).length}</span>
+                </div>
                 <div className="grid gap-2.5 sm:grid-cols-2">
-                  {filteredFrequentQueries.filter((item) => item.group === group).map((item) => (
+                  {filteredQaQueries.filter((item) => item.group === group).map((item) => (
                     <article key={item.title} className="group flex min-w-0 flex-col gap-2 rounded-xl border border-border/80 bg-card p-3 transition-colors hover:border-primary/35 hover:bg-muted/20">
                       <div className="flex items-start justify-between gap-2">
                         <h4 className="min-w-0 text-xs font-semibold leading-5 text-foreground">{item.title}</h4>
@@ -1042,8 +1058,9 @@ export function DatabaseWorkbenchModule() {
                 </div>
               </section>
             ))}
+            {!filteredQaQueries.length && search.trim() && <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">По запросу ничего не найдено.</p>}
             <section className="space-y-3">
-              <h3 className="border-b border-border pb-2 text-sm font-semibold text-foreground">Проверки данных для QA</h3>
+              <h3 className="border-b border-border pb-2 text-sm font-semibold text-foreground">Что сверять после проверки</h3>
               <div className="rounded-xl border border-border bg-card p-4">
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   {[
@@ -1059,9 +1076,8 @@ export function DatabaseWorkbenchModule() {
                 </ul>
               </div>
             </section>
-            {!filteredSnippets.length && !filteredMemoGroups.length && !filteredFrequentQueries.length && search.trim() && <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">По запросу ничего не найдено.</p>}
+            <div className="flex gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground"><AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" /><p>Перед UPDATE или DELETE сначала выполни SELECT с тем же условием и проверь количество строк. Не запускай команды изменения данных в production или общей staging-среде без разрешения. Для безопасных проверок используй тестовую БД и транзакции, если СУБД поддерживает откат.</p></div>
           </div>
-          <div className="flex gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-muted-foreground"><AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" /><p>Перед изменением данных сначала выполни SELECT с тем же условием и проверь количество строк. Не запускай команды изменения данных или структуры в production либо общей staging-среде без явного разрешения. Для безопасных изменений используй тестовую БД и транзакции, если СУБД поддерживает откат операции.</p></div>
         </section>
       )}
     </div>

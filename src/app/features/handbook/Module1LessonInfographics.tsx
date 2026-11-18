@@ -7,21 +7,21 @@ import {
 } from "lucide-react";
 
 type IconType = React.ComponentType<{ className?: string }>;
-type Tile = { emoji: string; title: string; text: string; icon: IconType; tone?: string };
-type LessonVisual = {
+export type Module1InfographicTile = { emoji?: string; title: string; text: string; icon: IconType; tone?: string };
+export type Module1InfographicVisual = {
   eyebrow: string;
   headline: string;
   description: string;
   flow?: string[];
-  tiles: Tile[];
+  tiles: Module1InfographicTile[];
   takeaway: string;
   layout?: "compare" | "steps" | "pyramid" | "matrix" | "grid";
 };
 
-const tile = (emoji: string, title: string, text: string, icon: IconType, tone = "blue"): Tile =>
+const tile = (emoji: string, title: string, text: string, icon: IconType, tone = "blue"): Module1InfographicTile =>
   ({ emoji, title, text, icon, tone });
 
-const LESSONS: Record<string, LessonVisual> = {
+const LESSONS: Record<string, Module1InfographicVisual> = {
   "m1-02": {
     eyebrow: "ТРИ ПОНЯТИЯ — ТРИ УРОВНЯ РАБОТЫ С КАЧЕСТВОМ",
     headline: "QA → QC → Testing",
@@ -155,19 +155,19 @@ const LESSONS: Record<string, LessonVisual> = {
     takeaway: "От Unit к Acceptance обычно растут охват, сложность и стоимость проверки. Уровни дополняют друг друга."
   },
   "m1-11": {
-    eyebrow: "TEST DESIGN · ВЫБИРАЕМ ПРОВЕРКИ ОСМЫСЛЕННО",
-    headline: "Техники тест-дизайна",
-    description: "Техники помогают сократить избыточные проверки и при этом не пропустить важные классы ошибок.",
+    eyebrow: "TEST DESIGN · ОТ ТРЕБОВАНИЯ К НАБОРУ ПРОВЕРОК",
+    headline: "6 основных техник тест-дизайна",
+    description: "Каждая техника помогает выбрать проверки под определённую задачу: данные, границы, комбинации, бизнес-правила, состояния или вероятные ошибки.",
     layout: "grid",
     tiles: [
-      tile("🧩", "Эквивалентное разбиение", "Делим входные данные на классы, внутри которых система должна вести себя одинаково. Берём представителей классов вместо проверки каждого значения.", Puzzle, "violet"),
-      tile("📏", "Анализ граничных значений", "Проверяем значения на границе классов и рядом с ней: именно около границ часто возникают ошибки.", Scale, "blue"),
-      tile("🔀", "Pairwise · Попарное тестирование", "Подбираем набор тестов так, чтобы покрыть пары значений параметров и уменьшить число комбинаций.", Network, "mint"),
-      tile("📋", "Decision Table · Таблица решений", "Описываем сочетания условий и соответствующие действия. Помогает проверять бизнес-правила с несколькими условиями.", Table2, "yellow"),
-      tile("🔄", "State Transition · Переходы состояний", "Моделируем состояния системы, события и переходы между ними. Проверяем как допустимые, так и недопустимые переходы.", GitBranch, "rose"),
-      tile("🧭", "Exploratory · Исследовательское", "Одновременно изучаем систему, формируем гипотезы, проектируем проверки и выполняем их. Фиксируем наблюдения и дефекты.", Search, "blue"),
+      tile("🧩", "1. Эквивалентное разбиение (Equivalence Partitioning)", "Раздели входные данные на классы, в которых система должна вести себя одинаково. Выбери представителя каждого валидного и невалидного класса. Возраст 18–65: 15 — ниже, 30 — внутри, 70 — выше диапазона.", Puzzle, "violet"),
+      tile("📏", "2. Анализ граничных значений (Boundary Value Analysis)", "Проверь сами границы и соседние значения. Для возраста 18–65: 17, 18, 19 и 64, 65, 66. Ошибки часто появляются из-за неверного сравнения на границе.", Scale, "blue"),
+      tile("🔀", "3. Попарное тестирование (Pairwise Testing)", "Если параметров много, полный перебор даёт слишком много комбинаций. Подбери набор, где встречаются все пары значений двух параметров. Пример: браузер × ОС × разрешение. Инструменты: PICT, AllPairs.", Network, "mint"),
+      tile("📋", "4. Таблицы принятия решений (Decision Tables)", "Запиши условия, все важные сочетания и действие для каждого сочетания. Подходит для бизнес-правил: например, скидка зависит от статуса VIP и суммы заказа.", Table2, "yellow"),
+      tile("🔄", "5. Тестирование переходов состояний (State Transition Testing)", "Опиши состояния объекта, события и переходы. Для заказа: Создан → Оплачен → В доставке → Доставлен; отдельно проверь отмену и запрещённые переходы.", GitBranch, "rose"),
+      tile("🧭", "6. Предугадывание ошибок (Error Guessing)", "Используй опыт и знание типичных проблем: пустые поля, пробелы, спецсимволы, очень длинный ввод, двойной клик, прерывание отправки формы. Для каждой гипотезы задай ожидаемое поведение.", Search, "blue"),
     ],
-    takeaway: "Тест-дизайн отвечает на вопрос: какие проверки дадут максимальную ценность при разумном объёме?"
+    takeaway: "Классы — разделить данные; границы — проверить края; Pairwise — покрыть пары; Decision Table — проверить правила; State Transition — проверить статусы; Error Guessing — проверить вероятные ошибки."
   }
 };
 
@@ -193,7 +193,7 @@ function FlowStrip({ items }: { items: string[] }) {
   </div>;
 }
 
-function TileCard({ item, index }: { item: Tile; index: number }) {
+function TileCard({ item, index }: { item: Module1InfographicTile; index: number }) {
   const Icon = item.icon;
   return <article className="flex min-w-0 gap-3 rounded-[18px] border-2 border-blue-100 bg-white p-3 shadow-[2px_3px_0_rgba(30,64,175,0.05)]">
     <div className="flex shrink-0 flex-col items-center gap-1">
@@ -204,7 +204,7 @@ function TileCard({ item, index }: { item: Tile; index: number }) {
     </div>
     <div className="min-w-0">
       <div className="mb-1 flex flex-wrap items-center gap-1.5">
-        <span className="text-base leading-none" aria-hidden="true">{item.emoji}</span>
+        {item.emoji ? <span className="text-base leading-none" aria-hidden="true">{item.emoji}</span> : null}
         <h5 className="text-[12px] font-extrabold leading-tight text-blue-950">{item.title}</h5>
       </div>
       <p className="text-[10px] leading-[1.55] text-slate-600">{item.text}</p>
@@ -212,7 +212,7 @@ function TileCard({ item, index }: { item: Tile; index: number }) {
   </article>;
 }
 
-function Pyramid({ tiles }: { tiles: Tile[] }) {
+function Pyramid({ tiles }: { tiles: Module1InfographicTile[] }) {
   return <div className="rounded-2xl border-2 border-blue-100 bg-white p-3 sm:p-4">
     <div className="mx-auto flex max-w-2xl flex-col items-center gap-1.5">
       {tiles.slice().reverse().map((item, index) => {
@@ -230,7 +230,7 @@ function SeverityPriorityMatrix() {
   return <div className="rounded-2xl border-2 border-blue-100 bg-white p-3 sm:p-4">
     <p className="mb-2 text-center text-[10px] font-black uppercase tracking-wider text-blue-700">ДВА КРИТЕРИЯ ОЦЕНИВАЮТСЯ ОТДЕЛЬНО</p>
     <div className="grid grid-cols-[auto_1fr_1fr] gap-1.5 text-center">
-      <div className="flex items-center justify-center rounded-lg bg-slate-50 p-2 text-[9px] font-bold text-slate-500"> </div>
+      <div className="flex items-center justify-center rounded-lg bg-slate-50 p-2 text-[9px] font-bold text-slate-500">Критерий</div>
       <div className="rounded-lg bg-sky-50 p-2 text-[10px] font-extrabold text-blue-800">Низкий Priority</div>
       <div className="rounded-lg bg-amber-50 p-2 text-[10px] font-extrabold text-amber-800">Высокий Priority</div>
       <div className="flex items-center justify-center rounded-lg bg-rose-50 p-2 text-[10px] font-extrabold text-rose-800">Высокий Severity</div>
@@ -244,9 +244,7 @@ function SeverityPriorityMatrix() {
   </div>;
 }
 
-export function Module1LessonInfographic({ lessonId }: { lessonId: string }) {
-  const visual = LESSONS[lessonId];
-  if (!visual) return null;
+export function Module1StyleInfographic({ visual }: { visual: Module1InfographicVisual }) {
   return <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:p-5">
     <div className="mb-3 rounded-[22px] border-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/70 to-violet-50/40 p-4 sm:p-5">
       <div className="mb-2 inline-flex rounded-full bg-blue-700 px-2.5 py-1 text-[9px] font-black tracking-wider text-white">{visual.eyebrow}</div>
@@ -264,4 +262,9 @@ export function Module1LessonInfographic({ lessonId }: { lessonId: string }) {
       <div><p className="text-[11px] font-extrabold text-amber-950">Главное, что нужно запомнить</p><p className="mt-1 text-[10px] leading-[1.5] text-amber-900">{visual.takeaway}</p></div>
     </div>
   </div>;
+}
+
+export function Module1LessonInfographic({ lessonId }: { lessonId: string }) {
+  const visual = LESSONS[lessonId];
+  return visual ? <Module1StyleInfographic visual={visual} /> : null;
 }

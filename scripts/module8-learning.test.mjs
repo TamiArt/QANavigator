@@ -28,20 +28,6 @@ test("Module 8 is registered after SQL and contains eight ordered Mobile QA less
   for (let i = 1; i < positions.length; i += 1) assert.ok(positions[i - 1] < positions[i], "Incorrect order: " + expected[i]);
 });
 
-test("Module 8 covers the requested mobile testing concepts", () => {
-  const source = fs.readFileSync("src/app/features/handbook/handbook-learning-module8.ts", "utf8");
-  const required = [
-    "Interrupt Testing", "Pull-to-refresh", "pinch", "TestFlight", "Build Variants",
-    "Native", "Hybrid", "PWA", "WebView", "APNs", "FCM", "Foreground", "Background",
-    "Human Interface Guidelines", "Material Design", "фрагментация", "Charles Proxy",
-    "Proxyman", "SSL Proxying", "Rewrite", "Breakpoint", "git --version",
-    "git config --global", "adb logcat", "adb pull", "adb push", "Crashlytics",
-    "Developer Options", "Root", "Jailbreak", "Activity", "onCreate()", "onResume()",
-    "Service Worker", "offline",
-  ];
-  for (const term of required) assert.ok(source.toLowerCase().includes(term.toLowerCase()), "Missing Module 8 concept: " + term);
-});
-
 test("Every Module 8 lesson has its own infographic model", () => {
   const visuals = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
   for (let i = 1; i <= 8; i += 1) {

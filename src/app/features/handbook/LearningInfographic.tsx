@@ -11,7 +11,7 @@ import { useApp } from "../../core/app-context";
 import { getLearningLessonTitle } from "./handbook-learning";
 import { getModuleTitle } from "../../core/i18n";
 import type { Language } from "../../core/i18n";
-import { Module1LessonInfographic } from "./Module1LessonInfographics";
+import { Module1LessonInfographic, Module1StyleInfographic, type Module1InfographicVisual } from "./Module1LessonInfographics";
 
 type VisualKind =
   | "flow"
@@ -53,7 +53,7 @@ const V = (
  * One visual model per Learning Mode lesson.
  * This is presentation metadata only: lesson source text, IDs and curriculum order stay untouched.
  */
-const LESSON_VISUALS: Record<string, LessonVisual> = {
+const LESSON_VISUALS: Partial<Record<string, LessonVisual>> = {
   "it-glossary-01": V("network", ["Термины", "Роли", "Процессы", "Качество", "Инструменты"], BookOpen, "lavender", [
     { icon: BookOpen, title: "Рабочие термины", text: "Аппка, шерить, апрув — понимать разговорную лексику команды и переводить её в точные действия." },
     { icon: Users, title: "Роли команды", text: "QA, разработчик, аналитик и менеджер отвечают за разные части совместного результата." },
@@ -79,8 +79,8 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "PK и FK", text: "Первичный ключ уникально определяет запись; внешний ключ связывает записи." },
     { title: "СУБД", text: "PostgreSQL, MySQL, Oracle Database и Microsoft SQL Server." },
   ], "Проверяй типы и ограничения полей, уникальность ключей и целостность связей."),
-  "m7-03": V("layers", ["Документы", "Key-Value", "Графы", "Колонки", "Поиск", "Время"], Boxes, "mint", [
-    { title: "Документы", text: "JSON/BSON-документы; MongoDB, CouchDB. Профили и контент." },
+  "m7-03": V("layers", ["Документоориентированные", "Key-Value", "Графы", "Колонки", "Поиск", "Время"], Boxes, "mint", [
+    { title: "Документоориентированные", text: "JSON/BSON-документы; MongoDB, CouchDB. Профили и контент." },
     { title: "Ключ — значение", text: "Redis, DynamoDB. Кэш, сессии и корзины покупок." },
     { title: "Графовые", text: "Neo4j, ArangoDB. Узлы и связи для соцсетей и рекомендаций." },
     { title: "Колоночные", text: "ClickHouse. Аналитика и агрегирование больших объёмов." },
@@ -107,15 +107,24 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "Дата и время", text: "DATE, TIME, DATETIME, TIMESTAMP — поведение зависит от СУБД." },
     { title: "NULL", text: "Отсутствие или неизвестность, не равно пустой строке и нулю." },
   ], "Выбирай тип по смыслу данных и проверяй граничные значения."),
-  "m7-07": V("flow", ["SQL", "SELECT", "FROM", "WHERE", "DDL", "ACID"], Code2, "blue", [
-    { title: "SQL и запрос", text: "Язык для работы с данными; запрос описывает нужное действие и условия." },
-    { title: "Базовая формула", text: "SELECT выбирает поля; FROM указывает таблицу; JOIN и ON связывают данные; WHERE фильтрует." },
-    { title: "Изменение данных", text: "INSERT добавляет; UPDATE изменяет; DELETE удаляет строки." },
-    { title: "DDL и базы", text: "CREATE DATABASE, SHOW DATABASES, USE и DROP — команды управления базой." },
-    { title: "Группы команд", text: "DDL — структура; DML — изменение данных; DCL — права; TCL — транзакции." },
-    { title: "ACID", text: "A — всё или ничего; C — данные корректны; I — параллельность; D — сохранность после подтверждения." },
-    { title: "Осторожно", text: "DROP DATABASE удаляет базу вместе с объектами." },
-  ], "Сохраняй исходную структуру команд и помни: SHOW DATABASES и USE относятся к MySQL."),
+  "m7-07": V("flow", ["SQL", "SQL-запрос", "Операторы", "DDL / DML / DCL / TCL", "Транзакция", "ACID"], Code2, "blue", [
+    { title: "SQL (Structured Query Language — язык структурированных запросов)", text: "Декларативный язык для определения структуры реляционной базы и создания, чтения, изменения и удаления данных. SQL — язык для работы с данными в реляционных базах; запрос описывает нужный результат, а СУБД выполняет его." },
+    { title: "Зачем SQL тестировщику", text: "SQL помогает тестировщику работать самостоятельно: быстро проверять состояние данных в БД, находить причины багов и аномалии, а также сокращать объём ручных проверок." },
+    { title: "SQL-запрос", text: "Команда к базе данных, в которой описано, что нужно сделать, с какими таблицами работать и какие условия учитывать. Пример: SELECT name FROM users WHERE status = 'active'; — выбирает имена пользователей с активным статусом." },
+    { title: "Главные операторы SQL", text: "Базовая формула чтения данных: SELECT → FROM → JOIN → ON → WHERE. SELECT выбирает столбцы и выражения; FROM указывает исходную таблицу; JOIN присоединяет данные из другой таблицы; ON задаёт условие соединения; WHERE фильтрует строки по условию." },
+    { title: "Порядок операторов", text: "Для простого запроса без соединения: SELECT → FROM → WHERE. В запросе с JOIN условие ON располагается сразу после присоединяемой таблицы. BETWEEN задаёт диапазон с включёнными границами, IN — список значений; приоритет этих операторов разбирается в следующем практическом уроке." },
+    { title: "Добавление, изменение и удаление данных", text: "INSERT INTO ... VALUES добавляет новую строку. UPDATE ... SET ... WHERE изменяет существующие данные. DELETE FROM ... WHERE удаляет выбранные строки." },
+    { title: "Управление базами данных в MySQL", text: "CREATE DATABASE создаёт базу; SHOW DATABASES показывает базы, доступные текущему пользователю MySQL; USE mydb выбирает базу в MySQL; DROP DATABASE удаляет базу и её объекты — используйте осторожно." },
+    { title: "Шпаргалка по таблицам", text: "CREATE TABLE имя_таблицы (столбец тип, ...) создаёт таблицу; DROP TABLE удаляет таблицу; DESC имя_таблицы показывает её описание. INSERT INTO имя_таблицы VALUES (...) или INSERT INTO имя_таблицы (нужные_столбцы) VALUES (...) добавляет значения. Перед DELETE FROM имя_таблицы WHERE поле = значение проверьте WHERE: без него удалятся все строки." },
+    { title: "Шаблоны INSERT и безопасность", text: "Количество и порядок значений INSERT должны соответствовать указанным столбцам. Если список столбцов не указан, значения передаются в порядке столбцов таблицы. Перед DELETE проверьте условие WHERE. DESC и USE — синтаксис MySQL." },
+    { title: "Группы команд SQL", text: "DDL — структура: CREATE, ALTER, DROP. DML — изменение данных: INSERT, UPDATE, DELETE. SELECT / DQL — чтение данных; в некоторых классификациях SELECT включают в DML. DCL — права доступа: GRANT, REVOKE. TCL — транзакции: COMMIT, ROLLBACK." },
+    { title: "Транзакция", text: "Одна логическая операция или группа SQL-команд, которую СУБД обрабатывает как единое целое. Например, перевод денег между счетами состоит из списания с одного счёта и зачисления на другой." },
+    { title: "Atomicity (атомарность)", text: "Всё или ничего. Если одна часть операции завершается ошибкой, изменения всей транзакции отменяются через ROLLBACK. Пример: списание денег не состоялось отдельно от зачисления — перевод отменяется целиком." },
+    { title: "Consistency (согласованность)", text: "Данные остаются корректными. Успешная транзакция переводит БД из одного корректного состояния в другое; ограничения PRIMARY KEY, FOREIGN KEY, CHECK и бизнес-правила продолжают соблюдаться. Пример: нельзя создать заказ со ссылкой на несуществующего покупателя, если действует внешний ключ." },
+    { title: "Isolation (изолированность)", text: "Параллельные операции не мешают корректности друг друга. Уровень изоляции определяет, какие эффекты параллельной работы допустимы. Пример: два пользователя одновременно покупают последний товар — система не должна продать его дважды." },
+    { title: "Durability (долговечность)", text: "Подтверждённое сохраняется. После успешного COMMIT изменения должны пережить сбой или перезапуск в рамках гарантий СУБД и её настроек. Пример: подтверждённый заказ остаётся в базе после перезагрузки сервера." },
+    { title: "Зачем ACID тестировщику", text: "ACID особенно важен для банковских операций, бухгалтерии, заказов, платежей и остатков товаров. Проверяй: при ошибке нет частичных изменений (Atomicity); ограничения и бизнес-правила соблюдаются (Consistency); параллельные запросы не создают дубли, неверные остатки или потерянные обновления (Isolation); после COMMIT данные остаются сохранёнными (Durability)." },
+  ], "Запомнить за 5 секунд: A — всё или ничего; C — данные корректны; I — параллельные операции не ломают друг друга; D — подтверждённое сохраняется. SHOW DATABASES и USE — команды MySQL; синтаксис в других СУБД отличается."),
   "m7-08": V("flow", ["SELECT", "WHERE", "LIKE", "DISTINCT", "JOIN", "GROUP BY"], Code2, "mint", [
     { title: "SELECT / FROM", text: "Выбираем столбцы и указываем исходную таблицу; * выводит все столбцы." },
     { title: "WHERE и сравнения", text: "Фильтруем строки по условиям =, <>, >, <, >=, <=; для NULL — IS NULL." },
@@ -135,7 +144,7 @@ const LESSON_VISUALS: Record<string, LessonVisual> = {
     { title: "WHERE", text: "Без условия UPDATE или DELETE затронет все строки." },
   ], "Перед изменением данных внимательно проверь WHERE и область действия запроса."),
   "m7-10": V("network", ["JOIN", "GROUP BY", "HAVING", "UNION"], Database, "lavender", [
-    { title: "INNER / LEFT / RIGHT JOIN", text: "Соединяют таблицы с разным правилом сохранения несовпавших строк." },
+    { title: "INNER / LEFT / RIGHT JOIN", text: "Соединяют таблицы с разным правилом сохранения несовпавших строк. ON задаёт условие соединения таблиц: по каким столбцам или выражениям сопоставляются записи." },
     { title: "GROUP BY", text: "Собирает строки в группы для COUNT, SUM и AVG." },
     { title: "WHERE / HAVING", text: "WHERE фильтрует строки до группировки; HAVING — группы после неё." },
     { title: "UNION / UNION ALL", text: "UNION убирает дубликаты; UNION ALL сохраняет их." },
@@ -677,6 +686,38 @@ function getVisual(lesson: LearningLesson): LessonVisual {
   ]);
 }
 
+function toModule1StyleVisual(title: string, visual: LessonVisual): Module1InfographicVisual {
+  const sequence = visual.kind === "flow" || visual.kind === "timeline" || visual.kind === "cycle";
+  const labels = visual.labels.filter(Boolean);
+  const kindLabels: Record<VisualKind, string> = {
+    flow: "ПОСЛЕДОВАТЕЛЬНОСТЬ",
+    layers: "УРОВНИ И СТРУКТУРА",
+    cycle: "РАБОЧИЙ ЦИКЛ",
+    compare: "СРАВНЕНИЕ ПОНЯТИЙ",
+    checklist: "ЧЕК-ЛИСТ ПРОВЕРКИ",
+    network: "СВЯЗИ И ВЗАИМОДЕЙСТВИЯ",
+    timeline: "ЭТАПЫ ПРОЦЕССА",
+    pyramid: "УРОВНИ ИЕРАРХИИ",
+  };
+  const toneByAccent: Record<Accent, string> = {
+    blue: "blue", lavender: "violet", mint: "mint", yellow: "yellow", pink: "rose", orange: "yellow",
+  };
+  return {
+    eyebrow: (kindLabels[visual.kind] + (labels.length ? " · " + labels.slice(0, 3).join(" · ") : "")).toUpperCase(),
+    headline: title,
+    description: labels.length ? "Ключевые элементы темы: " + labels.join(" · ") + "." : "Ключевые понятия и практические ориентиры урока.",
+    flow: sequence ? labels : undefined,
+    tiles: visual.cards.map((card) => ({
+      title: card.title,
+      text: card.text,
+      icon: card.icon ?? visual.icon,
+      tone: toneByAccent[visual.accent],
+    })),
+    takeaway: visual.callout ?? ("Ключевые элементы темы: " + labels.join(" · ") + "."),
+    layout: sequence ? "steps" : visual.kind === "compare" ? "compare" : visual.kind === "pyramid" ? "pyramid" : "grid",
+  };
+}
+
 function CardIllustration({ kind, index }: { kind: VisualKind; index: number }) {
   const palettes = [
     ["#DBEAFE", "#2563EB", "#34D399"],
@@ -1027,13 +1068,14 @@ function ScrumStylePosterDiagram({ visual, title }: { visual: LessonVisual; titl
             <Zap className="h-4 w-4" aria-hidden="true" />
           </div>
           <div className="min-w-0">
-            <div className="mb-1 text-[9px] font-extrabold uppercase tracking-[0.14em] text-blue-500">Запомнить</div>
+            <div className="mb-1 text-[9px] font-extrabold uppercase tracking-[0.14em] text-blue-500">Запомни</div>
             <p className="min-w-0 break-words whitespace-normal text-[11px] font-bold leading-[1.5] text-blue-950 dark:text-black sm:text-xs">
               {mainIdea}
             </p>
           </div>
         </div>
       </footer>
+      <div className="pt-2 text-right text-[9px] font-semibold tracking-wide text-slate-400">QA Navigator</div>
     </div>
   );
 }
@@ -1228,40 +1270,9 @@ function TestingDefinitionDiagram({ language }: { language: Language }) {
 function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
   const { language } = useApp();
   const lessonTitle = getLearningLessonTitle(lesson, language);
-  const isIntroInfographic = lesson.id === "m1-01";
-  const visual = getVisual(lesson);
   const infographicId = `learning-infographic-${lesson.id}`;
-  const isTestTypesInfographic = lesson.id === "m1-09";
-  const isScrumContextInfographic = lesson.id === "m2-04";
-  // CI contract: lesson\.id === "m2-04"
-  const isSprintPlanningInfographic = lesson.id === "m2-05";
-  const isTestDocumentationInfographic = lesson.id === "m4-01";
-  const isTestPlanInfographic = lesson.id === "m4-02";
-  const isTestPlanDetailsInfographic = lesson.id === "m4-03";
-  const isTestCasesInfographic = lesson.id === "m4-04";
-  const module5ImagePath: string | undefined = ({
-    "m5-02": "/infographics/m5-02-klient-servernaya arhitectura.jpg",
-    "m5-03": "/infographics/m5-03-TCP.jpg",
-    "m5-04": "/infographics/m5-04-DNS.jpg",
-    "m5-05": "/infographics/m5-05-API i metodi.jpg",
-    "m5-06": "/infographics/m5-06-07-08 http i kodi.jpg",
-    "m5-07": "/infographics/m5-06-07-08 http i kodi.jpg",
-    "m5-08": "/infographics/m5-06-07-08 http i kodi.jpg",
-    "m5-osi-tcp-ip": "/infographics/m5-09 oci i tcp ip.jpg",
-    "m5-09": "/infographics/m5-10 rest i restful.jpg",
-    "m5-10": "/infographics/m5-11-13 swagger i postman.jpg",
-    "m5-12": "/infographics/m5-11-13 swagger i postman.jpg",
-  } as Record<string, string>)[lesson.id];
-  const infographicImagePath = module5ImagePath ?? (
-    isTestTypesInfographic ? "/infographics/m1-09-vidi-testirovaniya.png"
-      : isTestDocumentationInfographic ? "/infographics/m4-01-test documentation.png"
-        : isTestPlanInfographic ? "/infographics/m4-02-vajnost.png"
-          : isTestPlanDetailsInfographic ? "/infographics/m4-03-testplan.png"
-            : isTestCasesInfographic ? "/infographics/m4-04-teskeys.png"
-              : isScrumContextInfographic ? "/infographics/m2-04-scrum-context.svg"
-                : isSprintPlanningInfographic ? "/infographics/m2-05-sprint-planning.svg"
-                  : undefined
-  );
+  const configuredVisual = LESSON_VISUALS[lesson.id];
+  const visual = getVisual(lesson);
 
   return (
     <section
@@ -1271,41 +1282,25 @@ function LessonInfographic({ lesson }: { lesson: LearningLesson }) {
     >
       <div className="flex items-center justify-between gap-3 border-b-2 border-blue-100 bg-gradient-to-br from-white via-sky-50/60 to-violet-50/40 px-4 py-2 sm:px-5">
         <h4 className="text-base font-extrabold leading-6 text-blue-950 dark:text-black sm:text-lg">{lessonTitle}</h4>
-        <PdfDownloadButton targetId={infographicId} imagePath={infographicImagePath} language={language} />
+        <PdfDownloadButton targetId={infographicId} language={language} />
       </div>
 
-      {isIntroInfographic ? (
+      {lesson.id === "m1-01" ? (
         <TestingDefinitionDiagram language={language} />
       ) : /^m1-(0[2-9]|10|11)$/.test(lesson.id) ? (
         <Module1LessonInfographic lessonId={lesson.id} />
-      ) : module5ImagePath || isTestTypesInfographic || isScrumContextInfographic || isSprintPlanningInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? (
-        <div className="min-w-0 overflow-hidden bg-white p-2 sm:p-4">
-          <div
-            className="mx-auto w-full max-w-[1065px] overflow-hidden rounded-[18px] bg-white"
-            style={{ aspectRatio: module5ImagePath ? "auto" : isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? "1054 / 1492" : "1065 / 1476" }}
-            // CI regex compatibility for the immutable source contracts:
-            // width=\{1065\}, height=\{1476\}, and overflow-hidden rounded-\[18px\]
-            // CI regex compatibility: alt="Инфографика: Погружение в контекст \Scrum\"
-            data-ci-layout-contract="width=\\{1065\\}; overflow-hidden rounded-\\[18px\\]"
-          >
-            <img
-              src={infographicImagePath}
-              alt={module5ImagePath ? `Инфографика: ${lesson.title}` : isTestTypesInfographic ? "Инфографика: Виды тестирования" : isTestDocumentationInfographic ? "Инфографика: Что такое тестовая документация?" : isTestPlanInfographic ? "Инфографика: Важность тестирования" : isTestPlanDetailsInfographic ? "Инфографика: Тест-план" : isTestCasesInfographic ? "Инфографика: Тест-кейсы" : "Инфографика: Погружение в контекст (Scrum)"}
-              width={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1054 : 1065}
-              height={isTestTypesInfographic || isTestDocumentationInfographic || isTestPlanInfographic || isTestPlanDetailsInfographic || isTestCasesInfographic ? 1492 : 1476}
-              decoding="async"
-              className={`block ${module5ImagePath ? "h-auto" : "h-full"} w-full max-w-none object-contain object-top`}
-            />
-          </div>
-        </div>
+      ) : configuredVisual ? (
+        <Module1StyleInfographic visual={toModule1StyleVisual(lessonTitle, configuredVisual)} />
       ) : (
         <div className="bg-[linear-gradient(rgba(37,99,235,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.025)_1px,transparent_1px)] bg-[size:18px_18px] p-3 sm:p-4">
           <VisualDiagram visual={visual} title={lessonTitle} />
         </div>
       )}
+      <div className="px-4 pb-3 text-right text-[9px] font-semibold tracking-wide text-slate-400">QA Navigator</div>
     </section>
   );
 }
+
 function ModuleInfographic({ module }: { module: LearningModule }) {
   const { language } = useApp();
   const moduleTitle = getModuleTitle(language, module.id, module.title);
