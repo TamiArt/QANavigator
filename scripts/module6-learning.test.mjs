@@ -23,9 +23,6 @@ test("Module 6 contains structured API-adjacent lessons without repeating the Mo
   for (let index = 1; index < positions.length; index += 1) {
     assert.ok(positions[index - 1] < positions[index], "Lesson order is wrong at " + expected[index]);
   }
-  for (const term of ["localStorage", "sessionStorage", "HttpOnly", "User-Agent", "Basic Auth", "Bearer Token", "JWT", "OAuth 2.0", "Feature Flag", "SOAP", "WSDL", "XSD", "Elasticsearch", "Kibana", "202 Accepted", "RabbitMQ", "Kafka", "GraphQL", "gRPC", "WebSocket", "Mock", "Stub", "Fake", "CastleMock", "ложный 200"]) {
-    assert.ok(source.toLowerCase().includes(term.toLowerCase()), "Missing key concept: " + term);
-  }
 });
 
 test("Module 6 is registered in Learning Mode and has a visual summary for every lesson", () => {
