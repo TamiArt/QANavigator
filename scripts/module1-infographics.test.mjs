@@ -56,8 +56,8 @@ test("Module 1 lesson 11 teaches the six requested test design techniques with b
   ]) {
     assert.ok(learning.includes(phrase), "Lesson content is missing: " + phrase);
   }
-  assert.match(learning, /id: "m1-11"[\\s\\S]*?topicIds: \\[\\],[\\s\\S]*?content:/);
+  assert.match(learning, /id: "m1-11"[\s\S]*?topicIds: \[\],[\s\S]*?content:/);
   assert.match(infographic, /6 основных техник тест-дизайна/);
-  assert.match(infographic, /Предугадывание ошибок \\(Error Guessing\\)/);
+  assert.match(infographic, /Предугадывание ошибок \(Error Guessing\)/);
   assert.doesNotMatch(infographic, /Exploratory · Исследовательское/);
 });
