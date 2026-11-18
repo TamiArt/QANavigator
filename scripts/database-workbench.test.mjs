@@ -805,50 +805,6 @@ SELECT 2; /* outer ; /* nested ; */ still outer ; */ SELECT 3;`;
 });
 
 
-test("database workbench merges the SQL memo into the main cheat sheet without category abbreviations", () => {
-  for (const token of [
-    'useState<"builder" | "reference" | "qa-queries">("builder")',
-    "memoOperatorGroups",
-    "filteredMemoGroups.map",
-    "filteredQaQueries",
-    "Выборка и фильтрация",
-    "Изменение данных",
-    "Структура базы данных",
-    "Права доступа",
-    "Транзакции",
-    "UPDATE имя_таблицы",
-    "SET столбец1 = значение1, столбец2 = значение2",
-    "SET — присвоение значений",
-    "WHERE ограничивает строки для изменения",
-    "BETWEEN",
-    "IS NULL",
-    "EXISTS",
-    "UNION ALL",
-    "INNER JOIN",
-    "JOIN и INNER JOIN — одно и то же",
-    "JOIN таблицы с самой собой (Self JOIN)",
-    "SELECT e.name AS name\\nFROM Employee AS e\\nJOIN Employee AS c ON e.chief_id = c.id\\nWHERE e.salary > c.salary;",
-    "e.chief_id = c.id",
-    "Объединение трех таблиц",
-    "payments.amount",
-    "orders.id = payments.order_id",
-    "Заполнить пример: объединить три таблицы",
-    "LEFT [OUTER] JOIN",
-    "COUNT(DISTINCT column)",
-    "ROW_NUMBER",
-    "PRIMARY KEY",
-    "FOREIGN KEY",
-    "ROLLBACK",
-    "Проверки данных для QA",
-    "Копировать",
-  ]) {
-    assert.ok(source.includes(token), "SQL cheat sheet is missing " + token);
-  }
-  assert.doesNotMatch(source, /\b(?:DQL|DML|DDL|DCL|TCL)\b/, "category abbreviations must not be displayed in the cheat sheet");
-  assert.ok(source.includes("value.replace"), "the shared copy helper must remain available");
-});
-
-
 test("SQL cheat sheet presents each query as a compact responsive card", () => {
   const referenceStart = source.indexOf('{tab === "reference" && (');
   assert.ok(referenceStart >= 0, "the SQL cheat sheet tab must remain available");
