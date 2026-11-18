@@ -144,7 +144,7 @@ const LESSON_VISUALS: Partial<Record<string, LessonVisual>> = {
     { title: "WHERE", text: "Без условия UPDATE или DELETE затронет все строки." },
   ], "Перед изменением данных внимательно проверь WHERE и область действия запроса."),
   "m7-10": V("network", ["JOIN", "GROUP BY", "HAVING", "UNION"], Database, "lavender", [
-    { title: "INNER / LEFT / RIGHT JOIN", text: "Соединяют таблицы с разным правилом сохранения несовпавших строк." },
+    { title: "INNER / LEFT / RIGHT JOIN", text: "Соединяют таблицы с разным правилом сохранения несовпавших строк. ON задаёт условие соединения таблиц: по каким столбцам или выражениям сопоставляются записи." },
     { title: "GROUP BY", text: "Собирает строки в группы для COUNT, SUM и AVG." },
     { title: "WHERE / HAVING", text: "WHERE фильтрует строки до группировки; HAVING — группы после неё." },
     { title: "UNION / UNION ALL", text: "UNION убирает дубликаты; UNION ALL сохраняет их." },
