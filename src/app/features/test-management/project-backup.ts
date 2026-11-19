@@ -212,7 +212,7 @@ export function parseTmsProjectBackup(raw: string, targetProjectId: string): Tms
   const data = parsed.testManagement;
   const sourceProjectId = sourceProject.id;
   const projectCollections = [...data.cases, ...data.suites, ...data.plans, ...data.runs, ...data.defects,
-    ...(data.requirements ?? []), ...(data.sharedSteps ?? [])];
+    ...(data.requirements ?? []), ...(data.sharedSteps ?? []), ...(data.milestones ?? [])];
   if ((data.projectId !== undefined && data.projectId !== sourceProjectId) ||
     projectCollections.some((item) => item.projectId !== sourceProjectId)) {
     throw new Error("Архив содержит записи, принадлежащие другому проекту");
