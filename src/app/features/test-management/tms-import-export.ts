@@ -87,7 +87,7 @@ export function parseTmsCasesCsv(
     return index >= 0 ? row[index] ?? "" : "";
   };
   const validRequirements = new Set(validRequirementIds);
-  let nextNumber = existingCases.length;
+  let nextNumber = existingCases.reduce((max,item)=>Math.max(max,Number(/^QA-(\\d+)$/.exec(item.key)?.[1]??0)),0);
   const imported: TmsCase[] = [];
   for (const row of rows.slice(1)) {
     const title = row[titleIndex]?.trim();
