@@ -38,15 +38,19 @@
 - Доступен JSON-экспорт и импорт архива выбранного проекта. Импорт валидирует структуру и связи, затем переносит данные в текущий проект, не меняя его ID.
 - Общая резервная копия приложения продолжает включать ключ Test Management.
 - Основные операции не требуют AI, API-ключа или backend.
-- Данные находятся в хранилище текущего профиля браузера. Для TMS доступны IndexedDB (основной режим для крупных библиотек) и localStorage (предыдущий режим); переключение между ними доступно в интерфейсе TMS. При первом переходе в IndexedDB данные копируются, исходный localStorage не удаляется. При возврате в localStorage данные предварительно копируются обратно; если целевое хранилище не принимает весь объём, переключение не выполняется. Экспортированный JSON-файл пользователь сохраняет на своём компьютере и может импортировать на другом устройстве.
+- Структурированные данные TMS находятся в хранилище текущего профиля браузера. Для TMS доступны IndexedDB (основной режим) и localStorage (предыдущий режим); переключение между ними доступно в интерфейсе. Первая миграция в IndexedDB выполняется однократно, копия localStorage не удаляется. При возврате данные копируются обратно; если localStorage не принимает весь объём, переключение не выполняется. Если IndexedDB недоступен, можно явно открыть сохранённую legacy-копию, не удаляя IndexedDB.
+- Бинарные вложения хранятся в отдельном object store IndexedDB и привязываются к кейсам, результатам прогонов и дефектам. Максимальный размер файла — 20 МБ, размер вложений в архиве проекта — до 50 МБ.
+- Архив проекта содержит данные, вложения и проверку ссылочной целостности; импорт заменяет данные только выбранного проекта. Пользователь сохраняет архив на компьютере и переносит его между браузерами/устройствами.
+- Общая резервная копия приложения включает данные TMS и бинарные вложения (до 100 МБ суммарно); восстановление использует текущий выбранный режим хранилища.
 - Это local-first режим одного браузерного профиля; совместная синхронизация и роли не реализованы. Очистка данных браузера без резервной копии может привести к потере локальных данных.
 
 ## Целевая функциональность полноценной TMS
 
 ### Библиотека тестовой документации
 - Дерево папок с вложенностью, drag-and-drop, фильтры, теги, компоненты, полнотекстовый поиск.
-- Редактор кейса: описание, предусловия, шаги с expected на каждом шаге, тестовые данные, постусловия, вложения и ссылки.
-- Версии, diff, история изменений, архивирование, восстановление, клонирование и массовые операции.
+- Редактор кейса: описание, предусловия, шаги с expected на каждом шаге, тестовые данные, постусловия, приоритет, тип, теги и связи с требованиями.
+- Версии и история изменений с восстановлением старой версии как новой; архивирование и клонирование. Сравнение версий и массовые операции остаются в backlog.
+- Поиск, фильтрация по папкам/приоритету, иерархические пути папок через разделитель `/`.
 - Shared steps, параметры, data-driven кейсы, чек-листы, BDD/Gherkin и exploratory charters.
 
 ### Test Suites и Test Plans
@@ -58,43 +62,40 @@
 
 ### Test Runs и выполнение
 - Not Run, Passed, Failed, Blocked, Skipped, Retest, In Progress.
-- Результат на уровне каждого шага, actual result, комментарий, длительность и исполнитель.
-- Скриншоты, видео, HAR, логи, API/SQL evidence.
-- Создание дефекта из failed результата с автоматической связью.
+- Результат на уровне каждого шага, общий actual result и статусы выполнения.
+- Скриншоты, видео, HAR, логи и другие файлы можно прикреплять к кейсам, результатам прогонов и дефектам.
+- Создание дефекта из failed результата с заполнением исходного кейса, прогона, шагов, expected/actual.
 - Аудит событий, временные метки, история статусов и повторное открытие.
 - Офлайн-черновики и восстановление незавершённого прогона.
 
 ### Дефекты
 - Карточка: summary, описание, шаги, expected/actual, environment/build, severity, priority, assignee, labels, attachments.
 - Жизненный цикл New → Open → In Progress → Fixed → Retest → Closed / Reopened / Rejected.
-- Связи many-to-many с кейсами, прогонами, требованиями и релизами.
-- Дедупликация, поиск, фильтры, комментарии и аудит.
+- Связи с кейсами и прогонами; severity, priority, environment, assignee, labels, вложения.
+- Комментарии и локальная история смены статуса. Дедупликация и расширенные фильтры остаются в backlog.
 
 ### Requirements Traceability
-- Реестр требований и критериев приёмки.
-- Requirement ↔ Test Case ↔ Test Run ↔ Defect.
-- Матрица покрытия, непокрытые требования, устаревшие тесты и impact analysis.
+- Реестр требований, описания и критерии приёмки.
+- Связь Requirement ↔ Test Case; отчёт о покрытии и список непокрытых требований.
+- Автоматический impact analysis и полная цепочка Requirement ↔ Run ↔ Defect остаются в backlog.
 - Метрики покрытия рассчитываются по актуальным связям.
 
 ### Аналитика и отчёты
-- pass rate, execution progress, blocked/fail rate, requirement coverage.
-- Тренды между прогонами/релизами, распределение дефектов.
-- flaky/reopened tests, длительность, aging.
-- Отчёты Test Run, Test Plan, release readiness и traceability.
-- CSV/JSON/Markdown/HTML/PDF export; каждая метрика имеет формулу и источник.
+- Метрики последнего прогона: pass rate, Passed/Failed/Blocked/Skipped/Not Run; покрытие требований и открытые дефекты.
+- CSV-экспорт матрицы трассировки и результатов прогона.
+- Тренды между релизами, flaky/reopened tests, длительность, aging и PDF/HTML отчёты остаются в backlog.
 
 ### Командная работа
 - Роли Owner, Admin, QA Lead, Tester, Viewer и granular permissions.
 - Исполнители/reviewers, комментарии, упоминания, уведомления.
 - Optimistic locking/conflict resolution, audit log.
 - Интеграции issue trackers и CI.
-Эти возможности требуют backend и identity layer; localStorage не обеспечивает совместное хранилище.
+В выбранном browser-only режиме командная синхронизация, серверные роли и одновременная работа нескольких пользователей не входят в реализацию. Они намеренно исключены, чтобы не вводить backend, аккаунты и обязательные расходы.
 
 ### Импорт, экспорт и интеграции
-- CSV/XLSX/JSON для кейсов, suites, plans и результатов.
-- TestRail/Test IT migration только по проверенным форматам/API с preview, mapping, validation и отчётом о потерях.
-- API/webhooks для CI/CD, Jira/YouTrack и automation frameworks.
-- JUnit XML import.
+- CSV импорт/экспорт тест-кейсов с распространёнными заголовками, включая типовые поля TestRail-style CSV; CSV-экспорт результатов и трассировки.
+- JSON-архив проекта с вложениями и общая резервная копия приложения.
+- Полное XLSX, JUnit XML и точные миграционные адаптеры TestRail/Test IT с preview/mapping остаются в backlog; их нужно реализовывать по реальным образцам экспортов.
 
 ## Целевая доменная модель
 
@@ -119,18 +120,19 @@
 | Этап | Содержание | Статус |
 |---|---|---|
 | TMS foundation | Project-scoped cases, suites, plans/runs, statuses, defect register, starter collections, JSON export/backup, validated project import, IndexedDB migration and reversible localStorage mode | Реализовано |
-| Case management | Полный редактор, папки, tags/filters, версии, shared steps, attachments | В работе |
-| Execution engine | Step-level results, evidence, reruns, assignees, audit trail | Далее |
-| Traceability | Requirements matrix, impact analysis, defect linking | Далее |
-| Reporting | Dashboards, run comparison, release readiness | Далее |
-| Import/export | CSV/XLSX, TestRail/Test IT mapping, JUnit XML | Далее |
-| Team mode | Backend, RBAC, collaboration, sync, notifications, integrations | Отдельный этап |
+| Case management | Редактирование, версии, архив/клонирование, folder/priority filters, attachments | Частично реализовано |
+| Execution engine | Immutable run snapshots, step results, evidence, reruns, completion | Частично реализовано |
+| Traceability | Requirements registry, case links, coverage report | Частично реализовано |
+| Reporting | Latest-run metrics, traceability/run CSV | Первый срез реализован |
+| Import/export | Project JSON archive + attachments, global backup, CSV case import/export | Первый срез реализован |
+| Compatibility | Verified TestRail/Test IT import profiles, XLSX, JUnit XML | Далее |
+| Team mode | Multi-user RBAC, collaboration and cloud sync | Исключено выбранными browser-only ограничениями |
 
 ## Definition of Done
 
 - Данные привязаны к проекту и переживают reload.
-- Исторические результаты не меняются при редактировании кейса.
-- Backup/restore валидирует структуру и сохраняет старые данные.
+- Исторические результаты не меняются при редактировании кейса; запуск хранит снимок кейса и шагов.
+- Backup/restore валидирует структуру, ссылки и вложения; предыдущая схема localStorage доступна для возврата.
 - Архив проекта можно перенести на другой компьютер и импортировать в выбранный проект.
 - Работа с TMS не требует серверов, аккаунта или платного облачного хранилища.
 - Есть тесты доменной логики, миграций, ссылочной целостности и UI flows.
