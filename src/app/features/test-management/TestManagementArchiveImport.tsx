@@ -45,9 +45,10 @@ export function TestManagementArchiveImport({ projectId }: { projectId: string }
           throw new Error("Размер одного из вложений не совпадает с данными архива");
         }
 
+        if (typeof indexedDB === "undefined" && attachmentRecords.length) throw new Error("Этот браузер не поддерживает локальное хранение файлов");
         await persistTmsProjects(mode, next);
         try {
-          await replaceProjectTmsAttachments(projectId, attachmentRecords);
+          if (typeof indexedDB !== "undefined") await replaceProjectTmsAttachments(projectId, attachmentRecords);
         } catch (error) {
           await persistTmsProjects(mode, projects);
           throw error;
