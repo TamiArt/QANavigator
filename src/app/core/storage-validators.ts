@@ -245,23 +245,27 @@ function isTmsProject(value: unknown): boolean {
   if (!Array.isArray(value.cases) || !value.cases.every(isTmsCase) ||
     (value.requirements !== undefined && (!Array.isArray(value.requirements) || !value.requirements.every((item) => isRecord(item) && typeof item.id === "string" && typeof item.projectId === "string" && typeof item.key === "string" && typeof item.title === "string" && typeof item.description === "string" && typeof item.acceptanceCriteria === "string" && PRIORITIES.includes(item.priority as (typeof PRIORITIES)[number]) && ["draft", "approved", "implemented", "verified", "deprecated"].includes(String(item.status)) && typeof item.createdAt === "string" && typeof item.updatedAt === "string"))) ||
     (value.sharedSteps !== undefined && (!Array.isArray(value.sharedSteps) || !value.sharedSteps.every(isTmsSharedStep))) ||
+    (value.milestones !== undefined && (!Array.isArray(value.milestones) || !value.milestones.every(isTmsMilestone))) ||
     !Array.isArray(value.suites) || !Array.isArray(value.plans) ||
     !Array.isArray(value.runs) || !Array.isArray(value.defects)) return false;
   const hasUniqueField = (items: unknown[], field: string) => new Set(items.map((item) => (item as Record<string, unknown>)[field])).size === items.length;
   if (!hasUniqueField(value.cases, "id") || !hasUniqueField(value.cases, "key") ||
     !hasUniqueField(value.suites, "id") || !hasUniqueField(value.plans, "id") ||
+    (Array.isArray(value.milestones) && !hasUniqueField(value.milestones, "id")) ||
     !hasUniqueField(value.defects, "id") || !hasUniqueField(value.defects, "key") ||
     (Array.isArray(value.sharedSteps) && (!hasUniqueField(value.sharedSteps, "id") || !hasUniqueField(value.sharedSteps, "key"))) ||
     (Array.isArray(value.requirements) && (!hasUniqueField(value.requirements, "id") || !hasUniqueField(value.requirements, "key")))) return false;
   const projectId = value.projectId;
   const projectScopedCollections = [value.cases, value.suites, value.plans, value.runs, value.defects,
     ...(Array.isArray(value.requirements) ? [value.requirements] : []),
-    ...(Array.isArray(value.sharedSteps) ? [value.sharedSteps] : [])];
+    ...(Array.isArray(value.sharedSteps) ? [value.sharedSteps] : []),
+    ...(Array.isArray(value.milestones) ? [value.milestones] : [])];
   if (projectScopedCollections.some((items) => items.some((item) =>
     !isRecord(item) || item.projectId !== projectId))) return false;
   const caseIds = new Set(value.cases.map((item) => (item as Record<string, unknown>).id));
   const suiteIds = new Set(value.suites.map((item) => (item as Record<string, unknown>).id));
   const planIds = new Set(value.plans.map((item) => (item as Record<string, unknown>).id));
+  const milestoneIds = new Set(Array.isArray(value.milestones) ? value.milestones.map((item) => (item as Record<string, unknown>).id) : []);
   const defectIds = new Set(value.defects.map((item) => (item as Record<string, unknown>).id));
   const runs = value.runs as unknown[];
   const requirementIds = new Set(Array.isArray(value.requirements) ? value.requirements.map((item) => (item as Record<string, unknown>).id) : []);
