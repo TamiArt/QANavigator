@@ -1,13 +1,20 @@
 import { useState } from "react";
 import { Upload } from "lucide-react";
-import { STORAGE_KEYS } from "../../core/constants";
-import { isTestManagementStorageValue } from "../../core/storage-validators";
-import { parseStoredValue, serializeStoredValue } from "../../core/storage";
-import { parseTmsProjectBackup } from "./project-backup";
-import type { TmsData } from "../../domain/test-management";
+import { useTmsStorage } from "./use-tms-storage";
+import { parseTmsProjectArchive } from "./project-backup";
+import { persistTmsProjects } from "./tms-storage";
+import { replaceProjectTmsAttachments, type TmsAttachmentRecord } from "./tms-attachments";
+
+function decodeAttachment(data: string, mimeType: string): Blob {
+  const binary = atob(data);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+  return new Blob([bytes], { type: mimeType });
+}
 
 export function TestManagementArchiveImport({ projectId }: { projectId: string }) {
   const [message, setMessage] = useState("");
+  const { projects, mode, loading } = useTmsStorage();
 
   const importArchive = () => {
     setMessage("");
@@ -19,22 +26,32 @@ export function TestManagementArchiveImport({ projectId }: { projectId: string }
       if (!file) return;
 
       try {
-        const imported = parseTmsProjectBackup(await file.text(), projectId);
+        if (loading) throw new Error("Дождитесь загрузки локальной базы Test Management");
+        const archive = parseTmsProjectArchive(await file.text(), projectId);
         if (!window.confirm(
-          "Импорт заменит тест-кейсы, наборы, планы, прогоны и дефекты текущего проекта. Продолжить?",
+          `Импорт заменит тест-кейсы, наборы, планы, прогоны, дефекты и вложения текущего проекта. В архиве вложений: ${archive.attachments.length}. Продолжить?`,
         )) return;
 
-        const raw = localStorage.getItem(STORAGE_KEYS.testManagement);
-        const currentValue = raw ? JSON.parse(raw) as unknown : [];
-        if (raw && !isTestManagementStorageValue(currentValue)) {
-          throw new Error("Текущие данные Test Management повреждены. Сначала экспортируйте резервную копию.");
-        }
-        const current = parseStoredValue<TmsData[]>(raw, [], isTestManagementStorageValue);
         const next = [
-          ...current.filter((item) => item.projectId !== projectId),
-          { ...imported, projectId, version: 1 as const },
+          ...projects.filter((item) => item.projectId !== projectId),
+          { ...archive.testManagement, projectId, version: 1 as const },
         ];
-        localStorage.setItem(STORAGE_KEYS.testManagement, serializeStoredValue(next));
+        const attachmentRecords: TmsAttachmentRecord[] = archive.attachments.map((item) => ({
+          id: item.id, projectId, ownerType: item.ownerType, ownerId: item.ownerId,
+          name: item.name, mimeType: item.mimeType, size: item.size, createdAt: item.createdAt,
+          blob: decodeAttachment(item.data, item.mimeType),
+        }));
+        if (attachmentRecords.some((item) => item.blob.size !== item.size)) {
+          throw new Error("Размер одного из вложений не совпадает с данными архива");
+        }
+
+        await persistTmsProjects(mode, next);
+        try {
+          await replaceProjectTmsAttachments(projectId, attachmentRecords);
+        } catch (error) {
+          await persistTmsProjects(mode, projects);
+          throw error;
+        }
         window.location.reload();
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Не удалось импортировать архив");
@@ -48,7 +65,8 @@ export function TestManagementArchiveImport({ projectId }: { projectId: string }
       <button
         type="button"
         onClick={importArchive}
-        className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted"
+        disabled={loading}
+        className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted disabled:opacity-50"
       >
         <Upload className="h-4 w-4" /> Импорт проекта
       </button>
