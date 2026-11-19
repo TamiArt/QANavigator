@@ -5,6 +5,7 @@ import { useLocalStorage } from "../../hooks/use-local-storage";
 import { STORAGE_KEYS } from "../../core/constants";
 import { TMS_COLLECTIONS, type TmsCase, type TmsData, type TmsRunResult } from "../../domain/test-management";
 import { downloadTextFile } from "../../lib/download";
+import { createTmsProjectBackup } from "./project-backup";
 type Tab = "overview" | "cases" | "suites" | "runs" | "collections" | "defects";
 const empty: TmsData = { version: 1, cases: [], suites: [], plans: [], runs: [], defects: [] };
 const uid = () => crypto.randomUUID();
@@ -54,7 +55,7 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
   const defect={id:uid(),projectId,key:"BUG-"+String(data.defects.length+1).padStart(3,"0"),title:defectTitle.trim(),caseId:defectCaseId||undefined,severity:"major" as const,priority:"P2" as const,status:"open" as const,createdAt:now()};
   save({...data,defects:[defect,...data.defects]});setDefectTitle("");setDefectCaseId("");
  };
- const exportData=()=>downloadTextFile(JSON.stringify({schemaVersion:1,exportedAt:now(),project,testManagement:data},null,2),"qa-project-test-management.json","application/json");
+ const exportData=()=>downloadTextFile(JSON.stringify(createTmsProjectBackup({id:projectId,name:project?.name??"Project"},data,now()),null,2),"qa-project-test-management.json","application/json");
  const tabs:{id:Tab;label:string;icon:typeof Layers}[]=[{id:"overview",label:"Обзор",icon:Layers},{id:"cases",label:"Тест-кейсы",icon:ClipboardList},{id:"suites",label:"Наборы",icon:Layers},{id:"runs",label:"Планы и прогоны",icon:Play},{id:"collections",label:"Базовые коллекции",icon:Library},{id:"defects",label:"Дефекты",icon:Bug}];
  return <section className="mt-6 space-y-4 border-t border-border pt-6">
   <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="text-lg font-semibold">Test Management · {project?.name}</h3><p className="text-sm text-muted-foreground">Тестовая документация и контроль выполнения в рамках проекта.</p></div><button onClick={exportData} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm"><Download className="h-4 w-4"/> Экспорт проекта</button></div>
