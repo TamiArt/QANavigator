@@ -6,6 +6,7 @@ import {
   persistTmsProjects,
   switchTmsStorageMode,
   type TmsStorageMode,
+  TMS_STORAGE_MODE_KEY,
 } from "./tms-storage";
 
 export function useTmsStorage() {
@@ -56,6 +57,15 @@ export function useTmsStorage() {
     setSwitching(true);
     try {
       await writeQueue.current;
+      if (mode === "indexedDB" && error && target === "localStorage") {
+        const legacySnapshot = await loadTmsProjects("localStorage");
+        localStorage.setItem(TMS_STORAGE_MODE_KEY, "localStorage");
+        setProjects(legacySnapshot);
+        setMode("localStorage");
+        setNotice("Открыта сохранённая резервная копия прежнего localStorage. Данные IndexedDB не удалены; проверьте актуальность копии перед продолжением.");
+        setError("");
+        return;
+      }
       await switchTmsStorageMode(target, projects);
       setMode(target);
       setNotice(target === "indexedDB"
@@ -66,7 +76,7 @@ export function useTmsStorage() {
     } finally {
       setSwitching(false);
     }
-  }, [mode, projects]);
+  }, [mode, projects, error]);
 
   return { projects, saveProjects, mode, changeMode, loading, switching, error, notice };
 }
