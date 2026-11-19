@@ -54,7 +54,6 @@ export const STORAGE_KEYS = {
   checklists: "qa_navigator_checklists",
   testCases: "qa_navigator_testcases",
   testManagement: "qa_navigator_test_management_v1",
-  testManagement: "qa_navigator_test_management_v1",
   bugReports: "qa_navigator_bugreports",
   bookmarks: "qa_navigator_bookmarks",
   requirementsText: "qa_navigator_req_text",
