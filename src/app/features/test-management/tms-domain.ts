@@ -1,4 +1,4 @@
-import type { TmsCase, TmsCaseSnapshot, TmsPlan, TmsRun, TmsRunResult } from "../../domain/test-management";
+import type { TmsCase, TmsCaseSnapshot, TmsPlan, TmsRun, TmsRunResult, TmsSharedStep } from "../../domain/test-management";
 
 export type TmsCaseEditableFields = Pick<TmsCase,
   "title" | "folder" | "preconditions" | "steps" | "expected" | "priority" |
@@ -21,7 +21,7 @@ export function reviseTmsCase(
   };
 }
 
-export function snapshotTmsCase(item: TmsCase, sharedSteps: import("../../domain/test-management").TmsSharedStep[] = []): TmsCaseSnapshot {
+export function snapshotTmsCase(item: TmsCase, sharedSteps: TmsSharedStep[] = []): TmsCaseSnapshot {
   return {
     id: item.id,
     key: item.key,
