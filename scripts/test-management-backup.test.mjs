@@ -68,3 +68,14 @@ test("project archive rejects broken links between TMS entities", () => {
   const archive = createTmsProjectBackup({ id: "source-project", name: "Source" }, data, "now");
   assert.throws(() => parseTmsProjectBackup(JSON.stringify(archive), "target"), /нарушенные связи/);
 });
+
+test("project archive imports the original first-slice export format", () => {
+  const legacy = {
+    schemaVersion: 1,
+    exportedAt: "now",
+    project: { id: "source-project", name: "Source" },
+    testManagement: emptyData,
+  };
+  const restored = parseTmsProjectBackup(JSON.stringify(legacy), "target-project");
+  assert.equal(restored.projectId, "target-project");
+});
