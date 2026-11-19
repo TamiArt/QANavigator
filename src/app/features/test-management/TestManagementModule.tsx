@@ -92,7 +92,7 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
  };
  const restoreCaseVersion = (item:TmsCase, version:TmsCaseVersion) => {
   const snapshot=version.snapshot;
-  const restored=reviseTmsCase(item,{title:snapshot.title,folder:snapshot.folder,preconditions:snapshot.preconditions,steps:snapshot.steps,expected:snapshot.expected,priority:snapshot.priority,description:snapshot.description??"",testData:snapshot.testData??"",postconditions:snapshot.postconditions??"",tags:snapshot.tags,requirementIds:snapshot.requirementIds,automationStatus:snapshot.automationStatus??"not_automated",references:snapshot.references??[],estimateMinutes:snapshot.estimateMinutes,sharedStepIds:snapshot.sharedStepIds??[]},now());
+  const restored=reviseTmsCase(item,{title:snapshot.title,folder:snapshot.folder,preconditions:snapshot.preconditions,steps:snapshot.steps,expected:snapshot.expected,priority:snapshot.priority,type:snapshot.type,description:snapshot.description??"",testData:snapshot.testData??"",postconditions:snapshot.postconditions??"",tags:snapshot.tags,requirementIds:snapshot.requirementIds,automationStatus:snapshot.automationStatus??"not_automated",references:snapshot.references??[],estimateMinutes:snapshot.estimateMinutes,sharedStepIds:snapshot.sharedStepIds??[]},now());
   save({...data,cases:cases.map((current)=>current.id===item.id?restored:current)});
  };
  const removeCase = async (item: TmsCase) => {
