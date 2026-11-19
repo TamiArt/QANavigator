@@ -230,7 +230,7 @@ function isTmsProject(value: unknown): boolean {
       typeof item.planId !== "string" || !planIds.has(item.planId) || !isRecord(item.results) ||
       (item.caseSnapshots !== undefined && !isRecord(item.caseSnapshots))) return false;
     return Object.entries(item.results).every(([caseId, result]) =>
-      isTmsRunResult(result) &&
+      isRecord(result) && isTmsRunResult(result) &&
       (result.defectId === undefined || defectIds.has(result.defectId)) &&
       (caseIds.has(caseId) || (isRecord(item.caseSnapshots) && caseId in item.caseSnapshots)));
   })) return false;
