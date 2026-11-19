@@ -86,7 +86,13 @@ function isDefect(value: unknown): boolean {
     ["blocker", "critical", "major", "minor"].includes(String(value.severity)) &&
     isPriority(value.priority) &&
     ["open", "in_progress", "fixed", "closed"].includes(String(value.status)) &&
-    isString(value.createdAt);
+    isString(value.createdAt) &&
+    (value.attachmentIds === undefined || isStringArray(value.attachmentIds)) &&
+    (value.labels === undefined || isStringArray(value.labels)) &&
+    (value.description === undefined || isString(value.description)) &&
+    (value.steps === undefined || isStringArray(value.steps)) &&
+    (value.expected === undefined || isString(value.expected)) &&
+    (value.actual === undefined || isString(value.actual));
 }
 
 function isTmsData(value: unknown): value is TmsData {
