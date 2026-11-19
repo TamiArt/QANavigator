@@ -60,13 +60,14 @@ function transactionDone(transaction: IDBTransaction): Promise<void> {
 async function writeIndexedDbProjects(projects: TmsData[]): Promise<void> {
   const database = await openDatabase();
   try {
-    const transaction = database.transaction(PROJECT_STORE, "readwrite");
+    const transaction = database.transaction([PROJECT_STORE, "meta"], "readwrite");
     const store = transaction.objectStore(PROJECT_STORE);
     store.clear();
     for (const project of projects) {
       if (!project.projectId) throw new Error("У записи Test Management отсутствует projectId");
       store.put({ ...project, version: 1 });
     }
+    transaction.objectStore("meta").put({ key: "legacyLocalStorageMigrated", completedAt: new Date().toISOString() });
     await transactionDone(transaction);
   } finally {
     database.close();
