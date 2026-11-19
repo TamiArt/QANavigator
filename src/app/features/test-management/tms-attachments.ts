@@ -109,3 +109,20 @@ export async function importTmsAttachment(record: TmsAttachmentRecord): Promise<
     await done(transaction);
   } finally { database.close(); }
 }
+
+export async function replaceProjectTmsAttachments(projectId: string, records: TmsAttachmentRecord[]): Promise<void> {
+  if (records.some((record) => record.projectId !== projectId || record.size > MAX_ATTACHMENT_SIZE || record.blob.size !== record.size)) {
+    throw new Error("Архив содержит вложения с некорректными данными");
+  }
+  const database = await openDatabase();
+  try {
+    const transaction = database.transaction("attachments", "readwrite");
+    const store = transaction.objectStore("attachments");
+    const request = store.index("projectId").getAllKeys(projectId);
+    request.onsuccess = () => {
+      for (const key of request.result) store.delete(key);
+      for (const record of records) store.put(record);
+    };
+    await done(transaction);
+  } finally { database.close(); }
+}
