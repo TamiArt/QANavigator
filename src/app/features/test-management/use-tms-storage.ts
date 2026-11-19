@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { TmsData } from "../../domain/test-management";
 import {
   getInitialTmsStorageMode,
@@ -14,6 +14,8 @@ export function useTmsStorage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [switching, setSwitching] = useState(false);
+  const writeQueue = useRef<Promise<void>>(Promise.resolve());
 
   useEffect(() => {
     let active = true;
@@ -26,6 +28,11 @@ export function useTmsStorage() {
       }
     }).catch((reason: unknown) => {
       if (!active) return;
+      if (mode === "indexedDB" && typeof indexedDB === "undefined") {
+        setNotice("IndexedDB недоступен в этом браузере. Используется прежнее хранилище localStorage.");
+        setMode("localStorage");
+        return;
+      }
       setError(reason instanceof Error ? reason.message : "Не удалось загрузить данные Test Management");
       setLoading(false);
     });
@@ -35,7 +42,9 @@ export function useTmsStorage() {
   const saveProjects = useCallback((next: TmsData[]) => {
     setProjects(next);
     setError("");
-    void persistTmsProjects(mode, next).catch((reason: unknown) => {
+    const operation = writeQueue.current.then(() => persistTmsProjects(mode, next));
+    writeQueue.current = operation.catch(() => undefined);
+    void operation.catch((reason: unknown) => {
       setError(reason instanceof Error ? reason.message : "Не удалось сохранить данные Test Management");
     });
   }, [mode]);
@@ -44,7 +53,9 @@ export function useTmsStorage() {
     if (target === mode) return;
     setError("");
     setNotice("");
+    setSwitching(true);
     try {
+      await writeQueue.current;
       await switchTmsStorageMode(target, projects);
       setMode(target);
       setNotice(target === "indexedDB"
@@ -52,8 +63,10 @@ export function useTmsStorage() {
         : "Возврат к localStorage выполнен. Копия IndexedDB не удалена.");
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Не удалось переключить хранилище");
+    } finally {
+      setSwitching(false);
     }
   }, [mode, projects]);
 
-  return { projects, saveProjects, mode, changeMode, loading, error, notice };
+  return { projects, saveProjects, mode, changeMode, loading, switching, error, notice };
 }
