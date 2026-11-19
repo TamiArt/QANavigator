@@ -1,4 +1,4 @@
-import type { TmsCase, TmsCaseSnapshot, TmsPlan, TmsRun, TmsRunResult, TmsSharedStep, TmsSharedStepVersion } from "../../domain/test-management";
+import type { TmsCase, TmsCaseSnapshot, TmsCaseVersion, TmsPlan, TmsRun, TmsRunResult, TmsSharedStep, TmsSharedStepVersion } from "../../domain/test-management";
 
 export type TmsCaseEditableFields = Pick<TmsCase,
   "title" | "folder" | "preconditions" | "steps" | "expected" | "priority" |
@@ -131,4 +131,53 @@ export function reviseTmsSharedStep(
     updatedAt: savedAt,
     versions: [...(existing.versions ?? []), version],
   };
+}
+
+
+export interface TmsCaseVersionDifference {
+  field: string;
+  previous: string;
+  current: string;
+}
+
+function formatVersionValue(value: unknown): string {
+  if (value === undefined || value === null || value === "") return "—";
+  if (Array.isArray(value)) {
+    if (value.every((item) => item && typeof item === "object" && "action" in item && "expected" in item)) {
+      return value.map((item) => String(item.action) + " → " + String(item.expected)).join("\\n");
+    }
+    return value.map(String).join(", ") || "—";
+  }
+  return String(value);
+}
+
+export function compareTmsCaseVersion(
+  version: TmsCaseVersion,
+  current: TmsCase,
+): TmsCaseVersionDifference[] {
+  const fields: Array<[keyof TmsCaseVersion["snapshot"], string]> = [
+    ["title", "Название"],
+    ["folder", "Папка"],
+    ["priority", "Приоритет"],
+    ["preconditions", "Предусловия"],
+    ["steps", "Шаги"],
+    ["expected", "Ожидаемый результат"],
+    ["description", "Описание"],
+    ["testData", "Тестовые данные"],
+    ["postconditions", "Постусловия"],
+    ["tags", "Теги"],
+    ["automationStatus", "Статус автоматизации"],
+    ["references", "Внешние ссылки"],
+    ["estimateMinutes", "Оценка времени"],
+  ];
+  return fields.flatMap(([field, label]) => {
+    const previousValue = version.snapshot[field];
+    const currentValue = current[field as keyof TmsCase];
+    if (JSON.stringify(previousValue ?? null) === JSON.stringify(currentValue ?? null)) return [];
+    return [{
+      field: label,
+      previous: formatVersionValue(previousValue),
+      current: formatVersionValue(currentValue),
+    }];
+  });
 }
