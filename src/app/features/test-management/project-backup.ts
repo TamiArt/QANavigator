@@ -75,8 +75,9 @@ function isPlan(value: unknown): boolean {
 
 function isPlanSnapshot(value: unknown): boolean {
   if (!isRecord(value) || !isString(value.id) || !isString(value.name) || !isString(value.environment)) return false;
+  const snapshot = value;
   return ["release", "build", "objective", "risks", "owner", "startDate", "endDate", "entryCriteria", "exitCriteria"]
-    .every((field) => value[field] === undefined || isString(value[field]));
+    .every((field) => snapshot[field] === undefined || isString(snapshot[field]));
 }
 
 function isRun(value: unknown): boolean {
