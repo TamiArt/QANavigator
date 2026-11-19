@@ -5,7 +5,8 @@ export interface TmsCase {
  createdAt: string; updatedAt: string; archived: boolean; version?: number; description?: string; testData?: string; postconditions?: string; automationStatus?: "not_automated" | "automated" | "candidate"; references?: string[]; estimateMinutes?: number; sharedStepIds?: string[]; attachmentIds?: string[]; versions?: TmsCaseVersion[];
 }
 export interface TmsCaseVersion { version: number; savedAt: string; snapshot: Omit<TmsCase, "versions"> }
-export interface TmsSharedStep { id: string; projectId: string; key: string; name: string; steps: TmsStep[]; version: number; createdAt: string; updatedAt: string }
+export interface TmsSharedStepVersion { version: number; savedAt: string; name: string; steps: TmsStep[] }
+export interface TmsSharedStep { id: string; projectId: string; key: string; name: string; steps: TmsStep[]; version: number; createdAt: string; updatedAt: string; versions?: TmsSharedStepVersion[] }
 export interface TmsSuite { id: string; projectId: string; name: string; caseIds: string[]; createdAt: string; description?: string; parentId?: string; updatedAt?: string }
 export interface TmsPlan { id: string; projectId: string; name: string; environment: string; suiteIds: string[]; caseIds: string[]; createdAt: string; release?: string; build?: string; objective?: string; risks?: string; owner?: string; startDate?: string; endDate?: string; entryCriteria?: string; exitCriteria?: string }
 export interface TmsRunResult { status: "not_run" | "passed" | "failed" | "blocked" | "skipped"; actual: string; comment: string; defectId?: string; attachmentIds?: string[]; stepResults?: TmsStepResult[] }
