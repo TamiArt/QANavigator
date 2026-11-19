@@ -133,7 +133,8 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
    environment,assignee:defectAssignee,labels:defectLabels.split(",").map((label)=>label.trim()).filter(Boolean),
    runId:linkedRun?.id,comments:[],history:[],
   };
-  save({...data,defects:[defect,...data.defects]});
+  const runs = linkedRun ? data.runs.map((run)=>run.id===linkedRun.id?{...run,results:{...run.results,[defectCaseId]:{...run.results[defectCaseId],defectId:defect.id}}}:run) : data.runs;
+  save({...data,defects:[defect,...data.defects],runs});
   setDefectTitle("");setDefectCaseId("");setDefectDescription("");setDefectSteps("");setDefectExpected("");setDefectActual("");setDefectAssignee("");setDefectLabels("");
  };
  const changeDefectStatus = (id:string,status:TmsData["defects"][number]["status"]) => save({...data,defects:data.defects.map((defect)=>defect.id===id?{...defect,status,updatedAt:now(),history:[...(defect.history??[]),{id:uid(),field:"status",from:defect.status,to:status,actor:"Локальный пользователь",changedAt:now()}]}:defect)});
