@@ -230,10 +230,12 @@ function isTmsProject(value: unknown): boolean {
     if (!isRecord(item) || typeof item.id !== "string" || typeof item.projectId !== "string" ||
       typeof item.planId !== "string" || !planIds.has(item.planId) || !isRecord(item.results) ||
       (item.caseSnapshots !== undefined && !isRecord(item.caseSnapshots))) return false;
-    return Object.entries(item.results).every(([caseId, result]) =>
-      isRecord(result) && isTmsRunResult(result) &&
-      (result.defectId === undefined || defectIds.has(result.defectId)) &&
-      (caseIds.has(caseId) || (isRecord(item.caseSnapshots) && caseId in item.caseSnapshots)));
+    return Object.entries(item.results).every(([caseId, result]) => {
+      if (!isRecord(result) || !isTmsRunResult(result)) return false;
+      const runResult = result as Record<string, unknown>;
+      return (runResult.defectId === undefined || (typeof runResult.defectId === "string" && defectIds.has(runResult.defectId))) &&
+        (caseIds.has(caseId) || (isRecord(item.caseSnapshots) && caseId in item.caseSnapshots));
+    });
   })) return false;
   return value.defects.every((item) => isRecord(item) && typeof item.id === "string" &&
     typeof item.projectId === "string" && typeof item.key === "string" && typeof item.title === "string" &&
