@@ -139,3 +139,23 @@ test("TMS full-backup attachment validator checks payload shape and size limits"
   assert.equal(validators.isTmsAttachmentsBackupValue([{ ...attachment, size: 30 * 1024 * 1024 }]), false);
   assert.equal(validators.isTmsAttachmentsBackupValue([{ ...attachment, data: "%%%bad%%%" }]), false);
 });
+
+test("TMS validator checks shared-step references", () => {
+  const base = {
+    version: 1, projectId: "p1",
+    cases: [{
+      id: "c1", projectId: "p1", key: "QA-001", title: "Case", folder: "Auth",
+      preconditions: "", steps: [], expected: "", priority: "P2", type: "Functional",
+      tags: [], requirementIds: [], sharedStepIds: ["missing"], createdAt: "now",
+      updatedAt: "now", archived: false,
+    }],
+    suites: [], plans: [], runs: [], defects: [], sharedSteps: [],
+  };
+  assert.equal(validators.isTestManagementStorageValue([base]), false);
+  const valid = {
+    ...base,
+    sharedSteps: [{ id: "shared-1", projectId: "p1", key: "SS-001", name: "Login", steps: [{ action: "Open", expected: "Page" }], version: 1, createdAt: "now", updatedAt: "now" }],
+    cases: [{ ...base.cases[0], sharedStepIds: ["shared-1"] }],
+  };
+  assert.equal(validators.isTestManagementStorageValue([valid]), true);
+});
