@@ -128,3 +128,24 @@ test("project archive rejects missing and malformed evidence attachments", () =>
   };
   assert.throws(() => parseTmsProjectArchive(JSON.stringify(malformed), "target"), /некорректные вложения/);
 });
+
+test("project archives preserve shared-step libraries and case links", () => {
+  const data = {
+    ...emptyData,
+    cases: [{
+      id: "case-1", projectId: "source-project", key: "QA-001", title: "Login",
+      folder: "Auth", preconditions: "", steps: [], expected: "Success", priority: "P1",
+      type: "Functional", tags: [], requirementIds: [], sharedStepIds: ["shared-1"],
+      createdAt: "now", updatedAt: "now", archived: false,
+    }],
+    sharedSteps: [{
+      id: "shared-1", projectId: "source-project", key: "SS-001", name: "Sign in",
+      steps: [{ action: "Enter password", expected: "Accepted" }], version: 1,
+      createdAt: "now", updatedAt: "now",
+    }],
+  };
+  const archive = createTmsProjectBackup({ id: "source-project", name: "Source" }, data, "now");
+  const restored = parseTmsProjectBackup(JSON.stringify(archive), "target-project");
+  assert.equal(restored.sharedSteps[0].key, "SS-001");
+  assert.deepEqual(Array.from(restored.cases[0].sharedStepIds), ["shared-1"]);
+});
