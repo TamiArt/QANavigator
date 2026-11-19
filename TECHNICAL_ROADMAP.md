@@ -112,19 +112,20 @@ Verification baseline:
 ## 3.1 Test Management / TMS milestone
 
 - Product specification: `docs/TEST_MANAGEMENT.md`.
-- Initial local-first TMS slice is embedded in the selected project workspace: test cases, suites, plans/runs, execution statuses, defect register, starter collections, global backup and validated project JSON export/import.
-- Storage key: `qa_navigator_test_management_v1`; included in backup/import validation.
-- This is a foundation, not a claim of full TestRail/Test IT parity. Case versioning, step-level evidence, requirements traceability, advanced reports, migration adapters and team collaboration remain planned.
-- Preserve immutable run snapshots as the model evolves; editing a case must not rewrite historical execution results.
+- TMS is embedded in the selected project workspace and includes case library, suites, plans/runs, execution, defects, requirements, starter collections, reports, CSV import/export and portable JSON archives.
+- Structured records use `qa_navigator_test_management_v1`; IndexedDB is the default TMS store, with reversible localStorage mode and retained migration copy.
+- Binary evidence is stored in the IndexedDB attachments object store and included in project and full-workspace backups.
+- Case versions, immutable run snapshots, step results, selective reruns, requirement coverage and defect history have first implementations; advanced diff, analytics, verified migration profiles and automation imports remain planned.
+- Preserve immutable run snapshots; editing a case must not rewrite historical execution results.
 
 ## 3.2 Browser-only local data and project portability
 
 - Keep the application as a static browser application; no backend, hosted database, user account or paid cloud storage is required for TMS.
-- Existing TMS records remain in the established versioned localStorage key to avoid a broad persistence refactor and preserve compatibility with Settings backup/restore.
-- Each project can be exported as a standalone JSON archive and imported into the currently selected project. Import validates the archive schema and references between cases, suites, plans, runs and defects before replacing that project's TMS data.
-- The archive import does not replace the selected project's identity or other workspace metadata.
-- Users are responsible for downloading and retaining backup files on their own computer. Browser storage is tied to the browser profile and may be cleared by the user or browser.
-- IndexedDB is reserved for a later, isolated storage upgrade when larger binary attachments are introduced; do not move existing application storage wholesale as part of this milestone.
+- Existing TMS records are migrated once from the established localStorage key into IndexedDB. The legacy localStorage copy is not deleted; users can switch back in the TMS UI. If IndexedDB cannot be opened, the user can explicitly fall back to the retained legacy snapshot.
+- Switching from IndexedDB back to localStorage is completed only after the full data set has been written successfully; the IndexedDB copy is retained. Large data sets that exceed localStorage quota therefore remain in IndexedDB.
+- Project archives include structured data and binary evidence. Import validates schema, entity references, attachment ownership and file sizes before replacing the selected project's TMS data.
+- Full-workspace backup/restore includes TMS records and binary evidence; project and full-workspace archives are stored as files by the user.
+- Browser storage is tied to the browser profile and may be cleared by the browser; user-managed backup files remain the recovery and device-transfer mechanism.
 - No real-time collaboration or cross-device automatic synchronization is provided in this browser-only mode.
 
 ## 4. Mandatory development rules
