@@ -44,12 +44,13 @@ test("test runs capture immutable case and step snapshots", () => {
 
 test("selective reruns include only failed and blocked cases and retain source snapshots", () => {
   const original = sampleCase();
-  const plan = { id: "plan-1", projectId: "project-1", name: "Regression", environment: "Staging", suiteIds: [], caseIds: ["case-1", "case-2"], createdAt: "now" };
-  const run = createTmsRunSnapshot("run-1", "project-1", plan, [original, { ...original, id: "case-2", key: "QA-002" }], "2026-01-03", "Initial");
+  const plan = { id: "plan-1", projectId: "project-1", name: "Regression", environment: "Staging", suiteIds: [], caseIds: ["case-1", "case-2", "case-3"], createdAt: "now" };
+  const run = createTmsRunSnapshot("run-1", "project-1", plan, [original, { ...original, id: "case-2", key: "QA-002" }, { ...original, id: "case-3", key: "QA-003" }], "2026-01-03", "Initial");
   run.results["case-1"].status = "failed";
   run.results["case-2"].status = "passed";
+  run.results["case-3"].status = "retest";
   const rerun = createTmsRerun(run, "run-2", "2026-01-04", "Retest");
-  assert.deepEqual(Object.keys(rerun.results), ["case-1"]);
+  assert.deepEqual(Object.keys(rerun.results), ["case-1", "case-3"]);
   assert.equal(rerun.rerunOf, "run-1");
   assert.equal(rerun.caseSnapshots["case-1"].title, "Login");
   assert.equal(createTmsRerun({ ...run, results: { "case-2": run.results["case-2"] } }, "run-3", "now", "None"), null);
