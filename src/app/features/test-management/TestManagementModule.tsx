@@ -1,14 +1,14 @@
 import { useMemo, useState } from "react";
-import { Download, Plus, Search, Trash2, Library, ClipboardList, Layers, Play, Bug, Database, HardDrive } from "lucide-react";
+import { Download, Plus, Search, Trash2, Library, ClipboardList, Layers, Play, Bug, Database, HardDrive, Pencil, Copy, Archive } from "lucide-react";
 import { useApp } from "../../core/app-context";
 import { useTmsStorage } from "./use-tms-storage";
 import { TMS_COLLECTIONS, type TmsCase, type TmsData, type TmsRunResult } from "../../domain/test-management";
 import { downloadTextFile } from "../../lib/download";
 import { createTmsProjectBackup } from "./project-backup";
 import { TmsAttachmentPanel } from "./TmsAttachmentPanel";
-import { listProjectTmsAttachments } from "./tms-attachments";
+import { deleteTmsAttachment, listProjectTmsAttachments } from "./tms-attachments";
 type Tab = "overview" | "cases" | "suites" | "runs" | "collections" | "defects";
-const empty: TmsData = { version: 1, cases: [], suites: [], plans: [], runs: [], defects: [] };
+const empty: TmsData = { version: 1, cases: [], suites: [], plans: [], runs: [], defects: [], requirements: [] };
 const uid = () => crypto.randomUUID();
 const now = () => new Date().toISOString();
 async function blobToBase64(blob: Blob): Promise<string> {
@@ -26,17 +26,41 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
  const [archiveMessage, setArchiveMessage] = useState("");
  const [title, setTitle] = useState(""), [folder, setFolder] = useState("Общие проверки"), [priority, setPriority] = useState<TmsCase["priority"]>("P2");
  const [preconditions, setPreconditions] = useState(""), [steps, setSteps] = useState("Открыть функциональность\nВыполнить действие"), [expected, setExpected] = useState("Система обрабатывает действие согласно требованиям");
+ const [editingCaseId, setEditingCaseId] = useState("");
+ const [description, setDescription] = useState(""), [testData, setTestData] = useState(""), [postconditions, setPostconditions] = useState(""), [tagsText, setTagsText] = useState("");
  const [suiteName, setSuiteName] = useState(""), [planName, setPlanName] = useState(""), [environment, setEnvironment] = useState(project?.environment || "Staging");
  const [runId, setRunId] = useState(""), [defectTitle, setDefectTitle] = useState(""), [defectCaseId, setDefectCaseId] = useState("");
  const save = (next: TmsData) => setAll([...all.filter((x) => x.projectId !== projectId), { ...next, projectId, version: 1 }]);
  const cases = data.cases;
  const filtered = useMemo(() => cases.filter((c) => [c.key,c.title,c.folder,c.tags.join(" ")].join(" ").toLowerCase().includes(query.toLowerCase())), [cases,query]);
  const activeRun = data.runs.find((r) => r.id === runId) ?? data.runs[0];
+ const resetCaseForm = () => { setTitle(""); setPreconditions(""); setSteps("Открыть функциональность\nВыполнить действие"); setExpected("Система обрабатывает действие согласно требованиям"); setDescription(""); setTestData(""); setPostconditions(""); setTagsText(""); setEditingCaseId(""); };
  const addCase = () => {
   if (!title.trim()) return;
-  const item: TmsCase = { id: uid(), projectId, key: "QA-" + String(cases.length + 1).padStart(3,"0"), title: title.trim(), folder, preconditions,
-   steps: steps.split("\n").map((action) => ({ action: action.trim(), expected })).filter((s) => s.action), expected, priority, type: "Functional", tags: [], requirementIds: [], createdAt: now(), updatedAt: now(), archived: false };
-  save({ ...data, cases: [...cases,item] }); setTitle(""); setPreconditions("");
+  const nextSteps = steps.split("\n").map((action) => ({ action: action.trim(), expected })).filter((step) => step.action);
+  const tags = tagsText.split(",").map((tag) => tag.trim()).filter(Boolean);
+  if (editingCaseId) {
+   const existing = cases.find((item) => item.id === editingCaseId);
+   if (!existing) { resetCaseForm(); return; }
+   const { versions = [], ...snapshot } = existing;
+   const previousVersion = existing.version ?? 1;
+   const updated: TmsCase = { ...existing, title: title.trim(), folder, preconditions, steps: nextSteps, expected, priority, description, testData, postconditions, tags, updatedAt: now(), version: previousVersion + 1, versions: [...versions, { version: previousVersion, savedAt: now(), snapshot }] };
+   save({ ...data, cases: cases.map((item) => item.id === editingCaseId ? updated : item) });
+  } else {
+   const item: TmsCase = { id: uid(), projectId, key: "QA-" + String(cases.length + 1).padStart(3,"0"), title: title.trim(), folder, preconditions,
+    steps: nextSteps, expected, priority, type: "Functional", tags, requirementIds: [], createdAt: now(), updatedAt: now(), archived: false, version: 1, description, testData, postconditions };
+   save({ ...data, cases: [...cases,item] });
+  }
+  resetCaseForm();
+ };
+ const editCase = (item: TmsCase) => { setEditingCaseId(item.id); setTitle(item.title); setFolder(item.folder); setPriority(item.priority); setPreconditions(item.preconditions); setSteps(item.steps.map((step) => step.action).join("\n")); setExpected(item.expected); setDescription(item.description ?? ""); setTestData(item.testData ?? ""); setPostconditions(item.postconditions ?? ""); setTagsText(item.tags.join(", ")); setTab("cases"); };
+ const cloneCase = (item: TmsCase) => { const { versions: _versions, attachmentIds: _attachments, ...copy } = item; const cloned: TmsCase = { ...copy, id: uid(), key: "QA-" + String(cases.length + 1).padStart(3,"0"), title: item.title + " — копия", createdAt: now(), updatedAt: now(), version: 1, versions: [], attachmentIds: [], archived: false }; save({ ...data, cases: [...cases, cloned] }); };
+ const toggleArchived = (item: TmsCase) => save({ ...data, cases: cases.map((current) => current.id === item.id ? { ...current, archived: !current.archived, updatedAt: now() } : current) });
+ const removeCase = async (item: TmsCase) => {
+  if (!window.confirm("Удалить тест-кейс? История прогонов сохранится, но связь с библиотекой будет удалена.")) return;
+  await Promise.all((item.attachmentIds ?? []).map((id) => deleteTmsAttachment(id)));
+  save({ ...data, cases: cases.filter((current) => current.id !== item.id), suites: data.suites.map((suite) => ({ ...suite, caseIds: suite.caseIds.filter((id) => id !== item.id) })), plans: data.plans.map((plan) => ({ ...plan, caseIds: plan.caseIds.filter((id) => id !== item.id) })), defects: data.defects.map((defect) => defect.caseId === item.id ? { ...defect, caseId: undefined } : defect) });
+  if (editingCaseId === item.id) resetCaseForm();
  };
  const importCollection = (id: string) => {
   const collection = TMS_COLLECTIONS.find((c) => c.id === id); if (!collection) return;
