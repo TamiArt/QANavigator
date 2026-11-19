@@ -173,3 +173,11 @@ export function isApiWorkbenchStorageValue(value: unknown): boolean {
     );
   });
 }
+
+/** Validates the versioned project-scoped Test Management collection. */
+export function isTestManagementStorageValue(value: unknown): boolean {
+  const data = unwrapCurrentStorageValue(value);
+  return Array.isArray(data) && data.every((item) => isRecord(item) &&
+    item.version === 1 && typeof item.projectId === "string" &&
+    ["cases", "suites", "plans", "runs", "defects"].every((key) => Array.isArray(item[key])));
+}
