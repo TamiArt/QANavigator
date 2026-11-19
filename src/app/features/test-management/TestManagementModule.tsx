@@ -145,6 +145,22 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
   setDefectTitle("");setDefectCaseId("");setDefectDescription("");setDefectSteps("");setDefectExpected("");setDefectActual("");setDefectAssignee("");setDefectLabels("");
  };
  const changeDefectStatus = (id:string,status:TmsData["defects"][number]["status"]) => save({...data,defects:data.defects.map((defect)=>defect.id===id?{...defect,status,updatedAt:now(),history:[...(defect.history??[]),{id:uid(),field:"status",from:defect.status,to:status,actor:"Локальный пользователь",changedAt:now()}]}:defect)});
+ const editDefect = (defect:TmsData["defects"][number]) => {
+  const title=window.prompt("Название дефекта",defect.title); if(title===null)return;
+  const description=window.prompt("Описание дефекта",defect.description??""); if(description===null)return;
+  const assignee=window.prompt("Ответственный",defect.assignee??""); if(assignee===null)return;
+  const changedAt=now();
+  const history=[...(defect.history??[])];
+  if(title.trim()!==defect.title)history.push({id:uid(),field:"title",from:defect.title,to:title.trim(),actor:"Локальный пользователь",changedAt});
+  if(description!== (defect.description??""))history.push({id:uid(),field:"description",from:defect.description??"",to:description,actor:"Локальный пользователь",changedAt});
+  if(assignee!== (defect.assignee??""))history.push({id:uid(),field:"assignee",from:defect.assignee??"",to:assignee,actor:"Локальный пользователь",changedAt});
+  save({...data,defects:data.defects.map((item)=>item.id===defect.id?{...item,title:title.trim()||item.title,description,assignee,updatedAt:changedAt,history}:item)});
+ };
+ const removeDefect = async (defect:TmsData["defects"][number]) => {
+  if(!window.confirm("Удалить дефект и его вложения?"))return;
+  await Promise.all((defect.attachmentIds??[]).map((id)=>deleteTmsAttachment(id)));
+  save({...data,defects:data.defects.filter((item)=>item.id!==defect.id),runs:data.runs.map((run)=>({...run,results:Object.fromEntries(Object.entries(run.results).map(([caseId,result])=>[caseId,result.defectId===defect.id?{...result,defectId:undefined}:result]))}))});
+ };
  const addDefectComment = (id:string) => {
   if(!defectCommentText.trim())return;
   save({...data,defects:data.defects.map((defect)=>defect.id===id?{...defect,updatedAt:now(),comments:[...(defect.comments??[]),{id:uid(),author:"Локальный пользователь",body:defectCommentText.trim(),createdAt:now()}]}:defect)});
@@ -222,7 +238,7 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
     <button onClick={addDefect} disabled={!defectTitle.trim()} className="rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground disabled:opacity-40 md:col-span-2">Создать дефект</button>
    </div>
    {data.defects.map((defect)=><article key={defect.id} className="space-y-3 rounded-xl border border-border bg-card p-3">
-    <div className="flex flex-wrap items-start justify-between gap-2"><div><div className="text-xs text-muted-foreground">{defect.key} · {defect.severity} · {defect.priority}</div><b>{defect.title}</b></div><select aria-label={"Статус "+defect.key} value={defect.status} onChange={(e)=>changeDefectStatus(defect.id,e.target.value as TmsData["defects"][number]["status"])} className="rounded-md border border-border bg-background px-2 py-1 text-xs"><option value="new">New</option><option value="open">Open</option><option value="in_progress">In Progress</option><option value="fixed">Fixed</option><option value="retest">Retest</option><option value="reopened">Reopened</option><option value="closed">Closed</option><option value="rejected">Rejected</option></select></div>
+    <div className="flex flex-wrap items-start justify-between gap-2"><div><div className="text-xs text-muted-foreground">{defect.key} · {defect.severity} · {defect.priority}</div><b>{defect.title}</b></div><div className="flex gap-2"><button type="button" onClick={()=>editDefect(defect)} className="rounded-md border border-border px-2 py-1 text-xs">Редактировать</button><button type="button" aria-label={"Удалить "+defect.key} onClick={()=>void removeDefect(defect)} className="text-destructive"><Trash2 className="h-4 w-4"/></button><select aria-label={"Статус "+defect.key} value={defect.status} onChange={(e)=>changeDefectStatus(defect.id,e.target.value as TmsData["defects"][number]["status"])} className="rounded-md border border-border bg-background px-2 py-1 text-xs"><option value="new">New</option><option value="open">Open</option><option value="in_progress">In Progress</option><option value="fixed">Fixed</option><option value="retest">Retest</option><option value="reopened">Reopened</option><option value="closed">Closed</option><option value="rejected">Rejected</option></select></div>
     {defect.description&&<p className="text-sm">{defect.description}</p>}
     {(defect.steps?.length ?? 0)>0&&<ol className="list-decimal space-y-1 pl-5 text-xs">{(defect.steps??[]).map((step,index)=><li key={index}>{step}</li>)}</ol>}
     <div className="grid gap-2 text-xs sm:grid-cols-2"><p><b>Ожидается:</b> {defect.expected||"—"}</p><p><b>Фактически:</b> {defect.actual||"—"}</p><p><b>Окружение:</b> {defect.environment||"—"}</p><p><b>Ответственный:</b> {defect.assignee||"Не назначен"}</p></div>
