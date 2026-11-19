@@ -2,7 +2,7 @@ import type { TmsCase, TmsCaseSnapshot, TmsPlan, TmsRun, TmsRunResult } from "..
 
 export type TmsCaseEditableFields = Pick<TmsCase,
   "title" | "folder" | "preconditions" | "steps" | "expected" | "priority" |
-  "description" | "testData" | "postconditions" | "automationStatus" | "references" | "estimateMinutes" | "tags" | "requirementIds"
+  "description" | "testData" | "postconditions" | "automationStatus" | "references" | "estimateMinutes" | "sharedStepIds" | "tags" | "requirementIds"
 >;
 
 export function reviseTmsCase(
@@ -21,14 +21,14 @@ export function reviseTmsCase(
   };
 }
 
-export function snapshotTmsCase(item: TmsCase): TmsCaseSnapshot {
+export function snapshotTmsCase(item: TmsCase, sharedSteps: import("../../domain/test-management").TmsSharedStep[] = []): TmsCaseSnapshot {
   return {
     id: item.id,
     key: item.key,
     title: item.title,
     folder: item.folder,
     preconditions: item.preconditions,
-    steps: item.steps.map((step) => ({ ...step })),
+    steps: [...item.steps.map((step) => ({ ...step })), ...sharedSteps.filter((shared)=>item.sharedStepIds?.includes(shared.id)).flatMap((shared)=>shared.steps.map((step)=>({action:"["+shared.key+"] "+step.action,expected:step.expected})))],
     expected: item.expected,
     priority: item.priority,
     type: item.type,
@@ -41,6 +41,7 @@ export function snapshotTmsCase(item: TmsCase): TmsCaseSnapshot {
     automationStatus: item.automationStatus,
     references: item.references ?? [],
     estimateMinutes: item.estimateMinutes,
+    sharedStepIds: [...(item.sharedStepIds ?? [])],
   };
 }
 
@@ -51,10 +52,11 @@ export function createTmsRunSnapshot(
   cases: TmsCase[],
   startedAt: string,
   displayName: string,
+  sharedSteps: import("../../domain/test-management").TmsSharedStep[] = [],
 ): TmsRun {
   const caseSnapshots = Object.fromEntries(plan.caseIds.flatMap((caseId) => {
     const item = cases.find((candidate) => candidate.id === caseId);
-    return item ? [[caseId, snapshotTmsCase(item)]] : [];
+    return item ? [[caseId, snapshotTmsCase(item, sharedSteps)]] : [];
   }));
   const results: Record<string, TmsRunResult> = Object.fromEntries(
     Object.entries(caseSnapshots).map(([caseId, snapshot]) => [caseId, {
