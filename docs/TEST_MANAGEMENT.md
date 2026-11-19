@@ -48,7 +48,8 @@
 
 ### Библиотека тестовой документации
 - Дерево папок с вложенностью, drag-and-drop, фильтры, теги, компоненты, полнотекстовый поиск.
-- Редактор кейса: описание, предусловия, шаги с expected на каждом шаге, тестовые данные, постусловия, приоритет, тип, теги, automation status, effort estimate, external references и связи с требованиями.
+- Редактор кейса: описание, предусловия, шаги с expected на каждом шаге, тестовые данные, постусловия, приоритет, тип, теги, automation status, effort estimate, external references, связи с требованиями и переиспользуемыми общими шагами.
+- Shared Steps library: общие шаги можно редактировать и подключать к нескольким кейсам; при запуске они разворачиваются в неизменяемый снимок выполнения.
 - Версии и история изменений с восстановлением старой версии как новой; архивирование и клонирование. Сравнение версий и массовые операции остаются в backlog.
 - Поиск, фильтрация по папкам/приоритету, иерархические пути папок через разделитель `/`.
 - Shared steps, параметры, data-driven кейсы, чек-листы, BDD/Gherkin и exploratory charters.
@@ -121,7 +122,7 @@
 | Этап | Содержание | Статус |
 |---|---|---|
 | TMS foundation | Project-scoped cases, suites, plans/runs, statuses, defect register, starter collections, JSON export/backup, validated project import, IndexedDB migration and reversible localStorage mode | Реализовано |
-| Case management | Редактирование, версии, архив/клонирование, folder/priority filters, attachments | Частично реализовано |
+| Case management | Редактирование, версии, архив/клонирование, folder/priority filters, shared steps, attachments | Частично реализовано |
 | Execution engine | Immutable run snapshots, step results, evidence, reruns, completion | Частично реализовано |
 | Traceability | Requirements registry, case links, coverage report | Частично реализовано |
 | Reporting | Latest-run metrics, traceability/run CSV | Первый срез реализован |
