@@ -216,6 +216,7 @@ function isTmsProject(value: unknown): boolean {
   if (!hasUniqueField(value.cases, "id") || !hasUniqueField(value.cases, "key") ||
     !hasUniqueField(value.suites, "id") || !hasUniqueField(value.plans, "id") ||
     !hasUniqueField(value.defects, "id") || !hasUniqueField(value.defects, "key") ||
+    (Array.isArray(value.sharedSteps) && (!hasUniqueField(value.sharedSteps, "id") || !hasUniqueField(value.sharedSteps, "key"))) ||
     (Array.isArray(value.requirements) && (!hasUniqueField(value.requirements, "id") || !hasUniqueField(value.requirements, "key")))) return false;
   const caseIds = new Set(value.cases.map((item) => (item as Record<string, unknown>).id));
   const suiteIds = new Set(value.suites.map((item) => (item as Record<string, unknown>).id));
