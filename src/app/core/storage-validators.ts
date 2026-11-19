@@ -240,3 +240,19 @@ export function isTestManagementStorageValue(value: unknown): boolean {
   const data = unwrapCurrentStorageValue(value);
   return Array.isArray(data) && data.every(isTmsProject);
 }
+
+/** Validates the optional binary evidence section in a full workspace backup. */
+export function isTmsAttachmentsBackupValue(value: unknown): boolean {
+  if (!Array.isArray(value) || value.length > 500) return false;
+  let totalBytes = 0;
+  for (const item of value) {
+    if (!isRecord(item) || typeof item.id !== "string" || typeof item.projectId !== "string" ||
+      !["case", "run-result", "defect"].includes(String(item.ownerType)) ||
+      typeof item.ownerId !== "string" || typeof item.name !== "string" ||
+      typeof item.mimeType !== "string" || typeof item.size !== "number" ||
+      item.size <= 0 || item.size > 20 * 1024 * 1024 || typeof item.createdAt !== "string" ||
+      typeof item.data !== "string" || !/^[A-Za-z0-9+/]*={0,2}$/.test(item.data)) return false;
+    totalBytes += item.size;
+  }
+  return totalBytes <= 100 * 1024 * 1024;
+}
