@@ -28,6 +28,13 @@ function readLocalProjects(): TmsData[] {
   return parsed;
 }
 
+function writeLocalProjects(projects: TmsData[]): void {
+  if (!isTestManagementStorageValue(projects)) {
+    throw new Error("Данные Test Management не прошли проверку целостности. Запись отменена.");
+  }
+  writeLocalProjects(projects);
+}
+
 function openDatabase(): Promise<IDBDatabase> {
   if (typeof indexedDB === "undefined") {
     return Promise.reject(new Error("Этот браузер не поддерживает IndexedDB"));
@@ -138,10 +145,7 @@ export async function switchTmsStorageMode(
   if (target === "indexedDB") {
     await writeIndexedDbProjects(projects);
   } else {
-    if (!isTestManagementStorageValue(projects)) {
-    throw new Error("Данные Test Management не прошли проверку целостности. Запись отменена.");
-  }
-  localStorage.setItem(STORAGE_KEYS.testManagement, serializeStoredValue(projects));
+    writeLocalProjects(projects);
   }
   localStorage.setItem(TMS_STORAGE_MODE_KEY, target);
 }
