@@ -54,6 +54,7 @@ function isCase(value: unknown): boolean {
     (value.automationStatus === undefined || ["not_automated", "automated", "candidate"].includes(String(value.automationStatus))) &&
     (value.references === undefined || isStringArray(value.references)) &&
     (value.estimateMinutes === undefined || (typeof value.estimateMinutes === "number" && value.estimateMinutes >= 0)) &&
+    (value.sharedStepIds === undefined || isStringArray(value.sharedStepIds)) &&
     (value.versions === undefined || (Array.isArray(value.versions) && value.versions.every((item) => isRecord(item) && typeof item.version === "number" && isString(item.savedAt) && isRecord(item.snapshot))));
 }
 
@@ -132,8 +133,9 @@ function isTmsData(value: unknown): value is TmsData {
     !Array.isArray(value.plans) || !value.plans.every(isPlan) ||
     !Array.isArray(value.runs) || !value.runs.every(isRun) ||
     !Array.isArray(value.defects) || !value.defects.every(isDefect)) return false;
-  return value.requirements === undefined ||
-    (Array.isArray(value.requirements) && value.requirements.every(isRequirement));
+  const validRequirements = value.requirements === undefined || (Array.isArray(value.requirements) && value.requirements.every(isRequirement));
+  const validSharedSteps = value.sharedSteps === undefined || (Array.isArray(value.sharedSteps) && value.sharedSteps.every((item) => isRecord(item) && isString(item.id) && isString(item.projectId) && isString(item.key) && isString(item.name) && typeof item.version === "number" && isString(item.createdAt) && isString(item.updatedAt) && Array.isArray(item.steps) && item.steps.every((step) => isRecord(step) && isString(step.action) && isString(step.expected))));
+  return validRequirements && validSharedSteps;
 }
 
 export function createTmsProjectBackup(
@@ -173,8 +175,10 @@ export function parseTmsProjectBackup(raw: string, targetProjectId: string): Tms
   const planIds = new Set(data.plans.map((item) => item.id));
   const defectIds = new Set(data.defects.map((item) => item.id));
   const requirementIds = new Set((data.requirements ?? []).map((item) => item.id));
+  const sharedStepIds = new Set((data.sharedSteps ?? []).map((item) => item.id));
 
   if ((data.requirements !== undefined && data.cases.some((item) => item.requirementIds.some((id) => !requirementIds.has(id)))) ||
+    (data.sharedSteps !== undefined && data.cases.some((item) => (item.sharedStepIds ?? []).some((id) => !sharedStepIds.has(id)))) ||
     data.suites.some((item) => item.caseIds.some((id) => !caseIds.has(id)) || (item.parentId !== undefined && (!suiteIds.has(item.parentId) || item.parentId === item.id))) ||
     data.plans.some((item) => item.caseIds.some((id) => !caseIds.has(id)) ||
       item.suiteIds.some((id) => !suiteIds.has(id))) ||
