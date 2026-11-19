@@ -121,13 +121,35 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
  const addCasesToSuite = (suiteId:string) => save({...data,suites:data.suites.map((suite)=>suite.id===suiteId?{...suite,caseIds:[...new Set([...suite.caseIds,...selected])],updatedAt:now()}:suite)});
  const renameSuite = (suiteId:string,currentName:string) => { const next=window.prompt("Новое название набора",currentName); if(next?.trim())save({...data,suites:data.suites.map((suite)=>suite.id===suiteId?{...suite,name:next.trim(),updatedAt:now()}:suite)}); };
  const removeSuite = (suiteId:string) => { if(!window.confirm("Удалить набор? Тест-кейсы останутся в библиотеке."))return; save({...data,suites:data.suites.filter((suite)=>suite.id!==suiteId).map((suite)=>suite.parentId===suiteId?{...suite,parentId:undefined}:suite),plans:data.plans.map((plan)=>({...plan,suiteIds:plan.suiteIds.filter((id)=>id!==suiteId)}))}); };
+ const createMilestone = () => {
+  if (!milestoneName.trim()) return;
+  const milestone: TmsMilestone = {
+    id: uid(), projectId, name: milestoneName.trim(), description: milestoneDescription,
+    status: milestoneStatus, startDate: milestoneStartDate || undefined,
+    endDate: milestoneEndDate || undefined, createdAt: now(), updatedAt: now(),
+  };
+  save({ ...data, milestones: [...(data.milestones ?? []), milestone] });
+  setMilestoneName(""); setMilestoneDescription(""); setMilestoneStartDate(""); setMilestoneEndDate(""); setMilestoneStatus("planned");
+ };
+ const updateMilestoneStatus = (milestoneId: string, status: TmsMilestone["status"]) => save({
+  ...data, milestones: (data.milestones ?? []).map((item) => item.id === milestoneId ? { ...item, status, updatedAt: now() } : item),
+ });
+ const removeMilestone = (milestone: TmsMilestone) => {
+  if (data.plans.some((plan) => plan.milestoneId === milestone.id)) {
+    window.alert("Веха связана с планами тестирования. Сначала переназначьте эти планы.");
+    return;
+  }
+  if (window.confirm("Удалить веху «" + milestone.name + "»?")) {
+    save({ ...data, milestones: (data.milestones ?? []).filter((item) => item.id !== milestone.id) });
+  }
+ };
  const createPlan = () => {
   if (!planName.trim() || !cases.some((item)=>!item.archived)) return;
   const caseIds = selected.length ? selected.filter((id)=>cases.some((item)=>item.id===id&&!item.archived)) : cases.filter((item)=>!item.archived).map((item)=>item.id);
   if (!caseIds.length) return;
   const suiteIds = data.suites.filter((suite)=>suite.caseIds.some((id)=>caseIds.includes(id))).map((suite)=>suite.id);
-  save({ ...data,plans:[...data.plans,{id:uid(),projectId,name:planName.trim(),environment,suiteIds,caseIds,createdAt:now(),release,build,objective:planObjective,risks:planRisks,owner:planOwner,startDate:planStartDate,endDate:planEndDate,entryCriteria,exitCriteria}] });
-  setPlanName(""); setSelected([]); setRelease(""); setBuild(""); setPlanObjective(""); setPlanRisks(""); setPlanOwner(""); setEntryCriteria(""); setExitCriteria(""); setPlanStartDate(""); setPlanEndDate("");
+  save({ ...data,plans:[...data.plans,{id:uid(),projectId,name:planName.trim(),environment,suiteIds,caseIds,createdAt:now(),milestoneId:planMilestoneId||undefined,release,build,objective:planObjective,risks:planRisks,owner:planOwner,startDate:planStartDate,endDate:planEndDate,entryCriteria,exitCriteria}] });
+  setPlanName(""); setSelected([]); setRelease(""); setBuild(""); setPlanMilestoneId(""); setPlanObjective(""); setPlanRisks(""); setPlanOwner(""); setEntryCriteria(""); setExitCriteria(""); setPlanStartDate(""); setPlanEndDate("");
  };
  const addCasesToPlan = (planId: string) => {
   const plan = data.plans.find((item) => item.id === planId);
@@ -155,7 +177,7 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
  const startRun = (planId: string) => {
   const plan=data.plans.find((p)=>p.id===planId); if(!plan)return;
   const startedAt=now();
-  const run=createTmsRunSnapshot(uid(),projectId,plan,cases,startedAt,plan.name+" · "+new Date(startedAt).toLocaleString("ru-RU"),data.sharedSteps??[]);
+  const run=createTmsRunSnapshot(uid(),projectId,plan,cases,startedAt,plan.name+" · "+new Date(startedAt).toLocaleString("ru-RU"),data.sharedSteps??[],data.milestones?.find((item)=>item.id===plan.milestoneId)?.name);
   save({...data,runs:[run,...data.runs]});setRunId(run.id);setTab("runs");
  };
  const setResult = (id:string,caseId:string,patch:Partial<TmsRunResult>) => save({...data,runs:data.runs.map((r)=>r.id===id?{...r,results:{...r.results,[caseId]:{...r.results[caseId],...patch}}}:r)});
@@ -260,7 +282,7 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
    const matches=summary.results.filter((item)=>scope.has(item.caseId));
    if(!matches.length)throw new Error("В выбранном плане не найдено совпадений по ID, ключу или названию тест-кейса.");
    const startedAt=now();
-   const run=createTmsRunSnapshot(uid(),projectId,plan,cases,startedAt,"JUnit · "+plan.name+" · "+new Date(startedAt).toLocaleString("ru-RU"),data.sharedSteps??[]);
+   const run=createTmsRunSnapshot(uid(),projectId,plan,cases,startedAt,"JUnit · "+plan.name+" · "+new Date(startedAt).toLocaleString("ru-RU"),data.sharedSteps??[],data.milestones?.find((item)=>item.id===plan.milestoneId)?.name);
    for(const match of matches)run.results[match.caseId]=match.result;
    run.completedAt=now();
    save({...data,runs:[run,...data.runs]});setRunId(run.id);setTab("runs");
@@ -276,7 +298,7 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
   input.click();
  };
  const exportData=async()=>{setArchiveMessage("");try{const records=typeof indexedDB==="undefined"?[]:await listProjectTmsAttachments(projectId);const total=records.reduce((sum,item)=>sum+item.size,0);if(total>50*1024*1024)throw new Error("Общий размер вложений превышает лимит архива 50 МБ");const attachments=await Promise.all(records.map(async(item)=>({id:item.id,projectId:item.projectId,ownerType:item.ownerType,ownerId:item.ownerId,name:item.name,mimeType:item.mimeType,size:item.size,createdAt:item.createdAt,data:await blobToBase64(item.blob)})));downloadTextFile(JSON.stringify(createTmsProjectBackup({id:projectId,name:project?.name??"Project"},data,now(),attachments),null,2),"qa-project-test-management.json","application/json");}catch(error){setArchiveMessage(error instanceof Error?error.message:"Не удалось создать архив проекта");}};
- const tabs:{id:Tab;label:string;icon:typeof Layers}[]=[{id:"overview",label:"Обзор",icon:Layers},{id:"cases",label:"Тест-кейсы",icon:ClipboardList},{id:"suites",label:"Наборы",icon:Layers},{id:"runs",label:"Планы и прогоны",icon:Play},{id:"collections",label:"Базовые коллекции",icon:Library},{id:"defects",label:"Дефекты",icon:Bug},{id:"requirements",label:"Требования",icon:ClipboardList},{id:"reports",label:"Отчёты",icon:BarChart3},{id:"shared-steps",label:"Общие шаги",icon:Layers}];
+ const tabs:{id:Tab;label:string;icon:typeof Layers}[]=[{id:"overview",label:"Обзор",icon:Layers},{id:"cases",label:"Тест-кейсы",icon:ClipboardList},{id:"suites",label:"Наборы",icon:Layers},{id:"runs",label:"Планы и прогоны",icon:Play},{id:"milestones",label:"Вехи",icon:Flag},{id:"collections",label:"Базовые коллекции",icon:Library},{id:"defects",label:"Дефекты",icon:Bug},{id:"requirements",label:"Требования",icon:ClipboardList},{id:"reports",label:"Отчёты",icon:BarChart3},{id:"shared-steps",label:"Общие шаги",icon:Layers}];
  if (storageLoading) return <section className="mt-6 rounded-xl border border-border p-5 text-sm text-muted-foreground" role="status">Загрузка локальной базы Test Management…</section>;
  if (storageError) return <section className="mt-6 space-y-3 border-t border-border pt-6"><TmsStorageControls mode={storageMode} loading={storageLoading} switching={storageSwitching} error={storageError} notice={storageNotice} onChange={changeMode}/><p className="text-xs text-muted-foreground">Работа с тестовой документацией временно приостановлена, чтобы не перезаписать данные, которые не удалось загрузить или сохранить. Можно безопасно переключиться на последнюю сохранённую копию или на резервную копию прежнего режима, если она доступна.</p></section>;
  return <section className="mt-6 space-y-4 border-t border-border pt-6">
