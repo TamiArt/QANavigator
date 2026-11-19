@@ -126,6 +126,22 @@ function isRequirement(value: unknown): boolean {
     isString(value.createdAt) && isString(value.updatedAt);
 }
 
+function isSharedStep(value: unknown): boolean {
+  if (!isRecord(value) || !isString(value.id) || !isString(value.projectId) ||
+    !isString(value.key) || !isString(value.name) || typeof value.version !== "number" ||
+    !isString(value.createdAt) || !isString(value.updatedAt) ||
+    !Array.isArray(value.steps) ||
+    !value.steps.every((step) => isRecord(step) && isString(step.action) && isString(step.expected))) {
+    return false;
+  }
+
+  if (value.versions === undefined) return true;
+  return Array.isArray(value.versions) && value.versions.every((version) =>
+    isRecord(version) && typeof version.version === "number" && isString(version.savedAt) &&
+    isString(version.name) && Array.isArray(version.steps) &&
+    version.steps.every((step) => isRecord(step) && isString(step.action) && isString(step.expected)));
+}
+
 function isTmsData(value: unknown): value is TmsData {
   if (!isRecord(value) || value.version !== 1 ||
     !Array.isArray(value.cases) || !value.cases.every(isCase) ||
@@ -133,9 +149,10 @@ function isTmsData(value: unknown): value is TmsData {
     !Array.isArray(value.plans) || !value.plans.every(isPlan) ||
     !Array.isArray(value.runs) || !value.runs.every(isRun) ||
     !Array.isArray(value.defects) || !value.defects.every(isDefect)) return false;
-  const validRequirements = value.requirements === undefined || (Array.isArray(value.requirements) && value.requirements.every(isRequirement));
-  const validSharedSteps = value.sharedSteps === undefined || (Array.isArray(value.sharedSteps) && value.sharedSteps.every((item) => isRecord(item) && isString(item.id) && isString(item.projectId) && isString(item.key) && isString(item.name) && typeof item.version === "number" && isString(item.createdAt) && isString(item.updatedAt) && Array.isArray(item.steps) && item.steps.every((step) => isRecord(step) && isString(step.action) && isString(step.expected)) &&
-    (item.versions === undefined || (Array.isArray(item.versions) && item.versions.every((version) => isRecord(version) && typeof version.version === "number" && isString(version.savedAt) && isString(version.name) && Array.isArray(version.steps) && version.steps.every((step) => isRecord(step) && isString(step.action) && isString(step.expected))))));
+  const validRequirements = value.requirements === undefined ||
+    (Array.isArray(value.requirements) && value.requirements.every(isRequirement));
+  const validSharedSteps = value.sharedSteps === undefined ||
+    (Array.isArray(value.sharedSteps) && value.sharedSteps.every(isSharedStep));
   return validRequirements && validSharedSteps;
 }
 
