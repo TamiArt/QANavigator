@@ -23,6 +23,7 @@ const data = {
   requirements: [{ id: "r1", key: "REQ-001", title: "Auth", status: "approved", priority: "P1" }, { id: "r2", key: "REQ-002", title: "Export", status: "draft", priority: "P2" }],
   runs: [{
     id: "run1", projectId: "p1", planId: "plan1", name: "Run", startedAt: "now",
+    planSnapshot: { environment: "Staging", milestoneName: "Release 2.4", release: "2.4", build: "build-42" },
     caseSnapshots: { c1: { key: "QA-001", title: "Login", version: 2, steps: [{ action: "Open", expected: "Form" }] } },
     results: { c1: { status: "passed", actual: "OK", assignee: "QA Tester", stepResults: [{ status: "passed", actual: "Form visible" }] }, c2: { status: "failed", actual: "Broken" }, c3: { status: "in_progress", actual: "" }, c4: { status: "retest", actual: "Needs another run" } },
   }],
@@ -54,4 +55,5 @@ test("run CSV includes immutable case version and step evidence", () => {
   assert.match(csv, /,2,/);
   assert.match(csv, /Form visible/);
   assert.match(csv, /QA Tester/);
+  assert.match(csv, /Release 2.4/);
 });
