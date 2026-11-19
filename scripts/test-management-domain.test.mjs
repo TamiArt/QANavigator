@@ -11,7 +11,7 @@ const compiled = ts.transpileModule(source, {
 }).outputText;
 const module = { exports: {} };
 vm.runInNewContext(compiled, { module, exports: module.exports });
-const { reviseTmsCase, createTmsRunSnapshot, createTmsRerun, compareTmsCaseVersion, getTmsFolderPaths } = module.exports;
+const { reviseTmsCase, createTmsRunSnapshot, createTmsRerun, compareTmsCaseVersion, getTmsFolderPaths, isTmsRunReadyToComplete } = module.exports;
 
 const sampleCase = () => ({
   id: "case-1", projectId: "project-1", key: "QA-001", title: "Login", folder: "Auth",
@@ -104,4 +104,19 @@ test("nested case folders expose unique parent paths in sorted order", () => {
     { folder: "  " },
   ]);
   assert.deepEqual(Array.from(folders), ["API", "API/Auth", "API/Users", "UI", "UI/Login"]);
+});
+
+
+test("run completion requires terminal case and step statuses", () => {
+  const original = sampleCase();
+  const plan = { id: "plan-1", projectId: "project-1", name: "Run", environment: "Staging", suiteIds: [], caseIds: ["case-1"], createdAt: "now" };
+  const run = createTmsRunSnapshot("run-1", "project-1", plan, [original], "2026-01-01", "Run");
+  assert.equal(isTmsRunReadyToComplete(run), false);
+  run.results["case-1"].status = "passed";
+  assert.equal(isTmsRunReadyToComplete(run), false);
+  run.results["case-1"].stepResults = [{ status: "passed", actual: "OK", comment: "" }];
+  assert.equal(isTmsRunReadyToComplete(run), true);
+  run.results["case-1"].status = "blocked";
+  run.results["case-1"].stepResults = [];
+  assert.equal(isTmsRunReadyToComplete(run), true);
 });
