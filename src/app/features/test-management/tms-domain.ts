@@ -214,3 +214,16 @@ export function getTmsFolderPaths(cases: Array<Pick<TmsCase, "folder">>): string
   }
   return Array.from(paths).sort((left, right) => left.localeCompare(right));
 }
+
+
+export function isTmsRunReadyToComplete(run: TmsRun): boolean {
+  return Object.entries(run.results).every(([caseId, result]) => {
+    if (result.status === "not_run" || result.status === "in_progress") return false;
+    if (result.status === "blocked" || result.status === "skipped") return true;
+    const steps = run.caseSnapshots?.[caseId]?.steps ?? [];
+    return steps.every((_, index) => {
+      const status = result.stepResults?.[index]?.status;
+      return status !== undefined && status !== "not_run" && status !== "in_progress";
+    });
+  });
+}
