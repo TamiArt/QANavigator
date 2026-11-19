@@ -6,10 +6,16 @@ import { TMS_COLLECTIONS, type TmsCase, type TmsData, type TmsRunResult } from "
 import { downloadTextFile } from "../../lib/download";
 import { createTmsProjectBackup } from "./project-backup";
 import { TmsAttachmentPanel } from "./TmsAttachmentPanel";
+import { listProjectTmsAttachments } from "./tms-attachments";
 type Tab = "overview" | "cases" | "suites" | "runs" | "collections" | "defects";
 const empty: TmsData = { version: 1, cases: [], suites: [], plans: [], runs: [], defects: [] };
 const uid = () => crypto.randomUUID();
 const now = () => new Date().toISOString();
+async function blobToBase64(blob: Blob): Promise<string> {
+ const bytes = new Uint8Array(await blob.arrayBuffer()); let binary = "";
+ for (let offset = 0; offset < bytes.length; offset += 0x8000) binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+ return btoa(binary);
+}
 const statusLabels: Record<TmsRunResult["status"], string> = { not_run: "Не запускался", passed: "Passed", failed: "Failed", blocked: "Blocked", skipped: "Skipped" };
 export function TestManagementModule({ projectId }: { projectId: string }) {
  const { projects } = useApp();
@@ -17,6 +23,7 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
  const { projects: all, saveProjects: setAll, mode: storageMode, changeMode, loading: storageLoading, error: storageError, notice: storageNotice } = useTmsStorage();
  const data = all.find((x) => x.projectId === projectId) ?? { ...empty, projectId };
  const [tab, setTab] = useState<Tab>("overview"), [query, setQuery] = useState(""), [selected, setSelected] = useState<string[]>([]);
+ const [archiveMessage, setArchiveMessage] = useState("");
  const [title, setTitle] = useState(""), [folder, setFolder] = useState("Общие проверки"), [priority, setPriority] = useState<TmsCase["priority"]>("P2");
  const [preconditions, setPreconditions] = useState(""), [steps, setSteps] = useState("Открыть функциональность\nВыполнить действие"), [expected, setExpected] = useState("Система обрабатывает действие согласно требованиям");
  const [suiteName, setSuiteName] = useState(""), [planName, setPlanName] = useState(""), [environment, setEnvironment] = useState(project?.environment || "Staging");
@@ -55,10 +62,10 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
   const defect={id:uid(),projectId,key:"BUG-"+String(data.defects.length+1).padStart(3,"0"),title:defectTitle.trim(),caseId:defectCaseId||undefined,severity:"major" as const,priority:"P2" as const,status:"open" as const,createdAt:now()};
   save({...data,defects:[defect,...data.defects]});setDefectTitle("");setDefectCaseId("");
  };
- const exportData=()=>downloadTextFile(JSON.stringify(createTmsProjectBackup({id:projectId,name:project?.name??"Project"},data,now()),null,2),"qa-project-test-management.json","application/json");
+ const exportData=async()=>{setArchiveMessage("");try{const records=await listProjectTmsAttachments(projectId);const total=records.reduce((sum,item)=>sum+item.size,0);if(total>50*1024*1024)throw new Error("Общий размер вложений превышает лимит архива 50 МБ");const attachments=await Promise.all(records.map(async(item)=>({id:item.id,projectId:item.projectId,ownerType:item.ownerType,ownerId:item.ownerId,name:item.name,mimeType:item.mimeType,size:item.size,createdAt:item.createdAt,data:await blobToBase64(item.blob)})));downloadTextFile(JSON.stringify(createTmsProjectBackup({id:projectId,name:project?.name??"Project"},data,now(),attachments),null,2),"qa-project-test-management.json","application/json");}catch(error){setArchiveMessage(error instanceof Error?error.message:"Не удалось создать архив проекта");}};
  const tabs:{id:Tab;label:string;icon:typeof Layers}[]=[{id:"overview",label:"Обзор",icon:Layers},{id:"cases",label:"Тест-кейсы",icon:ClipboardList},{id:"suites",label:"Наборы",icon:Layers},{id:"runs",label:"Планы и прогоны",icon:Play},{id:"collections",label:"Базовые коллекции",icon:Library},{id:"defects",label:"Дефекты",icon:Bug}];
  return <section className="mt-6 space-y-4 border-t border-border pt-6">
-  <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="text-lg font-semibold">Test Management · {project?.name}</h3><p className="text-sm text-muted-foreground">Тестовая документация и контроль выполнения в рамках проекта.</p></div><button onClick={exportData} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm"><Download className="h-4 w-4"/> Экспорт проекта</button></div>
+  <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="text-lg font-semibold">Test Management · {project?.name}</h3><p className="text-sm text-muted-foreground">Тестовая документация и контроль выполнения в рамках проекта.</p></div><button onClick={()=>void exportData()} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm"><Download className="h-4 w-4"/> Экспорт проекта</button></div>{archiveMessage&&<p role="alert" className="text-xs text-destructive">{archiveMessage}</p>}
   <nav className="flex gap-1 overflow-x-auto border-b border-border pb-2">{tabs.map(({id,label,icon:Icon})=><button key={id} onClick={()=>setTab(id)} className={"inline-flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm "+(tab===id?"bg-primary/10 text-primary":"text-muted-foreground hover:bg-muted")}><Icon className="h-4 w-4"/>{label}</button>)}</nav>
   {tab==="overview"&&<div className="grid grid-cols-2 gap-3 md:grid-cols-5">{[["Тест-кейсы",cases.length],["Наборы",data.suites.length],["Планы",data.plans.length],["Прогоны",data.runs.length],["Дефекты",data.defects.length]].map(([label,value])=><div key={label} className="rounded-xl border border-border bg-card p-4"><div className="text-2xl font-semibold">{value}</div><div className="text-xs text-muted-foreground">{label}</div></div>)}</div>}
   {tab==="cases"&&<div className="space-y-3">
