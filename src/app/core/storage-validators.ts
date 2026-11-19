@@ -222,10 +222,15 @@ function isTmsProject(value: unknown): boolean {
     ["release", "build", "objective", "risks", "owner", "startDate", "endDate", "entryCriteria", "exitCriteria"].every((key) => item[key] === undefined || typeof item[key] === "string") &&
     isStringArray(item.suiteIds) && item.suiteIds.every((id) => suiteIds.has(id)) &&
     isStringArray(item.caseIds) && item.caseIds.every((id) => caseIds.has(id)))) return false;
-  if (!value.runs.every((item) => isRecord(item) && typeof item.id === "string" &&
-    typeof item.projectId === "string" && typeof item.planId === "string" && planIds.has(item.planId) &&
-    isRecord(item.results) && Object.values(item.results).every(isTmsRunResult) &&
-    (item.caseSnapshots === undefined || isRecord(item.caseSnapshots)))) return false;
+  if (!value.runs.every((item) => {
+    if (!isRecord(item) || typeof item.id !== "string" || typeof item.projectId !== "string" ||
+      typeof item.planId !== "string" || !planIds.has(item.planId) || !isRecord(item.results) ||
+      (item.caseSnapshots !== undefined && !isRecord(item.caseSnapshots))) return false;
+    return Object.entries(item.results).every(([caseId, result]) =>
+      isTmsRunResult(result) &&
+      (result.defectId === undefined || defectIds.has(result.defectId)) &&
+      (caseIds.has(caseId) || (isRecord(item.caseSnapshots) && caseId in item.caseSnapshots)));
+  })) return false;
   return value.defects.every((item) => isRecord(item) && typeof item.id === "string" &&
     typeof item.projectId === "string" && typeof item.key === "string" && typeof item.title === "string" &&
     (item.caseId === undefined || caseIds.has(item.caseId)) &&
