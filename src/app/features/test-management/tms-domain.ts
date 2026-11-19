@@ -197,3 +197,17 @@ export function compareTmsCaseVersion(
     }];
   });
 }
+
+
+export function getTmsFolderPaths(cases: Array<Pick<TmsCase, "folder">>): string[] {
+  const paths = new Set<string>();
+  for (const item of cases) {
+    const parts = item.folder.split("/").map((part) => part.trim()).filter(Boolean);
+    let current = "";
+    for (const part of parts) {
+      current = current ? current + "/" + part : part;
+      paths.add(current);
+    }
+  }
+  return Array.from(paths).sort((left, right) => left.localeCompare(right));
+}
