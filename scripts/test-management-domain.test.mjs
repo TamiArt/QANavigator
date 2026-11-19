@@ -81,13 +81,14 @@ test("case version comparison reports changed fields and ignores unchanged value
     ...original,
     title: "Updated login",
     priority: "P2",
+    type: "Smoke",
     steps: [
       { action: "Open login", expected: "Form appears" },
       { action: "Submit credentials", expected: "Dashboard appears" },
     ],
   }, "2026-01-02");
   const differences = compareTmsCaseVersion(revised.versions[0], revised);
-  assert.deepEqual(Array.from(differences, (item) => item.field), ["Название", "Приоритет", "Шаги"]);
+  assert.deepEqual(Array.from(differences, (item) => item.field), ["Название", "Приоритет", "Тип теста", "Шаги"]);
   assert.equal(differences[0].previous, "Login");
   assert.equal(differences[0].current, "Updated login");
   assert.match(differences[2].current, /Submit credentials/);
