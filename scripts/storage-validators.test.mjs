@@ -158,4 +158,12 @@ test("TMS validator checks shared-step references", () => {
     cases: [{ ...base.cases[0], sharedStepIds: ["shared-1"] }],
   };
   assert.equal(validators.isTestManagementStorageValue([valid]), true);
+  const invalidHistory = {
+    ...valid,
+    sharedSteps: [{
+      ...valid.sharedSteps[0],
+      versions: [{ version: "bad", savedAt: "now", name: "Login", steps: [] }],
+    }],
+  };
+  assert.equal(validators.isTestManagementStorageValue([invalidHistory]), false);
 });
