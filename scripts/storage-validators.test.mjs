@@ -167,3 +167,20 @@ test("TMS validator checks shared-step references", () => {
   };
   assert.equal(validators.isTestManagementStorageValue([invalidHistory]), false);
 });
+
+
+test("TMS storage rejects cross-project records and duplicate project buckets", () => {
+  const project = {
+    version: 1, projectId: "p1", cases: [], suites: [], plans: [], runs: [], defects: [],
+  };
+  const crossProject = {
+    ...project,
+    cases: [{
+      id: "c1", projectId: "p2", key: "QA-001", title: "Case", folder: "Auth",
+      preconditions: "", steps: [], expected: "", priority: "P2", type: "Functional",
+      tags: [], requirementIds: [], createdAt: "now", updatedAt: "now", archived: false,
+    }],
+  };
+  assert.equal(validators.isTestManagementStorageValue([crossProject]), false);
+  assert.equal(validators.isTestManagementStorageValue([project, project]), false);
+});
