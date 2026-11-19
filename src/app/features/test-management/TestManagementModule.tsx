@@ -43,9 +43,7 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
   if (editingCaseId) {
    const existing = cases.find((item) => item.id === editingCaseId);
    if (!existing) { resetCaseForm(); return; }
-   const { versions = [], ...snapshot } = existing;
-   const previousVersion = existing.version ?? 1;
-   const updated: TmsCase = { ...existing, title: title.trim(), folder, preconditions, steps: nextSteps, expected, priority, description, testData, postconditions, tags, requirementIds: caseRequirementIds, updatedAt: now(), version: previousVersion + 1, versions: [...versions, { version: previousVersion, savedAt: now(), snapshot }] };
+   const updated = reviseTmsCase(existing, { title: title.trim(), folder, preconditions, steps: nextSteps, expected, priority, description, testData, postconditions, tags, requirementIds: caseRequirementIds }, now());
    save({ ...data, cases: cases.map((item) => item.id === editingCaseId ? updated : item) });
   } else {
    const item: TmsCase = { id: uid(), projectId, key: "QA-" + String(cases.length + 1).padStart(3,"0"), title: title.trim(), folder, preconditions,
@@ -78,12 +76,8 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
  };
  const startRun = (planId: string) => {
   const plan=data.plans.find((p)=>p.id===planId); if(!plan)return;
-  const snapshots = Object.fromEntries(plan.caseIds.flatMap((id) => {
-   const item = cases.find((candidate) => candidate.id === id);
-   if (!item) return [];
-   return [[id, { id: item.id, key: item.key, title: item.title, folder: item.folder, preconditions: item.preconditions, steps: item.steps.map((step) => ({ ...step })), expected: item.expected, priority: item.priority, type: item.type, tags: [...item.tags], requirementIds: [...item.requirementIds], version: item.version, description: item.description, testData: item.testData, postconditions: item.postconditions }]];
-  }));
-  const run={id:uid(),projectId,planId,name:plan.name+" · "+new Date().toLocaleString("ru-RU"),startedAt:now(),caseSnapshots:snapshots,results:Object.fromEntries(plan.caseIds.map((id)=>[id,{status:"not_run" as const,actual:"",comment:"",stepResults:(snapshots[id]?.steps??[]).map(()=>({status:"not_run" as const,actual:"",comment:""}))}]))};
+  const startedAt=now();
+  const run=createTmsRunSnapshot(uid(),projectId,plan,cases,startedAt,plan.name+" · "+new Date(startedAt).toLocaleString("ru-RU"));
   save({...data,runs:[run,...data.runs]});setRunId(run.id);setTab("runs");
  };
  const setResult = (id:string,caseId:string,patch:Partial<TmsRunResult>) => save({...data,runs:data.runs.map((r)=>r.id===id?{...r,results:{...r.results,[caseId]:{...r.results[caseId],...patch}}}:r)});
