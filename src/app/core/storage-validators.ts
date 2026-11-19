@@ -289,7 +289,8 @@ function isTmsProject(value: unknown): boolean {
     if (!isRecord(item) || typeof item.id !== "string" || typeof item.projectId !== "string" ||
       typeof item.planId !== "string" || !planIds.has(item.planId) || !isRecord(item.results) ||
       (item.caseSnapshots !== undefined && !isRecord(item.caseSnapshots)) ||
-      (item.planSnapshot !== undefined && !isTmsPlanSnapshot(item.planSnapshot))) return false;
+      (item.planSnapshot !== undefined && (!isTmsPlanSnapshot(item.planSnapshot) ||
+        (isRecord(item.planSnapshot) && item.planSnapshot.milestoneId !== undefined && !milestoneIds.has(item.planSnapshot.milestoneId))))) return false;
     return Object.entries(item.results).every(([caseId, result]) => {
       if (!isRecord(result) || !isTmsRunResult(result)) return false;
       const runResult = result as Record<string, unknown>;
