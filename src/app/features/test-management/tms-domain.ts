@@ -84,13 +84,14 @@ export function createTmsRerun(
   const results: TmsRun["results"] = {};
   const caseSnapshots: NonNullable<TmsRun["caseSnapshots"]> = {};
   for (const [caseId, result] of retryEntries) {
+    const snapshot = source.caseSnapshots?.[caseId];
     results[caseId] = {
       status: "not_run",
       actual: "",
       comment: "",
-      stepResults: (result.stepResults ?? []).map(() => ({ status: "not_run", actual: "", comment: "" })),
+      stepResults: (result.stepResults ?? snapshot?.steps.map(() => ({ status: "not_run" as const, actual: "", comment: "" })) ?? [])
+        .map(() => ({ status: "not_run", actual: "", comment: "" })),
     };
-    const snapshot = source.caseSnapshots?.[caseId];
     if (snapshot) caseSnapshots[caseId] = snapshot;
   }
   return {
