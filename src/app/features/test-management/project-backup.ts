@@ -47,7 +47,11 @@ function isCase(value: unknown): boolean {
     isStringArray(value.tags) && isStringArray(value.requirementIds) &&
     isString(value.createdAt) && isString(value.updatedAt) && typeof value.archived === "boolean" &&
     (value.attachmentIds === undefined || isStringArray(value.attachmentIds)) &&
-    (value.versions === undefined || Array.isArray(value.versions));
+    (value.version === undefined || typeof value.version === "number") &&
+    (value.description === undefined || isString(value.description)) &&
+    (value.testData === undefined || isString(value.testData)) &&
+    (value.postconditions === undefined || isString(value.postconditions)) &&
+    (value.versions === undefined || (Array.isArray(value.versions) && value.versions.every((item) => isRecord(item) && typeof item.version === "number" && isString(item.savedAt) && isRecord(item.snapshot))));
 }
 
 function isSuite(value: unknown): boolean {
@@ -91,7 +95,8 @@ function isTmsData(value: unknown): value is TmsData {
     Array.isArray(value.suites) && value.suites.every(isSuite) &&
     Array.isArray(value.plans) && value.plans.every(isPlan) &&
     Array.isArray(value.runs) && value.runs.every(isRun) &&
-    Array.isArray(value.defects) && value.defects.every(isDefect);
+    Array.isArray(value.defects) && value.defects.every(isDefect) &&
+    (value.requirements === undefined || (Array.isArray(value.requirements) && value.requirements.every((item) => isRecord(item) && isString(item.id) && isString(item.projectId) && isString(item.key) && isString(item.title) && isString(item.description) && isString(item.acceptanceCriteria) && isPriority(item.priority) && ["draft", "approved", "implemented", "verified", "deprecated"].includes(String(item.status)) && isString(item.createdAt) && isString(item.updatedAt))));
 }
 
 export function createTmsProjectBackup(
