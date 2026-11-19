@@ -205,12 +205,27 @@ function isTmsRunResult(value: unknown): boolean {
     (value.attachmentIds === undefined || isStringArray(value.attachmentIds));
 }
 
+function isTmsSharedStep(value: unknown): boolean {
+  if (!isRecord(value) || typeof value.id !== "string" || typeof value.projectId !== "string" ||
+    typeof value.key !== "string" || typeof value.name !== "string" ||
+    typeof value.version !== "number" || typeof value.createdAt !== "string" ||
+    typeof value.updatedAt !== "string" || !Array.isArray(value.steps) ||
+    !value.steps.every((step) => isRecord(step) && typeof step.action === "string" && typeof step.expected === "string")) {
+    return false;
+  }
+  if (value.versions === undefined) return true;
+  return Array.isArray(value.versions) && value.versions.every((version) =>
+    isRecord(version) && typeof version.version === "number" &&
+    typeof version.savedAt === "string" && typeof version.name === "string" &&
+    Array.isArray(version.steps) &&
+    version.steps.every((step) => isRecord(step) && typeof step.action === "string" && typeof step.expected === "string"));
+}
+
 function isTmsProject(value: unknown): boolean {
   if (!isRecord(value) || value.version !== 1 || typeof value.projectId !== "string") return false;
   if (!Array.isArray(value.cases) || !value.cases.every(isTmsCase) ||
     (value.requirements !== undefined && (!Array.isArray(value.requirements) || !value.requirements.every((item) => isRecord(item) && typeof item.id === "string" && typeof item.projectId === "string" && typeof item.key === "string" && typeof item.title === "string" && typeof item.description === "string" && typeof item.acceptanceCriteria === "string" && PRIORITIES.includes(item.priority as (typeof PRIORITIES)[number]) && ["draft", "approved", "implemented", "verified", "deprecated"].includes(String(item.status)) && typeof item.createdAt === "string" && typeof item.updatedAt === "string"))) ||
-    (value.sharedSteps !== undefined && (!Array.isArray(value.sharedSteps) || !value.sharedSteps.every((item) => isRecord(item) && typeof item.id === "string" && typeof item.projectId === "string" && typeof item.key === "string" && typeof item.name === "string" && typeof item.version === "number" && typeof item.createdAt === "string" && typeof item.updatedAt === "string" && Array.isArray(item.steps) && item.steps.every((step) => isRecord(step) && typeof step.action === "string" && typeof step.expected === "string")) &&
-      (item.versions === undefined || (Array.isArray(item.versions) && item.versions.every((version) => isRecord(version) && typeof version.version === "number" && typeof version.savedAt === "string" && typeof version.name === "string" && Array.isArray(version.steps) && version.steps.every((step) => isRecord(step) && typeof step.action === "string" && typeof step.expected === "string")))))) ||
+    (value.sharedSteps !== undefined && (!Array.isArray(value.sharedSteps) || !value.sharedSteps.every(isTmsSharedStep))) ||
     !Array.isArray(value.suites) || !Array.isArray(value.plans) ||
     !Array.isArray(value.runs) || !Array.isArray(value.defects)) return false;
   const hasUniqueField = (items: unknown[], field: string) => new Set(items.map((item) => (item as Record<string, unknown>)[field])).size === items.length;
