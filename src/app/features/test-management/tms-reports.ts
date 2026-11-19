@@ -73,3 +73,51 @@ export function createTmsRunCsv(run: TmsRun): string {
   }
   return rows.map((row) => row.map(escapeCsv).join(",")).join("\r\n");
 }
+
+
+export interface TmsRunTrendPoint {
+  id: string;
+  name: string;
+  startedAt: string;
+  environment: string;
+  milestone: string;
+  total: number;
+  passed: number;
+  failed: number;
+  blocked: number;
+  retest: number;
+  inProgress: number;
+  skipped: number;
+  notRun: number;
+  passRate: number;
+}
+
+export function getTmsRunTrend(runs: TmsRun[]): TmsRunTrendPoint[] {
+  return [...runs]
+    .sort((left, right) => Date.parse(left.startedAt) - Date.parse(right.startedAt))
+    .map((run) => {
+      const results = Object.values(run.results);
+      const count = (status: string) => results.filter((result) => result.status === status).length;
+      const passed = count("passed");
+      const failed = count("failed");
+      const blocked = count("blocked");
+      const skipped = count("skipped");
+      const executed = passed + failed + blocked + skipped;
+      return {
+        id: run.id,
+        name: run.name,
+        startedAt: run.startedAt,
+        environment: run.planSnapshot?.environment ?? "",
+        milestone: run.planSnapshot?.milestoneName ?? "",
+        total: results.length,
+        passed,
+        failed,
+        blocked,
+        retest: count("retest"),
+        inProgress: count("in_progress"),
+        skipped,
+        notRun: count("not_run"),
+        passRate: executed ? Math.round(passed / executed * 100) : 0,
+      };
+    });
+}
