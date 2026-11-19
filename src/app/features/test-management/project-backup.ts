@@ -104,14 +104,23 @@ function isDefect(value: unknown): boolean {
     (value.actual === undefined || isString(value.actual));
 }
 
+function isRequirement(value: unknown): boolean {
+  return isRecord(value) && isString(value.id) && isString(value.projectId) &&
+    isString(value.key) && isString(value.title) && isString(value.description) &&
+    isString(value.acceptanceCriteria) && isPriority(value.priority) &&
+    ["draft", "approved", "implemented", "verified", "deprecated"].includes(String(value.status)) &&
+    isString(value.createdAt) && isString(value.updatedAt);
+}
+
 function isTmsData(value: unknown): value is TmsData {
-  return isRecord(value) && value.version === 1 &&
-    Array.isArray(value.cases) && value.cases.every(isCase) &&
-    Array.isArray(value.suites) && value.suites.every(isSuite) &&
-    Array.isArray(value.plans) && value.plans.every(isPlan) &&
-    Array.isArray(value.runs) && value.runs.every(isRun) &&
-    Array.isArray(value.defects) && value.defects.every(isDefect) &&
-    (value.requirements === undefined || (Array.isArray(value.requirements) && value.requirements.every((item) => isRecord(item) && isString(item.id) && isString(item.projectId) && isString(item.key) && isString(item.title) && isString(item.description) && isString(item.acceptanceCriteria) && isPriority(item.priority) && ["draft", "approved", "implemented", "verified", "deprecated"].includes(String(item.status)) && isString(item.createdAt) && isString(item.updatedAt)));
+  if (!isRecord(value) || value.version !== 1 ||
+    !Array.isArray(value.cases) || !value.cases.every(isCase) ||
+    !Array.isArray(value.suites) || !value.suites.every(isSuite) ||
+    !Array.isArray(value.plans) || !value.plans.every(isPlan) ||
+    !Array.isArray(value.runs) || !value.runs.every(isRun) ||
+    !Array.isArray(value.defects) || !value.defects.every(isDefect)) return false;
+  return value.requirements === undefined ||
+    (Array.isArray(value.requirements) && value.requirements.every(isRequirement));
 }
 
 export function createTmsProjectBackup(
