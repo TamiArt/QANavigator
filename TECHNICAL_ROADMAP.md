@@ -112,7 +112,7 @@ Verification baseline:
 ## 3.1 Test Management / TMS milestone
 
 - Product specification: `docs/TEST_MANAGEMENT.md`.
-- TMS is embedded in the selected project workspace and includes case library, suites, plans/runs, execution, defects, requirements, starter collections, reports, CSV import/export and portable JSON archives.
+- TMS is embedded in the selected project workspace and includes case library, suites, release milestones, plans/runs, execution assignments, defects, requirements, starter collections, reports, CSV import/export and portable JSON archives.
 - Structured records use `qa_navigator_test_management_v1`; IndexedDB is the default TMS store, with reversible localStorage mode and retained migration copy.
 - Binary evidence is stored in the IndexedDB attachments object store and included in project and full-workspace backups.
 - Case versions, immutable run snapshots, step results, selective reruns, requirement coverage and defect history have first implementations; advanced diff, analytics, verified migration profiles and automation imports remain planned.
