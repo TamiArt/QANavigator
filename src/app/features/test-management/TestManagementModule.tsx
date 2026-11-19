@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Download, Plus, Search, Trash2, Library, ClipboardList, Layers, Play, Bug, Database, HardDrive, Pencil, Copy, Archive, BarChart3, FileSpreadsheet } from "lucide-react";
 import { useApp } from "../../core/app-context";
 import { useTmsStorage } from "./use-tms-storage";
-import { TMS_COLLECTIONS, type TmsCase, type TmsData, type TmsRequirement, type TmsRun, type TmsRunResult, type TmsStepResult } from "../../domain/test-management";
+import { TMS_COLLECTIONS, type TmsCase, type TmsCaseVersion, type TmsData, type TmsRequirement, type TmsRun, type TmsRunResult, type TmsStepResult } from "../../domain/test-management";
 import { downloadTextFile } from "../../lib/download";
 import { createTmsProjectBackup } from "./project-backup";
 import { TmsAttachmentPanel } from "./TmsAttachmentPanel";
@@ -62,7 +62,7 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
  const editCase = (item: TmsCase) => { setEditingCaseId(item.id); setTitle(item.title); setFolder(item.folder); setPriority(item.priority); setPreconditions(item.preconditions); setSteps(item.steps.map((step) => step.action).join("\n")); setExpected(item.expected); setDescription(item.description ?? ""); setTestData(item.testData ?? ""); setPostconditions(item.postconditions ?? ""); setTagsText(item.tags.join(", ")); setCaseRequirementIds(item.requirementIds ?? []); setTab("cases"); };
  const cloneCase = (item: TmsCase) => { const cloned: TmsCase = { ...item, id: uid(), key: "QA-" + String(cases.length + 1).padStart(3,"0"), title: item.title + " — копия", createdAt: now(), updatedAt: now(), version: 1, versions: [], attachmentIds: [], archived: false }; save({ ...data, cases: [...cases, cloned] }); };
  const toggleArchived = (item: TmsCase) => save({ ...data, cases: cases.map((current) => current.id === item.id ? { ...current, archived: !current.archived, updatedAt: now() } : current) });
- const restoreCaseVersion = (item:TmsCase, version:TmsCase["versions"] extends (infer V)[]|undefined ? V : never) => {
+ const restoreCaseVersion = (item:TmsCase, version:TmsCaseVersion) => {
   const snapshot=version.snapshot;
   const restored=reviseTmsCase(item,{title:snapshot.title,folder:snapshot.folder,preconditions:snapshot.preconditions,steps:snapshot.steps,expected:snapshot.expected,priority:snapshot.priority,description:snapshot.description??"",testData:snapshot.testData??"",postconditions:snapshot.postconditions??"",tags:snapshot.tags,requirementIds:snapshot.requirementIds},now());
   save({...data,cases:cases.map((current)=>current.id===item.id?restored:current)});
