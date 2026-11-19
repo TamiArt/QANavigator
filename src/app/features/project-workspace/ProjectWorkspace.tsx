@@ -3,6 +3,7 @@ import { BriefcaseBusiness, Plus, Trash2 } from "lucide-react";
 import { useApp } from "../../core/app-context";
 import { createProject as buildProject, type ProductType, type QAProject } from "../../domain/project";
 import { TestManagementModule } from "../test-management/TestManagementModule";
+import { TestManagementArchiveImport } from "../test-management/TestManagementArchiveImport";
 
 const productNames: Record<ProductType, string> = {
   web: "Web",
@@ -165,6 +166,7 @@ export function ProjectWorkspace() {
                 <p className="mt-1 text-sm text-muted-foreground">Риски пока не определены.</p>
               )}
             </section>
+            <TestManagementArchiveImport projectId={active.id} />
             <TestManagementModule projectId={active.id} />
             </div>
           )}
