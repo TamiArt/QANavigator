@@ -124,7 +124,7 @@
 |---|---|---|
 | TMS foundation | Project-scoped cases, suites, plans/runs, statuses, defect register, starter collections, JSON export/backup, validated project import, IndexedDB migration and reversible localStorage mode | Реализовано |
 | Case management | Редактирование, типы, версии и diff, архив/клонирование, вложенные folder paths, bulk move/priority/archive, shared steps, attachments | Первый рабочий срез; drag-and-drop дерева и массовое удаление в backlog |
-| Execution engine | Immutable case/plan/milestone snapshots, per-case assignee, step results, per-step evidence, reruns, In Progress/Retest statuses, completion | Первый рабочий срез; нужны расширенные сценарии выполнения и проверка восстановления черновиков |
+| Execution engine | Immutable case/plan/milestone snapshots, per-case assignee, step results, per-step evidence, reruns, In Progress/Retest statuses, completion only after all required case and step results reach terminal statuses | Первый рабочий срез; нужны расширенные сценарии выполнения и проверка восстановления черновиков |
 | Milestones | Релизные вехи, статусы/даты, связь с планами и историческими прогонами | Первый рабочий срез реализован |\n| Traceability | Requirements registry, case links, coverage report, latest-run impact summary and verified-vs-failed warning | Первый рабочий срез; impact analysis и трассировка до дефекта в backlog |
 | Reporting | Latest-run metrics, chronological run trend, traceability/run CSV | Первый срез реализован |
 | Import/export | Project JSON archive + attachments, global backup, CSV case import/export | Первый срез реализован |
