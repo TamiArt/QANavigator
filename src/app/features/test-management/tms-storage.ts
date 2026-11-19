@@ -32,7 +32,7 @@ function writeLocalProjects(projects: TmsData[]): void {
   if (!isTestManagementStorageValue(projects)) {
     throw new Error("Данные Test Management не прошли проверку целостности. Запись отменена.");
   }
-  writeLocalProjects(projects);
+  localStorage.setItem(STORAGE_KEYS.testManagement, serializeStoredValue(projects));
 }
 
 function openDatabase(): Promise<IDBDatabase> {
@@ -158,5 +158,5 @@ export async function persistTmsProjects(
     await writeIndexedDbProjects(projects);
     return;
   }
-  localStorage.setItem(STORAGE_KEYS.testManagement, serializeStoredValue(projects));
+  writeLocalProjects(projects);
 }
