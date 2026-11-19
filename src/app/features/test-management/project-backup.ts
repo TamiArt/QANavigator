@@ -31,12 +31,15 @@ function isCase(value: unknown): boolean {
       isRecord(step) && isString(step.action) && isString(step.expected)) &&
     isString(value.expected) && isPriority(value.priority) && isString(value.type) &&
     isStringArray(value.tags) && isStringArray(value.requirementIds) &&
-    isString(value.createdAt) && isString(value.updatedAt) && typeof value.archived === "boolean";
+    isString(value.createdAt) && isString(value.updatedAt) && typeof value.archived === "boolean" &&
+    (value.attachmentIds === undefined || isStringArray(value.attachmentIds)) &&
+    (value.versions === undefined || Array.isArray(value.versions));
 }
 
 function isSuite(value: unknown): boolean {
   return isRecord(value) && isString(value.id) && isString(value.projectId) &&
-    isString(value.name) && isStringArray(value.caseIds) && isString(value.createdAt);
+    isString(value.name) && isStringArray(value.caseIds) && isString(value.createdAt) && (value.attachmentIds === undefined || isStringArray(value.attachmentIds)) &&
+    (value.labels === undefined || isStringArray(value.labels));
 }
 
 function isPlan(value: unknown): boolean {
@@ -54,7 +57,8 @@ function isRun(value: unknown): boolean {
     isRecord(result) &&
     ["not_run", "passed", "failed", "blocked", "skipped"].includes(String(result.status)) &&
     isString(result.actual) && isString(result.comment) &&
-    (result.defectId === undefined || isString(result.defectId)));
+    (result.defectId === undefined || isString(result.defectId)) &&
+    (result.attachmentIds === undefined || isStringArray(result.attachmentIds)));
 }
 
 function isDefect(value: unknown): boolean {
