@@ -57,7 +57,7 @@
 ### Test Suites и Test Plans
 - Иерархические и динамические suites.
 - План с релизом/build, окружением, scope, целями, рисками, ответственными, датами, entry/exit criteria.
-- Фиксированный snapshot состава на момент запуска.
+- Фиксированный snapshot состава и конфигурации плана (окружение, релиз, build, критерии) на момент запуска.
 - Платформы, конфигурации, регионы и роли.
 - Повторный запуск failed/blocked, rerun выбранных кейсов и сравнение прогонов.
 
@@ -123,7 +123,7 @@
 |---|---|---|
 | TMS foundation | Project-scoped cases, suites, plans/runs, statuses, defect register, starter collections, JSON export/backup, validated project import, IndexedDB migration and reversible localStorage mode | Реализовано |
 | Case management | Редактирование, версии, архив/клонирование, folder/priority filters, shared steps, attachments | Первый рабочий срез; сравнение версий и массовые операции в backlog |
-| Execution engine | Immutable run snapshots, step results, evidence, reruns, completion | Первый рабочий срез; нужны расширенные сценарии выполнения и проверка восстановления черновиков |
+| Execution engine | Immutable case and plan snapshots, step results, evidence, reruns, In Progress/Retest statuses, completion | Первый рабочий срез; нужны расширенные сценарии выполнения и проверка восстановления черновиков |
 | Traceability | Requirements registry, case links, coverage report | Первый рабочий срез; impact analysis и трассировка до дефекта в backlog |
 | Reporting | Latest-run metrics, traceability/run CSV | Первый срез реализован |
 | Import/export | Project JSON archive + attachments, global backup, CSV case import/export | Первый срез реализован |
