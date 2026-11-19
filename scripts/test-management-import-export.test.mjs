@@ -20,7 +20,7 @@ const sample = {
   steps: [{ action: "Open", expected: "Form" }], expected: "Signed in",
   testData: "user@example.com", postconditions: "Session created",
   priority: "P1", type: "Functional", tags: ["auth", "smoke"],
-  requirementIds: ["req-1"], createdAt: "now", updatedAt: "now", archived: false, version: 2,
+  requirementIds: ["req-1"], references: ["JIRA-123"], estimateMinutes: 15, automationStatus: "automated", createdAt: "now", updatedAt: "now", archived: false, version: 2,
 };
 
 test("TMS CSV round-trip preserves quoted titles steps tags and requirement links", () => {
@@ -31,6 +31,9 @@ test("TMS CSV round-trip preserves quoted titles steps tags and requirement link
   assert.deepEqual(Array.from(imported[0].tags), ["auth", "smoke"]);
   assert.deepEqual(Array.from(imported[0].requirementIds), ["req-1"]);
   assert.equal(imported[0].projectId, "p2");
+  assert.deepEqual(Array.from(imported[0].references), ["JIRA-123"]);
+  assert.equal(imported[0].estimateMinutes, 15);
+  assert.equal(imported[0].automationStatus, "automated");
 });
 
 test("TMS CSV importer accepts common TestRail-style headers and multiline steps", () => {
