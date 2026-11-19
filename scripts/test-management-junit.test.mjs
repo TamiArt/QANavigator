@@ -13,6 +13,7 @@ class FakeElement {
 class FakeDOMParser {
   parseFromString(xml) {
     if (xml === "invalid") return { getElementsByTagName: (name) => name === "parsererror" ? [{}] : [] };
+    if (xml === "<empty/>") return { getElementsByTagName: () => [] };
     const cases = [
       new FakeElement("testcase", { name: "QA-001", classname: "Auth" }),
       new FakeElement("testcase", { name: "Search" }, [new FakeElement("skipped", { message: "Not in CI scope" })]),
@@ -44,5 +45,5 @@ test("JUnit XML results map to TMS cases by key and title", () => {
 
 test("JUnit XML importer rejects malformed XML and empty test suites", () => {
   assert.throws(() => parseJUnitXmlResults("invalid", cases), /повреждён/);
-  assert.throws(() => parseJUnitXmlResults("<testsuites/>", []), /не найдены/);
+  assert.throws(() => parseJUnitXmlResults("<empty/>", []), /не найдены/);
 });
