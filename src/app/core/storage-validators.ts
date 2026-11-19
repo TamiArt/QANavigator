@@ -234,6 +234,12 @@ function isTmsProject(value: unknown): boolean {
     !hasUniqueField(value.defects, "id") || !hasUniqueField(value.defects, "key") ||
     (Array.isArray(value.sharedSteps) && (!hasUniqueField(value.sharedSteps, "id") || !hasUniqueField(value.sharedSteps, "key"))) ||
     (Array.isArray(value.requirements) && (!hasUniqueField(value.requirements, "id") || !hasUniqueField(value.requirements, "key")))) return false;
+  const projectId = value.projectId;
+  const projectScopedCollections = [value.cases, value.suites, value.plans, value.runs, value.defects,
+    ...(Array.isArray(value.requirements) ? [value.requirements] : []),
+    ...(Array.isArray(value.sharedSteps) ? [value.sharedSteps] : [])];
+  if (projectScopedCollections.some((items) => items.some((item) =>
+    !isRecord(item) || item.projectId !== projectId))) return false;
   const caseIds = new Set(value.cases.map((item) => (item as Record<string, unknown>).id));
   const suiteIds = new Set(value.suites.map((item) => (item as Record<string, unknown>).id));
   const planIds = new Set(value.plans.map((item) => (item as Record<string, unknown>).id));
@@ -284,7 +290,8 @@ function isTmsProject(value: unknown): boolean {
 /** Validates the versioned project-scoped Test Management collection and its references. */
 export function isTestManagementStorageValue(value: unknown): boolean {
   const data = unwrapCurrentStorageValue(value);
-  return Array.isArray(data) && data.every(isTmsProject);
+  if (!Array.isArray(data) || !data.every(isTmsProject)) return false;
+  return new Set(data.map((item) => (item as Record<string, unknown>).projectId)).size === data.length;
 }
 
 /** Validates the optional binary evidence section in a full workspace backup. */
