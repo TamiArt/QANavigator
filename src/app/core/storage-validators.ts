@@ -260,13 +260,17 @@ export function isTestManagementStorageValue(value: unknown): boolean {
 export function isTmsAttachmentsBackupValue(value: unknown): boolean {
   if (!Array.isArray(value) || value.length > 500) return false;
   let totalBytes = 0;
+  const ids = new Set<string>();
   for (const item of value) {
     if (!isRecord(item) || typeof item.id !== "string" || typeof item.projectId !== "string" ||
       !["case", "run-result", "defect"].includes(String(item.ownerType)) ||
       typeof item.ownerId !== "string" || typeof item.name !== "string" ||
       typeof item.mimeType !== "string" || typeof item.size !== "number" ||
       item.size <= 0 || item.size > 20 * 1024 * 1024 || typeof item.createdAt !== "string" ||
-      typeof item.data !== "string" || !/^[A-Za-z0-9+/]*={0,2}$/.test(item.data)) return false;
+      typeof item.data !== "string" || !/^[A-Za-z0-9+/]*={0,2}$/.test(item.data) || ids.has(item.projectId + ":" + item.id)) return false;
+    const decodedSize = Math.floor(item.data.length * 3 / 4) - (item.data.endsWith("==") ? 2 : item.data.endsWith("=") ? 1 : 0);
+    if (decodedSize !== item.size) return false;
+    ids.add(item.projectId + ":" + item.id);
     totalBytes += item.size;
   }
   return totalBytes <= 100 * 1024 * 1024;
