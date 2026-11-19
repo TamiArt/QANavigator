@@ -188,6 +188,7 @@ function isTmsCase(value: unknown): boolean {
     (value.description === undefined || typeof value.description === "string") &&
     (value.testData === undefined || typeof value.testData === "string") &&
     (value.postconditions === undefined || typeof value.postconditions === "string") &&
+    (value.automationStatus === undefined || ["not_automated", "automated", "candidate"].includes(String(value.automationStatus))) &&
     (value.versions === undefined || (Array.isArray(value.versions) && value.versions.every((version) =>
       isRecord(version) && typeof version.version === "number" && typeof version.savedAt === "string" &&
       isRecord(version.snapshot))));
