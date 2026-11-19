@@ -63,7 +63,8 @@ function isSuite(value: unknown): boolean {
 function isPlan(value: unknown): boolean {
   return isRecord(value) && isString(value.id) && isString(value.projectId) &&
     isString(value.name) && isString(value.environment) &&
-    isStringArray(value.suiteIds) && isStringArray(value.caseIds) && isString(value.createdAt);
+    isStringArray(value.suiteIds) && isStringArray(value.caseIds) && isString(value.createdAt) &&
+    ["release", "build", "objective", "risks", "owner", "startDate", "endDate", "entryCriteria", "exitCriteria"].every((key) => value[key] === undefined || isString(value[key]));
 }
 
 function isRun(value: unknown): boolean {
