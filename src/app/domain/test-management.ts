@@ -2,13 +2,15 @@ export interface TmsStep { action: string; expected: string }
 export interface TmsCase {
  id: string; projectId: string; key: string; title: string; folder: string; preconditions: string; steps: TmsStep[];
  expected: string; priority: "P1" | "P2" | "P3"; type: string; tags: string[]; requirementIds: string[];
- createdAt: string; updatedAt: string; archived: boolean;
+ createdAt: string; updatedAt: string; archived: boolean; attachmentIds?: string[]; versions?: TmsCaseVersion[];
 }
+export interface TmsCaseVersion { version: number; savedAt: string; snapshot: Omit<TmsCase, "versions"> }
 export interface TmsSuite { id: string; projectId: string; name: string; caseIds: string[]; createdAt: string }
 export interface TmsPlan { id: string; projectId: string; name: string; environment: string; suiteIds: string[]; caseIds: string[]; createdAt: string }
-export interface TmsRunResult { status: "not_run" | "passed" | "failed" | "blocked" | "skipped"; actual: string; comment: string; defectId?: string }
+export interface TmsRunResult { status: "not_run" | "passed" | "failed" | "blocked" | "skipped"; actual: string; comment: string; defectId?: string; attachmentIds?: string[]; stepResults?: TmsStepResult[] }
+export interface TmsStepResult { status: "not_run" | "passed" | "failed" | "blocked" | "skipped"; actual: string; comment: string; attachmentIds?: string[] }
 export interface TmsRun { id: string; projectId: string; planId: string; name: string; startedAt: string; completedAt?: string; results: Record<string, TmsRunResult> }
-export interface TmsDefect { id: string; projectId: string; key: string; title: string; caseId?: string; severity: "blocker" | "critical" | "major" | "minor"; priority: "P1" | "P2" | "P3"; status: "open" | "in_progress" | "fixed" | "closed"; createdAt: string }
+export interface TmsDefect { id: string; projectId: string; key: string; title: string; caseId?: string; severity: "blocker" | "critical" | "major" | "minor"; priority: "P1" | "P2" | "P3"; status: "open" | "in_progress" | "fixed" | "closed"; createdAt: string; description?: string; steps?: string[]; expected?: string; actual?: string; environment?: string; assignee?: string; labels?: string[]; attachmentIds?: string[]; runId?: string }
 export interface TmsData { version: 1; projectId?: string; cases: TmsCase[]; suites: TmsSuite[]; plans: TmsPlan[]; runs: TmsRun[]; defects: TmsDefect[] }
 export interface TmsCollection { id: string; name: string; description: string; cases: Omit<TmsCase, "id" | "projectId" | "key" | "createdAt" | "updatedAt" | "archived">[] }
 const make = (title: string, folder: string, priority: TmsCase["priority"], preconditions: string, actions: string[], expected: string, tags: string[] = []): TmsCollection["cases"][number] =>
