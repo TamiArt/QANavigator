@@ -53,6 +53,7 @@ export function createTmsRunSnapshot(
   startedAt: string,
   displayName: string,
   sharedSteps: import("../../domain/test-management").TmsSharedStep[] = [],
+  milestoneName?: string,
 ): TmsRun {
   const caseSnapshots = Object.fromEntries(plan.caseIds.flatMap((caseId) => {
     const item = cases.find((candidate) => candidate.id === caseId);
@@ -76,6 +77,8 @@ export function createTmsRunSnapshot(
       id: plan.id,
       name: plan.name,
       environment: plan.environment,
+      milestoneId: plan.milestoneId,
+      milestoneName,
       release: plan.release,
       build: plan.build,
       objective: plan.objective,
