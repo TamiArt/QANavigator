@@ -13,7 +13,6 @@ import {
   isTextStorageValue,
   isApiWorkbenchStorageValue,
   isTestManagementStorageValue,
-  isTestManagementStorageValue,
 } from "../../core/storage-validators";
 import { downloadTextFile } from "../../lib/download";
 import { createDataBackup, parseDataBackup } from "./data-backup";
@@ -65,8 +64,6 @@ export function SettingsModule() {
             qa_navigator_req_text: isTextStorageValue,
             qa_navigator_req_result: isTextStorageValue,
             qa_navigator_api_workbench_v1: isApiWorkbenchStorageValue,
-            qa_navigator_test_management_v1: isTestManagementStorageValue,
-            qa_navigator_test_management_v1: isTestManagementStorageValue,
           });
           Object.entries(backup.data).forEach(([key, value]) => {
             localStorage.setItem(key, JSON.stringify(value));
