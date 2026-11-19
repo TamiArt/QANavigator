@@ -59,15 +59,15 @@ export function createTmsTraceabilityCsv(data: TmsData): string {
   return rows.map((row) => row.map(escapeCsv).join(",")).join("\r\n");
 }
 export function createTmsRunCsv(run: TmsRun): string {
-  const rows = [["Run Environment", "Release", "Build", "Test Case ID", "Test Case", "Case Version", "Result", "Actual Result", "Step", "Step Result", "Step Actual"]];
+  const rows = [["Run Environment", "Release", "Build", "Test Case ID", "Test Case", "Assignee", "Case Version", "Result", "Actual Result", "Step", "Step Result", "Step Actual"]];
   for (const [caseId, result] of Object.entries(run.results)) {
     const snapshot = run.caseSnapshots?.[caseId];
     const title = snapshot?.title ?? caseId;
     const steps = snapshot?.steps ?? [];
-    if (!result.stepResults?.length) rows.push([run.planSnapshot?.environment ?? "", run.planSnapshot?.release ?? "", run.planSnapshot?.build ?? "", snapshot?.key ?? caseId, title, String(snapshot?.version ?? ""), result.status, result.actual, "", "", ""]);
+    if (!result.stepResults?.length) rows.push([run.planSnapshot?.environment ?? "", run.planSnapshot?.release ?? "", run.planSnapshot?.build ?? "", snapshot?.key ?? caseId, title, result.assignee ?? "", String(snapshot?.version ?? ""), result.status, result.actual, "", "", ""]);
     else result.stepResults.forEach((stepResult, index) => rows.push([
       run.planSnapshot?.environment ?? "", run.planSnapshot?.release ?? "", run.planSnapshot?.build ?? "",
-      snapshot?.key ?? caseId, title, String(snapshot?.version ?? ""), result.status, result.actual,
+      snapshot?.key ?? caseId, title, result.assignee ?? "", String(snapshot?.version ?? ""), result.status, result.actual,
       steps[index]?.action ?? String(index + 1), stepResult.status, stepResult.actual,
     ]));
   }
