@@ -215,7 +215,10 @@ function isTmsProject(value: unknown): boolean {
   const requirementIds = new Set(Array.isArray(value.requirements) ? value.requirements.map((item) => (item as Record<string, unknown>).id) : []);
   if (value.requirements !== undefined && value.cases.some((item) => (item as Record<string, unknown>).requirementIds instanceof Array && ((item as Record<string, unknown>).requirementIds as string[]).some((id) => !requirementIds.has(id)))) return false;
   if (!value.suites.every((item) => isRecord(item) && typeof item.id === "string" &&
-    typeof item.projectId === "string" && typeof item.name === "string" && isStringArray(item.caseIds) &&
+    typeof item.projectId === "string" && typeof item.name === "string" &&
+    (item.description === undefined || typeof item.description === "string") &&
+    (item.parentId === undefined || typeof item.parentId === "string") &&
+    (item.updatedAt === undefined || typeof item.updatedAt === "string") && isStringArray(item.caseIds) &&
     item.caseIds.every((id) => caseIds.has(id)))) return false;
   if (!value.plans.every((item) => isRecord(item) && typeof item.id === "string" &&
     typeof item.projectId === "string" && typeof item.name === "string" && typeof item.environment === "string" &&
