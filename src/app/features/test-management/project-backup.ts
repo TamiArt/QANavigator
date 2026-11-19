@@ -96,7 +96,7 @@ function isTmsData(value: unknown): value is TmsData {
     Array.isArray(value.plans) && value.plans.every(isPlan) &&
     Array.isArray(value.runs) && value.runs.every(isRun) &&
     Array.isArray(value.defects) && value.defects.every(isDefect) &&
-    (value.requirements === undefined || (Array.isArray(value.requirements) && value.requirements.every((item) => isRecord(item) && isString(item.id) && isString(item.projectId) && isString(item.key) && isString(item.title) && isString(item.description) && isString(item.acceptanceCriteria) && isPriority(item.priority) && ["draft", "approved", "implemented", "verified", "deprecated"].includes(String(item.status)) && isString(item.createdAt) && isString(item.updatedAt))));
+    (value.requirements === undefined || (Array.isArray(value.requirements) && value.requirements.every((item) => isRecord(item) && isString(item.id) && isString(item.projectId) && isString(item.key) && isString(item.title) && isString(item.description) && isString(item.acceptanceCriteria) && isPriority(item.priority) && ["draft", "approved", "implemented", "verified", "deprecated"].includes(String(item.status)) && isString(item.createdAt) && isString(item.updatedAt)));
 }
 
 export function createTmsProjectBackup(
@@ -135,11 +135,13 @@ export function parseTmsProjectBackup(raw: string, targetProjectId: string): Tms
   const suiteIds = new Set(data.suites.map((item) => item.id));
   const planIds = new Set(data.plans.map((item) => item.id));
   const defectIds = new Set(data.defects.map((item) => item.id));
+  const requirementIds = new Set((data.requirements ?? []).map((item) => item.id));
 
-  if (data.suites.some((item) => item.caseIds.some((id) => !caseIds.has(id))) ||
+  if ((data.requirements !== undefined && data.cases.some((item) => item.requirementIds.some((id) => !requirementIds.has(id)))) ||
+    data.suites.some((item) => item.caseIds.some((id) => !caseIds.has(id))) ||
     data.plans.some((item) => item.caseIds.some((id) => !caseIds.has(id)) ||
       item.suiteIds.some((id) => !suiteIds.has(id))) ||
-    data.runs.some((item) => !planIds.has(item.planId) ||
+    data.runs.some((item) => !planIds.has(item.planId) || (item.caseSnapshots !== undefined && Object.keys(item.caseSnapshots).some((id) => !item.results[id])) ||
       Object.values(item.results).some((result) => result.defectId && !defectIds.has(result.defectId))) ||
     data.defects.some((item) => item.caseId && !caseIds.has(item.caseId))) {
     throw new Error("Архив содержит нарушенные связи между тест-кейсами, наборами, планами и дефектами");
