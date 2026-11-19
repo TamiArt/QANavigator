@@ -1,4 +1,4 @@
-import type { TmsCase, TmsCaseSnapshot, TmsPlan, TmsRun, TmsRunResult, TmsSharedStep } from "../../domain/test-management";
+import type { TmsCase, TmsCaseSnapshot, TmsPlan, TmsRun, TmsRunResult, TmsSharedStep, TmsSharedStepVersion } from "../../domain/test-management";
 
 export type TmsCaseEditableFields = Pick<TmsCase,
   "title" | "folder" | "preconditions" | "steps" | "expected" | "priority" |
@@ -108,5 +108,27 @@ export function createTmsRerun(
     rerunOf: source.id,
     caseSnapshots,
     results,
+  };
+}
+
+export function reviseTmsSharedStep(
+  existing: TmsSharedStep,
+  name: string,
+  steps: TmsSharedStep["steps"],
+  savedAt: string,
+): TmsSharedStep {
+  const version: TmsSharedStepVersion = {
+    version: existing.version,
+    savedAt,
+    name: existing.name,
+    steps: existing.steps.map((step) => ({ ...step })),
+  };
+  return {
+    ...existing,
+    name,
+    steps: steps.map((step) => ({ ...step })),
+    version: existing.version + 1,
+    updatedAt: savedAt,
+    versions: [...(existing.versions ?? []), version],
   };
 }
