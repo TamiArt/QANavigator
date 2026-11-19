@@ -149,3 +149,36 @@ test("project archives preserve shared-step libraries and case links", () => {
   assert.equal(restored.sharedSteps[0].key, "SS-001");
   assert.deepEqual(Array.from(restored.cases[0].sharedStepIds), ["shared-1"]);
 });
+
+
+test("project archives preserve plan snapshots and expanded execution statuses", () => {
+  const data = {
+    ...emptyData,
+    cases: [{
+      id: "case-1", projectId: "source-project", key: "QA-001", title: "Login",
+      folder: "Auth", preconditions: "", steps: [{ action: "Open", expected: "Form" }],
+      expected: "Success", priority: "P1", type: "Functional", tags: [],
+      requirementIds: [], createdAt: "now", updatedAt: "now", archived: false,
+    }],
+    plans: [{
+      id: "plan-1", projectId: "source-project", name: "Release regression",
+      environment: "Staging", suiteIds: [], caseIds: ["case-1"], createdAt: "now",
+      release: "2.4", build: "build-42",
+    }],
+    runs: [{
+      id: "run-1", projectId: "source-project", planId: "plan-1",
+      name: "Regression run", startedAt: "now",
+      planSnapshot: { id: "plan-1", name: "Release regression", environment: "Staging", release: "2.4", build: "build-42" },
+      caseSnapshots: { "case-1": { id: "case-1", key: "QA-001", title: "Login", steps: [{ action: "Open", expected: "Form" }] } },
+      results: { "case-1": {
+        status: "retest", actual: "Needs another pass", comment: "",
+        stepResults: [{ status: "in_progress", actual: "Form loading", comment: "" }],
+      } },
+    }],
+  };
+  const archive = createTmsProjectBackup({ id: "source-project", name: "Source" }, data, "now");
+  const restored = parseTmsProjectBackup(JSON.stringify(archive), "target-project");
+  assert.equal(restored.runs[0].planSnapshot.environment, "Staging");
+  assert.equal(restored.runs[0].results["case-1"].status, "retest");
+  assert.equal(restored.runs[0].results["case-1"].stepResults[0].status, "in_progress");
+});
