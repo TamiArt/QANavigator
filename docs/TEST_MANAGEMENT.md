@@ -48,7 +48,7 @@
 
 ### Библиотека тестовой документации
 - Дерево папок с вложенностью, drag-and-drop, фильтры, теги, компоненты, полнотекстовый поиск.
-- Редактор кейса: описание, предусловия, шаги с expected на каждом шаге, тестовые данные, постусловия, приоритет, тип, теги и связи с требованиями.
+- Редактор кейса: описание, предусловия, шаги с expected на каждом шаге, тестовые данные, постусловия, приоритет, тип, теги, automation status, effort estimate, external references и связи с требованиями.
 - Версии и история изменений с восстановлением старой версии как новой; архивирование и клонирование. Сравнение версий и массовые операции остаются в backlog.
 - Поиск, фильтрация по папкам/приоритету, иерархические пути папок через разделитель `/`.
 - Shared steps, параметры, data-driven кейсы, чек-листы, BDD/Gherkin и exploratory charters.
@@ -81,7 +81,7 @@
 - Метрики покрытия рассчитываются по актуальным связям.
 
 ### Аналитика и отчёты
-- Метрики последнего прогона: pass rate, Passed/Failed/Blocked/Skipped/Not Run; покрытие требований и открытые дефекты.
+- Метрики последнего прогона: pass rate, Passed/Failed/Blocked/Skipped/Not Run; покрытие требований, автоматизации и открытые дефекты.
 - CSV-экспорт матрицы трассировки и результатов прогона.
 - Тренды между релизами, flaky/reopened tests, длительность, aging и PDF/HTML отчёты остаются в backlog.
 
@@ -93,7 +93,8 @@
 В выбранном browser-only режиме командная синхронизация, серверные роли и одновременная работа нескольких пользователей не входят в реализацию. Они намеренно исключены, чтобы не вводить backend, аккаунты и обязательные расходы.
 
 ### Импорт, экспорт и интеграции
-- CSV импорт/экспорт тест-кейсов с распространёнными заголовками, включая типовые поля TestRail-style CSV; CSV-экспорт результатов и трассировки.
+- CSV импорт/экспорт тест-кейсов с распространёнными заголовками TestRail-style и Test IT-style (Title/Name, Section/Folder, Preconditions, Steps, Expected Result, Priority, Labels/Tags, References, Automation Type, Estimate); CSV-экспорт результатов и трассировки.
+- JUnit XML import с сопоставлением testcase по ключу или названию в выбранном плане.
 - JSON-архив проекта с вложениями и общая резервная копия приложения.
 - Полное XLSX, JUnit XML и точные миграционные адаптеры TestRail/Test IT с preview/mapping остаются в backlog; их нужно реализовывать по реальным образцам экспортов.
 
@@ -125,7 +126,7 @@
 | Traceability | Requirements registry, case links, coverage report | Частично реализовано |
 | Reporting | Latest-run metrics, traceability/run CSV | Первый срез реализован |
 | Import/export | Project JSON archive + attachments, global backup, CSV case import/export | Первый срез реализован |
-| Compatibility | Verified TestRail/Test IT import profiles, XLSX, JUnit XML | Далее |
+| Compatibility | JUnit XML result import; common TestRail/Test IT CSV header mapping. Verified product-specific profiles and XLSX | Частично реализовано |
 | Team mode | Multi-user RBAC, collaboration and cloud sync | Исключено выбранными browser-only ограничениями |
 
 ## Definition of Done
