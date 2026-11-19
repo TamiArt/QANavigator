@@ -174,11 +174,60 @@ export function isApiWorkbenchStorageValue(value: unknown): boolean {
   });
 }
 
-/** Validates the versioned project-scoped Test Management collection. */
-export function isTestManagementStorageValue(value: unknown): boolean {
-  const data = unwrapCurrentStorageValue(value);
-  return Array.isArray(data) && data.every((item) => isRecord(item) &&
-    item.version === 1 && typeof item.projectId === "string" &&
-    ["cases", "suites", "plans", "runs", "defects"].every((key) => Array.isArray(item[key])));
+function isTmsCase(value: unknown): boolean {
+  return isRecord(value) && typeof value.id === "string" && typeof value.projectId === "string" &&
+    typeof value.key === "string" && typeof value.title === "string" && typeof value.folder === "string" &&
+    typeof value.preconditions === "string" && Array.isArray(value.steps) &&
+    value.steps.every((step) => isRecord(step) && typeof step.action === "string" && typeof step.expected === "string") &&
+    typeof value.expected === "string" && PRIORITIES.includes(value.priority as (typeof PRIORITIES)[number]) &&
+    typeof value.type === "string" && isStringArray(value.tags) && isStringArray(value.requirementIds) &&
+    typeof value.createdAt === "string" && typeof value.updatedAt === "string" &&
+    typeof value.archived === "boolean" &&
+    (value.attachmentIds === undefined || isStringArray(value.attachmentIds)) &&
+    (value.versions === undefined || (Array.isArray(value.versions) && value.versions.every((version) =>
+      isRecord(version) && typeof version.version === "number" && typeof version.savedAt === "string" &&
+      isRecord(version.snapshot))));
 }
 
+function isTmsRunResult(value: unknown): boolean {
+  return isRecord(value) && ["not_run", "passed", "failed", "blocked", "skipped"].includes(String(value.status)) &&
+    typeof value.actual === "string" && typeof value.comment === "string" &&
+    (value.defectId === undefined || typeof value.defectId === "string") &&
+    (value.attachmentIds === undefined || isStringArray(value.attachmentIds));
+}
+
+function isTmsProject(value: unknown): boolean {
+  if (!isRecord(value) || value.version !== 1 || typeof value.projectId !== "string") return false;
+  if (!Array.isArray(value.cases) || !value.cases.every(isTmsCase) ||
+    !Array.isArray(value.suites) || !Array.isArray(value.plans) ||
+    !Array.isArray(value.runs) || !Array.isArray(value.defects)) return false;
+  const caseIds = new Set(value.cases.map((item) => (item as Record<string, unknown>).id));
+  const suiteIds = new Set(value.suites.map((item) => (item as Record<string, unknown>).id));
+  const planIds = new Set(value.plans.map((item) => (item as Record<string, unknown>).id));
+  const defectIds = new Set(value.defects.map((item) => (item as Record<string, unknown>).id));
+  if (!value.suites.every((item) => isRecord(item) && typeof item.id === "string" &&
+    typeof item.projectId === "string" && typeof item.name === "string" && isStringArray(item.caseIds) &&
+    item.caseIds.every((id) => caseIds.has(id)))) return false;
+  if (!value.plans.every((item) => isRecord(item) && typeof item.id === "string" &&
+    typeof item.projectId === "string" && typeof item.name === "string" && typeof item.environment === "string" &&
+    isStringArray(item.suiteIds) && item.suiteIds.every((id) => suiteIds.has(id)) &&
+    isStringArray(item.caseIds) && item.caseIds.every((id) => caseIds.has(id)))) return false;
+  if (!value.runs.every((item) => isRecord(item) && typeof item.id === "string" &&
+    typeof item.projectId === "string" && typeof item.planId === "string" && planIds.has(item.planId) &&
+    isRecord(item.results) && Object.values(item.results).every(isTmsRunResult))) return false;
+  return value.defects.every((item) => isRecord(item) && typeof item.id === "string" &&
+    typeof item.projectId === "string" && typeof item.key === "string" && typeof item.title === "string" &&
+    (item.caseId === undefined || caseIds.has(item.caseId)) &&
+    ["blocker", "critical", "major", "minor"].includes(String(item.severity)) &&
+    PRIORITIES.includes(item.priority as (typeof PRIORITIES)[number]) &&
+    ["open", "in_progress", "fixed", "closed"].includes(String(item.status)) &&
+    typeof item.createdAt === "string" &&
+    (item.attachmentIds === undefined || isStringArray(item.attachmentIds)) &&
+    (item.labels === undefined || isStringArray(item.labels)));
+}
+
+/** Validates the versioned project-scoped Test Management collection and its references. */
+export function isTestManagementStorageValue(value: unknown): boolean {
+  const data = unwrapCurrentStorageValue(value);
+  return Array.isArray(data) && data.every(isTmsProject);
+}
