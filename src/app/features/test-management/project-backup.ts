@@ -52,6 +52,8 @@ function isCase(value: unknown): boolean {
     (value.testData === undefined || isString(value.testData)) &&
     (value.postconditions === undefined || isString(value.postconditions)) &&
     (value.automationStatus === undefined || ["not_automated", "automated", "candidate"].includes(String(value.automationStatus))) &&
+    (value.references === undefined || isStringArray(value.references)) &&
+    (value.estimateMinutes === undefined || (typeof value.estimateMinutes === "number" && value.estimateMinutes >= 0)) &&
     (value.versions === undefined || (Array.isArray(value.versions) && value.versions.every((item) => isRecord(item) && typeof item.version === "number" && isString(item.savedAt) && isRecord(item.snapshot))));
 }
 
