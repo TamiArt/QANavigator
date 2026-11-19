@@ -2,12 +2,12 @@ import { useMemo, useState } from "react";
 import { Download, Plus, Search, Trash2, Library, ClipboardList, Layers, Play, Bug, Database, HardDrive, Pencil, Copy, Archive } from "lucide-react";
 import { useApp } from "../../core/app-context";
 import { useTmsStorage } from "./use-tms-storage";
-import { TMS_COLLECTIONS, type TmsCase, type TmsData, type TmsRunResult, type TmsStepResult } from "../../domain/test-management";
+import { TMS_COLLECTIONS, type TmsCase, type TmsData, type TmsRequirement, type TmsRunResult, type TmsStepResult } from "../../domain/test-management";
 import { downloadTextFile } from "../../lib/download";
 import { createTmsProjectBackup } from "./project-backup";
 import { TmsAttachmentPanel } from "./TmsAttachmentPanel";
 import { deleteTmsAttachment, listProjectTmsAttachments } from "./tms-attachments";
-type Tab = "overview" | "cases" | "suites" | "runs" | "collections" | "defects";
+type Tab = "overview" | "cases" | "suites" | "runs" | "collections" | "defects" | "requirements";
 const empty: TmsData = { version: 1, cases: [], suites: [], plans: [], runs: [], defects: [], requirements: [] };
 const uid = () => crypto.randomUUID();
 const now = () => new Date().toISOString();
@@ -27,14 +27,15 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
  const [title, setTitle] = useState(""), [folder, setFolder] = useState("Общие проверки"), [priority, setPriority] = useState<TmsCase["priority"]>("P2");
  const [preconditions, setPreconditions] = useState(""), [steps, setSteps] = useState("Открыть функциональность\nВыполнить действие"), [expected, setExpected] = useState("Система обрабатывает действие согласно требованиям");
  const [editingCaseId, setEditingCaseId] = useState("");
- const [description, setDescription] = useState(""), [testData, setTestData] = useState(""), [postconditions, setPostconditions] = useState(""), [tagsText, setTagsText] = useState("");
+ const [description, setDescription] = useState(""), [testData, setTestData] = useState(""), [postconditions, setPostconditions] = useState(""), [tagsText, setTagsText] = useState(""), [caseRequirementIds, setCaseRequirementIds] = useState<string[]>([]);
+ const [requirementTitle, setRequirementTitle] = useState(""), [requirementDescription, setRequirementDescription] = useState(""), [acceptanceCriteria, setAcceptanceCriteria] = useState(""), [requirementPriority, setRequirementPriority] = useState<TmsRequirement["priority"]>("P2");
  const [suiteName, setSuiteName] = useState(""), [planName, setPlanName] = useState(""), [environment, setEnvironment] = useState(project?.environment || "Staging");
  const [runId, setRunId] = useState(""), [defectTitle, setDefectTitle] = useState(""), [defectCaseId, setDefectCaseId] = useState("");
  const save = (next: TmsData) => setAll([...all.filter((x) => x.projectId !== projectId), { ...next, projectId, version: 1 }]);
  const cases = data.cases;
  const filtered = useMemo(() => cases.filter((c) => [c.key,c.title,c.folder,c.tags.join(" ")].join(" ").toLowerCase().includes(query.toLowerCase())), [cases,query]);
  const activeRun = data.runs.find((r) => r.id === runId) ?? data.runs[0];
- const resetCaseForm = () => { setTitle(""); setPreconditions(""); setSteps("Открыть функциональность\nВыполнить действие"); setExpected("Система обрабатывает действие согласно требованиям"); setDescription(""); setTestData(""); setPostconditions(""); setTagsText(""); setEditingCaseId(""); };
+ const resetCaseForm = () => { setTitle(""); setPreconditions(""); setSteps("Открыть функциональность\nВыполнить действие"); setExpected("Система обрабатывает действие согласно требованиям"); setDescription(""); setTestData(""); setPostconditions(""); setTagsText(""); setCaseRequirementIds([]); setEditingCaseId(""); };
  const addCase = () => {
   if (!title.trim()) return;
   const nextSteps = steps.split("\n").map((action) => ({ action: action.trim(), expected })).filter((step) => step.action);
@@ -44,16 +45,16 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
    if (!existing) { resetCaseForm(); return; }
    const { versions = [], ...snapshot } = existing;
    const previousVersion = existing.version ?? 1;
-   const updated: TmsCase = { ...existing, title: title.trim(), folder, preconditions, steps: nextSteps, expected, priority, description, testData, postconditions, tags, updatedAt: now(), version: previousVersion + 1, versions: [...versions, { version: previousVersion, savedAt: now(), snapshot }] };
+   const updated: TmsCase = { ...existing, title: title.trim(), folder, preconditions, steps: nextSteps, expected, priority, description, testData, postconditions, tags, requirementIds: caseRequirementIds, updatedAt: now(), version: previousVersion + 1, versions: [...versions, { version: previousVersion, savedAt: now(), snapshot }] };
    save({ ...data, cases: cases.map((item) => item.id === editingCaseId ? updated : item) });
   } else {
    const item: TmsCase = { id: uid(), projectId, key: "QA-" + String(cases.length + 1).padStart(3,"0"), title: title.trim(), folder, preconditions,
-    steps: nextSteps, expected, priority, type: "Functional", tags, requirementIds: [], createdAt: now(), updatedAt: now(), archived: false, version: 1, description, testData, postconditions };
+    steps: nextSteps, expected, priority, type: "Functional", tags, requirementIds: caseRequirementIds, createdAt: now(), updatedAt: now(), archived: false, version: 1, description, testData, postconditions };
    save({ ...data, cases: [...cases,item] });
   }
   resetCaseForm();
  };
- const editCase = (item: TmsCase) => { setEditingCaseId(item.id); setTitle(item.title); setFolder(item.folder); setPriority(item.priority); setPreconditions(item.preconditions); setSteps(item.steps.map((step) => step.action).join("\n")); setExpected(item.expected); setDescription(item.description ?? ""); setTestData(item.testData ?? ""); setPostconditions(item.postconditions ?? ""); setTagsText(item.tags.join(", ")); setTab("cases"); };
+ const editCase = (item: TmsCase) => { setEditingCaseId(item.id); setTitle(item.title); setFolder(item.folder); setPriority(item.priority); setPreconditions(item.preconditions); setSteps(item.steps.map((step) => step.action).join("\n")); setExpected(item.expected); setDescription(item.description ?? ""); setTestData(item.testData ?? ""); setPostconditions(item.postconditions ?? ""); setTagsText(item.tags.join(", ")); setCaseRequirementIds(item.requirementIds ?? []); setTab("cases"); };
  const cloneCase = (item: TmsCase) => { const cloned: TmsCase = { ...item, id: uid(), key: "QA-" + String(cases.length + 1).padStart(3,"0"), title: item.title + " — копия", createdAt: now(), updatedAt: now(), version: 1, versions: [], attachmentIds: [], archived: false }; save({ ...data, cases: [...cases, cloned] }); };
  const toggleArchived = (item: TmsCase) => save({ ...data, cases: cases.map((current) => current.id === item.id ? { ...current, archived: !current.archived, updatedAt: now() } : current) });
  const removeCase = async (item: TmsCase) => {
@@ -93,13 +94,20 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
   stepResults[index]={...stepResults[index],...patch};
   setResult(runId,caseId,{stepResults});
  };
+ const addRequirement = () => {
+  if (!requirementTitle.trim()) return;
+  const requirements = data.requirements ?? [];
+  const item: TmsRequirement = { id: uid(), projectId, key: "REQ-" + String(requirements.length + 1).padStart(3,"0"), title: requirementTitle.trim(), description: requirementDescription, acceptanceCriteria, priority: requirementPriority, status: "draft", createdAt: now(), updatedAt: now() };
+  save({ ...data, requirements: [...requirements, item] });
+  setRequirementTitle(""); setRequirementDescription(""); setAcceptanceCriteria("");
+ };
  const addDefect = () => {
   if(!defectTitle.trim())return;
   const defect={id:uid(),projectId,key:"BUG-"+String(data.defects.length+1).padStart(3,"0"),title:defectTitle.trim(),caseId:defectCaseId||undefined,severity:"major" as const,priority:"P2" as const,status:"open" as const,createdAt:now()};
   save({...data,defects:[defect,...data.defects]});setDefectTitle("");setDefectCaseId("");
  };
  const exportData=async()=>{setArchiveMessage("");try{const records=await listProjectTmsAttachments(projectId);const total=records.reduce((sum,item)=>sum+item.size,0);if(total>50*1024*1024)throw new Error("Общий размер вложений превышает лимит архива 50 МБ");const attachments=await Promise.all(records.map(async(item)=>({id:item.id,projectId:item.projectId,ownerType:item.ownerType,ownerId:item.ownerId,name:item.name,mimeType:item.mimeType,size:item.size,createdAt:item.createdAt,data:await blobToBase64(item.blob)})));downloadTextFile(JSON.stringify(createTmsProjectBackup({id:projectId,name:project?.name??"Project"},data,now(),attachments),null,2),"qa-project-test-management.json","application/json");}catch(error){setArchiveMessage(error instanceof Error?error.message:"Не удалось создать архив проекта");}};
- const tabs:{id:Tab;label:string;icon:typeof Layers}[]=[{id:"overview",label:"Обзор",icon:Layers},{id:"cases",label:"Тест-кейсы",icon:ClipboardList},{id:"suites",label:"Наборы",icon:Layers},{id:"runs",label:"Планы и прогоны",icon:Play},{id:"collections",label:"Базовые коллекции",icon:Library},{id:"defects",label:"Дефекты",icon:Bug}];
+ const tabs:{id:Tab;label:string;icon:typeof Layers}[]=[{id:"overview",label:"Обзор",icon:Layers},{id:"cases",label:"Тест-кейсы",icon:ClipboardList},{id:"suites",label:"Наборы",icon:Layers},{id:"runs",label:"Планы и прогоны",icon:Play},{id:"collections",label:"Базовые коллекции",icon:Library},{id:"defects",label:"Дефекты",icon:Bug},{id:"requirements",label:"Требования",icon:ClipboardList}];
  return <section className="mt-6 space-y-4 border-t border-border pt-6">
   <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="text-lg font-semibold">Test Management · {project?.name}</h3><p className="text-sm text-muted-foreground">Тестовая документация и контроль выполнения в рамках проекта.</p></div><button onClick={()=>void exportData()} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm"><Download className="h-4 w-4"/> Экспорт проекта</button></div>{archiveMessage&&<p role="alert" className="text-xs text-destructive">{archiveMessage}</p>}
   <nav className="flex gap-1 overflow-x-auto border-b border-border pb-2">{tabs.map(({id,label,icon:Icon})=><button key={id} onClick={()=>setTab(id)} className={"inline-flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm "+(tab===id?"bg-primary/10 text-primary":"text-muted-foreground hover:bg-muted")}><Icon className="h-4 w-4"/>{label}</button>)}</nav>
