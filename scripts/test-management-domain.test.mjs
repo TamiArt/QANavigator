@@ -11,7 +11,7 @@ const compiled = ts.transpileModule(source, {
 }).outputText;
 const module = { exports: {} };
 vm.runInNewContext(compiled, { module, exports: module.exports });
-const { reviseTmsCase, createTmsRunSnapshot, createTmsRerun, compareTmsCaseVersion } = module.exports;
+const { reviseTmsCase, createTmsRunSnapshot, createTmsRerun, compareTmsCaseVersion, getTmsFolderPaths } = module.exports;
 
 const sampleCase = () => ({
   id: "case-1", projectId: "project-1", key: "QA-001", title: "Login", folder: "Auth",
@@ -92,4 +92,16 @@ test("case version comparison reports changed fields and ignores unchanged value
   assert.equal(differences[0].previous, "Login");
   assert.equal(differences[0].current, "Updated login");
   assert.match(differences[3].current, /Submit credentials/);
+});
+
+
+test("nested case folders expose unique parent paths in sorted order", () => {
+  const folders = getTmsFolderPaths([
+    { folder: "API/Auth" },
+    { folder: "API/Users" },
+    { folder: "UI/Login" },
+    { folder: "API/Auth" },
+    { folder: "  " },
+  ]);
+  assert.deepEqual(Array.from(folders), ["API", "API/Auth", "API/Users", "UI", "UI/Login"]);
 });
