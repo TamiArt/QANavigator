@@ -92,7 +92,12 @@ function isRun(value: unknown): boolean {
       isString(snapshot.id) && isString(snapshot.key) && isString(snapshot.title) &&
       Array.isArray(snapshot.steps) && snapshot.steps.every((step) =>
         isRecord(step) && isString(step.action) && isString(step.expected))));
-  return validResults && validSnapshots;
+  const planFields = ["release", "build", "objective", "risks", "owner", "startDate", "endDate", "entryCriteria", "exitCriteria"];
+  const validPlanSnapshot = value.planSnapshot === undefined || (isRecord(value.planSnapshot) &&
+    isString(value.planSnapshot.id) && isString(value.planSnapshot.name) &&
+    isString(value.planSnapshot.environment) &&
+    planFields.every((field) => value.planSnapshot![field] === undefined || isString(value.planSnapshot![field])));
+  return validResults && validSnapshots && validPlanSnapshot;
 }
 
 function isDefect(value: unknown): boolean {
