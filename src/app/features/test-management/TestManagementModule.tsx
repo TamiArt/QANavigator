@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import { Download, Plus, Search, Trash2, Library, ClipboardList, Layers, Play, Bug, Database, HardDrive, Pencil, Copy, Archive, BarChart3, FileSpreadsheet } from "lucide-react";
+import { Download, Plus, Search, Trash2, Library, ClipboardList, Layers, Play, Bug, Database, HardDrive, Pencil, Copy, Archive, BarChart3, FileSpreadsheet, Flag } from "lucide-react";
 import { useApp } from "../../core/app-context";
 import { useTmsStorage } from "./use-tms-storage";
-import { TMS_COLLECTIONS, type TmsCase, type TmsCaseVersion, type TmsData, type TmsRequirement, type TmsRun, type TmsRunResult, type TmsStepResult, type TmsSharedStep, type TmsSharedStepVersion } from "../../domain/test-management";
+import { TMS_COLLECTIONS, type TmsCase, type TmsCaseVersion, type TmsData, type TmsMilestone, type TmsRequirement, type TmsRun, type TmsRunResult, type TmsStepResult, type TmsSharedStep, type TmsSharedStepVersion } from "../../domain/test-management";
 import { downloadTextFile } from "../../lib/download";
 import { createTmsProjectBackup } from "./project-backup";
 import { TmsAttachmentPanel } from "./TmsAttachmentPanel";
@@ -12,8 +12,8 @@ import { compareTmsCaseVersion, createTmsRerun, createTmsRunSnapshot, getTmsFold
 import { createTmsRunCsv, createTmsTraceabilityCsv, getTmsOverviewMetrics } from "./tms-reports";
 import { parseTmsCasesCsv, serializeTmsCasesCsv } from "./tms-import-export";
 import { parseJUnitXmlResults } from "./tms-junit-import";
-type Tab = "overview" | "cases" | "suites" | "runs" | "collections" | "defects" | "requirements" | "reports" | "shared-steps";
-const empty: TmsData = { version: 1, cases: [], suites: [], plans: [], runs: [], defects: [], requirements: [], sharedSteps: [] };
+type Tab = "overview" | "cases" | "suites" | "runs" | "milestones" | "collections" | "defects" | "requirements" | "reports" | "shared-steps";
+const empty: TmsData = { version: 1, cases: [], suites: [], plans: [], runs: [], defects: [], requirements: [], sharedSteps: [], milestones: [] };
 const uid = () => crypto.randomUUID();
 const now = () => new Date().toISOString();
 const nextKey = (prefix: string, keys: string[]) => prefix + "-" + String(keys.reduce((max,key)=>{const match=new RegExp("^"+prefix+"-(\\d+)$").exec(key);return match?Math.max(max,Number(match[1])):max;},0)+1).padStart(3,"0");
@@ -44,8 +44,9 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
  const [sharedStepName, setSharedStepName] = useState(""), [sharedStepText, setSharedStepText] = useState("Открыть страницу => Страница отображается\nВыполнить действие => Действие выполнено");
  const [requirementTitle, setRequirementTitle] = useState(""), [requirementDescription, setRequirementDescription] = useState(""), [acceptanceCriteria, setAcceptanceCriteria] = useState(""), [requirementPriority, setRequirementPriority] = useState<TmsRequirement["priority"]>("P2");
  const [suiteName, setSuiteName] = useState(""), [suiteDescription, setSuiteDescription] = useState(""), [suiteParentId, setSuiteParentId] = useState(""), [planName, setPlanName] = useState(""), [environment, setEnvironment] = useState(project?.environment || "Staging");
- const [release, setRelease] = useState(""), [build, setBuild] = useState(""), [planObjective, setPlanObjective] = useState(""), [planRisks, setPlanRisks] = useState(""), [planOwner, setPlanOwner] = useState(""), [entryCriteria, setEntryCriteria] = useState(""), [exitCriteria, setExitCriteria] = useState(""), [planStartDate, setPlanStartDate] = useState(""), [planEndDate, setPlanEndDate] = useState("");
- const [runId, setRunId] = useState(""), [defectTitle, setDefectTitle] = useState(""), [defectCaseId, setDefectCaseId] = useState(""), [commentDefectId, setCommentDefectId] = useState("");
+ const [release, setRelease] = useState(""), [build, setBuild] = useState(""), [planMilestoneId, setPlanMilestoneId] = useState(""), [planObjective, setPlanObjective] = useState(""), [planRisks, setPlanRisks] = useState(""), [planOwner, setPlanOwner] = useState(""), [entryCriteria, setEntryCriteria] = useState(""), [exitCriteria, setExitCriteria] = useState(""), [planStartDate, setPlanStartDate] = useState(""), [planEndDate, setPlanEndDate] = useState("");
+ const [milestoneName, setMilestoneName] = useState(""), [milestoneDescription, setMilestoneDescription] = useState(""), [milestoneStartDate, setMilestoneStartDate] = useState(""), [milestoneEndDate, setMilestoneEndDate] = useState(""), [milestoneStatus, setMilestoneStatus] = useState<TmsMilestone["status"]>("planned");
+  const [runId, setRunId] = useState(""), [defectTitle, setDefectTitle] = useState(""), [defectCaseId, setDefectCaseId] = useState(""), [commentDefectId, setCommentDefectId] = useState("");
  const [defectDescription, setDefectDescription] = useState(""), [defectSteps, setDefectSteps] = useState(""), [defectExpected, setDefectExpected] = useState(""), [defectActual, setDefectActual] = useState(""), [defectAssignee, setDefectAssignee] = useState(""), [defectLabels, setDefectLabels] = useState(""), [defectSeverity, setDefectSeverity] = useState<TmsData["defects"][number]["severity"]>("major"), [defectPriority, setDefectPriority] = useState<TmsCase["priority"]>("P2"), [defectCommentText, setDefectCommentText] = useState("");
  const save = (next: TmsData) => setAll([...all.filter((x) => x.projectId !== projectId), { ...next, projectId, version: 1 }]);
  const cases = data.cases;
