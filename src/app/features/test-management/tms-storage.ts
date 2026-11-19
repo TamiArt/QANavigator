@@ -96,12 +96,32 @@ export function getInitialTmsStorageMode(): TmsStorageMode {
 /** First IndexedDB open copies legacy localStorage records; the old copy is deliberately retained. */
 export async function loadTmsProjects(mode: TmsStorageMode): Promise<TmsData[]> {
   if (mode === "localStorage") return readLocalProjects();
-  const projects = await readIndexedDbProjects();
-  if (projects.length) return projects;
 
-  const legacyProjects = readLocalProjects();
-  if (legacyProjects.length) await writeIndexedDbProjects(legacyProjects);
-  return legacyProjects;
+  const database = await openDatabase();
+  try {
+    const markerTransaction = database.transaction("meta", "readonly");
+    const marker = await requestResult(markerTransaction.objectStore("meta").get("legacyLocalStorageMigrated"));
+    await transactionDone(markerTransaction);
+    if (marker) {
+      const readTransaction = database.transaction(PROJECT_STORE, "readonly");
+      const projects = await requestResult(readTransaction.objectStore(PROJECT_STORE).getAll()) as TmsData[];
+      await transactionDone(readTransaction);
+      return projects;
+    }
+
+    const legacyProjects = readLocalProjects();
+    const migration = database.transaction([PROJECT_STORE, "meta"], "readwrite");
+    const projectStore = migration.objectStore(PROJECT_STORE);
+    for (const project of legacyProjects) {
+      if (!project.projectId) throw new Error("У записи Test Management отсутствует projectId");
+      projectStore.put({ ...project, version: 1 });
+    }
+    migration.objectStore("meta").put({ key: "legacyLocalStorageMigrated", completedAt: new Date().toISOString() });
+    await transactionDone(migration);
+    return legacyProjects;
+  } finally {
+    database.close();
+  }
 }
 
 /** Switches only after the target store has accepted the full data set. The source is never deleted. */
