@@ -118,18 +118,19 @@ export function SettingsModule() {
           const attachmentPayload = backup.data[TMS_ATTACHMENTS_BACKUP_KEY] as TmsAttachmentBackupItem[] | undefined;
           if (attachmentPayload) {
             validateTmsBackupAttachmentLinks(tmsProjects, attachmentPayload);
-            const previousAttachments = await listAllTmsAttachments();
+            if (typeof indexedDB === "undefined" && attachmentPayload.length) throw new Error("Этот браузер не поддерживает локальное хранение вложений");
+            const previousAttachments = typeof indexedDB === "undefined" ? [] : await listAllTmsAttachments();
             const nextAttachments: TmsAttachmentRecord[] = attachmentPayload.map((item) => ({
               id: item.id, projectId: item.projectId, ownerType: item.ownerType, ownerId: item.ownerId,
               name: item.name, mimeType: item.mimeType, size: item.size, createdAt: item.createdAt,
               blob: base64ToBlob(item.data, item.mimeType),
             }));
             if (nextAttachments.some((item) => item.blob.size !== item.size)) throw new Error("Размер вложения не совпадает с резервной копией");
-            await replaceAllTmsAttachments(nextAttachments);
+            if (typeof indexedDB !== "undefined") await replaceAllTmsAttachments(nextAttachments);
             try {
               if (tmsProjects) await persistTmsProjects(mode, tmsProjects);
             } catch (error) {
-              await replaceAllTmsAttachments(previousAttachments);
+              if (typeof indexedDB !== "undefined") await replaceAllTmsAttachments(previousAttachments);
               throw error;
             }
           } else if (tmsProjects) {
