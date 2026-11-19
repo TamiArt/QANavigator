@@ -66,7 +66,7 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
   resetCaseForm();
  };
  const editCase = (item: TmsCase) => { setEditingCaseId(item.id); setTitle(item.title); setFolder(item.folder); setPriority(item.priority); setPreconditions(item.preconditions); setSteps(item.steps.map((step) => step.action+" => "+step.expected).join("\n")); setExpected(item.expected); setDescription(item.description ?? ""); setTestData(item.testData ?? ""); setPostconditions(item.postconditions ?? ""); setTagsText(item.tags.join(", ")); setCaseRequirementIds(item.requirementIds ?? []); setTab("cases"); };
- const cloneCase = (item: TmsCase) => { const cloned: TmsCase = { ...item, id: uid(), key: "QA-" + String(cases.length + 1).padStart(3,"0"), title: item.title + " — копия", createdAt: now(), updatedAt: now(), version: 1, versions: [], attachmentIds: [], archived: false }; save({ ...data, cases: [...cases, cloned] }); };
+ const cloneCase = (item: TmsCase) => { const cloned: TmsCase = { ...item, id: uid(), key: nextKey("QA",cases.map((item)=>item.key)), title: item.title + " — копия", createdAt: now(), updatedAt: now(), version: 1, versions: [], attachmentIds: [], archived: false }; save({ ...data, cases: [...cases, cloned] }); };
  const toggleArchived = (item: TmsCase) => save({ ...data, cases: cases.map((current) => current.id === item.id ? { ...current, archived: !current.archived, updatedAt: now() } : current) });
  const restoreCaseVersion = (item:TmsCase, version:TmsCaseVersion) => {
   const snapshot=version.snapshot;
@@ -87,7 +87,7 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
  };
  const importCollection = (id: string) => {
   const collection = TMS_COLLECTIONS.find((c) => c.id === id); if (!collection) return;
-  const added = collection.cases.map((c,i): TmsCase => ({ ...c,id:uid(),projectId,key:"QA-"+String(cases.length+i+1).padStart(3,"0"),createdAt:now(),updatedAt:now(),archived:false }));
+  const addedKeys: string[] = []; const added = collection.cases.map((item): TmsCase => { const key=nextKey("QA",[...cases.map((current)=>current.key),...addedKeys]); addedKeys.push(key); return { ...item,id:uid(),projectId,key,createdAt:now(),updatedAt:now(),archived:false }; });
   save({ ...data,cases:[...cases,...added] }); setTab("cases");
  };
  const createSuite = () => {
