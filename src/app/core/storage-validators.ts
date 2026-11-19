@@ -218,6 +218,7 @@ function isTmsProject(value: unknown): boolean {
     item.caseIds.every((id) => caseIds.has(id)))) return false;
   if (!value.plans.every((item) => isRecord(item) && typeof item.id === "string" &&
     typeof item.projectId === "string" && typeof item.name === "string" && typeof item.environment === "string" &&
+    ["release", "build", "objective", "risks", "owner", "startDate", "endDate", "entryCriteria", "exitCriteria"].every((key) => item[key] === undefined || typeof item[key] === "string") &&
     isStringArray(item.suiteIds) && item.suiteIds.every((id) => suiteIds.has(id)) &&
     isStringArray(item.caseIds) && item.caseIds.every((id) => caseIds.has(id)))) return false;
   if (!value.runs.every((item) => isRecord(item) && typeof item.id === "string" &&
