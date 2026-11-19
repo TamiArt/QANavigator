@@ -172,7 +172,7 @@ export function parseTmsProjectBackup(raw: string, targetProjectId: string): Tms
   const requirementIds = new Set((data.requirements ?? []).map((item) => item.id));
 
   if ((data.requirements !== undefined && data.cases.some((item) => item.requirementIds.some((id) => !requirementIds.has(id)))) ||
-    data.suites.some((item) => item.caseIds.some((id) => !caseIds.has(id))) ||
+    data.suites.some((item) => item.caseIds.some((id) => !caseIds.has(id)) || (item.parentId !== undefined && (!suiteIds.has(item.parentId) || item.parentId === item.id))) ||
     data.plans.some((item) => item.caseIds.some((id) => !caseIds.has(id)) ||
       item.suiteIds.some((id) => !suiteIds.has(id))) ||
     data.runs.some((item) => !planIds.has(item.planId) || (item.caseSnapshots !== undefined && Object.keys(item.caseSnapshots).some((id) => !item.results[id])) ||
