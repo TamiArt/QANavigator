@@ -184,6 +184,10 @@ function isTmsCase(value: unknown): boolean {
     typeof value.createdAt === "string" && typeof value.updatedAt === "string" &&
     typeof value.archived === "boolean" &&
     (value.attachmentIds === undefined || isStringArray(value.attachmentIds)) &&
+    (value.version === undefined || typeof value.version === "number") &&
+    (value.description === undefined || typeof value.description === "string") &&
+    (value.testData === undefined || typeof value.testData === "string") &&
+    (value.postconditions === undefined || typeof value.postconditions === "string") &&
     (value.versions === undefined || (Array.isArray(value.versions) && value.versions.every((version) =>
       isRecord(version) && typeof version.version === "number" && typeof version.savedAt === "string" &&
       isRecord(version.snapshot))));
@@ -192,6 +196,7 @@ function isTmsCase(value: unknown): boolean {
 function isTmsRunResult(value: unknown): boolean {
   return isRecord(value) && ["not_run", "passed", "failed", "blocked", "skipped"].includes(String(value.status)) &&
     typeof value.actual === "string" && typeof value.comment === "string" &&
+    (value.stepResults === undefined || (Array.isArray(value.stepResults) && value.stepResults.every((step) => isRecord(step) && ["not_run", "passed", "failed", "blocked", "skipped"].includes(String(step.status)) && typeof step.actual === "string" && typeof step.comment === "string"))) &&
     (value.defectId === undefined || typeof value.defectId === "string") &&
     (value.attachmentIds === undefined || isStringArray(value.attachmentIds));
 }
@@ -199,6 +204,7 @@ function isTmsRunResult(value: unknown): boolean {
 function isTmsProject(value: unknown): boolean {
   if (!isRecord(value) || value.version !== 1 || typeof value.projectId !== "string") return false;
   if (!Array.isArray(value.cases) || !value.cases.every(isTmsCase) ||
+    (value.requirements !== undefined && (!Array.isArray(value.requirements) || !value.requirements.every((item) => isRecord(item) && typeof item.id === "string" && typeof item.projectId === "string" && typeof item.key === "string" && typeof item.title === "string" && typeof item.description === "string" && typeof item.acceptanceCriteria === "string" && PRIORITIES.includes(item.priority as (typeof PRIORITIES)[number]) && ["draft", "approved", "implemented", "verified", "deprecated"].includes(String(item.status)) && typeof item.createdAt === "string" && typeof item.updatedAt === "string"))) ||
     !Array.isArray(value.suites) || !Array.isArray(value.plans) ||
     !Array.isArray(value.runs) || !Array.isArray(value.defects)) return false;
   const caseIds = new Set(value.cases.map((item) => (item as Record<string, unknown>).id));
