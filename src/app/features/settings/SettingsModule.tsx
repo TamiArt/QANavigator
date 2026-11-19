@@ -110,7 +110,7 @@ export function SettingsModule() {
 
       <div className="bg-card border border-border rounded-xl p-5 space-y-3">
         <h3 className="font-semibold text-foreground flex items-center gap-2"><Database className="w-4 h-4 text-primary" /> Данные</h3>
-        <p className="text-sm text-muted-foreground">Рабочие данные хранятся локально в браузере (localStorage). Текст, отправленный в AI-функции, передаётся выбранному провайдеру. Экспортируйте резервную копию для переноса на другое устройство.</p>
+        <p className="text-sm text-muted-foreground">Рабочие данные хранятся локально в профиле браузера на этом устройстве. Сохраняйте резервную копию на компьютер и используйте импорт для переноса данных на другое устройство. Текст, отправленный в AI-функции, передаётся выбранному провайдеру.</p>
         {dataMessage && <p role="alert" className="text-sm text-destructive">{dataMessage}</p>}
         <div className="flex gap-3 flex-wrap">
           <button onClick={exportData} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-card text-sm text-foreground hover:bg-muted transition-colors">
@@ -130,7 +130,7 @@ export function SettingsModule() {
         <div className="space-y-2 text-sm text-muted-foreground">
           <p><span className="text-foreground font-medium">QA Navigator</span> — бесплатный инструмент для тестировщиков</p>
           <p>Стандарты: ISTQB CTFL v4.0 · ISO 25010 · ISO/IEC/IEEE 29119 · OWASP Top 10</p>
-          <p>Хранение: клиентское (localStorage); AI-запросы передаются выбранному внешнему провайдеру.</p>
+          <p>Хранение: локально в браузере; резервные копии пользователь хранит на своём компьютере. AI-запросы передаются выбранному внешнему провайдеру.</p>
           <p>AI: OpenRouter (бесплатные модели) · Google Gemini Flash</p>
         </div>
       </div>
