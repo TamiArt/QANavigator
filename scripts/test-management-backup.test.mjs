@@ -209,3 +209,37 @@ test("project archive rejects entities owned by a different source project", () 
   const archive = createTmsProjectBackup({ id: "source-project", name: "Source" }, data, "now");
   assert.throws(() => parseTmsProjectBackup(JSON.stringify(archive), "target-project"), /принадлежащие другому проекту/);
 });
+
+
+test("project archive preserves evidence attached to an individual execution step", () => {
+  const data = {
+    ...emptyData,
+    cases: [{
+      id: "case-1", projectId: "source-project", key: "QA-001", title: "Login",
+      folder: "Auth", preconditions: "", steps: [{ action: "Open", expected: "Form" }],
+      expected: "Success", priority: "P1", type: "Functional", tags: [],
+      requirementIds: [], createdAt: "now", updatedAt: "now", archived: false,
+    }],
+    plans: [{
+      id: "plan-1", projectId: "source-project", name: "Regression",
+      environment: "Staging", suiteIds: [], caseIds: ["case-1"], createdAt: "now",
+    }],
+    runs: [{
+      id: "run-1", projectId: "source-project", planId: "plan-1",
+      name: "Run", startedAt: "now",
+      results: { "case-1": {
+        status: "passed", actual: "Form opened", comment: "",
+        stepResults: [{ status: "passed", actual: "Form opened", comment: "", attachmentIds: ["step-file"] }],
+      } },
+    }],
+  };
+  const attachments = [{
+    id: "step-file", projectId: "source-project", ownerType: "run-result",
+    ownerId: "run-1:case-1:step:0", name: "step.png", mimeType: "image/png",
+    size: 3, createdAt: "now", data: "AQID",
+  }];
+  const archive = createTmsProjectBackup({ id: "source-project", name: "Source" }, data, "now", attachments);
+  const restored = parseTmsProjectArchive(JSON.stringify(archive), "target-project");
+  assert.equal(restored.testManagement.runs[0].results["case-1"].stepResults[0].attachmentIds[0], "step-file");
+  assert.equal(restored.attachments[0].ownerId, "run-1:case-1:step:0");
+});
