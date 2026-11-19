@@ -231,7 +231,9 @@ export function parseTmsProjectBackup(raw: string, targetProjectId: string): Tms
     data.plans.some((item) => item.caseIds.some((id) => !caseIds.has(id)) ||
       item.suiteIds.some((id) => !suiteIds.has(id)) ||
       (item.milestoneId !== undefined && !milestoneIds.has(item.milestoneId))) ||
-    data.runs.some((item) => !planIds.has(item.planId) || (item.caseSnapshots !== undefined && Object.keys(item.caseSnapshots).some((id) => !item.results[id])) ||
+    data.runs.some((item) => !planIds.has(item.planId) ||
+       (item.planSnapshot?.milestoneId !== undefined && !milestoneIds.has(item.planSnapshot.milestoneId)) ||
+       (item.caseSnapshots !== undefined && Object.keys(item.caseSnapshots).some((id) => !item.results[id])) ||
       Object.values(item.results).some((result) => result.defectId && !defectIds.has(result.defectId))) ||
     data.defects.some((item) => (item.caseId && !caseIds.has(item.caseId)) || (item.caseIds ?? []).some((id) => !caseIds.has(id)) || (item.runId && !data.runs.some((run) => run.id === item.runId)))) {
     throw new Error("Архив содержит нарушенные связи между тест-кейсами, наборами, планами и дефектами");
