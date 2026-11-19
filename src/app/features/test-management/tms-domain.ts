@@ -1,7 +1,7 @@
 import type { TmsCase, TmsCaseSnapshot, TmsCaseVersion, TmsPlan, TmsRun, TmsRunResult, TmsSharedStep, TmsSharedStepVersion } from "../../domain/test-management";
 
 export type TmsCaseEditableFields = Pick<TmsCase,
-  "title" | "folder" | "preconditions" | "steps" | "expected" | "priority" |
+  "title" | "folder" | "preconditions" | "steps" | "expected" | "priority" | "type" |
   "description" | "testData" | "postconditions" | "automationStatus" | "references" | "estimateMinutes" | "sharedStepIds" | "tags" | "requirementIds"
 >;
 
@@ -174,6 +174,7 @@ export function compareTmsCaseVersion(
     ["title", "Название"],
     ["folder", "Папка"],
     ["priority", "Приоритет"],
+    ["type", "Тип теста"],
     ["preconditions", "Предусловия"],
     ["steps", "Шаги"],
     ["expected", "Ожидаемый результат"],
