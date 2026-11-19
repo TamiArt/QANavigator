@@ -60,7 +60,7 @@ export function createTmsRunCsv(run: TmsRun): string {
     const steps = snapshot?.steps ?? [];
     if (!result.stepResults?.length) rows.push([snapshot?.key ?? caseId, title, String(snapshot?.version ?? ""), result.status, result.actual, "", "", ""]);
     else result.stepResults.forEach((stepResult, index) => rows.push([
-      snapshot?.key ?? caseId, title, snapshot?.version ?? "", result.status, result.actual,
+      snapshot?.key ?? caseId, title, String(snapshot?.version ?? ""), result.status, result.actual,
       steps[index]?.action ?? String(index + 1), stepResult.status, stepResult.actual,
     ]));
   }
