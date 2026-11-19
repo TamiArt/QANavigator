@@ -7,7 +7,7 @@ import { downloadTextFile } from "../../lib/download";
 import { createTmsProjectBackup } from "./project-backup";
 import { TmsAttachmentPanel } from "./TmsAttachmentPanel";
 import { deleteTmsAttachment, listProjectTmsAttachments } from "./tms-attachments";
-import { createTmsRerun, createTmsRunSnapshot, reviseTmsCase } from "./tms-domain";
+import { createTmsRerun, createTmsRunSnapshot, reviseTmsCase, reviseTmsSharedStep } from "./tms-domain";
 import { createTmsRunCsv, createTmsTraceabilityCsv, getTmsOverviewMetrics } from "./tms-reports";
 import { parseTmsCasesCsv, serializeTmsCasesCsv } from "./tms-import-export";
 import { parseJUnitXmlResults } from "./tms-junit-import";
@@ -161,7 +161,11 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
   const text=window.prompt("Шаги: действие => ожидаемый результат",item.steps.map((step)=>step.action+" => "+step.expected).join("\n")); if(text===null)return;
   const steps=text.split("\n").map((line)=>{const [action,...parts]=line.split("=>");return {action:action.trim(),expected:parts.join("=>").trim()};}).filter((step)=>step.action);
   if(!steps.length)return;
-  save({...data,sharedSteps:(data.sharedSteps??[]).map((current)=>current.id===item.id?{...current,name:name.trim()||current.name,steps,version:current.version+1,updatedAt:now()}:current)});
+  save({...data,sharedSteps:(data.sharedSteps??[]).map((current)=>current.id===item.id?reviseTmsSharedStep(current,name.trim()||current.name,steps,now()):current)});
+ };
+ const restoreSharedStepVersion = (item:TmsSharedStep,version:TmsSharedStep["versions"] extends (infer V)[]|undefined?V:never) => {
+  const restored=reviseTmsSharedStep(item,version.name,version.steps,now());
+  save({...data,sharedSteps:(data.sharedSteps??[]).map((current)=>current.id===item.id?restored:current)});
  };
  const removeSharedStep = (item:TmsSharedStep) => {
   const used=cases.some((testCase)=>testCase.sharedStepIds?.includes(item.id));
@@ -260,7 +264,7 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
   {tab==="shared-steps"&&<div className="space-y-3">
    <div><h4 className="font-semibold">Библиотека переиспользуемых шагов</h4><p className="text-xs text-muted-foreground">Создавайте общие сценарии один раз и подключайте их к нескольким тест-кейсам. При запуске они фиксируются в снимке кейса.</p></div>
    <div className="grid gap-2 rounded-xl border border-border bg-card p-3"><input value={sharedStepName} onChange={(e)=>setSharedStepName(e.target.value)} placeholder="Название общего шага *" className="rounded-lg border border-border bg-background px-3 py-2 text-sm"/><textarea value={sharedStepText} onChange={(e)=>setSharedStepText(e.target.value)} rows={4} placeholder="Действие => ожидаемый результат" className="rounded-lg border border-border bg-background px-3 py-2 text-sm"/><button type="button" onClick={createSharedStep} disabled={!sharedStepName.trim()} className="rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground disabled:opacity-40">Добавить общий шаг</button></div>
-   {(data.sharedSteps??[]).map((item)=><article key={item.id} className="space-y-2 rounded-xl border border-border bg-card p-3"><div className="flex items-center justify-between gap-2"><div><span className="text-xs text-muted-foreground">{item.key} · v{item.version}</span><b className="block">{item.name}</b></div><div className="flex gap-2"><button type="button" onClick={()=>editSharedStep(item)} className="rounded-md border border-border px-2 py-1 text-xs">Изменить</button><button type="button" onClick={()=>removeSharedStep(item)} aria-label={"Удалить "+item.key} className="text-destructive"><Trash2 className="h-4 w-4"/></button></div></div><ol className="list-decimal space-y-1 pl-5 text-xs">{item.steps.map((step,index)=><li key={index}>{step.action} <span className="text-muted-foreground">→ {step.expected}</span></li>)}</ol><p className="text-xs text-muted-foreground">Используется в {cases.filter((testCase)=>testCase.sharedStepIds?.includes(item.id)).length} кейсах</p></article>)}
+   {(data.sharedSteps??[]).map((item)=><article key={item.id} className="space-y-2 rounded-xl border border-border bg-card p-3"><div className="flex items-center justify-between gap-2"><div><span className="text-xs text-muted-foreground">{item.key} · v{item.version}</span><b className="block">{item.name}</b></div><div className="flex gap-2"><button type="button" onClick={()=>editSharedStep(item)} className="rounded-md border border-border px-2 py-1 text-xs">Изменить</button><button type="button" onClick={()=>removeSharedStep(item)} aria-label={"Удалить "+item.key} className="text-destructive"><Trash2 className="h-4 w-4"/></button></div></div><ol className="list-decimal space-y-1 pl-5 text-xs">{item.steps.map((step,index)=><li key={index}>{step.action} <span className="text-muted-foreground">→ {step.expected}</span></li>)}</ol><p className="text-xs text-muted-foreground">Используется в {cases.filter((testCase)=>testCase.sharedStepIds?.includes(item.id)).length} кейсах</p>{Boolean(item.versions?.length)&&<details className="rounded-md border border-border p-2"><summary className="cursor-pointer text-xs">История версий ({item.versions?.length})</summary><div className="mt-2 space-y-1">{item.versions?.map((version)=><div key={version.version} className="flex items-center justify-between gap-2 text-xs"><span>v{version.version} · {version.name} · {new Date(version.savedAt).toLocaleString("ru-RU")}</span><button type="button" onClick={()=>restoreSharedStepVersion(item,version)} className="rounded border border-border px-2 py-1">Восстановить</button></div>)}</div></details>}</article>)}
    {!data.sharedSteps?.length&&<p className="rounded-xl border border-dashed border-border p-5 text-center text-sm text-muted-foreground">Общих шагов пока нет.</p>}
   </div>}
   {tab==="reports"&&<div className="space-y-4">
