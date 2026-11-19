@@ -211,6 +211,8 @@ function isTmsProject(value: unknown): boolean {
   const suiteIds = new Set(value.suites.map((item) => (item as Record<string, unknown>).id));
   const planIds = new Set(value.plans.map((item) => (item as Record<string, unknown>).id));
   const defectIds = new Set(value.defects.map((item) => (item as Record<string, unknown>).id));
+  const requirementIds = new Set(Array.isArray(value.requirements) ? value.requirements.map((item) => (item as Record<string, unknown>).id) : []);
+  if (value.requirements !== undefined && value.cases.some((item) => (item as Record<string, unknown>).requirementIds instanceof Array && ((item as Record<string, unknown>).requirementIds as string[]).some((id) => !requirementIds.has(id)))) return false;
   if (!value.suites.every((item) => isRecord(item) && typeof item.id === "string" &&
     typeof item.projectId === "string" && typeof item.name === "string" && isStringArray(item.caseIds) &&
     item.caseIds.every((id) => caseIds.has(id)))) return false;
@@ -220,7 +222,8 @@ function isTmsProject(value: unknown): boolean {
     isStringArray(item.caseIds) && item.caseIds.every((id) => caseIds.has(id)))) return false;
   if (!value.runs.every((item) => isRecord(item) && typeof item.id === "string" &&
     typeof item.projectId === "string" && typeof item.planId === "string" && planIds.has(item.planId) &&
-    isRecord(item.results) && Object.values(item.results).every(isTmsRunResult))) return false;
+    isRecord(item.results) && Object.values(item.results).every(isTmsRunResult) &&
+    (item.caseSnapshots === undefined || isRecord(item.caseSnapshots)))) return false;
   return value.defects.every((item) => isRecord(item) && typeof item.id === "string" &&
     typeof item.projectId === "string" && typeof item.key === "string" && typeof item.title === "string" &&
     (item.caseId === undefined || caseIds.has(item.caseId)) &&
