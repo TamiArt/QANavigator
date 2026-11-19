@@ -210,18 +210,28 @@ export function parseTmsProjectArchive(raw: string, targetProjectId: string): {
     throw new Error("Архив содержит некорректные вложения");
   }
   const attachments = rawAttachments.map((item) => ({ ...item, projectId: targetProjectId }));
-  const attachmentIds = new Set(attachments.map((item) => item.id));
-  const referenced = new Set<string>();
-  for (const item of testManagement.cases) for (const id of item.attachmentIds ?? []) referenced.add(id);
-  for (const item of testManagement.defects) for (const id of item.attachmentIds ?? []) referenced.add(id);
+  const attachmentIds = new Set<string>();
+  const referenced = new Map<string, string>();
+  for (const item of testManagement.cases) for (const id of item.attachmentIds ?? []) referenced.set(id, "case:" + item.id);
+  for (const item of testManagement.defects) for (const id of item.attachmentIds ?? []) referenced.set(id, "defect:" + item.id);
   for (const run of testManagement.runs) {
-    for (const result of Object.values(run.results)) for (const id of result.attachmentIds ?? []) referenced.add(id);
+    for (const [caseId, result] of Object.entries(run.results)) {
+      for (const id of result.attachmentIds ?? []) referenced.set(id, "run-result:" + run.id + ":" + caseId);
+    }
   }
-  if ([...referenced].some((id) => !attachmentIds.has(id))) {
+  for (const item of attachments) {
+    if (attachmentIds.has(item.id)) throw new Error("Архив содержит повторяющийся ID вложения");
+    attachmentIds.add(item.id);
+    const expectedOwner = referenced.get(item.id);
+    if (!expectedOwner) throw new Error("Архив содержит вложение без связанного объекта TMS");
+    if (expectedOwner !== item.ownerType + ":" + item.ownerId) {
+      throw new Error("Вложение связано не с тем объектом TMS");
+    }
+    const decodedSize = Math.floor(item.data.length * 3 / 4) - (item.data.endsWith("==") ? 2 : item.data.endsWith("=") ? 1 : 0);
+    if (decodedSize !== item.size) throw new Error("Размер вложения не совпадает с содержимым архива");
+  }
+  if ([...referenced.keys()].some((id) => !attachmentIds.has(id))) {
     throw new Error("В архиве отсутствует файл, на который ссылается тест-кейс, прогон или дефект");
-  }
-  if (attachments.some((item) => !referenced.has(item.id))) {
-    throw new Error("Архив содержит вложение без связанного объекта TMS");
   }
   const totalBytes = attachments.reduce((sum, item) => sum + item.size, 0);
   if (totalBytes > 50 * 1024 * 1024) throw new Error("Общий размер вложений в архиве превышает 50 МБ");
