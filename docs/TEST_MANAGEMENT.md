@@ -38,7 +38,7 @@
 - Доступен JSON-экспорт и импорт архива выбранного проекта. Импорт валидирует структуру и связи, затем переносит данные в текущий проект, не меняя его ID.
 - Общая резервная копия приложения продолжает включать ключ Test Management.
 - Основные операции не требуют AI, API-ключа или backend.
-- Данные находятся в хранилище текущего профиля браузера. Экспортированный JSON-файл пользователь сохраняет на своём компьютере и может импортировать на другом устройстве.
+- Данные находятся в хранилище текущего профиля браузера. Для TMS доступны IndexedDB (основной режим для крупных библиотек) и localStorage (предыдущий режим); переключение между ними доступно в интерфейсе TMS. При первом переходе в IndexedDB данные копируются, исходный localStorage не удаляется. При возврате в localStorage данные предварительно копируются обратно; если целевое хранилище не принимает весь объём, переключение не выполняется. Экспортированный JSON-файл пользователь сохраняет на своём компьютере и может импортировать на другом устройстве.
 - Это local-first режим одного браузерного профиля; совместная синхронизация и роли не реализованы. Очистка данных браузера без резервной копии может привести к потере локальных данных.
 
 ## Целевая функциональность полноценной TMS
@@ -106,7 +106,7 @@
 
 ## Архитектура и миграции
 
-1. Для растущих объёмов перенести крупные коллекции и бинарные вложения в IndexedDB; текущие записи localStorage мигрировать без потери данных.
+1. Базовое хранилище TMS перенесено на IndexedDB с однократной миграцией legacy localStorage; предыдущая схема сохранена и доступна для возврата. Бинарные вложения и их архивирование остаются следующим этапом.
 2. Ввести schemaVersion и последовательные миграции без потери существующих backup formats.
 3. Добавить валидаторы сущностей и ссылочной целостности.
 4. Атомарно обновлять прогон и связанные результаты через транзакции.
@@ -118,8 +118,8 @@
 
 | Этап | Содержание | Статус |
 |---|---|---|
-| TMS foundation | Project-scoped cases, suites, plans/runs, statuses, defect register, starter collections, JSON export/backup and validated project import | Реализовано |
-| Case management | Полный редактор, папки, tags/filters, версии, shared steps, attachments | Далее |
+| TMS foundation | Project-scoped cases, suites, plans/runs, statuses, defect register, starter collections, JSON export/backup, validated project import, IndexedDB migration and reversible localStorage mode | Реализовано |
+| Case management | Полный редактор, папки, tags/filters, версии, shared steps, attachments | В работе |
 | Execution engine | Step-level results, evidence, reruns, assignees, audit trail | Далее |
 | Traceability | Requirements matrix, impact analysis, defect linking | Далее |
 | Reporting | Dashboards, run comparison, release readiness | Далее |
