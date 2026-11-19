@@ -165,15 +165,20 @@ test("project archives preserve plan snapshots and expanded execution statuses",
       expected: "Success", priority: "P1", type: "Functional", tags: [],
       requirementIds: [], createdAt: "now", updatedAt: "now", archived: false,
     }],
+    milestones: [{
+      id: "milestone-1", projectId: "source-project", name: "Release 2.4",
+      status: "active", description: "Release readiness", startDate: "2026-11-01",
+      endDate: "2026-11-30", createdAt: "now", updatedAt: "now",
+    }],
     plans: [{
       id: "plan-1", projectId: "source-project", name: "Release regression",
       environment: "Staging", suiteIds: [], caseIds: ["case-1"], createdAt: "now",
-      release: "2.4", build: "build-42",
+      milestoneId: "milestone-1", release: "2.4", build: "build-42",
     }],
     runs: [{
       id: "run-1", projectId: "source-project", planId: "plan-1",
       name: "Regression run", startedAt: "now",
-      planSnapshot: { id: "plan-1", name: "Release regression", environment: "Staging", release: "2.4", build: "build-42" },
+      planSnapshot: { id: "plan-1", name: "Release regression", environment: "Staging", milestoneId: "milestone-1", milestoneName: "Release 2.4", release: "2.4", build: "build-42" },
       caseSnapshots: { "case-1": { id: "case-1", key: "QA-001", title: "Login", steps: [{ action: "Open", expected: "Form" }] } },
       results: { "case-1": {
         status: "retest", actual: "Needs another pass", comment: "",
@@ -184,6 +189,8 @@ test("project archives preserve plan snapshots and expanded execution statuses",
   const archive = createTmsProjectBackup({ id: "source-project", name: "Source" }, data, "now");
   const restored = parseTmsProjectBackup(JSON.stringify(archive), "target-project");
   assert.equal(restored.runs[0].planSnapshot.environment, "Staging");
+  assert.equal(restored.runs[0].planSnapshot.milestoneName, "Release 2.4");
+  assert.equal(restored.milestones[0].projectId, "target-project");
   assert.equal(restored.runs[0].results["case-1"].status, "retest");
   assert.equal(restored.runs[0].results["case-1"].stepResults[0].status, "in_progress");
 });
