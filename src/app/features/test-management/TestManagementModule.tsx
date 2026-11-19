@@ -23,7 +23,7 @@ const statusLabels: Record<TmsRunResult["status"], string> = { not_run: "Не з
 export function TestManagementModule({ projectId }: { projectId: string }) {
  const { projects } = useApp();
  const project = projects.find((p) => p.id === projectId);
- const { projects: all, saveProjects: setAll, mode: storageMode, changeMode, loading: storageLoading, error: storageError, notice: storageNotice } = useTmsStorage();
+ const { projects: all, saveProjects: setAll, mode: storageMode, changeMode, loading: storageLoading, switching: storageSwitching, error: storageError, notice: storageNotice } = useTmsStorage();
  const data = all.find((x) => x.projectId === projectId) ?? { ...empty, projectId };
  const [tab, setTab] = useState<Tab>("overview"), [query, setQuery] = useState(""), [selected, setSelected] = useState<string[]>([]);
  const [folderFilter, setFolderFilter] = useState(""), [priorityFilter, setPriorityFilter] = useState("all"), [showArchived, setShowArchived] = useState(true);
