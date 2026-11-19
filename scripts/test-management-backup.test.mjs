@@ -103,6 +103,11 @@ test("project archive exports and restores attached evidence with remapped proje
   assert.equal(restored.testManagement.cases[0].attachmentIds[0], "file-1");
   assert.equal(restored.attachments[0].projectId, "target-project");
   assert.equal(restored.attachments[0].data, "AQID");
+  const crossProjectAttachment = { ...archive, attachments: [{ ...attachments[0], projectId: "foreign-project" }] };
+  assert.throws(
+    () => parseTmsProjectArchive(JSON.stringify(crossProjectAttachment), "target-project"),
+    /Вложения архива принадлежат другому проекту/,
+  );
 });
 
 test("project archive rejects missing and malformed evidence attachments", () => {
