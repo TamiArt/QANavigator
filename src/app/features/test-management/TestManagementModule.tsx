@@ -70,7 +70,13 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
   save({...data,cases:cases.map((current)=>current.id===item.id?restored:current)});
  };
  const removeCase = async (item: TmsCase) => {
-  if (!window.confirm("Удалить тест-кейс? История прогонов сохранится, но связь с библиотекой будет удалена.")) return;
+  const usedInHistory = data.runs.some((run) => Boolean(run.results[item.id]));
+  if (usedInHistory) {
+   if (!window.confirm("Тест-кейс уже входит в историю прогонов. Чтобы не нарушить историю и вложения, он будет архивирован вместо удаления. Продолжить?")) return;
+   toggleArchived(item);
+   return;
+  }
+  if (!window.confirm("Удалить тест-кейс и его вложения?")) return;
   await Promise.all((item.attachmentIds ?? []).map((id) => deleteTmsAttachment(id)));
   save({ ...data, cases: cases.filter((current) => current.id !== item.id), suites: data.suites.map((suite) => ({ ...suite, caseIds: suite.caseIds.filter((id) => id !== item.id) })), plans: data.plans.map((plan) => ({ ...plan, caseIds: plan.caseIds.filter((id) => id !== item.id) })), defects: data.defects.map((defect) => ({ ...defect, caseId: defect.caseId === item.id ? undefined : defect.caseId, caseIds: (defect.caseIds ?? []).filter((id) => id !== item.id) })) });
   if (editingCaseId === item.id) resetCaseForm();
