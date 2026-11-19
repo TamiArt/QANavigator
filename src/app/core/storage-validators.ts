@@ -221,6 +221,13 @@ function isTmsSharedStep(value: unknown): boolean {
     version.steps.every((step) => isRecord(step) && typeof step.action === "string" && typeof step.expected === "string"));
 }
 
+function isTmsPlanSnapshot(value: unknown): boolean {
+  if (!isRecord(value) || typeof value.id !== "string" || typeof value.name !== "string" ||
+    typeof value.environment !== "string") return false;
+  return ["release", "build", "objective", "risks", "owner", "startDate", "endDate", "entryCriteria", "exitCriteria"]
+    .every((field) => value[field] === undefined || typeof value[field] === "string");
+}
+
 function isTmsProject(value: unknown): boolean {
   if (!isRecord(value) || value.version !== 1 || typeof value.projectId !== "string") return false;
   if (!Array.isArray(value.cases) || !value.cases.every(isTmsCase) ||
@@ -248,7 +255,7 @@ function isTmsProject(value: unknown): boolean {
   const requirementIds = new Set(Array.isArray(value.requirements) ? value.requirements.map((item) => (item as Record<string, unknown>).id) : []);
   const sharedStepIds = new Set(Array.isArray(value.sharedSteps) ? value.sharedSteps.map((item) => (item as Record<string, unknown>).id) : []);
   if (value.sharedSteps !== undefined && value.cases.some((item) => Array.isArray((item as Record<string, unknown>).sharedStepIds) && ((item as Record<string, unknown>).sharedStepIds as string[]).some((id) => !sharedStepIds.has(id)))) return false;
-  if (value.requirements !== undefined && value.cases.some((item) => (item as Record<string, unknown>).requirementIds instanceof Array && ((item as Record<string, unknown>).requirementIds as string[]).some((id) => !requirementIds.has(id)))) return false;
+  if (value.requirements !== undefined && value.cases.some((item) => Array.isArray((item as Record<string, unknown>).requirementIds) && ((item as Record<string, unknown>).requirementIds as string[]).some((id) => !requirementIds.has(id)))) return false;
   if (!value.suites.every((item) => isRecord(item) && typeof item.id === "string" &&
     typeof item.projectId === "string" && typeof item.name === "string" &&
     (item.description === undefined || typeof item.description === "string") &&
@@ -264,7 +271,8 @@ function isTmsProject(value: unknown): boolean {
   if (!value.runs.every((item) => {
     if (!isRecord(item) || typeof item.id !== "string" || typeof item.projectId !== "string" ||
       typeof item.planId !== "string" || !planIds.has(item.planId) || !isRecord(item.results) ||
-      (item.caseSnapshots !== undefined && !isRecord(item.caseSnapshots))) return false;
+      (item.caseSnapshots !== undefined && !isRecord(item.caseSnapshots)) ||
+      (item.planSnapshot !== undefined && !isTmsPlanSnapshot(item.planSnapshot))) return false;
     return Object.entries(item.results).every(([caseId, result]) => {
       if (!isRecord(result) || !isTmsRunResult(result)) return false;
       const runResult = result as Record<string, unknown>;
