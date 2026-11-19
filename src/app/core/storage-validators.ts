@@ -207,6 +207,11 @@ function isTmsProject(value: unknown): boolean {
     (value.requirements !== undefined && (!Array.isArray(value.requirements) || !value.requirements.every((item) => isRecord(item) && typeof item.id === "string" && typeof item.projectId === "string" && typeof item.key === "string" && typeof item.title === "string" && typeof item.description === "string" && typeof item.acceptanceCriteria === "string" && PRIORITIES.includes(item.priority as (typeof PRIORITIES)[number]) && ["draft", "approved", "implemented", "verified", "deprecated"].includes(String(item.status)) && typeof item.createdAt === "string" && typeof item.updatedAt === "string"))) ||
     !Array.isArray(value.suites) || !Array.isArray(value.plans) ||
     !Array.isArray(value.runs) || !Array.isArray(value.defects)) return false;
+  const hasUniqueField = (items: unknown[], field: string) => new Set(items.map((item) => (item as Record<string, unknown>)[field])).size === items.length;
+  if (!hasUniqueField(value.cases, "id") || !hasUniqueField(value.cases, "key") ||
+    !hasUniqueField(value.suites, "id") || !hasUniqueField(value.plans, "id") ||
+    !hasUniqueField(value.defects, "id") || !hasUniqueField(value.defects, "key") ||
+    (Array.isArray(value.requirements) && (!hasUniqueField(value.requirements, "id") || !hasUniqueField(value.requirements, "key")))) return false;
   const caseIds = new Set(value.cases.map((item) => (item as Record<string, unknown>).id));
   const suiteIds = new Set(value.suites.map((item) => (item as Record<string, unknown>).id));
   const planIds = new Set(value.plans.map((item) => (item as Record<string, unknown>).id));
