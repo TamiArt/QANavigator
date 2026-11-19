@@ -6,6 +6,7 @@ import { TMS_COLLECTIONS, type TmsCase, type TmsCaseVersion, type TmsData, type 
 import { downloadTextFile } from "../../lib/download";
 import { createTmsProjectBackup } from "./project-backup";
 import { TmsAttachmentPanel } from "./TmsAttachmentPanel";
+import { TmsStorageControls } from "./TmsStorageControls";
 import { deleteTmsAttachment, listProjectTmsAttachments } from "./tms-attachments";
 import { createTmsRerun, createTmsRunSnapshot, reviseTmsCase, reviseTmsSharedStep } from "./tms-domain";
 import { createTmsRunCsv, createTmsTraceabilityCsv, getTmsOverviewMetrics } from "./tms-reports";
@@ -248,6 +249,7 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
  const tabs:{id:Tab;label:string;icon:typeof Layers}[]=[{id:"overview",label:"Обзор",icon:Layers},{id:"cases",label:"Тест-кейсы",icon:ClipboardList},{id:"suites",label:"Наборы",icon:Layers},{id:"runs",label:"Планы и прогоны",icon:Play},{id:"collections",label:"Базовые коллекции",icon:Library},{id:"defects",label:"Дефекты",icon:Bug},{id:"requirements",label:"Требования",icon:ClipboardList},{id:"reports",label:"Отчёты",icon:BarChart3},{id:"shared-steps",label:"Общие шаги",icon:Layers}];
  return <section className="mt-6 space-y-4 border-t border-border pt-6">
   <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="text-lg font-semibold">Test Management · {project?.name}</h3><p className="text-sm text-muted-foreground">Тестовая документация и контроль выполнения в рамках проекта.</p></div><button onClick={()=>void exportData()} className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm"><Download className="h-4 w-4"/> Экспорт проекта</button></div>{archiveMessage&&<p role="alert" className="text-xs text-destructive">{archiveMessage}</p>}
+  <TmsStorageControls mode={storageMode} loading={storageLoading} switching={storageSwitching} error={storageError} notice={storageNotice} onChange={changeMode} />
   <nav className="flex gap-1 overflow-x-auto border-b border-border pb-2">{tabs.map(({id,label,icon:Icon})=><button key={id} onClick={()=>setTab(id)} className={"inline-flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm "+(tab===id?"bg-primary/10 text-primary":"text-muted-foreground hover:bg-muted")}><Icon className="h-4 w-4"/>{label}</button>)}</nav>
   {tab==="overview"&&<div className="grid grid-cols-2 gap-3 md:grid-cols-6">{[["Тест-кейсы",cases.length],["Наборы",data.suites.length],["Планы",data.plans.length],["Прогоны",data.runs.length],["Дефекты",data.defects.length],["Требования",(data.requirements??[]).length]].map(([label,value])=><div key={label} className="rounded-xl border border-border bg-card p-4"><div className="text-2xl font-semibold">{value}</div><div className="text-xs text-muted-foreground">{label}</div></div>)}</div>}
   {tab==="cases"&&<div className="space-y-3">
