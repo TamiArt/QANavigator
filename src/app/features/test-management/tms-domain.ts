@@ -39,6 +39,7 @@ export function snapshotTmsCase(item: TmsCase): TmsCaseSnapshot {
     testData: item.testData,
     postconditions: item.postconditions,
     automationStatus: item.automationStatus,
+    automationStatus: item.automationStatus,
   };
 }
 
