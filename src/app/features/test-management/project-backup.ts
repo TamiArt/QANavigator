@@ -56,8 +56,10 @@ function isCase(value: unknown): boolean {
 
 function isSuite(value: unknown): boolean {
   return isRecord(value) && isString(value.id) && isString(value.projectId) &&
-    isString(value.name) && isStringArray(value.caseIds) && isString(value.createdAt) && (value.attachmentIds === undefined || isStringArray(value.attachmentIds)) &&
-    (value.labels === undefined || isStringArray(value.labels));
+    isString(value.name) && isStringArray(value.caseIds) && isString(value.createdAt) &&
+    (value.description === undefined || isString(value.description)) &&
+    (value.parentId === undefined || isString(value.parentId)) &&
+    (value.updatedAt === undefined || isString(value.updatedAt));
 }
 
 function isPlan(value: unknown): boolean {
