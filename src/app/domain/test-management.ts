@@ -6,7 +6,7 @@ export interface TmsCase {
 }
 export interface TmsCaseVersion { version: number; savedAt: string; snapshot: Omit<TmsCase, "versions"> }
 export interface TmsSuite { id: string; projectId: string; name: string; caseIds: string[]; createdAt: string }
-export interface TmsPlan { id: string; projectId: string; name: string; environment: string; suiteIds: string[]; caseIds: string[]; createdAt: string }
+export interface TmsPlan { id: string; projectId: string; name: string; environment: string; suiteIds: string[]; caseIds: string[]; createdAt: string; release?: string; build?: string; objective?: string; risks?: string; owner?: string; startDate?: string; endDate?: string; entryCriteria?: string; exitCriteria?: string }
 export interface TmsRunResult { status: "not_run" | "passed" | "failed" | "blocked" | "skipped"; actual: string; comment: string; defectId?: string; attachmentIds?: string[]; stepResults?: TmsStepResult[] }
 export interface TmsStepResult { status: "not_run" | "passed" | "failed" | "blocked" | "skipped"; actual: string; comment: string; attachmentIds?: string[] }
 export interface TmsCaseSnapshot { id: string; key: string; title: string; folder: string; preconditions: string; steps: TmsStep[]; expected: string; priority: "P1" | "P2" | "P3"; type: string; tags: string[]; requirementIds: string[]; version?: number; description?: string; testData?: string; postconditions?: string }
