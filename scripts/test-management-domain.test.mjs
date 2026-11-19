@@ -54,3 +54,17 @@ test("selective reruns include only failed and blocked cases and retain source s
   assert.equal(rerun.caseSnapshots["case-1"].title, "Login");
   assert.equal(createTmsRerun({ ...run, results: { "case-2": run.results["case-2"] } }, "run-3", "now", "None"), null);
 });
+
+test("shared steps are expanded into immutable run snapshots", () => {
+  const original = { ...sampleCase(), sharedStepIds: ["shared-1"] };
+  const sharedSteps = [{
+    id: "shared-1", projectId: "project-1", key: "SS-001", name: "Sign in",
+    steps: [{ action: "Enter credentials", expected: "Credentials accepted" }],
+    version: 2, createdAt: "now", updatedAt: "now",
+  }];
+  const plan = { id: "plan-1", projectId: "project-1", name: "Smoke", environment: "QA", suiteIds: [], caseIds: ["case-1"], createdAt: "now" };
+  const run = createTmsRunSnapshot("run-1", "project-1", plan, [original], "now", "Smoke", sharedSteps);
+  assert.equal(run.caseSnapshots["case-1"].steps.length, 2);
+  assert.match(run.caseSnapshots["case-1"].steps[1].action, /SS-001/);
+  assert.equal(run.caseSnapshots["case-1"].steps[1].expected, "Credentials accepted");
+});
