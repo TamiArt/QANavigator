@@ -11,7 +11,7 @@ const compiled = ts.transpileModule(source, {
 }).outputText;
 const module = { exports: {} };
 vm.runInNewContext(compiled, { module, exports: module.exports });
-const { getTmsOverviewMetrics, createTmsTraceabilityCsv, createTmsRunCsv } = module.exports;
+const { getTmsOverviewMetrics, createTmsTraceabilityCsv, createTmsRunCsv, getTmsRunTrend } = module.exports;
 
 const data = {
   version: 1,
@@ -56,4 +56,15 @@ test("run CSV includes immutable case version and step evidence", () => {
   assert.match(csv, /Form visible/);
   assert.match(csv, /QA Tester/);
   assert.match(csv, /Release 2.4/);
+});
+
+
+test("run trend is chronological and excludes pending statuses from pass rate", () => {
+  const earlier = { ...data.runs[0], id: "run-earlier", startedAt: "2026-01-01T00:00:00.000Z" };
+  const later = { ...data.runs[0], id: "run-later", startedAt: "2026-01-02T00:00:00.000Z" };
+  const trend = getTmsRunTrend([later, earlier]);
+  assert.deepEqual(Array.from(trend, (item) => item.id), ["run-earlier", "run-later"]);
+  assert.equal(trend[0].passRate, 50);
+  assert.equal(trend[0].inProgress, 1);
+  assert.equal(trend[0].retest, 1);
 });
