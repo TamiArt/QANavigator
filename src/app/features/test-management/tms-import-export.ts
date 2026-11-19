@@ -94,7 +94,7 @@ export function parseTmsCasesCsv(
     if (!title) continue;
     const expected = value(row, "expected result", "expected", "ожидаемый результат");
     const rawSteps = value(row, "steps", "test steps", "шаги", "steps to reproduce");
-    const requestedRequirements = parseArray(value(row, "requirement ids", "requirementids", "references", "требования"));
+    const requestedRequirements = parseArray(value(row, "requirement ids", "requirementids", "требования"));
     nextNumber += 1;
     imported.push({
       id: crypto.randomUUID(),
