@@ -17,11 +17,13 @@ export function useTmsStorage() {
   const [notice, setNotice] = useState("");
   const [switching, setSwitching] = useState(false);
   const writeQueue = useRef<Promise<void>>(Promise.resolve());
+  const persistedProjects = useRef<TmsData[]>([]);
 
   useEffect(() => {
     let active = true;
     loadTmsProjects(mode).then((value) => {
       if (!active) return;
+      persistedProjects.current = value;
       setProjects(value);
       setLoading(false);
       if (mode === "indexedDB" && value.length) {
@@ -43,9 +45,15 @@ export function useTmsStorage() {
   const saveProjects = useCallback((next: TmsData[]) => {
     setProjects(next);
     setError("");
-    const operation = writeQueue.current.then(() => persistTmsProjects(mode, next));
+    const operation = writeQueue.current.then(async () => {
+      await persistTmsProjects(mode, next);
+      persistedProjects.current = next;
+      setProjects(next);
+      setError("");
+    });
     writeQueue.current = operation.catch(() => undefined);
     void operation.catch((reason: unknown) => {
+      setProjects(persistedProjects.current);
       setError(reason instanceof Error ? reason.message : "Не удалось сохранить данные Test Management");
     });
   }, [mode]);
@@ -57,16 +65,20 @@ export function useTmsStorage() {
     setSwitching(true);
     try {
       await writeQueue.current;
+      const stableProjects = persistedProjects.current;
       if (mode === "indexedDB" && error && target === "localStorage") {
         const legacySnapshot = await loadTmsProjects("localStorage");
         localStorage.setItem(TMS_STORAGE_MODE_KEY, "localStorage");
+        persistedProjects.current = legacySnapshot;
         setProjects(legacySnapshot);
         setMode("localStorage");
         setNotice("Открыта сохранённая резервная копия прежнего localStorage. Данные IndexedDB не удалены; проверьте актуальность копии перед продолжением.");
         setError("");
         return;
       }
-      await switchTmsStorageMode(target, projects);
+      await switchTmsStorageMode(target, stableProjects);
+      persistedProjects.current = stableProjects;
+      setProjects(stableProjects);
       setMode(target);
       setNotice(target === "indexedDB"
         ? "Данные перенесены в IndexedDB. Копия предыдущего хранилища сохранена."
@@ -76,7 +88,7 @@ export function useTmsStorage() {
     } finally {
       setSwitching(false);
     }
-  }, [mode, projects, error]);
+  }, [mode, error]);
 
   return { projects, saveProjects, mode, changeMode, loading, switching, error, notice };
 }
