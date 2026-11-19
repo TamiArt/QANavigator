@@ -230,10 +230,14 @@ function isTmsProject(value: unknown): boolean {
     (item.caseId === undefined || caseIds.has(item.caseId)) &&
     ["blocker", "critical", "major", "minor"].includes(String(item.severity)) &&
     PRIORITIES.includes(item.priority as (typeof PRIORITIES)[number]) &&
-    ["open", "in_progress", "fixed", "closed"].includes(String(item.status)) &&
+    ["new", "open", "in_progress", "fixed", "retest", "closed", "reopened", "rejected"].includes(String(item.status)) &&
     typeof item.createdAt === "string" &&
     (item.attachmentIds === undefined || isStringArray(item.attachmentIds)) &&
-    (item.labels === undefined || isStringArray(item.labels)));
+    (item.labels === undefined || isStringArray(item.labels)) &&
+    (item.caseIds === undefined || (isStringArray(item.caseIds) && item.caseIds.every((id) => caseIds.has(id)))) &&
+    (item.runId === undefined || runs.some((run) => (run as Record<string, unknown>).id === item.runId)) &&
+    (item.comments === undefined || (Array.isArray(item.comments) && item.comments.every((comment) => isRecord(comment) && typeof comment.id === "string" && typeof comment.author === "string" && typeof comment.body === "string" && typeof comment.createdAt === "string"))) &&
+    (item.history === undefined || (Array.isArray(item.history) && item.history.every((entry) => isRecord(entry) && typeof entry.id === "string" && typeof entry.field === "string" && typeof entry.from === "string" && typeof entry.to === "string" && typeof entry.actor === "string" && typeof entry.changedAt === "string"))));
 }
 
 /** Validates the versioned project-scoped Test Management collection and its references. */
