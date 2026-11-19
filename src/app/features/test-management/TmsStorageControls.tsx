@@ -18,6 +18,8 @@ export function TmsStorageControls({
   onChange,
 }: Props) {
   const disabled = loading || switching;
+  const indexedDbDisabled = disabled || Boolean(error);
+  const localStorageDisabled = disabled || (Boolean(error) && mode !== "indexedDB");
   return (
     <div className="space-y-2 rounded-xl border border-border bg-card p-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -32,7 +34,7 @@ export function TmsStorageControls({
           <button
             type="button"
             aria-pressed={mode === "indexedDB"}
-            disabled={disabled || mode === "indexedDB"}
+            disabled={indexedDbDisabled || mode === "indexedDB"}
             onClick={() => void onChange("indexedDB")}
             className={"rounded-lg border px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-50 " +
               (mode === "indexedDB" ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-muted")}
@@ -42,7 +44,7 @@ export function TmsStorageControls({
           <button
             type="button"
             aria-pressed={mode === "localStorage"}
-            disabled={disabled || mode === "localStorage"}
+            disabled={localStorageDisabled || mode === "localStorage"}
             onClick={() => void onChange("localStorage")}
             className={"rounded-lg border px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-50 " +
               (mode === "localStorage" ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-muted")}
