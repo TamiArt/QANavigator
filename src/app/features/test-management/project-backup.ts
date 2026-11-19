@@ -95,14 +95,21 @@ function isDefect(value: unknown): boolean {
     (value.caseId === undefined || isString(value.caseId)) &&
     ["blocker", "critical", "major", "minor"].includes(String(value.severity)) &&
     isPriority(value.priority) &&
-    ["open", "in_progress", "fixed", "closed"].includes(String(value.status)) &&
+    ["new", "open", "in_progress", "fixed", "retest", "closed", "reopened", "rejected"].includes(String(value.status)) &&
     isString(value.createdAt) &&
     (value.attachmentIds === undefined || isStringArray(value.attachmentIds)) &&
     (value.labels === undefined || isStringArray(value.labels)) &&
     (value.description === undefined || isString(value.description)) &&
     (value.steps === undefined || isStringArray(value.steps)) &&
     (value.expected === undefined || isString(value.expected)) &&
-    (value.actual === undefined || isString(value.actual));
+    (value.actual === undefined || isString(value.actual)) &&
+    (value.updatedAt === undefined || isString(value.updatedAt)) &&
+    (value.assignee === undefined || isString(value.assignee)) &&
+    (value.reporter === undefined || isString(value.reporter)) &&
+    (value.caseIds === undefined || isStringArray(value.caseIds)) &&
+    (value.runId === undefined || isString(value.runId)) &&
+    (value.comments === undefined || (Array.isArray(value.comments) && value.comments.every((item) => isRecord(item) && isString(item.id) && isString(item.author) && isString(item.body) && isString(item.createdAt)))) &&
+    (value.history === undefined || (Array.isArray(value.history) && value.history.every((item) => isRecord(item) && isString(item.id) && isString(item.field) && isString(item.from) && isString(item.to) && isString(item.actor) && isString(item.changedAt))));
 }
 
 function isRequirement(value: unknown): boolean {
@@ -168,7 +175,7 @@ export function parseTmsProjectBackup(raw: string, targetProjectId: string): Tms
       item.suiteIds.some((id) => !suiteIds.has(id))) ||
     data.runs.some((item) => !planIds.has(item.planId) || (item.caseSnapshots !== undefined && Object.keys(item.caseSnapshots).some((id) => !item.results[id])) ||
       Object.values(item.results).some((result) => result.defectId && !defectIds.has(result.defectId))) ||
-    data.defects.some((item) => item.caseId && !caseIds.has(item.caseId))) {
+    data.defects.some((item) => (item.caseId && !caseIds.has(item.caseId)) || (item.caseIds ?? []).some((id) => !caseIds.has(id)) || (item.runId && !data.runs.some((run) => run.id === item.runId)))) {
     throw new Error("Архив содержит нарушенные связи между тест-кейсами, наборами, планами и дефектами");
   }
 
