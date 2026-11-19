@@ -6,6 +6,7 @@ export interface TmsOverviewMetrics {
   totalRequirements: number;
   coveredRequirements: number;
   coveragePercent: number;
+  automationCoveragePercent: number;
   totalRuns: number;
   passed: number;
   failed: number;
@@ -33,6 +34,7 @@ export function getTmsOverviewMetrics(data: TmsData): TmsOverviewMetrics {
     totalRequirements: requirements.length,
     coveredRequirements,
     coveragePercent: requirements.length ? Math.round(coveredRequirements / requirements.length * 100) : 0,
+    automationCoveragePercent: data.cases.filter((item) => !item.archived).length ? Math.round(data.cases.filter((item) => !item.archived && item.automationStatus === "automated").length / data.cases.filter((item) => !item.archived).length * 100) : 0,
     totalRuns: data.runs.length,
     passed: count("passed"),
     failed: count("failed"),
