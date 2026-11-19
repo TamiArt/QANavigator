@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type { TmsStorageMode } from "./tms-storage";
 
 interface Props {
@@ -18,6 +19,54 @@ export function TmsStorageControls({
   onChange,
 }: Props) {
   const disabled = loading || switching;
+  const [persistence, setPersistence] = useState<"checking" | "persistent" | "best-effort" | "unsupported">("checking");
+  const [storageUsage, setStorageUsage] = useState("");
+  const [persistenceMessage, setPersistenceMessage] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    const inspect = async () => {
+      if (typeof navigator === "undefined" || !navigator.storage) {
+        if (active) setPersistence("unsupported");
+        return;
+      }
+      try {
+        const [persistent, estimate] = await Promise.all([
+          navigator.storage.persisted(),
+          navigator.storage.estimate(),
+        ]);
+        if (!active) return;
+        setPersistence(persistent ? "persistent" : "best-effort");
+        if (typeof estimate.usage === "number") {
+          const used = (estimate.usage / (1024 * 1024)).toFixed(1);
+          const quota = typeof estimate.quota === "number" ? (estimate.quota / (1024 * 1024)).toFixed(0) : "";
+          setStorageUsage(quota ? used + " МБ из " + quota + " МБ" : used + " МБ");
+        }
+      } catch {
+        if (active) setPersistence("unsupported");
+      }
+    };
+    void inspect();
+    return () => { active = false; };
+  }, []);
+
+  const requestPersistence = async () => {
+    setPersistenceMessage("");
+    if (typeof navigator === "undefined" || !navigator.storage?.persist) {
+      setPersistence("unsupported");
+      setPersistenceMessage("Браузер не поддерживает запрос постоянного хранилища.");
+      return;
+    }
+    try {
+      const granted = await navigator.storage.persist();
+      setPersistence(granted ? "persistent" : "best-effort");
+      setPersistenceMessage(granted
+        ? "Браузер разрешил постоянное хранение данных сайта."
+        : "Браузер не разрешил постоянное хранение. Регулярно сохраняйте архивы на компьютер.");
+    } catch {
+      setPersistenceMessage("Не удалось запросить постоянное хранение. Сохраняйте резервные копии на компьютер.");
+    }
+  };
   const indexedDbDisabled = disabled || Boolean(error);
   const localStorageDisabled = disabled || (Boolean(error) && mode !== "indexedDB");
   return (
@@ -53,6 +102,15 @@ export function TmsStorageControls({
           </button>
         </div>
       </div>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2">
+        <div className="min-w-0 text-xs text-muted-foreground">
+          <p>{persistence === "persistent" ? "Постоянное хранение разрешено браузером" : persistence === "best-effort" ? "Хранение может быть очищено браузером" : persistence === "unsupported" ? "Статус защиты хранилища недоступен" : "Проверка защиты хранилища…"}</p>
+          {storageUsage && <p>Использовано: {storageUsage}</p>}
+        </div>
+        {persistence === "best-effort" && <button type="button" onClick={() => void requestPersistence()} className="rounded-lg border border-border px-3 py-2 text-xs hover:bg-muted">Запросить защиту данных</button>}
+      </div>
+      {persistenceMessage && <p role="status" className="text-xs text-muted-foreground">{persistenceMessage}</p>}
+      <p className="text-[11px] text-muted-foreground">Даже постоянное хранилище не защищает от очистки данных сайта или поломки диска. Регулярно скачивайте архивы проекта на компьютер.</p>
       {loading && <p role="status" className="text-xs text-muted-foreground">Загрузка локальной базы…</p>}
       {switching && <p role="status" className="text-xs text-muted-foreground">Перенос данных. Не закрывайте вкладку…</p>}
       {notice && <p role="status" className="text-xs text-muted-foreground">{notice}</p>}
