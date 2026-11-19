@@ -27,6 +27,26 @@ async function blobToBase64(blob: Blob): Promise<string> {
   for (let offset = 0; offset < bytes.length; offset += 0x8000) binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
   return btoa(binary);
 }
+type TmsAttachmentBackupItem = Omit<TmsAttachmentRecord, "blob"> & { data: string };
+function validateTmsBackupAttachmentLinks(projects: TmsData[] | undefined, attachments: TmsAttachmentBackupItem[]): void {
+  if (!projects && attachments.length) throw new Error("В резервной копии есть вложения без данных TMS");
+  const references = new Map<string, string>();
+  for (const project of projects ?? []) {
+    for (const item of project.cases) for (const id of item.attachmentIds ?? []) references.set(project.projectId + ":" + id, "case:" + item.id);
+    for (const item of project.defects) for (const id of item.attachmentIds ?? []) references.set(project.projectId + ":" + id, "defect:" + item.id);
+    for (const run of project.runs) for (const [caseId, result] of Object.entries(run.results)) {
+      for (const id of result.attachmentIds ?? []) references.set(project.projectId + ":" + id, "run-result:" + run.id + ":" + caseId);
+    }
+  }
+  const seen = new Set<string>();
+  for (const item of attachments) {
+    const key = item.projectId + ":" + item.id;
+    if (seen.has(key)) throw new Error("Резервная копия содержит повторяющийся ID вложения");
+    seen.add(key);
+    if (references.get(key) !== item.ownerType + ":" + item.ownerId) throw new Error("Вложение не связано с соответствующим объектом TMS");
+  }
+  if ([...references.keys()].some((key) => !seen.has(key))) throw new Error("В резервной копии отсутствует вложение, на которое ссылаются данные TMS");
+}
 function base64ToBlob(data: string, mimeType: string): Blob {
   const binary = atob(data);
   const bytes = new Uint8Array(binary.length);
@@ -95,8 +115,9 @@ export function SettingsModule() {
           });
           const mode = getInitialTmsStorageMode();
           const tmsProjects = backup.data[STORAGE_KEYS.testManagement] as TmsData[] | undefined;
-          const attachmentPayload = backup.data[TMS_ATTACHMENTS_BACKUP_KEY] as Array<Omit<TmsAttachmentRecord, "blob"> & { data: string }> | undefined;
+          const attachmentPayload = backup.data[TMS_ATTACHMENTS_BACKUP_KEY] as TmsAttachmentBackupItem[] | undefined;
           if (attachmentPayload) {
+            validateTmsBackupAttachmentLinks(tmsProjects, attachmentPayload);
             const previousAttachments = await listAllTmsAttachments();
             const nextAttachments: TmsAttachmentRecord[] = attachmentPayload.map((item) => ({
               id: item.id, projectId: item.projectId, ownerType: item.ownerType, ownerId: item.ownerId,
