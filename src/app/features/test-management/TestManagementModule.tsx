@@ -54,6 +54,7 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
  const filtered = useMemo(() => cases.filter((c) => [c.key,c.title,c.folder,c.type,c.tags.join(" ")].join(" ").toLowerCase().includes(query.toLowerCase()) && (!folderFilter || c.folder===folderFilter || c.folder.startsWith(folderFilter+"/")) && (priorityFilter==="all" || c.priority===priorityFilter) && (showArchived || !c.archived)), [cases,query,folderFilter,priorityFilter,showArchived]);
  const activeRun = data.runs.find((r) => r.id === runId) ?? data.runs[0];
  const metrics = getTmsOverviewMetrics(data);
+ const runTrend = useMemo(() => getTmsRunTrend(data.runs).slice(-10), [data.runs]);
  const resetCaseForm = () => { setTitle(""); setCaseType("Functional"); setPreconditions(""); setSteps("Открыть функциональность\nВыполнить действие"); setExpected("Система обрабатывает действие согласно требованиям"); setDescription(""); setTestData(""); setPostconditions(""); setTagsText(""); setReferencesText(""); setEstimateMinutesText(""); setCaseRequirementIds([]); setCaseSharedStepIds([]); setAutomationStatus("not_automated"); setEditingCaseId(""); };
  const addCase = () => {
   if (!title.trim()) return;
