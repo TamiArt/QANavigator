@@ -134,7 +134,8 @@ function isTmsData(value: unknown): value is TmsData {
     !Array.isArray(value.runs) || !value.runs.every(isRun) ||
     !Array.isArray(value.defects) || !value.defects.every(isDefect)) return false;
   const validRequirements = value.requirements === undefined || (Array.isArray(value.requirements) && value.requirements.every(isRequirement));
-  const validSharedSteps = value.sharedSteps === undefined || (Array.isArray(value.sharedSteps) && value.sharedSteps.every((item) => isRecord(item) && isString(item.id) && isString(item.projectId) && isString(item.key) && isString(item.name) && typeof item.version === "number" && isString(item.createdAt) && isString(item.updatedAt) && Array.isArray(item.steps) && item.steps.every((step) => isRecord(step) && isString(step.action) && isString(step.expected))));
+  const validSharedSteps = value.sharedSteps === undefined || (Array.isArray(value.sharedSteps) && value.sharedSteps.every((item) => isRecord(item) && isString(item.id) && isString(item.projectId) && isString(item.key) && isString(item.name) && typeof item.version === "number" && isString(item.createdAt) && isString(item.updatedAt) && Array.isArray(item.steps) && item.steps.every((step) => isRecord(step) && isString(step.action) && isString(step.expected)) &&
+    (item.versions === undefined || (Array.isArray(item.versions) && item.versions.every((version) => isRecord(version) && typeof version.version === "number" && isString(version.savedAt) && isString(version.name) && Array.isArray(version.steps) && version.steps.every((step) => isRecord(step) && isString(step.action) && isString(step.expected))))));
   return validRequirements && validSharedSteps;
 }
 
