@@ -184,3 +184,38 @@ test("TMS storage rejects cross-project records and duplicate project buckets", 
   assert.equal(validators.isTestManagementStorageValue([crossProject]), false);
   assert.equal(validators.isTestManagementStorageValue([project, project]), false);
 });
+
+
+test("TMS storage validates immutable plan snapshots and expanded run statuses", () => {
+  const project = {
+    version: 1,
+    projectId: "p1",
+    cases: [{
+      id: "c1", projectId: "p1", key: "QA-001", title: "Login", folder: "Auth",
+      preconditions: "", steps: [{ action: "Open", expected: "Form" }], expected: "Success",
+      priority: "P1", type: "Functional", tags: [], requirementIds: [],
+      createdAt: "now", updatedAt: "now", archived: false,
+    }],
+    suites: [],
+    plans: [{
+      id: "plan-1", projectId: "p1", name: "Release regression",
+      environment: "Staging", suiteIds: [], caseIds: ["c1"], createdAt: "now",
+    }],
+    runs: [{
+      id: "run-1", projectId: "p1", planId: "plan-1", name: "Run", startedAt: "now",
+      planSnapshot: { id: "plan-1", name: "Release regression", environment: "Staging", release: "2.4" },
+      caseSnapshots: { c1: { id: "c1", key: "QA-001", title: "Login", steps: [{ action: "Open", expected: "Form" }] } },
+      results: { c1: {
+        status: "retest", actual: "", comment: "",
+        stepResults: [{ status: "in_progress", actual: "Loading", comment: "" }],
+      } },
+    }],
+    defects: [],
+  };
+  assert.equal(validators.isTestManagementStorageValue([project]), true);
+  const invalid = {
+    ...project,
+    runs: [{ ...project.runs[0], planSnapshot: { ...project.runs[0].planSnapshot, environment: 42 } }],
+  };
+  assert.equal(validators.isTestManagementStorageValue([invalid]), false);
+});
