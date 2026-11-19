@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react";
-import { Download, Plus, Search, Trash2, Library, ClipboardList, Layers, Play, Bug } from "lucide-react";
+import { Download, Plus, Search, Trash2, Library, ClipboardList, Layers, Play, Bug, Database, HardDrive } from "lucide-react";
 import { useApp } from "../../core/app-context";
-import { useLocalStorage } from "../../hooks/use-local-storage";
-import { STORAGE_KEYS } from "../../core/constants";
+import { useTmsStorage } from "./use-tms-storage";
 import { TMS_COLLECTIONS, type TmsCase, type TmsData, type TmsRunResult } from "../../domain/test-management";
 import { downloadTextFile } from "../../lib/download";
 import { createTmsProjectBackup } from "./project-backup";
@@ -14,7 +13,7 @@ const statusLabels: Record<TmsRunResult["status"], string> = { not_run: "Не з
 export function TestManagementModule({ projectId }: { projectId: string }) {
  const { projects } = useApp();
  const project = projects.find((p) => p.id === projectId);
- const [all, setAll] = useLocalStorage<TmsData[]>(STORAGE_KEYS.testManagement, [], (v) => Array.isArray(v) && v.every((x) => x && typeof x === "object" && x.version === 1 && ["cases","suites","plans","runs","defects"].every((k) => Array.isArray((x as Record<string, unknown>)[k]))));
+ const { projects: all, saveProjects: setAll, mode: storageMode, changeMode, loading: storageLoading, error: storageError, notice: storageNotice } = useTmsStorage();
  const data = all.find((x) => x.projectId === projectId) ?? { ...empty, projectId };
  const [tab, setTab] = useState<Tab>("overview"), [query, setQuery] = useState(""), [selected, setSelected] = useState<string[]>([]);
  const [title, setTitle] = useState(""), [folder, setFolder] = useState("Общие проверки"), [priority, setPriority] = useState<TmsCase["priority"]>("P2");
