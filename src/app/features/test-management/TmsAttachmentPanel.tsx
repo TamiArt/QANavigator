@@ -20,10 +20,6 @@ export function TmsAttachmentPanel({ projectId, ownerType, ownerId, attachmentId
   const [items, setItems] = useState<TmsAttachmentInfo[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const refresh = () => listTmsAttachments(projectId, ownerType, ownerId).then((records) => {
-    setItems(records);
-    onChange(records.map((record) => record.id));
-  }).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Не удалось прочитать вложения"));
   useEffect(() => {
     let active = true;
     listTmsAttachments(projectId, ownerType, ownerId).then((records) => {
