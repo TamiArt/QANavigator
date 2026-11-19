@@ -2,14 +2,14 @@ export interface TmsStep { action: string; expected: string }
 export interface TmsCase {
  id: string; projectId: string; key: string; title: string; folder: string; preconditions: string; steps: TmsStep[];
  expected: string; priority: "P1" | "P2" | "P3"; type: string; tags: string[]; requirementIds: string[];
- createdAt: string; updatedAt: string; archived: boolean; version?: number; description?: string; testData?: string; postconditions?: string; automationStatus?: "not_automated" | "automated" | "candidate"; attachmentIds?: string[]; versions?: TmsCaseVersion[];
+ createdAt: string; updatedAt: string; archived: boolean; version?: number; description?: string; testData?: string; postconditions?: string; automationStatus?: "not_automated" | "automated" | "candidate"; references?: string[]; estimateMinutes?: number; attachmentIds?: string[]; versions?: TmsCaseVersion[];
 }
 export interface TmsCaseVersion { version: number; savedAt: string; snapshot: Omit<TmsCase, "versions"> }
 export interface TmsSuite { id: string; projectId: string; name: string; caseIds: string[]; createdAt: string; description?: string; parentId?: string; updatedAt?: string }
 export interface TmsPlan { id: string; projectId: string; name: string; environment: string; suiteIds: string[]; caseIds: string[]; createdAt: string; release?: string; build?: string; objective?: string; risks?: string; owner?: string; startDate?: string; endDate?: string; entryCriteria?: string; exitCriteria?: string }
 export interface TmsRunResult { status: "not_run" | "passed" | "failed" | "blocked" | "skipped"; actual: string; comment: string; defectId?: string; attachmentIds?: string[]; stepResults?: TmsStepResult[] }
 export interface TmsStepResult { status: "not_run" | "passed" | "failed" | "blocked" | "skipped"; actual: string; comment: string; attachmentIds?: string[] }
-export interface TmsCaseSnapshot { id: string; key: string; title: string; folder: string; preconditions: string; steps: TmsStep[]; expected: string; priority: "P1" | "P2" | "P3"; type: string; tags: string[]; requirementIds: string[]; version?: number; description?: string; testData?: string; postconditions?: string; automationStatus?: "not_automated" | "automated" | "candidate" }
+export interface TmsCaseSnapshot { id: string; key: string; title: string; folder: string; preconditions: string; steps: TmsStep[]; expected: string; priority: "P1" | "P2" | "P3"; type: string; tags: string[]; requirementIds: string[]; version?: number; description?: string; testData?: string; postconditions?: string; automationStatus?: "not_automated" | "automated" | "candidate"; references?: string[]; estimateMinutes?: number }
 export interface TmsRun { id: string; projectId: string; planId: string; name: string; startedAt: string; completedAt?: string; results: Record<string, TmsRunResult>; caseSnapshots?: Record<string, TmsCaseSnapshot>; rerunOf?: string }
 export type TmsDefectStatus = "new" | "open" | "in_progress" | "fixed" | "retest" | "closed" | "reopened" | "rejected";
 export interface TmsDefectComment { id: string; author: string; body: string; createdAt: string }
