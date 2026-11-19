@@ -104,7 +104,8 @@ function isRun(value: unknown): boolean {
     (result.assignee === undefined || isString(result.assignee)) &&
     (result.stepResults === undefined || (Array.isArray(result.stepResults) && result.stepResults.every((step) =>
       isRecord(step) && ["not_run", "in_progress", "passed", "failed", "blocked", "retest", "skipped"].includes(String(step.status)) &&
-      isString(step.actual) && isString(step.comment)))) &&
+      isString(step.actual) && isString(step.comment) &&
+      (step.attachmentIds === undefined || isStringArray(step.attachmentIds))))) &&
     (result.defectId === undefined || isString(result.defectId)) &&
     (result.attachmentIds === undefined || isStringArray(result.attachmentIds)));
   const validSnapshots = value.caseSnapshots === undefined || (isRecord(value.caseSnapshots) &&
