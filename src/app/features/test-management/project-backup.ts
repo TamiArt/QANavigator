@@ -196,6 +196,13 @@ export function parseTmsProjectBackup(raw: string, targetProjectId: string): Tms
   }
 
   const data = parsed.testManagement;
+  const sourceProjectId = sourceProject.id;
+  const projectCollections = [data.cases, data.suites, data.plans, data.runs, data.defects,
+    ...(data.requirements ?? []), ...(data.sharedSteps ?? [])];
+  if ((data.projectId !== undefined && data.projectId !== sourceProjectId) ||
+    projectCollections.some((item) => item.projectId !== sourceProjectId)) {
+    throw new Error("Архив содержит записи, принадлежащие другому проекту");
+  }
   const caseIds = new Set(data.cases.map((item) => item.id));
   const suiteIds = new Set(data.suites.map((item) => item.id));
   const planIds = new Set(data.plans.map((item) => item.id));
@@ -243,6 +250,11 @@ export function parseTmsProjectArchive(raw: string, targetProjectId: string): {
   const rawAttachments = parsed.attachments === undefined ? [] : parsed.attachments;
   if (!Array.isArray(rawAttachments) || !rawAttachments.every(isAttachmentArchive)) {
     throw new Error("Архив содержит некорректные вложения");
+  }
+  const sourceProject = isRecord(parsed.sourceProject) ? parsed.sourceProject : parsed.project;
+  if (!isRecord(sourceProject) || !isString(sourceProject.id) ||
+    rawAttachments.some((item) => item.projectId !== sourceProject.id)) {
+    throw new Error("Вложения архива принадлежат другому проекту");
   }
   const attachments = rawAttachments.map((item) => ({ ...item, projectId: targetProjectId }));
   const attachmentIds = new Set<string>();
