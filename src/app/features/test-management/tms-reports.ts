@@ -11,6 +11,8 @@ export interface TmsOverviewMetrics {
   passed: number;
   failed: number;
   blocked: number;
+  retest: number;
+  inProgress: number;
   skipped: number;
   notRun: number;
   passRate: number;
@@ -27,7 +29,7 @@ export function getTmsOverviewMetrics(data: TmsData): TmsOverviewMetrics {
   const latestRun = data.runs[0];
   const results = latestRun ? Object.values(latestRun.results) : [];
   const count = (status: string) => results.filter((result) => result.status === status).length;
-  const executed = results.filter((result) => result.status !== "not_run").length;
+  const executed = results.filter((result) => !["not_run", "in_progress", "retest"].includes(result.status)).length;
   return {
     totalCases: data.cases.length,
     activeCases: data.cases.filter((item) => !item.archived).length,
@@ -39,6 +41,8 @@ export function getTmsOverviewMetrics(data: TmsData): TmsOverviewMetrics {
     passed: count("passed"),
     failed: count("failed"),
     blocked: count("blocked"),
+    retest: count("retest"),
+    inProgress: count("in_progress"),
     skipped: count("skipped"),
     notRun: count("not_run"),
     passRate: executed ? Math.round(count("passed") / executed * 100) : 0,
