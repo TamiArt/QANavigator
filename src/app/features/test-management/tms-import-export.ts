@@ -69,7 +69,7 @@ function parseEstimateMinutes(value: string): number | undefined {
   if (!normalized) return undefined;
   const numeric = Number(normalized);
   if (Number.isFinite(numeric)) return Math.max(0, numeric);
-  const matches = Array.from(normalized.matchAll(/(\\d+(?:\\.\\d+)?)\\s*(h|hr|hrs|hour|hours|m|min|mins|minute|minutes|s|sec|secs|second|seconds)/g));
+  const matches = Array.from(normalized.matchAll(/(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours|m|min|mins|minute|minutes|s|sec|secs|second|seconds)/g));
   if (!matches.length) return undefined;
   const minutes = matches.reduce((total, match) => {
     const amount = Number(match[1]);
@@ -104,7 +104,7 @@ export function parseTmsCasesCsv(
     return index >= 0 ? row[index] ?? "" : "";
   };
   const validRequirements = new Set(validRequirementIds);
-  let nextNumber = existingCases.reduce((max,item)=>Math.max(max,Number(/^QA-(\\d+)$/.exec(item.key)?.[1]??0)),0);
+  let nextNumber = existingCases.reduce((max,item)=>Math.max(max,Number(/^QA-(\d+)$/.exec(item.key)?.[1]??0)),0);
   const imported: TmsCase[] = [];
   for (const row of rows.slice(1)) {
     const title = row[titleIndex]?.trim();
