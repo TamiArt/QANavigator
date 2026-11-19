@@ -222,9 +222,20 @@ function isTmsSharedStep(value: unknown): boolean {
     version.steps.every((step) => isRecord(step) && typeof step.action === "string" && typeof step.expected === "string"));
 }
 
+function isTmsMilestone(value: unknown): boolean {
+  return isRecord(value) && typeof value.id === "string" && typeof value.projectId === "string" &&
+    typeof value.name === "string" && ["planned", "active", "completed"].includes(String(value.status)) &&
+    typeof value.createdAt === "string" && typeof value.updatedAt === "string" &&
+    (value.description === undefined || typeof value.description === "string") &&
+    (value.startDate === undefined || typeof value.startDate === "string") &&
+    (value.endDate === undefined || typeof value.endDate === "string");
+}
+
 function isTmsPlanSnapshot(value: unknown): boolean {
   if (!isRecord(value) || typeof value.id !== "string" || typeof value.name !== "string" ||
-    typeof value.environment !== "string") return false;
+    typeof value.environment !== "string" ||
+    (value.milestoneId !== undefined && typeof value.milestoneId !== "string") ||
+    (value.milestoneName !== undefined && typeof value.milestoneName !== "string")) return false;
   return ["release", "build", "objective", "risks", "owner", "startDate", "endDate", "entryCriteria", "exitCriteria"]
     .every((field) => value[field] === undefined || typeof value[field] === "string");
 }
@@ -266,6 +277,7 @@ function isTmsProject(value: unknown): boolean {
     (item.parentId === undefined || (suiteIds.has(item.parentId) && item.parentId !== item.id)))) return false;
   if (!value.plans.every((item) => isRecord(item) && typeof item.id === "string" &&
     typeof item.projectId === "string" && typeof item.name === "string" && typeof item.environment === "string" &&
+    (item.milestoneId === undefined || milestoneIds.has(item.milestoneId)) &&
     ["release", "build", "objective", "risks", "owner", "startDate", "endDate", "entryCriteria", "exitCriteria"].every((key) => item[key] === undefined || typeof item[key] === "string") &&
     isStringArray(item.suiteIds) && item.suiteIds.every((id) => suiteIds.has(id)) &&
     isStringArray(item.caseIds) && item.caseIds.every((id) => caseIds.has(id)))) return false;
