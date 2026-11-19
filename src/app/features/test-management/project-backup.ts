@@ -71,12 +71,21 @@ function isRun(value: unknown): boolean {
     !isString(value.planId) || !isString(value.name) || !isString(value.startedAt) ||
     !isRecord(value.results)) return false;
 
-  return Object.values(value.results).every((result) =>
+  const validResults = Object.values(value.results).every((result) =>
     isRecord(result) &&
     ["not_run", "passed", "failed", "blocked", "skipped"].includes(String(result.status)) &&
     isString(result.actual) && isString(result.comment) &&
+    (result.stepResults === undefined || (Array.isArray(result.stepResults) && result.stepResults.every((step) =>
+      isRecord(step) && ["not_run", "passed", "failed", "blocked", "skipped"].includes(String(step.status)) &&
+      isString(step.actual) && isString(step.comment)))) &&
     (result.defectId === undefined || isString(result.defectId)) &&
     (result.attachmentIds === undefined || isStringArray(result.attachmentIds)));
+  const validSnapshots = value.caseSnapshots === undefined || (isRecord(value.caseSnapshots) &&
+    Object.values(value.caseSnapshots).every((snapshot) => isRecord(snapshot) &&
+      isString(snapshot.id) && isString(snapshot.key) && isString(snapshot.title) &&
+      Array.isArray(snapshot.steps) && snapshot.steps.every((step) =>
+        isRecord(step) && isString(step.action) && isString(step.expected))));
+  return validResults && validSnapshots;
 }
 
 function isDefect(value: unknown): boolean {
