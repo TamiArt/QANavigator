@@ -191,6 +191,7 @@ function isTmsCase(value: unknown): boolean {
     (value.automationStatus === undefined || ["not_automated", "automated", "candidate"].includes(String(value.automationStatus))) &&
     (value.references === undefined || isStringArray(value.references)) &&
     (value.estimateMinutes === undefined || (typeof value.estimateMinutes === "number" && value.estimateMinutes >= 0)) &&
+    (value.sharedStepIds === undefined || isStringArray(value.sharedStepIds)) &&
     (value.versions === undefined || (Array.isArray(value.versions) && value.versions.every((version) =>
       isRecord(version) && typeof version.version === "number" && typeof version.savedAt === "string" &&
       isRecord(version.snapshot))));
@@ -208,6 +209,7 @@ function isTmsProject(value: unknown): boolean {
   if (!isRecord(value) || value.version !== 1 || typeof value.projectId !== "string") return false;
   if (!Array.isArray(value.cases) || !value.cases.every(isTmsCase) ||
     (value.requirements !== undefined && (!Array.isArray(value.requirements) || !value.requirements.every((item) => isRecord(item) && typeof item.id === "string" && typeof item.projectId === "string" && typeof item.key === "string" && typeof item.title === "string" && typeof item.description === "string" && typeof item.acceptanceCriteria === "string" && PRIORITIES.includes(item.priority as (typeof PRIORITIES)[number]) && ["draft", "approved", "implemented", "verified", "deprecated"].includes(String(item.status)) && typeof item.createdAt === "string" && typeof item.updatedAt === "string"))) ||
+    (value.sharedSteps !== undefined && (!Array.isArray(value.sharedSteps) || !value.sharedSteps.every((item) => isRecord(item) && typeof item.id === "string" && typeof item.projectId === "string" && typeof item.key === "string" && typeof item.name === "string" && typeof item.version === "number" && typeof item.createdAt === "string" && typeof item.updatedAt === "string" && Array.isArray(item.steps) && item.steps.every((step) => isRecord(step) && typeof step.action === "string" && typeof step.expected === "string")))) ||
     !Array.isArray(value.suites) || !Array.isArray(value.plans) ||
     !Array.isArray(value.runs) || !Array.isArray(value.defects)) return false;
   const hasUniqueField = (items: unknown[], field: string) => new Set(items.map((item) => (item as Record<string, unknown>)[field])).size === items.length;
@@ -221,6 +223,8 @@ function isTmsProject(value: unknown): boolean {
   const defectIds = new Set(value.defects.map((item) => (item as Record<string, unknown>).id));
   const runs = value.runs as unknown[];
   const requirementIds = new Set(Array.isArray(value.requirements) ? value.requirements.map((item) => (item as Record<string, unknown>).id) : []);
+  const sharedStepIds = new Set(Array.isArray(value.sharedSteps) ? value.sharedSteps.map((item) => (item as Record<string, unknown>).id) : []);
+  if (value.sharedSteps !== undefined && value.cases.some((item) => (item as Record<string, unknown>).sharedStepIds instanceof Array && ((item as Record<string, unknown>).sharedStepIds as string[]).some((id) => !sharedStepIds.has(id)))) return false;
   if (value.requirements !== undefined && value.cases.some((item) => (item as Record<string, unknown>).requirementIds instanceof Array && ((item as Record<string, unknown>).requirementIds as string[]).some((id) => !requirementIds.has(id)))) return false;
   if (!value.suites.every((item) => isRecord(item) && typeof item.id === "string" &&
     typeof item.projectId === "string" && typeof item.name === "string" &&
