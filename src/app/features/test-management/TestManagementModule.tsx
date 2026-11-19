@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Download, Plus, Search, Trash2, Library, ClipboardList, Layers, Play, Bug, Database, HardDrive, Pencil, Copy, Archive, BarChart3, FileSpreadsheet } from "lucide-react";
 import { useApp } from "../../core/app-context";
 import { useTmsStorage } from "./use-tms-storage";
-import { TMS_COLLECTIONS, type TmsCase, type TmsCaseVersion, type TmsData, type TmsRequirement, type TmsRun, type TmsRunResult, type TmsStepResult, type TmsSharedStep } from "../../domain/test-management";
+import { TMS_COLLECTIONS, type TmsCase, type TmsCaseVersion, type TmsData, type TmsRequirement, type TmsRun, type TmsRunResult, type TmsStepResult, type TmsSharedStep, type TmsSharedStepVersion } from "../../domain/test-management";
 import { downloadTextFile } from "../../lib/download";
 import { createTmsProjectBackup } from "./project-backup";
 import { TmsAttachmentPanel } from "./TmsAttachmentPanel";
@@ -163,7 +163,7 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
   if(!steps.length)return;
   save({...data,sharedSteps:(data.sharedSteps??[]).map((current)=>current.id===item.id?reviseTmsSharedStep(current,name.trim()||current.name,steps,now()):current)});
  };
- const restoreSharedStepVersion = (item:TmsSharedStep,version:TmsSharedStep["versions"] extends (infer V)[]|undefined?V:never) => {
+ const restoreSharedStepVersion = (item:TmsSharedStep,version:TmsSharedStepVersion) => {
   const restored=reviseTmsSharedStep(item,version.name,version.steps,now());
   save({...data,sharedSteps:(data.sharedSteps??[]).map((current)=>current.id===item.id?restored:current)});
  };
