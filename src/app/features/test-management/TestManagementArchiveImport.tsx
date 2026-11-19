@@ -14,7 +14,7 @@ function decodeAttachment(data: string, mimeType: string): Blob {
 
 export function TestManagementArchiveImport({ projectId }: { projectId: string }) {
   const [message, setMessage] = useState("");
-  const { projects, mode, loading } = useTmsStorage();
+  const { projects, mode, loading, error: storageError } = useTmsStorage();
 
   const importArchive = () => {
     setMessage("");
@@ -27,6 +27,7 @@ export function TestManagementArchiveImport({ projectId }: { projectId: string }
 
       try {
         if (loading) throw new Error("Дождитесь загрузки локальной базы Test Management");
+        if (storageError) throw new Error("Импорт остановлен: локальное хранилище находится в состоянии ошибки. Сначала восстановите доступ к данным.");
         const archive = parseTmsProjectArchive(await file.text(), projectId);
         if (!window.confirm(
           `Импорт заменит тест-кейсы, наборы, планы, прогоны, дефекты и вложения текущего проекта. В архиве вложений: ${archive.attachments.length}. Продолжить?`,
@@ -66,11 +67,12 @@ export function TestManagementArchiveImport({ projectId }: { projectId: string }
       <button
         type="button"
         onClick={importArchive}
-        disabled={loading}
+        disabled={loading || Boolean(storageError)}
         className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted disabled:opacity-50"
       >
         <Upload className="h-4 w-4" /> Импорт проекта
       </button>
+      {storageError && <p role="alert" className="w-full text-right text-xs text-destructive">{storageError}</p>}
       {message && <p role="alert" className="w-full text-right text-xs text-destructive">{message}</p>}
     </div>
   );
