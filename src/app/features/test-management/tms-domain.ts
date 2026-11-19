@@ -2,7 +2,7 @@ import type { TmsCase, TmsCaseSnapshot, TmsPlan, TmsRun, TmsRunResult } from "..
 
 export type TmsCaseEditableFields = Pick<TmsCase,
   "title" | "folder" | "preconditions" | "steps" | "expected" | "priority" |
-  "description" | "testData" | "postconditions" | "tags" | "requirementIds"
+  "description" | "testData" | "postconditions" | "automationStatus" | "tags" | "requirementIds"
 >;
 
 export function reviseTmsCase(
@@ -38,6 +38,7 @@ export function snapshotTmsCase(item: TmsCase): TmsCaseSnapshot {
     description: item.description,
     testData: item.testData,
     postconditions: item.postconditions,
+    automationStatus: item.automationStatus,
   };
 }
 
