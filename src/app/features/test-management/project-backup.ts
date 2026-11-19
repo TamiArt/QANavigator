@@ -89,6 +89,7 @@ function isRun(value: unknown): boolean {
     isRecord(result) &&
     ["not_run", "in_progress", "passed", "failed", "blocked", "retest", "skipped"].includes(String(result.status)) &&
     isString(result.actual) && isString(result.comment) &&
+    (result.assignee === undefined || isString(result.assignee)) &&
     (result.stepResults === undefined || (Array.isArray(result.stepResults) && result.stepResults.every((step) =>
       isRecord(step) && ["not_run", "in_progress", "passed", "failed", "blocked", "retest", "skipped"].includes(String(step.status)) &&
       isString(step.actual) && isString(step.comment)))) &&
