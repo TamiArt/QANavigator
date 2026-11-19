@@ -182,3 +182,18 @@ test("project archives preserve plan snapshots and expanded execution statuses",
   assert.equal(restored.runs[0].results["case-1"].status, "retest");
   assert.equal(restored.runs[0].results["case-1"].stepResults[0].status, "in_progress");
 });
+
+
+test("project archive rejects entities owned by a different source project", () => {
+  const data = {
+    ...emptyData,
+    cases: [{
+      id: "case-1", projectId: "unexpected-project", key: "QA-001", title: "Login",
+      folder: "Auth", preconditions: "", steps: [], expected: "Success",
+      priority: "P1", type: "Functional", tags: [], requirementIds: [],
+      createdAt: "now", updatedAt: "now", archived: false,
+    }],
+  };
+  const archive = createTmsProjectBackup({ id: "source-project", name: "Source" }, data, "now");
+  assert.throws(() => parseTmsProjectBackup(JSON.stringify(archive), "target-project"), /принадлежащие другому проекту/);
+});
