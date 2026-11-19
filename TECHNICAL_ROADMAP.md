@@ -123,6 +123,9 @@ Verification baseline:
 - Keep the application as a static browser application; no backend, hosted database, user account or paid cloud storage is required for TMS.
 - Existing TMS records are migrated once from the established localStorage key into IndexedDB. The legacy localStorage copy is not deleted; users can switch back in the TMS UI. If IndexedDB cannot be opened, the user can explicitly fall back to the retained legacy snapshot.
 - Switching from IndexedDB back to localStorage is completed only after the full data set has been written successfully; the IndexedDB copy is retained. Large data sets that exceed localStorage quota therefore remain in IndexedDB.
+- Storage mode can be changed from the TMS workspace. Corrupt legacy JSON and invalid project data stop migration instead of being silently replaced with an empty list; every read/write validates project boundaries and entity references.
+- TMS editing is blocked while the active store is loading or in an error state. A failed persistence operation restores the last successfully persisted in-memory snapshot rather than leaving unsaved optimistic state visible.
+- The legacy mode covers structured project records; binary evidence remains in IndexedDB because localStorage cannot safely store file blobs. Returning to localStorage does not delete the IndexedDB evidence store.
 - Project archives include structured data and binary evidence. Import validates schema, entity references, attachment ownership and file sizes before replacing the selected project's TMS data.
 - Full-workspace backup/restore includes TMS records and binary evidence; project and full-workspace archives are stored as files by the user.
 - Browser storage is tied to the browser profile and may be cleared by the browser; user-managed backup files remain the recovery and device-transfer mechanism.
