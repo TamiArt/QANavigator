@@ -109,6 +109,14 @@ Verification baseline:
 - Vercel deployment status is independent infrastructure evidence and must not be treated as a substitute for repository verification;
 - GitHub Actions results must be checked for the current head before declaring a milestone complete.
 
+## 3.1 Test Management / TMS milestone
+
+- Product specification: `docs/TEST_MANAGEMENT.md`.
+- Initial local-first TMS slice is embedded in the selected project workspace: test cases, suites, plans/runs, execution statuses, defect register, starter collections and JSON export/backup.
+- Storage key: `qa_navigator_test_management_v1`; included in backup/import validation.
+- This is a foundation, not a claim of full TestRail/Test IT parity. Case versioning, step-level evidence, requirements traceability, advanced reports, migration adapters and team collaboration remain planned.
+- Preserve immutable run snapshots as the model evolves; editing a case must not rewrite historical execution results.
+
 ## 4. Mandatory development rules
 
 ### Git
