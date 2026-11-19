@@ -114,7 +114,7 @@ export function parseTmsCasesCsv(
       requirementIds: requestedRequirements.filter((id) => validRequirements.has(id)),
       references: parseArray(value(row, "references", "external references", "ссылки")),
       estimateMinutes: Number(value(row, "estimate minutes", "estimate", "effort", "оценка времени")) || undefined,
-      automationStatus: (() => { const status=value(row,"automation status","automation type","автоматизация").toLowerCase(); return status.includes("autom") ? "automated" as const : status.includes("candidate") || status.includes("to be") ? "candidate" as const : "not_automated" as const; })(),
+      automationStatus: (() => { const status=value(row,"automation status","automation type","автоматизация").toLowerCase(); return status.includes("candidate") || status.includes("to be") || status.includes("planned") ? "candidate" as const : status.includes("not") || status.includes("manual") ? "not_automated" as const : status.includes("autom") ? "automated" as const : "not_automated" as const; })(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       archived: false,
