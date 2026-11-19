@@ -70,11 +70,23 @@ function isPlan(value: unknown): boolean {
   return isRecord(value) && isString(value.id) && isString(value.projectId) &&
     isString(value.name) && isString(value.environment) &&
     isStringArray(value.suiteIds) && isStringArray(value.caseIds) && isString(value.createdAt) &&
+    (value.milestoneId === undefined || isString(value.milestoneId)) &&
     ["release", "build", "objective", "risks", "owner", "startDate", "endDate", "entryCriteria", "exitCriteria"].every((key) => value[key] === undefined || isString(value[key]));
 }
 
+function isMilestone(value: unknown): boolean {
+  return isRecord(value) && isString(value.id) && isString(value.projectId) &&
+    isString(value.name) && ["planned", "active", "completed"].includes(String(value.status)) &&
+    isString(value.createdAt) && isString(value.updatedAt) &&
+    (value.description === undefined || isString(value.description)) &&
+    (value.startDate === undefined || isString(value.startDate)) &&
+    (value.endDate === undefined || isString(value.endDate));
+}
+
 function isPlanSnapshot(value: unknown): boolean {
-  if (!isRecord(value) || !isString(value.id) || !isString(value.name) || !isString(value.environment)) return false;
+  if (!isRecord(value) || !isString(value.id) || !isString(value.name) || !isString(value.environment) ||
+    (value.milestoneId !== undefined && !isString(value.milestoneId)) ||
+    (value.milestoneName !== undefined && !isString(value.milestoneName))) return false;
   const snapshot = value;
   return ["release", "build", "objective", "risks", "owner", "startDate", "endDate", "entryCriteria", "exitCriteria"]
     .every((field) => snapshot[field] === undefined || isString(snapshot[field]));
@@ -157,7 +169,8 @@ function isTmsData(value: unknown): value is TmsData {
     !Array.isArray(value.suites) || !value.suites.every(isSuite) ||
     !Array.isArray(value.plans) || !value.plans.every(isPlan) ||
     !Array.isArray(value.runs) || !value.runs.every(isRun) ||
-    !Array.isArray(value.defects) || !value.defects.every(isDefect)) return false;
+    !Array.isArray(value.defects) || !value.defects.every(isDefect) ||
+    (value.milestones !== undefined && (!Array.isArray(value.milestones) || !value.milestones.every(isMilestone)))) return false;
   const validRequirements = value.requirements === undefined ||
     (Array.isArray(value.requirements) && value.requirements.every(isRequirement));
   const validSharedSteps = value.sharedSteps === undefined ||
@@ -207,6 +220,7 @@ export function parseTmsProjectBackup(raw: string, targetProjectId: string): Tms
   const caseIds = new Set(data.cases.map((item) => item.id));
   const suiteIds = new Set(data.suites.map((item) => item.id));
   const planIds = new Set(data.plans.map((item) => item.id));
+  const milestoneIds = new Set((data.milestones ?? []).map((item) => item.id));
   const defectIds = new Set(data.defects.map((item) => item.id));
   const requirementIds = new Set((data.requirements ?? []).map((item) => item.id));
   const sharedStepIds = new Set((data.sharedSteps ?? []).map((item) => item.id));
@@ -215,7 +229,8 @@ export function parseTmsProjectBackup(raw: string, targetProjectId: string): Tms
     (data.sharedSteps !== undefined && data.cases.some((item) => (item.sharedStepIds ?? []).some((id) => !sharedStepIds.has(id)))) ||
     data.suites.some((item) => item.caseIds.some((id) => !caseIds.has(id)) || (item.parentId !== undefined && (!suiteIds.has(item.parentId) || item.parentId === item.id))) ||
     data.plans.some((item) => item.caseIds.some((id) => !caseIds.has(id)) ||
-      item.suiteIds.some((id) => !suiteIds.has(id))) ||
+      item.suiteIds.some((id) => !suiteIds.has(id)) ||
+      (item.milestoneId !== undefined && !milestoneIds.has(item.milestoneId))) ||
     data.runs.some((item) => !planIds.has(item.planId) || (item.caseSnapshots !== undefined && Object.keys(item.caseSnapshots).some((id) => !item.results[id])) ||
       Object.values(item.results).some((result) => result.defectId && !defectIds.has(result.defectId))) ||
     data.defects.some((item) => (item.caseId && !caseIds.has(item.caseId)) || (item.caseIds ?? []).some((id) => !caseIds.has(id)) || (item.runId && !data.runs.some((run) => run.id === item.runId)))) {
@@ -230,6 +245,7 @@ export function parseTmsProjectBackup(raw: string, targetProjectId: string): Tms
     plans: data.plans.map((item) => ({ ...item, projectId: targetProjectId })),
     runs: data.runs.map((item) => ({ ...item, projectId: targetProjectId })),
     defects: data.defects.map((item) => ({ ...item, projectId: targetProjectId })),
+    milestones: (data.milestones ?? []).map((item) => ({ ...item, projectId: targetProjectId })),
   };
 }
 
