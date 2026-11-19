@@ -80,10 +80,10 @@ function isRun(value: unknown): boolean {
 
   const validResults = Object.values(value.results).every((result) =>
     isRecord(result) &&
-    ["not_run", "passed", "failed", "blocked", "skipped"].includes(String(result.status)) &&
+    ["not_run", "in_progress", "passed", "failed", "blocked", "retest", "skipped"].includes(String(result.status)) &&
     isString(result.actual) && isString(result.comment) &&
     (result.stepResults === undefined || (Array.isArray(result.stepResults) && result.stepResults.every((step) =>
-      isRecord(step) && ["not_run", "passed", "failed", "blocked", "skipped"].includes(String(step.status)) &&
+      isRecord(step) && ["not_run", "in_progress", "passed", "failed", "blocked", "retest", "skipped"].includes(String(step.status)) &&
       isString(step.actual) && isString(step.comment)))) &&
     (result.defectId === undefined || isString(result.defectId)) &&
     (result.attachmentIds === undefined || isStringArray(result.attachmentIds)));
