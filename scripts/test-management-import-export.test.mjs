@@ -49,3 +49,9 @@ test("TMS CSV importer rejects missing title column and empty records", () => {
   assert.throws(() => parseTmsCasesCsv("Folder,Priority\nAuth,P1", "p1", [], []), /Title/);
   assert.throws(() => parseTmsCasesCsv("Title,Priority\n,P1", "p1", [], []), /нет строк/);
 });
+
+test("CSV automation type mapping distinguishes manual, candidate and automated", () => {
+  const csv = "Title,Automation Type\nManual case,Manual\nCandidate case,To be automated\nAutomated case,Automated";
+  const imported = parseTmsCasesCsv(csv, "p1", [], []);
+  assert.deepEqual(Array.from(imported.map((item) => item.automationStatus)), ["not_automated", "candidate", "automated"]);
+});
