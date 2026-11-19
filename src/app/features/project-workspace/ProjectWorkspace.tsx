@@ -2,6 +2,7 @@ import { useState } from "react";
 import { BriefcaseBusiness, Plus, Trash2 } from "lucide-react";
 import { useApp } from "../../core/app-context";
 import { createProject as buildProject, type ProductType, type QAProject } from "../../domain/project";
+import { TestManagementModule } from "../test-management/TestManagementModule";
 
 const productNames: Record<ProductType, string> = {
   web: "Web",
@@ -162,12 +163,8 @@ export function ProjectWorkspace() {
               ) : (
                 <p className="mt-1 text-sm text-muted-foreground">Риски пока не определены.</p>
               )}
-              <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-                <div className="rounded-lg bg-muted p-3">Требования<br /><b>0</b></div>
-                <div className="rounded-lg bg-muted p-3">Проверки<br /><b>0</b></div>
-                <div className="rounded-lg bg-muted p-3">Дефекты<br /><b>0</b></div>
-              </div>
             </section>
+            <TestManagementModule projectId={active.id} />
           )}
         </div>
       )}
