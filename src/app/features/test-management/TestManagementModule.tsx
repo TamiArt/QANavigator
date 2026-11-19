@@ -33,6 +33,7 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
  const [suiteName, setSuiteName] = useState(""), [planName, setPlanName] = useState(""), [environment, setEnvironment] = useState(project?.environment || "Staging");
  const [release, setRelease] = useState(""), [build, setBuild] = useState(""), [planObjective, setPlanObjective] = useState(""), [planRisks, setPlanRisks] = useState(""), [planOwner, setPlanOwner] = useState(""), [entryCriteria, setEntryCriteria] = useState(""), [exitCriteria, setExitCriteria] = useState(""), [planStartDate, setPlanStartDate] = useState(""), [planEndDate, setPlanEndDate] = useState("");
  const [runId, setRunId] = useState(""), [defectTitle, setDefectTitle] = useState(""), [defectCaseId, setDefectCaseId] = useState("");
+ const [defectDescription, setDefectDescription] = useState(""), [defectSteps, setDefectSteps] = useState(""), [defectExpected, setDefectExpected] = useState(""), [defectActual, setDefectActual] = useState(""), [defectAssignee, setDefectAssignee] = useState(""), [defectLabels, setDefectLabels] = useState(""), [defectSeverity, setDefectSeverity] = useState<TmsData["defects"][number]["severity"]>("major"), [defectPriority, setDefectPriority] = useState<TmsCase["priority"]>("P2"), [defectCommentText, setDefectCommentText] = useState("");
  const save = (next: TmsData) => setAll([...all.filter((x) => x.projectId !== projectId), { ...next, projectId, version: 1 }]);
  const cases = data.cases;
  const filtered = useMemo(() => cases.filter((c) => [c.key,c.title,c.folder,c.tags.join(" ")].join(" ").toLowerCase().includes(query.toLowerCase())), [cases,query]);
@@ -104,8 +105,25 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
  };
  const addDefect = () => {
   if(!defectTitle.trim())return;
-  const defect={id:uid(),projectId,key:"BUG-"+String(data.defects.length+1).padStart(3,"0"),title:defectTitle.trim(),caseId:defectCaseId||undefined,severity:"major" as const,priority:"P2" as const,status:"open" as const,createdAt:now()};
-  save({...data,defects:[defect,...data.defects]});setDefectTitle("");setDefectCaseId("");
+  const linkedCase = cases.find((item)=>item.id===defectCaseId);
+  const linkedRun = activeRun && defectCaseId ? activeRun : undefined;
+  const defect = {
+   id:uid(),projectId,key:"BUG-"+String(data.defects.length+1).padStart(3,"0"),title:defectTitle.trim(),
+   caseId:defectCaseId||undefined,caseIds:defectCaseId?[defectCaseId]:[],severity:defectSeverity,priority:defectPriority,status:"new" as const,
+   createdAt:now(),updatedAt:now(),description:defectDescription,
+   steps:defectSteps.split("\n").map((step)=>step.trim()).filter(Boolean),
+   expected:defectExpected||linkedCase?.expected||"",actual:defectActual||linkedRun?.results[defectCaseId]?.actual||"",
+   environment,assignee:defectAssignee,labels:defectLabels.split(",").map((label)=>label.trim()).filter(Boolean),
+   runId:linkedRun?.id,comments:[],history:[],
+  };
+  save({...data,defects:[defect,...data.defects]});
+  setDefectTitle("");setDefectCaseId("");setDefectDescription("");setDefectSteps("");setDefectExpected("");setDefectActual("");setDefectAssignee("");setDefectLabels("");
+ };
+ const changeDefectStatus = (id:string,status:TmsData["defects"][number]["status"]) => save({...data,defects:data.defects.map((defect)=>defect.id===id?{...defect,status,updatedAt:now(),history:[...(defect.history??[]),{id:uid(),field:"status",from:defect.status,to:status,actor:"Локальный пользователь",changedAt:now()}]}:defect)});
+ const addDefectComment = (id:string) => {
+  if(!defectCommentText.trim())return;
+  save({...data,defects:data.defects.map((defect)=>defect.id===id?{...defect,updatedAt:now(),comments:[...(defect.comments??[]),{id:uid(),author:"Локальный пользователь",body:defectCommentText.trim(),createdAt:now()}]}:defect)});
+  setDefectCommentText("");
  };
  const exportData=async()=>{setArchiveMessage("");try{const records=await listProjectTmsAttachments(projectId);const total=records.reduce((sum,item)=>sum+item.size,0);if(total>50*1024*1024)throw new Error("Общий размер вложений превышает лимит архива 50 МБ");const attachments=await Promise.all(records.map(async(item)=>({id:item.id,projectId:item.projectId,ownerType:item.ownerType,ownerId:item.ownerId,name:item.name,mimeType:item.mimeType,size:item.size,createdAt:item.createdAt,data:await blobToBase64(item.blob)})));downloadTextFile(JSON.stringify(createTmsProjectBackup({id:projectId,name:project?.name??"Project"},data,now(),attachments),null,2),"qa-project-test-management.json","application/json");}catch(error){setArchiveMessage(error instanceof Error?error.message:"Не удалось создать архив проекта");}};
  const tabs:{id:Tab;label:string;icon:typeof Layers}[]=[{id:"overview",label:"Обзор",icon:Layers},{id:"cases",label:"Тест-кейсы",icon:ClipboardList},{id:"suites",label:"Наборы",icon:Layers},{id:"runs",label:"Планы и прогоны",icon:Play},{id:"collections",label:"Базовые коллекции",icon:Library},{id:"defects",label:"Дефекты",icon:Bug},{id:"requirements",label:"Требования",icon:ClipboardList}];
