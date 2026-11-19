@@ -15,6 +15,7 @@ type Tab = "overview" | "cases" | "suites" | "runs" | "collections" | "defects" 
 const empty: TmsData = { version: 1, cases: [], suites: [], plans: [], runs: [], defects: [], requirements: [] };
 const uid = () => crypto.randomUUID();
 const now = () => new Date().toISOString();
+const nextKey = (prefix: string, keys: string[]) => prefix + "-" + String(keys.reduce((max,key)=>{const match=new RegExp("^"+prefix+"-(\\d+)$").exec(key);return match?Math.max(max,Number(match[1])):max;},0)+1).padStart(3,"0");
 async function blobToBase64(blob: Blob): Promise<string> {
  const bytes = new Uint8Array(await blob.arrayBuffer()); let binary = "";
  for (let offset = 0; offset < bytes.length; offset += 0x8000) binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
@@ -58,7 +59,7 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
    const updated = reviseTmsCase(existing, { title: title.trim(), folder, preconditions, steps: nextSteps, expected, priority, description, testData, postconditions, tags, requirementIds: caseRequirementIds }, now());
    save({ ...data, cases: cases.map((item) => item.id === editingCaseId ? updated : item) });
   } else {
-   const item: TmsCase = { id: uid(), projectId, key: "QA-" + String(cases.length + 1).padStart(3,"0"), title: title.trim(), folder, preconditions,
+   const item: TmsCase = { id: uid(), projectId, key: nextKey("QA",cases.map((item)=>item.key)), title: title.trim(), folder, preconditions,
     steps: nextSteps, expected, priority, type: "Functional", tags, requirementIds: caseRequirementIds, createdAt: now(), updatedAt: now(), archived: false, version: 1, description, testData, postconditions };
    save({ ...data, cases: [...cases,item] });
   }
@@ -100,6 +101,7 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
  const createPlan = () => {
   if (!planName.trim() || !cases.some((item)=>!item.archived)) return;
   const caseIds = selected.length ? selected.filter((id)=>cases.some((item)=>item.id===id&&!item.archived)) : cases.filter((item)=>!item.archived).map((item)=>item.id);
+  if (!caseIds.length) return;
   const suiteIds = data.suites.filter((suite)=>suite.caseIds.some((id)=>caseIds.includes(id))).map((suite)=>suite.id);
   save({ ...data,plans:[...data.plans,{id:uid(),projectId,name:planName.trim(),environment,suiteIds,caseIds,createdAt:now(),release,build,objective:planObjective,risks:planRisks,owner:planOwner,startDate:planStartDate,endDate:planEndDate,entryCriteria,exitCriteria}] });
   setPlanName(""); setSelected([]); setRelease(""); setBuild(""); setPlanObjective(""); setPlanRisks(""); setPlanOwner(""); setEntryCriteria(""); setExitCriteria(""); setPlanStartDate(""); setPlanEndDate("");
@@ -123,16 +125,16 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
  const addRequirement = () => {
   if (!requirementTitle.trim()) return;
   const requirements = data.requirements ?? [];
-  const item: TmsRequirement = { id: uid(), projectId, key: "REQ-" + String(requirements.length + 1).padStart(3,"0"), title: requirementTitle.trim(), description: requirementDescription, acceptanceCriteria, priority: requirementPriority, status: "draft", createdAt: now(), updatedAt: now() };
+  const item: TmsRequirement = { id: uid(), projectId, key: nextKey("REQ",requirements.map((item)=>item.key)), title: requirementTitle.trim(), description: requirementDescription, acceptanceCriteria, priority: requirementPriority, status: "draft", createdAt: now(), updatedAt: now() };
   save({ ...data, requirements: [...requirements, item] });
   setRequirementTitle(""); setRequirementDescription(""); setAcceptanceCriteria("");
  };
  const addDefect = () => {
   if(!defectTitle.trim())return;
   const linkedCase = cases.find((item)=>item.id===defectCaseId);
-  const linkedRun = activeRun && defectCaseId ? activeRun : undefined;
+  const linkedRun = activeRun && defectCaseId && activeRun.results[defectCaseId] ? activeRun : undefined;
   const defect = {
-   id:uid(),projectId,key:"BUG-"+String(data.defects.length+1).padStart(3,"0"),title:defectTitle.trim(),
+   id:uid(),projectId,key:nextKey("BUG",data.defects.map((item)=>item.key)),title:defectTitle.trim(),
    caseId:defectCaseId||undefined,caseIds:defectCaseId?[defectCaseId]:[],severity:defectSeverity,priority:defectPriority,status:"new" as const,
    createdAt:now(),updatedAt:now(),description:defectDescription,
    steps:defectSteps.split("\n").map((step)=>step.trim()).filter(Boolean),
