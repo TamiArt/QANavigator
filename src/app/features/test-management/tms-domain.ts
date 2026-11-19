@@ -71,3 +71,36 @@ export function createTmsRunSnapshot(
     results,
   };
 }
+
+export function createTmsRerun(
+  source: TmsRun,
+  id: string,
+  startedAt: string,
+  displayName: string,
+): TmsRun | null {
+  const retryEntries = Object.entries(source.results).filter(([, result]) =>
+    result.status === "failed" || result.status === "blocked");
+  if (!retryEntries.length) return null;
+  const results: TmsRun["results"] = {};
+  const caseSnapshots: NonNullable<TmsRun["caseSnapshots"]> = {};
+  for (const [caseId, result] of retryEntries) {
+    results[caseId] = {
+      status: "not_run",
+      actual: "",
+      comment: "",
+      stepResults: (result.stepResults ?? []).map(() => ({ status: "not_run", actual: "", comment: "" })),
+    };
+    const snapshot = source.caseSnapshots?.[caseId];
+    if (snapshot) caseSnapshots[caseId] = snapshot;
+  }
+  return {
+    id,
+    projectId: source.projectId,
+    planId: source.planId,
+    name: displayName,
+    startedAt,
+    rerunOf: source.id,
+    caseSnapshots,
+    results,
+  };
+}
