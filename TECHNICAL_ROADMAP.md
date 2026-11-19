@@ -15,7 +15,7 @@ Main purpose:
 
 Stack:
 - React + TypeScript + Vite;
-- localStorage for local persistence;
+- localStorage for local persistence and user-managed JSON project archives;
 - optional external AI providers selected by the user;
 - no paid service is required by the application.
 
@@ -112,10 +112,20 @@ Verification baseline:
 ## 3.1 Test Management / TMS milestone
 
 - Product specification: `docs/TEST_MANAGEMENT.md`.
-- Initial local-first TMS slice is embedded in the selected project workspace: test cases, suites, plans/runs, execution statuses, defect register, starter collections and JSON export/backup.
+- Initial local-first TMS slice is embedded in the selected project workspace: test cases, suites, plans/runs, execution statuses, defect register, starter collections, global backup and validated project JSON export/import.
 - Storage key: `qa_navigator_test_management_v1`; included in backup/import validation.
 - This is a foundation, not a claim of full TestRail/Test IT parity. Case versioning, step-level evidence, requirements traceability, advanced reports, migration adapters and team collaboration remain planned.
 - Preserve immutable run snapshots as the model evolves; editing a case must not rewrite historical execution results.
+
+## 3.2 Browser-only local data and project portability
+
+- Keep the application as a static browser application; no backend, hosted database, user account or paid cloud storage is required for TMS.
+- Existing TMS records remain in the established versioned localStorage key to avoid a broad persistence refactor and preserve compatibility with Settings backup/restore.
+- Each project can be exported as a standalone JSON archive and imported into the currently selected project. Import validates the archive schema and references between cases, suites, plans, runs and defects before replacing that project's TMS data.
+- The archive import does not replace the selected project's identity or other workspace metadata.
+- Users are responsible for downloading and retaining backup files on their own computer. Browser storage is tied to the browser profile and may be cleared by the user or browser.
+- IndexedDB is reserved for a later, isolated storage upgrade when larger binary attachments are introduced; do not move existing application storage wholesale as part of this milestone.
+- No real-time collaboration or cross-device automatic synchronization is provided in this browser-only mode.
 
 ## 4. Mandatory development rules
 
