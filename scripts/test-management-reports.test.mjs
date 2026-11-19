@@ -16,8 +16,8 @@ const { getTmsOverviewMetrics, createTmsTraceabilityCsv, createTmsRunCsv } = mod
 const data = {
   version: 1,
   cases: [
-    { id: "c1", key: "QA-001", title: 'Login, "valid"', priority: "P1", requirementIds: ["r1"], archived: false },
-    { id: "c2", key: "QA-002", title: "Search", priority: "P2", requirementIds: [], archived: true },
+    { id: "c1", key: "QA-001", title: 'Login, "valid"', priority: "P1", requirementIds: ["r1"], archived: false, automationStatus: "automated" },
+    { id: "c2", key: "QA-002", title: "Search", priority: "P2", requirementIds: [], archived: true, automationStatus: "automated" },
   ],
   suites: [], plans: [], defects: [{ status: "open" }, { status: "closed" }],
   requirements: [{ id: "r1", key: "REQ-001", title: "Auth", status: "approved", priority: "P1" }, { id: "r2", key: "REQ-002", title: "Export", status: "draft", priority: "P2" }],
@@ -34,6 +34,7 @@ test("TMS overview metrics calculate latest-run pass rate and requirement covera
   assert.equal(metrics.activeCases, 1);
   assert.equal(metrics.coveredRequirements, 1);
   assert.equal(metrics.coveragePercent, 50);
+  assert.equal(metrics.automationCoveragePercent, 100);
   assert.equal(metrics.passRate, 50);
   assert.equal(metrics.openDefects, 1);
 });
