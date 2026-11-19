@@ -5,11 +5,11 @@ function csvCell(value: unknown): string {
   return /[",\n\r;]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
 }
 export function serializeTmsCasesCsv(cases: TmsCase[]): string {
-  const headers = ["ID", "Key", "Title", "Folder", "Description", "Preconditions", "Steps", "Expected Result", "Test Data", "Postconditions", "Priority", "Type", "Tags", "Requirement IDs", "Version", "Archived"];
+  const headers = ["ID", "Key", "Title", "Folder", "Description", "Preconditions", "Steps", "Expected Result", "Test Data", "Postconditions", "Priority", "Type", "Tags", "Requirement IDs", "References", "Estimate Minutes", "Automation Status", "Version", "Archived"];
   const rows = cases.map((item) => [
     item.id, item.key, item.title, item.folder, item.description ?? "", item.preconditions,
     JSON.stringify(item.steps), item.expected, item.testData ?? "", item.postconditions ?? "",
-    item.priority, item.type, JSON.stringify(item.tags), JSON.stringify(item.requirementIds),
+    item.priority, item.type, JSON.stringify(item.tags), JSON.stringify(item.requirementIds), JSON.stringify(item.references ?? []), item.estimateMinutes ?? "", item.automationStatus ?? "not_automated",
     item.version ?? 1, item.archived,
   ]);
   return [headers, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");
@@ -112,6 +112,9 @@ export function parseTmsCasesCsv(
       type: value(row, "type", "case type", "тип") || "Functional",
       tags: parseArray(value(row, "tags", "labels", "теги")),
       requirementIds: requestedRequirements.filter((id) => validRequirements.has(id)),
+      references: parseArray(value(row, "references", "external references", "ссылки")),
+      estimateMinutes: Number(value(row, "estimate minutes", "estimate", "effort", "оценка времени")) || undefined,
+      automationStatus: (() => { const status=value(row,"automation status","automation type","автоматизация").toLowerCase(); return status.includes("autom") ? "automated" as const : status.includes("candidate") || status.includes("to be") ? "candidate" as const : "not_automated" as const; })(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       archived: false,
