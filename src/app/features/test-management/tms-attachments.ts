@@ -126,3 +126,41 @@ export async function replaceProjectTmsAttachments(projectId: string, records: T
     await done(transaction);
   } finally { database.close(); }
 }
+
+export const TMS_ATTACHMENTS_BACKUP_KEY = "qa_navigator_test_management_attachments_v1";
+
+export async function listAllTmsAttachments(): Promise<TmsAttachmentRecord[]> {
+  const database = await openDatabase();
+  try {
+    const transaction = database.transaction("attachments", "readonly");
+    const records = await resultOf(transaction.objectStore("attachments").getAll()) as TmsAttachmentRecord[];
+    await done(transaction);
+    return records;
+  } finally { database.close(); }
+}
+
+export async function replaceAllTmsAttachments(records: TmsAttachmentRecord[]): Promise<void> {
+  if (records.some((record) => record.size <= 0 || record.size > MAX_ATTACHMENT_SIZE || record.blob.size !== record.size)) {
+    throw new Error("Резервная копия содержит некорректные вложения");
+  }
+  const database = await openDatabase();
+  try {
+    const transaction = database.transaction("attachments", "readwrite");
+    const store = transaction.objectStore("attachments");
+    store.clear();
+    for (const record of records) store.put(record);
+    await done(transaction);
+  } finally { database.close(); }
+}
+
+export async function clearTmsDatabase(): Promise<void> {
+  if (typeof indexedDB === "undefined") return;
+  const database = await openDatabase();
+  try {
+    const transaction = database.transaction(["projects", "attachments", "meta"], "readwrite");
+    transaction.objectStore("projects").clear();
+    transaction.objectStore("attachments").clear();
+    transaction.objectStore("meta").clear();
+    await done(transaction);
+  } finally { database.close(); }
+}
