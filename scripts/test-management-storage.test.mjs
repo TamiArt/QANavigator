@@ -95,7 +95,7 @@ test("localStorage persistence validates data before writing", async () => {
 test("switching to localStorage does not change the active mode when validation fails", async () => {
   const harness = createHarness();
   await assert.rejects(
-    harness.api.switchTmsStorageMode("localStorage", [{ version: 1, projectId: "" }]),
+    harness.api.switchTmsStorageMode("localStorage", [{ version: 1, projectId: 4 }]),
     /не прошли проверку/,
   );
   assert.equal(harness.values.has("qa_navigator_tms_storage_mode_v1"), false);
