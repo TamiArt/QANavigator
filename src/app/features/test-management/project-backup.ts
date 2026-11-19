@@ -96,9 +96,14 @@ export function parseTmsProjectBackup(raw: string, targetProjectId: string): Tms
   }
 
   if (!isRecord(parsed) || parsed.schemaVersion !== 1 || !isString(parsed.exportedAt) ||
-    !isRecord(parsed.sourceProject) || !isString(parsed.sourceProject.id) ||
-    !isString(parsed.sourceProject.name) || !isTmsData(parsed.testManagement)) {
+    !isTmsData(parsed.testManagement)) {
     throw new Error("Файл не является корректным архивом Test Management");
+  }
+
+  // Accept the first-slice archive format ({ project }) as well as the canonical format ({ sourceProject }).
+  const sourceProject = isRecord(parsed.sourceProject) ? parsed.sourceProject : parsed.project;
+  if (!isRecord(sourceProject) || !isString(sourceProject.id) || !isString(sourceProject.name)) {
+    throw new Error("В архиве отсутствуют сведения об исходном проекте");
   }
 
   const data = parsed.testManagement;
