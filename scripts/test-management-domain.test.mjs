@@ -11,7 +11,7 @@ const compiled = ts.transpileModule(source, {
 }).outputText;
 const module = { exports: {} };
 vm.runInNewContext(compiled, { module, exports: module.exports });
-const { reviseTmsCase, createTmsRunSnapshot, createTmsRerun } = module.exports;
+const { reviseTmsCase, createTmsRunSnapshot, createTmsRerun, compareTmsCaseVersion } = module.exports;
 
 const sampleCase = () => ({
   id: "case-1", projectId: "project-1", key: "QA-001", title: "Login", folder: "Auth",
@@ -67,4 +67,23 @@ test("shared steps are expanded into immutable run snapshots", () => {
   assert.equal(run.caseSnapshots["case-1"].steps.length, 2);
   assert.match(run.caseSnapshots["case-1"].steps[1].action, /SS-001/);
   assert.equal(run.caseSnapshots["case-1"].steps[1].expected, "Credentials accepted");
+});
+
+
+test("case version comparison reports changed fields and ignores unchanged values", () => {
+  const original = sampleCase();
+  const revised = reviseTmsCase(original, {
+    ...original,
+    title: "Updated login",
+    priority: "P2",
+    steps: [
+      { action: "Open login", expected: "Form appears" },
+      { action: "Submit credentials", expected: "Dashboard appears" },
+    ],
+  }, "2026-01-02");
+  const differences = compareTmsCaseVersion(revised.versions[0], revised);
+  assert.deepEqual(differences.map((item) => item.field), ["Название", "Приоритет", "Шаги"]);
+  assert.equal(differences[0].previous, "Login");
+  assert.equal(differences[0].current, "Updated login");
+  assert.match(differences[2].current, /Submit credentials/);
 });
