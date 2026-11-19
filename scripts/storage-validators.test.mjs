@@ -250,4 +250,12 @@ test("TMS storage validates milestone ownership and plan links", () => {
     plans: [{ ...project.plans[0], milestoneId: "missing-milestone" }],
   };
   assert.equal(validators.isTestManagementStorageValue([broken]), false);
+  const brokenRunSnapshot = {
+    ...project,
+    runs: [{
+      ...project.runs[0],
+      planSnapshot: { ...project.runs[0].planSnapshot, milestoneId: "missing-milestone" },
+    }],
+  };
+  assert.equal(validators.isTestManagementStorageValue([brokenRunSnapshot]), false);
 });
