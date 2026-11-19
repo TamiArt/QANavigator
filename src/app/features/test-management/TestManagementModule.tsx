@@ -71,7 +71,7 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
  const toggleArchived = (item: TmsCase) => save({ ...data, cases: cases.map((current) => current.id === item.id ? { ...current, archived: !current.archived, updatedAt: now() } : current) });
  const restoreCaseVersion = (item:TmsCase, version:TmsCaseVersion) => {
   const snapshot=version.snapshot;
-  const restored=reviseTmsCase(item,{title:snapshot.title,folder:snapshot.folder,preconditions:snapshot.preconditions,steps:snapshot.steps,expected:snapshot.expected,priority:snapshot.priority,description:snapshot.description??"",testData:snapshot.testData??"",postconditions:snapshot.postconditions??"",tags:snapshot.tags,requirementIds:snapshot.requirementIds},now());
+  const restored=reviseTmsCase(item,{title:snapshot.title,folder:snapshot.folder,preconditions:snapshot.preconditions,steps:snapshot.steps,expected:snapshot.expected,priority:snapshot.priority,description:snapshot.description??"",testData:snapshot.testData??"",postconditions:snapshot.postconditions??"",tags:snapshot.tags,requirementIds:snapshot.requirementIds,automationStatus:snapshot.automationStatus??"not_automated"},now());
   save({...data,cases:cases.map((current)=>current.id===item.id?restored:current)});
  };
  const removeCase = async (item: TmsCase) => {
