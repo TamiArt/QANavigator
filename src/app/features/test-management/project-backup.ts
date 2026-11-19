@@ -284,6 +284,11 @@ export function parseTmsProjectArchive(raw: string, targetProjectId: string): {
   for (const run of testManagement.runs) {
     for (const [caseId, result] of Object.entries(run.results)) {
       for (const id of result.attachmentIds ?? []) referenced.set(id, "run-result:" + run.id + ":" + caseId);
+      for (const [stepIndex, stepResult] of (result.stepResults ?? []).entries()) {
+        for (const id of stepResult.attachmentIds ?? []) {
+          referenced.set(id, "run-result:" + run.id + ":" + caseId + ":step:" + stepIndex);
+        }
+      }
     }
   }
   for (const item of attachments) {
