@@ -11,7 +11,7 @@ const compiled = ts.transpileModule(source, {
 }).outputText;
 const module = { exports: {} };
 vm.runInNewContext(compiled, { module, exports: module.exports, console });
-const { createTmsProjectBackup, parseTmsProjectBackup } = module.exports;
+const { createTmsProjectBackup, parseTmsProjectBackup, parseTmsProjectArchive } = module.exports;
 
 const emptyData = {
   version: 1,
@@ -78,4 +78,53 @@ test("project archive imports the original first-slice export format", () => {
   };
   const restored = parseTmsProjectBackup(JSON.stringify(legacy), "target-project");
   assert.equal(restored.projectId, "target-project");
+});
+
+test("project archive exports and restores attached evidence with remapped project ownership", () => {
+  const data = {
+    ...emptyData,
+    cases: [{
+      id: "case-1", projectId: "source-project", key: "QA-001", title: "Login",
+      folder: "Auth", preconditions: "", steps: [{ action: "Open", expected: "Page opens" }],
+      expected: "Success", priority: "P1", type: "Functional", tags: [],
+      requirementIds: [], createdAt: "now", updatedAt: "now", archived: false,
+      attachmentIds: ["file-1"],
+    }],
+  };
+  const attachments = [{
+    id: "file-1", projectId: "source-project", ownerType: "case",
+    ownerId: "case-1", name: "evidence.png", mimeType: "image/png",
+    size: 3, createdAt: "now", data: "AQID",
+  }];
+  const archive = createTmsProjectBackup(
+    { id: "source-project", name: "Source" }, data, "now", attachments,
+  );
+  const restored = parseTmsProjectArchive(JSON.stringify(archive), "target-project");
+  assert.equal(restored.testManagement.cases[0].attachmentIds[0], "file-1");
+  assert.equal(restored.attachments[0].projectId, "target-project");
+  assert.equal(restored.attachments[0].data, "AQID");
+});
+
+test("project archive rejects missing and malformed evidence attachments", () => {
+  const data = {
+    ...emptyData,
+    cases: [{
+      id: "case-1", projectId: "source-project", key: "QA-001", title: "Login",
+      folder: "Auth", preconditions: "", steps: [{ action: "Open", expected: "Page opens" }],
+      expected: "Success", priority: "P1", type: "Functional", tags: [],
+      requirementIds: [], createdAt: "now", updatedAt: "now", archived: false,
+      attachmentIds: ["missing-file"],
+    }],
+  };
+  const archive = createTmsProjectBackup({ id: "source-project", name: "Source" }, data, "now");
+  assert.throws(() => parseTmsProjectArchive(JSON.stringify(archive), "target"), /отсутствует файл/);
+  const malformed = {
+    ...archive,
+    attachments: [{
+      id: "missing-file", projectId: "source-project", ownerType: "case",
+      ownerId: "case-1", name: "bad.bin", mimeType: "application/octet-stream",
+      size: 3, createdAt: "now", data: "%%%not-base64%%%",
+    }],
+  };
+  assert.throws(() => parseTmsProjectArchive(JSON.stringify(malformed), "target"), /некорректные вложения/);
 });
