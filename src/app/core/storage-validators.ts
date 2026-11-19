@@ -198,9 +198,9 @@ function isTmsCase(value: unknown): boolean {
 }
 
 function isTmsRunResult(value: unknown): boolean {
-  return isRecord(value) && ["not_run", "passed", "failed", "blocked", "skipped"].includes(String(value.status)) &&
+  return isRecord(value) && ["not_run", "in_progress", "passed", "failed", "blocked", "retest", "skipped"].includes(String(value.status)) &&
     typeof value.actual === "string" && typeof value.comment === "string" &&
-    (value.stepResults === undefined || (Array.isArray(value.stepResults) && value.stepResults.every((step) => isRecord(step) && ["not_run", "passed", "failed", "blocked", "skipped"].includes(String(step.status)) && typeof step.actual === "string" && typeof step.comment === "string"))) &&
+    (value.stepResults === undefined || (Array.isArray(value.stepResults) && value.stepResults.every((step) => isRecord(step) && ["not_run", "in_progress", "passed", "failed", "blocked", "retest", "skipped"].includes(String(step.status)) && typeof step.actual === "string" && typeof step.comment === "string"))) &&
     (value.defectId === undefined || typeof value.defectId === "string") &&
     (value.attachmentIds === undefined || isStringArray(value.attachmentIds));
 }
