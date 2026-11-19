@@ -91,5 +91,5 @@ test("case version comparison reports changed fields and ignores unchanged value
   assert.deepEqual(Array.from(differences, (item) => item.field), ["Название", "Приоритет", "Тип теста", "Шаги"]);
   assert.equal(differences[0].previous, "Login");
   assert.equal(differences[0].current, "Updated login");
-  assert.match(differences[2].current, /Submit credentials/);
+  assert.match(differences[3].current, /Submit credentials/);
 });
