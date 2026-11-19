@@ -10,6 +10,7 @@ import { deleteTmsAttachment, listProjectTmsAttachments } from "./tms-attachment
 import { createTmsRerun, createTmsRunSnapshot, reviseTmsCase } from "./tms-domain";
 import { createTmsRunCsv, createTmsTraceabilityCsv, getTmsOverviewMetrics } from "./tms-reports";
 import { parseTmsCasesCsv, serializeTmsCasesCsv } from "./tms-import-export";
+import { parseJUnitXmlResults } from "./tms-junit-import";
 type Tab = "overview" | "cases" | "suites" | "runs" | "collections" | "defects" | "requirements" | "reports";
 const empty: TmsData = { version: 1, cases: [], suites: [], plans: [], runs: [], defects: [], requirements: [] };
 const uid = () => crypto.randomUUID();
@@ -29,6 +30,8 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
  const [folderFilter, setFolderFilter] = useState(""), [priorityFilter, setPriorityFilter] = useState("all"), [showArchived, setShowArchived] = useState(true);
  const [archiveMessage, setArchiveMessage] = useState("");
  const [csvMessage, setCsvMessage] = useState("");
+ const [junitPlanId, setJunitPlanId] = useState("");
+ const [junitMessage, setJunitMessage] = useState("");
  const [title, setTitle] = useState(""), [folder, setFolder] = useState("Общие проверки"), [priority, setPriority] = useState<TmsCase["priority"]>("P2");
  const [preconditions, setPreconditions] = useState(""), [steps, setSteps] = useState("Открыть функциональность\nВыполнить действие"), [expected, setExpected] = useState("Система обрабатывает действие согласно требованиям");
  const [editingCaseId, setEditingCaseId] = useState("");
@@ -146,6 +149,25 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
   if(!defectCommentText.trim())return;
   save({...data,defects:data.defects.map((defect)=>defect.id===id?{...defect,updatedAt:now(),comments:[...(defect.comments??[]),{id:uid(),author:"Локальный пользователь",body:defectCommentText.trim(),createdAt:now()}]}:defect)});
   setDefectCommentText("");
+ };
+ const importJUnitXml = () => {
+  setJunitMessage("");
+  const plan = data.plans.find((item)=>item.id===(junitPlanId||data.plans[0]?.id));
+  if(!plan){setJunitMessage("Сначала создайте план тестирования.");return;}
+  const input=document.createElement("input");input.type="file";input.accept=".xml,text/xml,application/xml";
+  input.onchange=async()=>{const file=input.files?.[0];if(!file)return;try{
+   const summary=parseJUnitXmlResults(await file.text(),cases);
+   const scope=new Set(plan.caseIds);
+   const matches=summary.results.filter((item)=>scope.has(item.caseId));
+   if(!matches.length)throw new Error("В выбранном плане не найдено совпадений по ID, ключу или названию тест-кейса.");
+   const startedAt=now();
+   const run=createTmsRunSnapshot(uid(),projectId,plan,cases,startedAt,"JUnit · "+plan.name+" · "+new Date(startedAt).toLocaleString("ru-RU"));
+   for(const match of matches)run.results[match.caseId]=match.result;
+   run.completedAt=now();
+   save({...data,runs:[run,...data.runs]});setRunId(run.id);setTab("runs");
+   setJunitMessage("Импортировано результатов: "+matches.length+". Не сопоставлено: "+(summary.unmatched.length+summary.results.length-matches.length)+".");
+  }catch(error){setJunitMessage(error instanceof Error?error.message:"Не удалось импортировать JUnit XML");}};
+  input.click();
  };
  const exportCasesCsv = () => downloadTextFile(serializeTmsCasesCsv(cases), "qa-test-cases.csv", "text/csv");
  const importCasesCsv = () => {
