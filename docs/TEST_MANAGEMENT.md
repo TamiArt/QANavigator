@@ -109,11 +109,11 @@
 
 ## Архитектура и миграции
 
-1. Базовое хранилище TMS перенесено на IndexedDB с однократной миграцией legacy localStorage; предыдущая схема сохранена и доступна для возврата. Бинарные вложения и их архивирование остаются следующим этапом.
-2. Ввести schemaVersion и последовательные миграции без потери существующих backup formats.
+1. Структурированные данные TMS по умолчанию хранятся в IndexedDB; legacy localStorage мигрируется однократно и не удаляется. Пользователь может переключить режим хранения из интерфейса. Перед записью проверяется структура и проектная целостность; повреждённые исходные данные блокируют миграцию, а не превращаются молча в пустой список.
+2. Поддерживать schemaVersion и последовательные миграции без потери существующих backup formats.
 3. Добавить валидаторы сущностей и ссылочной целостности.
 4. Атомарно обновлять прогон и связанные результаты через транзакции.
-5. Project archive: manifest, checksum, preview, вложения и conflict resolution.
+5. Project archive включает вложения и проверку ссылок/владельцев/размеров; manifest, checksum, preview и conflict resolution остаются улучшениями.
 6. Сохранить local-first/offline режим; синхронизация не входит в архитектуру по умолчанию.
 7. Сервер, авторизация и командная синхронизация не требуются для выбранного браузерного режима.
 
@@ -122,19 +122,20 @@
 | Этап | Содержание | Статус |
 |---|---|---|
 | TMS foundation | Project-scoped cases, suites, plans/runs, statuses, defect register, starter collections, JSON export/backup, validated project import, IndexedDB migration and reversible localStorage mode | Реализовано |
-| Case management | Редактирование, версии, архив/клонирование, folder/priority filters, shared steps, attachments | Частично реализовано |
-| Execution engine | Immutable run snapshots, step results, evidence, reruns, completion | Частично реализовано |
-| Traceability | Requirements registry, case links, coverage report | Частично реализовано |
+| Case management | Редактирование, версии, архив/клонирование, folder/priority filters, shared steps, attachments | Первый рабочий срез; сравнение версий и массовые операции в backlog |
+| Execution engine | Immutable run snapshots, step results, evidence, reruns, completion | Первый рабочий срез; нужны расширенные сценарии выполнения и проверка восстановления черновиков |
+| Traceability | Requirements registry, case links, coverage report | Первый рабочий срез; impact analysis и трассировка до дефекта в backlog |
 | Reporting | Latest-run metrics, traceability/run CSV | Первый срез реализован |
 | Import/export | Project JSON archive + attachments, global backup, CSV case import/export | Первый срез реализован |
-| Compatibility | JUnit XML result import; common TestRail/Test IT CSV header mapping. Verified product-specific profiles and XLSX | Частично реализовано |
+| Compatibility | JUnit XML result import; common TestRail/Test IT CSV header mapping. Verified product-specific profiles and XLSX | CSV/JUnit первый срез; профили конкретных версий и XLSX в backlog |
 | Team mode | Multi-user RBAC, collaboration and cloud sync | Исключено выбранными browser-only ограничениями |
 
 ## Definition of Done
 
 - Данные привязаны к проекту и переживают reload.
 - Исторические результаты не меняются при редактировании кейса; запуск хранит снимок кейса и шагов.
-- Backup/restore валидирует структуру, ссылки и вложения; предыдущая схема localStorage доступна для возврата.
+- Backup/restore валидирует структуру, ссылки и вложения; режим localStorage доступен из интерфейса, а его исходная копия сохраняется после миграции.
+- Если исходные данные повреждены или превышают квоту localStorage, переключение не должно очищать или перезаписывать IndexedDB.
 - Архив проекта можно перенести на другой компьютер и импортировать в выбранный проект.
 - Работа с TMS не требует серверов, аккаунта или платного облачного хранилища.
 - Есть тесты доменной логики, миграций, ссылочной целостности и UI flows.
