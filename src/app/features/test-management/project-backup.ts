@@ -73,6 +73,12 @@ function isPlan(value: unknown): boolean {
     ["release", "build", "objective", "risks", "owner", "startDate", "endDate", "entryCriteria", "exitCriteria"].every((key) => value[key] === undefined || isString(value[key]));
 }
 
+function isPlanSnapshot(value: unknown): boolean {
+  if (!isRecord(value) || !isString(value.id) || !isString(value.name) || !isString(value.environment)) return false;
+  return ["release", "build", "objective", "risks", "owner", "startDate", "endDate", "entryCriteria", "exitCriteria"]
+    .every((field) => value[field] === undefined || isString(value[field]));
+}
+
 function isRun(value: unknown): boolean {
   if (!isRecord(value) || !isString(value.id) || !isString(value.projectId) ||
     !isString(value.planId) || !isString(value.name) || !isString(value.startedAt) ||
@@ -92,11 +98,7 @@ function isRun(value: unknown): boolean {
       isString(snapshot.id) && isString(snapshot.key) && isString(snapshot.title) &&
       Array.isArray(snapshot.steps) && snapshot.steps.every((step) =>
         isRecord(step) && isString(step.action) && isString(step.expected))));
-  const planFields = ["release", "build", "objective", "risks", "owner", "startDate", "endDate", "entryCriteria", "exitCriteria"];
-  const validPlanSnapshot = value.planSnapshot === undefined || (isRecord(value.planSnapshot) &&
-    isString(value.planSnapshot.id) && isString(value.planSnapshot.name) &&
-    isString(value.planSnapshot.environment) &&
-    planFields.every((field) => value.planSnapshot![field] === undefined || isString(value.planSnapshot![field])));
+  const validPlanSnapshot = value.planSnapshot === undefined || isPlanSnapshot(value.planSnapshot);
   return validResults && validSnapshots && validPlanSnapshot;
 }
 
