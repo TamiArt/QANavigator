@@ -84,7 +84,7 @@ export function createTmsRerun(
   displayName: string,
 ): TmsRun | null {
   const retryEntries = Object.entries(source.results).filter(([, result]) =>
-    result.status === "failed" || result.status === "blocked");
+    result.status === "failed" || result.status === "blocked" || result.status === "retest");
   if (!retryEntries.length) return null;
   const results: TmsRun["results"] = {};
   const caseSnapshots: NonNullable<TmsRun["caseSnapshots"]> = {};
