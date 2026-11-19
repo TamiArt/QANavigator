@@ -24,7 +24,7 @@ const data = {
   runs: [{
     id: "run1", projectId: "p1", planId: "plan1", name: "Run", startedAt: "now",
     caseSnapshots: { c1: { key: "QA-001", title: "Login", version: 2, steps: [{ action: "Open", expected: "Form" }] } },
-    results: { c1: { status: "passed", actual: "OK", stepResults: [{ status: "passed", actual: "Form visible" }] }, c2: { status: "failed", actual: "Broken" } },
+    results: { c1: { status: "passed", actual: "OK", stepResults: [{ status: "passed", actual: "Form visible" }] }, c2: { status: "failed", actual: "Broken" }, c3: { status: "in_progress", actual: "" }, c4: { status: "retest", actual: "Needs another run" } },
   }],
 };
 
@@ -36,6 +36,8 @@ test("TMS overview metrics calculate latest-run pass rate and requirement covera
   assert.equal(metrics.coveragePercent, 50);
   assert.equal(metrics.automationCoveragePercent, 100);
   assert.equal(metrics.passRate, 50);
+  assert.equal(metrics.inProgress, 1);
+  assert.equal(metrics.retest, 1);
   assert.equal(metrics.openDefects, 1);
 });
 
