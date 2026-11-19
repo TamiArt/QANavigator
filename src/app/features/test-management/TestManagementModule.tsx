@@ -7,6 +7,7 @@ import { downloadTextFile } from "../../lib/download";
 import { createTmsProjectBackup } from "./project-backup";
 import { TmsAttachmentPanel } from "./TmsAttachmentPanel";
 import { deleteTmsAttachment, listProjectTmsAttachments } from "./tms-attachments";
+import { createTmsRunSnapshot, reviseTmsCase } from "./tms-domain";
 type Tab = "overview" | "cases" | "suites" | "runs" | "collections" | "defects" | "requirements";
 const empty: TmsData = { version: 1, cases: [], suites: [], plans: [], runs: [], defects: [], requirements: [] };
 const uid = () => crypto.randomUUID();
