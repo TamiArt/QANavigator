@@ -54,7 +54,7 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
   resetCaseForm();
  };
  const editCase = (item: TmsCase) => { setEditingCaseId(item.id); setTitle(item.title); setFolder(item.folder); setPriority(item.priority); setPreconditions(item.preconditions); setSteps(item.steps.map((step) => step.action).join("\n")); setExpected(item.expected); setDescription(item.description ?? ""); setTestData(item.testData ?? ""); setPostconditions(item.postconditions ?? ""); setTagsText(item.tags.join(", ")); setTab("cases"); };
- const cloneCase = (item: TmsCase) => { const { versions: _versions, attachmentIds: _attachments, ...copy } = item; const cloned: TmsCase = { ...copy, id: uid(), key: "QA-" + String(cases.length + 1).padStart(3,"0"), title: item.title + " — копия", createdAt: now(), updatedAt: now(), version: 1, versions: [], attachmentIds: [], archived: false }; save({ ...data, cases: [...cases, cloned] }); };
+ const cloneCase = (item: TmsCase) => { const cloned: TmsCase = { ...item, id: uid(), key: "QA-" + String(cases.length + 1).padStart(3,"0"), title: item.title + " — копия", createdAt: now(), updatedAt: now(), version: 1, versions: [], attachmentIds: [], archived: false }; save({ ...data, cases: [...cases, cloned] }); };
  const toggleArchived = (item: TmsCase) => save({ ...data, cases: cases.map((current) => current.id === item.id ? { ...current, archived: !current.archived, updatedAt: now() } : current) });
  const removeCase = async (item: TmsCase) => {
   if (!window.confirm("Удалить тест-кейс? История прогонов сохранится, но связь с библиотекой будет удалена.")) return;
