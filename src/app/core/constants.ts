@@ -67,7 +67,6 @@ export const EXPORTABLE_STORAGE_KEYS = [
   "qa_navigator_checklists",
   "qa_navigator_testcases",
   "qa_navigator_test_management_v1",
-  "qa_navigator_test_management_v1",
   "qa_navigator_bugreports",
   "qa_navigator_bookmarks",
   "qa_navigator_req_text",
