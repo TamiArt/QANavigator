@@ -34,7 +34,7 @@ export function TmsAttachmentPanel({ projectId, ownerType, ownerId, attachmentId
     if (!files?.length) return;
     setBusy(true); setError("");
     try {
-      const saved = [];
+      const saved: TmsAttachmentInfo[] = [];
       for (const file of Array.from(files)) saved.push(await saveTmsAttachment(projectId, ownerType, ownerId, file));
       setItems((current) => [...current, ...saved]);
       onChange([...attachmentIds, ...saved.map((item) => item.id)]);
