@@ -57,18 +57,6 @@ function transactionDone(transaction: IDBTransaction): Promise<void> {
   });
 }
 
-async function readIndexedDbProjects(): Promise<TmsData[]> {
-  const database = await openDatabase();
-  try {
-    const transaction = database.transaction(PROJECT_STORE, "readonly");
-    const result = await requestResult(transaction.objectStore(PROJECT_STORE).getAll()) as TmsData[];
-    await transactionDone(transaction);
-    return result;
-  } finally {
-    database.close();
-  }
-}
-
 async function writeIndexedDbProjects(projects: TmsData[]): Promise<void> {
   const database = await openDatabase();
   try {
