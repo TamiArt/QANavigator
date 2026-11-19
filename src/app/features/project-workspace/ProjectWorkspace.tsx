@@ -138,6 +138,7 @@ export function ProjectWorkspace() {
           </aside>
 
           {active && (
+            <div className="space-y-4">
             <section className="rounded-xl border border-border bg-card p-4">
               <div className="flex justify-between gap-3">
                 <div>
@@ -165,6 +166,7 @@ export function ProjectWorkspace() {
               )}
             </section>
             <TestManagementModule projectId={active.id} />
+            </div>
           )}
         </div>
       )}
