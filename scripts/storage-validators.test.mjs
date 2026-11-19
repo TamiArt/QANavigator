@@ -219,3 +219,35 @@ test("TMS storage validates immutable plan snapshots and expanded run statuses",
   };
   assert.equal(validators.isTestManagementStorageValue([invalid]), false);
 });
+
+
+test("TMS storage validates milestone ownership and plan links", () => {
+  const project = {
+    version: 1,
+    projectId: "p1",
+    cases: [], suites: [],
+    milestones: [{
+      id: "milestone-1", projectId: "p1", name: "Release 2.4",
+      status: "active", createdAt: "now", updatedAt: "now",
+    }],
+    plans: [{
+      id: "plan-1", projectId: "p1", name: "Regression", environment: "Staging",
+      suiteIds: [], caseIds: [], milestoneId: "milestone-1", createdAt: "now",
+    }],
+    runs: [{
+      id: "run-1", projectId: "p1", planId: "plan-1", name: "Run", startedAt: "now",
+      planSnapshot: {
+        id: "plan-1", name: "Regression", environment: "Staging",
+        milestoneId: "milestone-1", milestoneName: "Release 2.4",
+      },
+      results: {},
+    }],
+    defects: [],
+  };
+  assert.equal(validators.isTestManagementStorageValue([project]), true);
+  const broken = {
+    ...project,
+    plans: [{ ...project.plans[0], milestoneId: "missing-milestone" }],
+  };
+  assert.equal(validators.isTestManagementStorageValue([broken]), false);
+});
