@@ -121,3 +121,41 @@ test("storage validators reject unsupported storage versions", () => {
   assert.equal(validators.isBookmarksStorageValue({ version: 2, data: ["topic-1"] }), false);
   assert.equal(validators.isTextStorageValue({ version: 2, data: "future" }), false);
 });
+
+test("TMS validators accept local project data and reject broken references", () => {
+  const project = {
+    version: 1, projectId: "p1", cases: [], suites: [], plans: [], runs: [], defects: [], requirements: [],
+  };
+  assert.equal(validators.isTestManagementStorageValue([project]), true);
+  assert.equal(validators.isTestManagementStorageValue([{ ...project, suites: [{ id: "s1", projectId: "p1", name: "Suite", caseIds: ["missing"], createdAt: "now" }] }]), false);
+});
+
+test("TMS full-backup attachment validator checks payload shape and size limits", () => {
+  const attachment = {
+    id: "file-1", projectId: "p1", ownerType: "case", ownerId: "case-1",
+    name: "evidence.png", mimeType: "image/png", size: 3, createdAt: "now", data: "AQID",
+  };
+  assert.equal(validators.isTmsAttachmentsBackupValue([attachment]), true);
+  assert.equal(validators.isTmsAttachmentsBackupValue([{ ...attachment, size: 30 * 1024 * 1024 }]), false);
+  assert.equal(validators.isTmsAttachmentsBackupValue([{ ...attachment, data: "%%%bad%%%" }]), false);
+});
+
+test("TMS validator checks shared-step references", () => {
+  const base = {
+    version: 1, projectId: "p1",
+    cases: [{
+      id: "c1", projectId: "p1", key: "QA-001", title: "Case", folder: "Auth",
+      preconditions: "", steps: [], expected: "", priority: "P2", type: "Functional",
+      tags: [], requirementIds: [], sharedStepIds: ["missing"], createdAt: "now",
+      updatedAt: "now", archived: false,
+    }],
+    suites: [], plans: [], runs: [], defects: [], sharedSteps: [],
+  };
+  assert.equal(validators.isTestManagementStorageValue([base]), false);
+  const valid = {
+    ...base,
+    sharedSteps: [{ id: "shared-1", projectId: "p1", key: "SS-001", name: "Login", steps: [{ action: "Open", expected: "Page" }], version: 1, createdAt: "now", updatedAt: "now" }],
+    cases: [{ ...base.cases[0], sharedStepIds: ["shared-1"] }],
+  };
+  assert.equal(validators.isTestManagementStorageValue([valid]), true);
+});

@@ -15,7 +15,7 @@ Main purpose:
 
 Stack:
 - React + TypeScript + Vite;
-- localStorage for local persistence;
+- localStorage for local persistence and user-managed JSON project archives;
 - optional external AI providers selected by the user;
 - no paid service is required by the application.
 
@@ -108,6 +108,25 @@ Verification baseline:
 - repository contains focused regression tests for architecture, storage, project context, handbook hierarchy and Learning Mode;
 - Vercel deployment status is independent infrastructure evidence and must not be treated as a substitute for repository verification;
 - GitHub Actions results must be checked for the current head before declaring a milestone complete.
+
+## 3.1 Test Management / TMS milestone
+
+- Product specification: `docs/TEST_MANAGEMENT.md`.
+- TMS is embedded in the selected project workspace and includes case library, suites, plans/runs, execution, defects, requirements, starter collections, reports, CSV import/export and portable JSON archives.
+- Structured records use `qa_navigator_test_management_v1`; IndexedDB is the default TMS store, with reversible localStorage mode and retained migration copy.
+- Binary evidence is stored in the IndexedDB attachments object store and included in project and full-workspace backups.
+- Case versions, immutable run snapshots, step results, selective reruns, requirement coverage and defect history have first implementations; advanced diff, analytics, verified migration profiles and automation imports remain planned.
+- Preserve immutable run snapshots; editing a case must not rewrite historical execution results.
+
+## 3.2 Browser-only local data and project portability
+
+- Keep the application as a static browser application; no backend, hosted database, user account or paid cloud storage is required for TMS.
+- Existing TMS records are migrated once from the established localStorage key into IndexedDB. The legacy localStorage copy is not deleted; users can switch back in the TMS UI. If IndexedDB cannot be opened, the user can explicitly fall back to the retained legacy snapshot.
+- Switching from IndexedDB back to localStorage is completed only after the full data set has been written successfully; the IndexedDB copy is retained. Large data sets that exceed localStorage quota therefore remain in IndexedDB.
+- Project archives include structured data and binary evidence. Import validates schema, entity references, attachment ownership and file sizes before replacing the selected project's TMS data.
+- Full-workspace backup/restore includes TMS records and binary evidence; project and full-workspace archives are stored as files by the user.
+- Browser storage is tied to the browser profile and may be cleared by the browser; user-managed backup files remain the recovery and device-transfer mechanism.
+- No real-time collaboration or cross-device automatic synchronization is provided in this browser-only mode.
 
 ## 4. Mandatory development rules
 

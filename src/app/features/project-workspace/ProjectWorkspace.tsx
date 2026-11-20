@@ -2,6 +2,8 @@ import { useState } from "react";
 import { BriefcaseBusiness, Plus, Trash2 } from "lucide-react";
 import { useApp } from "../../core/app-context";
 import { createProject as buildProject, type ProductType, type QAProject } from "../../domain/project";
+import { TestManagementModule } from "../test-management/TestManagementModule";
+import { TestManagementArchiveImport } from "../test-management/TestManagementArchiveImport";
 
 const productNames: Record<ProductType, string> = {
   web: "Web",
@@ -137,6 +139,7 @@ export function ProjectWorkspace() {
           </aside>
 
           {active && (
+            <div className="space-y-4">
             <section className="rounded-xl border border-border bg-card p-4">
               <div className="flex justify-between gap-3">
                 <div>
@@ -162,12 +165,10 @@ export function ProjectWorkspace() {
               ) : (
                 <p className="mt-1 text-sm text-muted-foreground">Риски пока не определены.</p>
               )}
-              <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-                <div className="rounded-lg bg-muted p-3">Требования<br /><b>0</b></div>
-                <div className="rounded-lg bg-muted p-3">Проверки<br /><b>0</b></div>
-                <div className="rounded-lg bg-muted p-3">Дефекты<br /><b>0</b></div>
-              </div>
             </section>
+            <TestManagementArchiveImport projectId={active.id} />
+            <TestManagementModule projectId={active.id} />
+            </div>
           )}
         </div>
       )}

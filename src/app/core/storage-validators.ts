@@ -173,3 +173,132 @@ export function isApiWorkbenchStorageValue(value: unknown): boolean {
     );
   });
 }
+
+function isTmsCase(value: unknown): boolean {
+  return isRecord(value) && typeof value.id === "string" && typeof value.projectId === "string" &&
+    typeof value.key === "string" && typeof value.title === "string" && typeof value.folder === "string" &&
+    typeof value.preconditions === "string" && Array.isArray(value.steps) &&
+    value.steps.every((step) => isRecord(step) && typeof step.action === "string" && typeof step.expected === "string") &&
+    typeof value.expected === "string" && PRIORITIES.includes(value.priority as (typeof PRIORITIES)[number]) &&
+    typeof value.type === "string" && isStringArray(value.tags) && isStringArray(value.requirementIds) &&
+    typeof value.createdAt === "string" && typeof value.updatedAt === "string" &&
+    typeof value.archived === "boolean" &&
+    (value.attachmentIds === undefined || isStringArray(value.attachmentIds)) &&
+    (value.version === undefined || typeof value.version === "number") &&
+    (value.description === undefined || typeof value.description === "string") &&
+    (value.testData === undefined || typeof value.testData === "string") &&
+    (value.postconditions === undefined || typeof value.postconditions === "string") &&
+    (value.automationStatus === undefined || ["not_automated", "automated", "candidate"].includes(String(value.automationStatus))) &&
+    (value.references === undefined || isStringArray(value.references)) &&
+    (value.estimateMinutes === undefined || (typeof value.estimateMinutes === "number" && value.estimateMinutes >= 0)) &&
+    (value.sharedStepIds === undefined || isStringArray(value.sharedStepIds)) &&
+    (value.versions === undefined || (Array.isArray(value.versions) && value.versions.every((version) =>
+      isRecord(version) && typeof version.version === "number" && typeof version.savedAt === "string" &&
+      isRecord(version.snapshot))));
+}
+
+function isTmsRunResult(value: unknown): boolean {
+  return isRecord(value) && ["not_run", "passed", "failed", "blocked", "skipped"].includes(String(value.status)) &&
+    typeof value.actual === "string" && typeof value.comment === "string" &&
+    (value.stepResults === undefined || (Array.isArray(value.stepResults) && value.stepResults.every((step) => isRecord(step) && ["not_run", "passed", "failed", "blocked", "skipped"].includes(String(step.status)) && typeof step.actual === "string" && typeof step.comment === "string"))) &&
+    (value.defectId === undefined || typeof value.defectId === "string") &&
+    (value.attachmentIds === undefined || isStringArray(value.attachmentIds));
+}
+
+function isTmsSharedStep(value: unknown): boolean {
+  if (!isRecord(value) || typeof value.id !== "string" || typeof value.projectId !== "string" ||
+    typeof value.key !== "string" || typeof value.name !== "string" || typeof value.version !== "number" ||
+    typeof value.createdAt !== "string" || typeof value.updatedAt !== "string" ||
+    !Array.isArray(value.steps) ||
+    !value.steps.every((step) => isRecord(step) && typeof step.action === "string" && typeof step.expected === "string")) return false;
+  return value.versions === undefined || (Array.isArray(value.versions) && value.versions.every((version) =>
+    isRecord(version) && typeof version.version === "number" && typeof version.savedAt === "string" &&
+    typeof version.name === "string" && Array.isArray(version.steps) &&
+    version.steps.every((step) => isRecord(step) && typeof step.action === "string" && typeof step.expected === "string")));
+}
+
+function isTmsProject(value: unknown): boolean {
+  if (!isRecord(value) || value.version !== 1 || typeof value.projectId !== "string") return false;
+  if (!Array.isArray(value.cases) || !value.cases.every(isTmsCase) ||
+    (value.requirements !== undefined && (!Array.isArray(value.requirements) || !value.requirements.every((item) => isRecord(item) && typeof item.id === "string" && typeof item.projectId === "string" && typeof item.key === "string" && typeof item.title === "string" && typeof item.description === "string" && typeof item.acceptanceCriteria === "string" && PRIORITIES.includes(item.priority as (typeof PRIORITIES)[number]) && ["draft", "approved", "implemented", "verified", "deprecated"].includes(String(item.status)) && typeof item.createdAt === "string" && typeof item.updatedAt === "string"))) ||
+    (value.sharedSteps !== undefined && (!Array.isArray(value.sharedSteps) || !value.sharedSteps.every(isTmsSharedStep))) ||
+    !Array.isArray(value.suites) || !Array.isArray(value.plans) ||
+    !Array.isArray(value.runs) || !Array.isArray(value.defects)) return false;
+  const hasUniqueField = (items: unknown[], field: string) => new Set(items.map((item) => (item as Record<string, unknown>)[field])).size === items.length;
+  if (!hasUniqueField(value.cases, "id") || !hasUniqueField(value.cases, "key") ||
+    !hasUniqueField(value.suites, "id") || !hasUniqueField(value.plans, "id") ||
+    !hasUniqueField(value.defects, "id") || !hasUniqueField(value.defects, "key") ||
+    (Array.isArray(value.sharedSteps) && (!hasUniqueField(value.sharedSteps, "id") || !hasUniqueField(value.sharedSteps, "key"))) ||
+    (Array.isArray(value.requirements) && (!hasUniqueField(value.requirements, "id") || !hasUniqueField(value.requirements, "key")))) return false;
+  const caseIds = new Set(value.cases.map((item) => (item as Record<string, unknown>).id));
+  const suiteIds = new Set(value.suites.map((item) => (item as Record<string, unknown>).id));
+  const planIds = new Set(value.plans.map((item) => (item as Record<string, unknown>).id));
+  const defectIds = new Set(value.defects.map((item) => (item as Record<string, unknown>).id));
+  const runs = value.runs as unknown[];
+  const requirementIds = new Set(Array.isArray(value.requirements) ? value.requirements.map((item) => (item as Record<string, unknown>).id) : []);
+  const sharedStepIds = new Set(Array.isArray(value.sharedSteps) ? value.sharedSteps.map((item) => (item as Record<string, unknown>).id) : []);
+  if (value.sharedSteps !== undefined && value.cases.some((item) => Array.isArray((item as Record<string, unknown>).sharedStepIds) && ((item as Record<string, unknown>).sharedStepIds as string[]).some((id) => !sharedStepIds.has(id)))) return false;
+  if (value.requirements !== undefined && value.cases.some((item) => Array.isArray((item as Record<string, unknown>).requirementIds) && ((item as Record<string, unknown>).requirementIds as string[]).some((id) => !requirementIds.has(id)))) return false;
+  if (!value.suites.every((item) => isRecord(item) && typeof item.id === "string" &&
+    typeof item.projectId === "string" && typeof item.name === "string" &&
+    (item.description === undefined || typeof item.description === "string") &&
+    (item.parentId === undefined || typeof item.parentId === "string") &&
+    (item.updatedAt === undefined || typeof item.updatedAt === "string") && isStringArray(item.caseIds) &&
+    item.caseIds.every((id) => caseIds.has(id)) &&
+    (item.parentId === undefined || (suiteIds.has(item.parentId) && item.parentId !== item.id)))) return false;
+  if (!value.plans.every((item) => isRecord(item) && typeof item.id === "string" &&
+    typeof item.projectId === "string" && typeof item.name === "string" && typeof item.environment === "string" &&
+    ["release", "build", "objective", "risks", "owner", "startDate", "endDate", "entryCriteria", "exitCriteria"].every((key) => item[key] === undefined || typeof item[key] === "string") &&
+    isStringArray(item.suiteIds) && item.suiteIds.every((id) => suiteIds.has(id)) &&
+    isStringArray(item.caseIds) && item.caseIds.every((id) => caseIds.has(id)))) return false;
+  if (!value.runs.every((item) => {
+    if (!isRecord(item) || typeof item.id !== "string" || typeof item.projectId !== "string" ||
+      typeof item.planId !== "string" || !planIds.has(item.planId) || !isRecord(item.results) ||
+      (item.caseSnapshots !== undefined && !isRecord(item.caseSnapshots))) return false;
+    return Object.entries(item.results).every(([caseId, result]) => {
+      if (!isRecord(result) || !isTmsRunResult(result)) return false;
+      const runResult = result as Record<string, unknown>;
+      return (runResult.defectId === undefined || (typeof runResult.defectId === "string" && defectIds.has(runResult.defectId))) &&
+        (caseIds.has(caseId) || (isRecord(item.caseSnapshots) && caseId in item.caseSnapshots));
+    });
+  })) return false;
+  return value.defects.every((item) => isRecord(item) && typeof item.id === "string" &&
+    typeof item.projectId === "string" && typeof item.key === "string" && typeof item.title === "string" &&
+    (item.caseId === undefined || caseIds.has(item.caseId)) &&
+    ["blocker", "critical", "major", "minor"].includes(String(item.severity)) &&
+    PRIORITIES.includes(item.priority as (typeof PRIORITIES)[number]) &&
+    ["new", "open", "in_progress", "fixed", "retest", "closed", "reopened", "rejected"].includes(String(item.status)) &&
+    typeof item.createdAt === "string" &&
+    (item.attachmentIds === undefined || isStringArray(item.attachmentIds)) &&
+    (item.labels === undefined || isStringArray(item.labels)) &&
+    (item.caseIds === undefined || (isStringArray(item.caseIds) && item.caseIds.every((id) => caseIds.has(id)))) &&
+    (item.runId === undefined || runs.some((run) => isRecord(run) && run.id === item.runId)) &&
+    (item.comments === undefined || (Array.isArray(item.comments) && item.comments.every((comment) => isRecord(comment) && typeof comment.id === "string" && typeof comment.author === "string" && typeof comment.body === "string" && typeof comment.createdAt === "string"))) &&
+    (item.history === undefined || (Array.isArray(item.history) && item.history.every((entry) => isRecord(entry) && typeof entry.id === "string" && typeof entry.field === "string" && typeof entry.from === "string" && typeof entry.to === "string" && typeof entry.actor === "string" && typeof entry.changedAt === "string"))));
+}
+
+/** Validates the versioned project-scoped Test Management collection and its references. */
+export function isTestManagementStorageValue(value: unknown): boolean {
+  const data = unwrapCurrentStorageValue(value);
+  return Array.isArray(data) && data.every(isTmsProject);
+}
+
+/** Validates the optional binary evidence section in a full workspace backup. */
+export function isTmsAttachmentsBackupValue(value: unknown): boolean {
+  if (!Array.isArray(value) || value.length > 500) return false;
+  let totalBytes = 0;
+  const ids = new Set<string>();
+  for (const item of value) {
+    if (!isRecord(item) || typeof item.id !== "string" || typeof item.projectId !== "string" ||
+      !["case", "run-result", "defect"].includes(String(item.ownerType)) ||
+      typeof item.ownerId !== "string" || typeof item.name !== "string" ||
+      typeof item.mimeType !== "string" || typeof item.size !== "number" ||
+      item.size <= 0 || item.size > 20 * 1024 * 1024 || typeof item.createdAt !== "string" ||
+      typeof item.data !== "string" || !/^[A-Za-z0-9+/]*={0,2}$/.test(item.data) || ids.has(item.projectId + ":" + item.id)) return false;
+    const decodedSize = Math.floor(item.data.length * 3 / 4) - (item.data.endsWith("==") ? 2 : item.data.endsWith("=") ? 1 : 0);
+    if (decodedSize !== item.size) return false;
+    ids.add(item.projectId + ":" + item.id);
+    totalBytes += item.size;
+  }
+  return totalBytes <= 100 * 1024 * 1024;
+}
