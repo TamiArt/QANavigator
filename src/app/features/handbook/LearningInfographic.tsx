@@ -720,7 +720,16 @@ const LESSON_VISUALS: Partial<Record<string, LessonVisual>> = {
     { title: "Разрешения и безопасность", text: "Проверь запрос, разрешение, отказ, отзыв и изменение доступа; объяснение причины; песочницу, защищённое хранение токенов и отсутствие секретов в логах/миниатюрах." },
     { title: "Платежи", text: "Учитывай платформенные правила платежей и монетизации; проверяй сценарии по требованиям продукта и актуальным правилам площадки." }
   ], "Ключевые различия для QA: распространение и подпись, бета-каналы, фрагментация, гайдлайны, разрешения, безопасность и платежи."),
-  "m8-05": V("flow", ["Proxy","HTTPS","Rewrite","Breakpoint","Restore"], Network, "blue", [
+  "m8-05": V("layers", ["Android", "iOS", "UI", "API", "Storage", "QA"], Smartphone, "mint", [
+    { title: "Android", text: "Activity — экран; Fragment — часть экрана; Service — фоновая работа; Broadcast Receiver — системные события; Content Provider — обмен данными." },
+    { title: "iOS", text: "ViewController или SwiftUI View — интерфейс; AppDelegate / SceneDelegate — жизненный цикл; фоновые задачи и App Extensions — системные возможности." },
+    { title: "Интерфейс", text: "Layout, View и ресурсы: кнопки, списки, тексты, изображения, темы, локализация и размеры." },
+    { title: "Данные", text: "Android: Room/SQLite, SharedPreferences/DataStore. iOS: Core Data/SQLite, UserDefaults; Keychain — для секретов." },
+    { title: "Сеть", text: "Сетевой слой отправляет запросы к API и обрабатывает ответы, таймауты и ошибки." },
+    { title: "Зона QA", text: "Проверяй UI, API, локальное хранение, фоновые события и логи — не только видимую кнопку." },
+    { title: "Практический сценарий", text: "При сохранении формы проверь запрос, ответ 500, сохранность введённых данных, повторную отправку, возврат из фона и диагностические логи." }
+  ], "Мобильное приложение — связка UI, системных компонентов, данных, сети и фоновых событий; QA проверяет их совместную работу."),
+  "m8-06": V("flow", ["Proxy","HTTPS","Rewrite","Breakpoint","Restore"], Network, "blue", [
     { title: "Что такое сниффер", text: "HTTP-прокси наблюдает запросы и ответы: URL, метод, параметры, заголовки, body, статусы, время и последовательность. Charles, Proxyman, Fiddler; Wireshark анализирует пакеты." },
     { title: "Настройка Charles", text: "Компьютер и телефон в одной Wi‑Fi сети; узнай IP и порт; включи ручной proxy на телефоне; разреши подключение и проверь запись." },
     { title: "HTTPS и сертификат", text: "Настрой SSL Proxying для тестового хоста и установи корневой сертификат; на iOS может требоваться полное доверие. Пользовательский CA может быть запрещён приложением." },
@@ -729,21 +738,21 @@ const LESSON_VISUALS: Partial<Record<string, LessonVisual>> = {
     { title: "Breakpoint", text: "Приостанавливает запрос/ответ для ручного изменения статуса или JSON и проверки реакции приложения." },
     { title: "Proxyman и завершение", text: "Используй аналогичный proxy workflow. После теста отключи proxy и удали временный сертификат; тестируй только разрешённые стенды и аккаунты." }
   ], "Сниффер показывает сетевой контракт; после теста верни сетевые настройки устройства в исходное состояние."),
-  "m8-06": V("timeline", ["Установка", "Проверка", "Identity", "Команды"], GitBranch, "orange", [
+  "m8-07": V("timeline", ["Установка", "Проверка", "Identity", "Команды"], GitBranch, "orange", [
     { title: "Установить Git", text: "Официальный git-scm.com; на Windows удобно использовать Git Bash." },
     { title: "Проверить", text: "git --version показывает установленную версию." },
     { title: "Настроить автора", text: "git config --global user.name и user.email." },
     { title: "Рабочие команды", text: "clone, status, branch, switch, pull, log и diff." },
     { title: "Осторожно", text: "Перед git reset проверь status и сохрани локальные изменения." },
   ], "Git помогает QA получить нужную версию кода и проверить изменение из отдельной ветки."),
-  "m8-07": V("layers", ["ADB", "Firebase", "Developer Options", "Root"], Code2, "blue", [
+  "m8-08": V("layers", ["ADB", "Firebase", "Developer Options", "Root"], Code2, "blue", [
     { title: "ADB", text: "Подключение Android, установка APK, логи, копирование файлов." },
     { title: "pull / push", text: "pull — с устройства на ПК; push — с ПК на устройство." },
     { title: "Firebase", text: "App Distribution доставляет сборки; Crashlytics группирует падения." },
     { title: "Developer Options", text: "USB debugging, показ касаний и диагностические настройки." },
     { title: "Root / Jailbreak", text: "Специализированная лабораторная среда с повышенными рисками безопасности." },
   ], "Используй диагностические возможности осознанно и не допускай утечки секретов в логах."),
-  "m8-08": V("network", ["Interview","Platforms","Activity","Sniffers","Builds","Service Worker"], Smartphone, "blue", [
+  "m8-09": V("network", ["Interview","Platforms","Activity","Sniffers","Builds","Service Worker"], Smartphone, "blue", [
     { title: "Mobile vs Web", text: "Мобильное приложение зависит от ОС, устройства, сенсоров, разрешений, установки и обновления сборок; веб чаще обновляется серверным деплоем." },
     { title: "Android vs iOS", text: "Сравни магазины и распространение, сборку/подпись, beta testing, гайдлайны, разрешения и фрагментацию устройств." },
     { title: "Гайдлайны и версии", text: "Material Design и Human Interface Guidelines задают паттерны платформы. Актуальные версии ОС и изменения проверяй по официальным источникам на дату интервью." },
