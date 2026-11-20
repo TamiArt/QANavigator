@@ -151,6 +151,8 @@ interface ChecklistDocItem { id: string; text: string; category: "positive" | "n
 function ChecklistDocSection() {
   const { apiKeys, checklists, setChecklists, testCases, setTestCases, selectedTechnique, setSelectedTechnique, setActiveModule } = useApp();
   const [mode, setMode] = useState<"ai" | "manual">("ai");
+  const [manualConversionMessage, setManualConversionMessage] = useState("");
+  const [manualChecklistConverted, setManualChecklistConverted] = useState(false);
 
   // ── AI mode state ────────────────────────────────────
   const [preset, setPreset] = useState<string | null>(null);
@@ -206,6 +208,31 @@ function ChecklistDocSection() {
     setExpandingId(null);
   };
 
+  const convertWholeChecklist = () => {
+    const pendingItems = checklists.filter((item) => !item.testCase);
+    if (!pendingItems.length) return;
+    const generatedByItemId = new Map<string, TestCase>();
+    const created = pendingItems.map((item): TestCase => {
+      const testCase: TestCase = {
+        id: uid(),
+        title: item.text.length > 100 ? item.text.slice(0, 97) + "..." : item.text,
+        preconditions: featureDesc.trim() || "Подготовлено тестовое окружение и тестовые данные согласно требованиям.",
+        steps: ["Открыть тестируемую функциональность.", item.text],
+        expected: "Поведение системы соответствует требованиям; проверка завершается без ошибок и нежелательных побочных эффектов.",
+        priority: item.category === "negative" ? "P1" : "P2",
+        status: "pending",
+        source: "Чек-лист: " + item.text,
+      };
+      generatedByItemId.set(item.id, testCase);
+      return testCase;
+    });
+    setTestCases([...testCases, ...created]);
+    setChecklists(checklists.map((item) => {
+      const generated = generatedByItemId.get(item.id);
+      return generated ? { ...item, testCase: generated } : item;
+    }));
+  };
+
   const catLabel: Record<string, string> = { positive: "Позитивные", negative: "Негативные", boundary: "Граничные значения", nonfunctional: "Нефункциональные" };
   const catOrder = ["positive", "negative", "boundary", "nonfunctional"];
   const grouped = catOrder.reduce((acc, cat) => { acc[cat] = checklists.filter(c => c.category === cat); return acc; }, {} as Record<string, ChecklistItem[]>);
@@ -234,6 +261,35 @@ function ChecklistDocSection() {
   const manGrouped = ["positive", "negative", "boundary", "nonfunctional"].map(cat => ({
     cat, label: manCatLabel[cat], items: manItems.filter(i => i.category === cat),
   })).filter(g => g.items.length > 0);
+
+  const convertManualChecklist = () => {
+    const sourceItems = manItems.filter((item) => item.text.trim());
+    if (!sourceItems.length || manualChecklistConverted) return;
+    const converted = sourceItems.map((item) => {
+      const testCase: TestCase = {
+        id: uid(),
+        title: item.text.trim(),
+        preconditions: [manFeature, manEnv && "Окружение: " + manEnv].filter(Boolean).join(". ") || "Подготовлено тестовое окружение и данные.",
+        steps: ["Открыть функциональность: " + (manFeature || manTitle), item.text.trim()],
+        expected: "Результат соответствует требованиям; проверка завершается без ошибок и нежелательных побочных эффектов.",
+        priority: item.priority,
+        status: "pending",
+        source: "Чек-лист: " + (manTitle || "Ручной чек-лист"),
+      };
+      const checklistItem: ChecklistItem = {
+        id: uid(),
+        text: item.text.trim(),
+        category: item.category,
+        status: "pending",
+        testCase,
+      };
+      return { checklistItem, testCase };
+    });
+    setChecklists([...checklists, ...converted.map((item) => item.checklistItem)]);
+    setTestCases([...testCases, ...converted.map((item) => item.testCase)]);
+    setManualChecklistConverted(true);
+    setManualConversionMessage("Пункты чек-листа преобразованы в тест-кейсы. Они добавлены в библиотеку тест-кейсов и доступны для импорта в Test Management из рабочего пространства.");
+  };
 
   const manMarkdown = [
     "# Чек-лист тестирования: " + (manTitle || "(без названия)"),
@@ -334,6 +390,9 @@ function ChecklistDocSection() {
                       <button onClick={() => downloadTextFile(toWordDocumentHtml(aiMarkdown), "checklist.doc", "application/msword;charset=utf-8")} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-muted text-muted-foreground border border-border hover:text-foreground transition-colors">.doc</button>
                     </>
                   )}
+                  <button onClick={convertWholeChecklist} disabled={!checklists.some((item) => !item.testCase)} className="flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-md bg-primary/10 text-primary border border-primary/20 hover:opacity-80 transition-opacity disabled:opacity-40">
+                    <Layers className="w-3.5 h-3.5" /> Преобразовать весь чек-лист в тест-кейсы
+                  </button>
                   <button onClick={() => setActiveModule("test-execution")} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:opacity-80 transition-opacity">
                     <Play className="w-3.5 h-3.5" /> Запустить выполнение
                   </button>
@@ -429,6 +488,10 @@ function ChecklistDocSection() {
             </div>
           </div>
 
+          <div className="flex flex-wrap items-center gap-2">
+            <button type="button" onClick={convertManualChecklist} disabled={manualChecklistConverted || !manItems.some((item) => item.text.trim())} className="rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground disabled:opacity-40">Преобразовать чек-лист в тест-кейсы</button>
+            {manualConversionMessage && <p role="status" className="text-xs text-emerald-600 dark:text-emerald-400">{manualConversionMessage}</p>}
+          </div>
           <ExportCard text={manMarkdown} filename="checklist.md" />
         </>
       )}

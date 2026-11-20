@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import fs from "node:fs";
 
-test("Module 8 is registered after SQL and contains eight ordered Mobile QA lessons", () => {
+test("Module 8 is registered after SQL and contains nine ordered Mobile QA lessons", () => {
   const registry = fs.readFileSync("src/app/features/handbook/handbook-learning.ts", "utf8");
   const source = fs.readFileSync("src/app/features/handbook/handbook-learning-module8.ts", "utf8");
   const expected = [
@@ -10,6 +10,7 @@ test("Module 8 is registered after SQL and contains eight ordered Mobile QA less
     "Виды мобильных приложений и тестирование WebView",
     "Push-уведомления: устройство работы и тестирование",
     "Android vs iOS: платформенные особенности для QA",
+    "Из чего состоит мобильное приложение и что проверяет QA",
     "Снифферы мобильного трафика: Charles Proxy и Proxyman",
     "Установка и начальная настройка Git",
     "ADB, Firebase, Developer Options и расширенный доступ",
@@ -19,7 +20,7 @@ test("Module 8 is registered after SQL and contains eight ordered Mobile QA less
   assert.ok(registry.includes('title: "Модуль 8 — Мобильное тестирование"'));
   assert.ok(registry.includes("lessons: HANDBOOK_LEARNING_MODULE_8_LESSONS"));
   assert.ok(registry.includes('from "./handbook-learning-module8"'));
-  assert.equal(source.split('id: "m8-').length - 1, 8);
+  assert.equal(source.split('id: "m8-').length - 1, 9);
   const positions = expected.map((title) => {
     const position = source.indexOf('title: "' + title + '"');
     assert.notEqual(position, -1, "Missing lesson: " + title);
@@ -30,7 +31,7 @@ test("Module 8 is registered after SQL and contains eight ordered Mobile QA less
 
 test("Every Module 8 lesson has its own infographic model", () => {
   const visuals = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
-  for (let i = 1; i <= 8; i += 1) {
+  for (let i = 1; i <= 9; i += 1) {
     const id = "m8-" + String(i).padStart(2, "0");
     assert.ok(visuals.includes('"' + id + '": V('), "Missing infographic for " + id);
   }
@@ -45,5 +46,5 @@ test("Module 8 lesson templates contain only the expected template delimiters", 
     for (let cursor = index - 1; cursor >= 0 && source[cursor] === String.fromCharCode(92); cursor -= 1) precedingBackslashes += 1;
     if (precedingBackslashes % 2 === 0) unescapedCount += 1;
   }
-  assert.equal(unescapedCount, 16, "Only eight lesson template openings and closings may use unescaped backticks");
+  assert.equal(unescapedCount, 18, "Only nine lesson template openings and closings may use unescaped backticks");
 });
