@@ -4,6 +4,7 @@ import { useApp } from "../../core/app-context";
 import { createProject as buildProject, type ProductType, type QAProject } from "../../domain/project";
 import { TestManagementModule } from "../test-management/TestManagementModule";
 import { TestManagementArchiveImport } from "../test-management/TestManagementArchiveImport";
+import { WorkspaceDocumentsPanel } from "./WorkspaceDocumentsPanel";
 
 const productNames: Record<ProductType, string> = {
   web: "Web",
@@ -168,6 +169,7 @@ export function ProjectWorkspace() {
             </section>
             <TestManagementArchiveImport projectId={active.id} />
             <TestManagementModule projectId={active.id} />
+            <WorkspaceDocumentsPanel projectId={active.id} />
             </div>
           )}
         </div>
