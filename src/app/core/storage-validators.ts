@@ -226,8 +226,8 @@ function isTmsProject(value: unknown): boolean {
   const runs = value.runs as unknown[];
   const requirementIds = new Set(Array.isArray(value.requirements) ? value.requirements.map((item) => (item as Record<string, unknown>).id) : []);
   const sharedStepIds = new Set(Array.isArray(value.sharedSteps) ? value.sharedSteps.map((item) => (item as Record<string, unknown>).id) : []);
-  if (value.sharedSteps !== undefined && value.cases.some((item) => (item as Record<string, unknown>).sharedStepIds instanceof Array && ((item as Record<string, unknown>).sharedStepIds as string[]).some((id) => !sharedStepIds.has(id)))) return false;
-  if (value.requirements !== undefined && value.cases.some((item) => (item as Record<string, unknown>).requirementIds instanceof Array && ((item as Record<string, unknown>).requirementIds as string[]).some((id) => !requirementIds.has(id)))) return false;
+  if (value.sharedSteps !== undefined && value.cases.some((item) => Array.isArray((item as Record<string, unknown>).sharedStepIds) && ((item as Record<string, unknown>).sharedStepIds as string[]).some((id) => !sharedStepIds.has(id)))) return false;
+  if (value.requirements !== undefined && value.cases.some((item) => Array.isArray((item as Record<string, unknown>).requirementIds) && ((item as Record<string, unknown>).requirementIds as string[]).some((id) => !requirementIds.has(id)))) return false;
   if (!value.suites.every((item) => isRecord(item) && typeof item.id === "string" &&
     typeof item.projectId === "string" && typeof item.name === "string" &&
     (item.description === undefined || typeof item.description === "string") &&
