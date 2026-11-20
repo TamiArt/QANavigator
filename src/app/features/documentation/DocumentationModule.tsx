@@ -151,6 +151,8 @@ interface ChecklistDocItem { id: string; text: string; category: "positive" | "n
 function ChecklistDocSection() {
   const { apiKeys, checklists, setChecklists, testCases, setTestCases, selectedTechnique, setSelectedTechnique, setActiveModule } = useApp();
   const [mode, setMode] = useState<"ai" | "manual">("ai");
+  const [manualConversionMessage, setManualConversionMessage] = useState("");
+  const [manualChecklistConverted, setManualChecklistConverted] = useState(false);
 
   // ── AI mode state ────────────────────────────────────
   const [preset, setPreset] = useState<string | null>(null);
@@ -259,6 +261,35 @@ function ChecklistDocSection() {
   const manGrouped = ["positive", "negative", "boundary", "nonfunctional"].map(cat => ({
     cat, label: manCatLabel[cat], items: manItems.filter(i => i.category === cat),
   })).filter(g => g.items.length > 0);
+
+  const convertManualChecklist = () => {
+    const sourceItems = manItems.filter((item) => item.text.trim());
+    if (!sourceItems.length || manualChecklistConverted) return;
+    const converted = sourceItems.map((item) => {
+      const testCase: TestCase = {
+        id: uid(),
+        title: item.text.trim(),
+        preconditions: [manFeature, manEnv && "Окружение: " + manEnv].filter(Boolean).join(". ") || "Подготовлено тестовое окружение и данные.",
+        steps: ["Открыть функциональность: " + (manFeature || manTitle), item.text.trim()],
+        expected: "Результат соответствует требованиям; проверка завершается без ошибок и нежелательных побочных эффектов.",
+        priority: item.priority,
+        status: "pending",
+        source: "Чек-лист: " + (manTitle || "Ручной чек-лист"),
+      };
+      const checklistItem: ChecklistItem = {
+        id: uid(),
+        text: item.text.trim(),
+        category: item.category,
+        status: "pending",
+        testCase,
+      };
+      return { checklistItem, testCase };
+    });
+    setChecklists([...checklists, ...converted.map((item) => item.checklistItem)]);
+    setTestCases([...testCases, ...converted.map((item) => item.testCase)]);
+    setManualChecklistConverted(true);
+    setManualConversionMessage("Пункты чек-листа преобразованы в тест-кейсы. Они добавлены в библиотеку тест-кейсов и доступны для импорта в Test Management из рабочего пространства.");
+  };
 
   const manMarkdown = [
     "# Чек-лист тестирования: " + (manTitle || "(без названия)"),
@@ -457,6 +488,10 @@ function ChecklistDocSection() {
             </div>
           </div>
 
+          <div className="flex flex-wrap items-center gap-2">
+            <button type="button" onClick={convertManualChecklist} disabled={manualChecklistConverted || !manItems.some((item) => item.text.trim())} className="rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground disabled:opacity-40">Преобразовать чек-лист в тест-кейсы</button>
+            {manualConversionMessage && <p role="status" className="text-xs text-emerald-600 dark:text-emerald-400">{manualConversionMessage}</p>}
+          </div>
           <ExportCard text={manMarkdown} filename="checklist.md" />
         </>
       )}
