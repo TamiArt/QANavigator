@@ -159,7 +159,7 @@ export function OpenApiPostmanImport() {
         </button>
         <input ref={inputRef} type="file" accept=".json,.yaml,.yml,application/json,text/yaml" className="hidden" onChange={event => void handleFile(event.target.files?.[0])} />
       </div>
-      <p className="text-xs text-muted-foreground">После скачивания откройте Postman → Import → Files и выберите созданный JSON. Секреты и реальные токены не добавляются. Ссылки на внешние схемы и сложные $ref не разрешаются автоматически.</p>
+      <p className="text-xs text-muted-foreground">После скачивания откройте Postman → Import → Files и выберите созданный JSON. Секреты и реальные токены не добавляются. Внешние схемы и сложные $ref не разрешаются автоматически; настройки авторизации и OAuth нужно проверить и настроить в Postman вручную.</p>
       {message && <div role="status" className="flex items-start gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs text-emerald-700 dark:text-emerald-300"><CheckCircle2 className="h-4 w-4 shrink-0" />{message}</div>}
       {error && <div role="alert" className="flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-xs text-destructive"><AlertCircle className="h-4 w-4 shrink-0" />{error}</div>}
     </section>
