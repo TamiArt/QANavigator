@@ -209,19 +209,24 @@ function ChecklistDocSection() {
   const convertWholeChecklist = () => {
     const pendingItems = checklists.filter((item) => !item.testCase);
     if (!pendingItems.length) return;
-    const created = pendingItems.map((item): TestCase => ({
-      id: uid(),
-      title: item.text.length > 100 ? item.text.slice(0, 97) + "..." : item.text,
-      preconditions: featureDesc.trim() || "Подготовлено тестовое окружение и тестовые данные согласно требованиям.",
-      steps: ["Открыть тестируемую функциональность.", item.text],
-      expected: "Поведение системы соответствует требованиям; проверка завершается без ошибок и нежелательных побочных эффектов.",
-      priority: item.category === "negative" ? "P1" : "P2",
-      status: "pending",
-      source: "Чек-лист: " + item.text,
-    }));
+    const generatedByItemId = new Map<string, TestCase>();
+    const created = pendingItems.map((item): TestCase => {
+      const testCase: TestCase = {
+        id: uid(),
+        title: item.text.length > 100 ? item.text.slice(0, 97) + "..." : item.text,
+        preconditions: featureDesc.trim() || "Подготовлено тестовое окружение и тестовые данные согласно требованиям.",
+        steps: ["Открыть тестируемую функциональность.", item.text],
+        expected: "Поведение системы соответствует требованиям; проверка завершается без ошибок и нежелательных побочных эффектов.",
+        priority: item.category === "negative" ? "P1" : "P2",
+        status: "pending",
+        source: "Чек-лист: " + item.text,
+      };
+      generatedByItemId.set(item.id, testCase);
+      return testCase;
+    });
     setTestCases([...testCases, ...created]);
     setChecklists(checklists.map((item) => {
-      const generated = created.find((testCase) => testCase.source === "Чек-лист: " + item.text);
+      const generated = generatedByItemId.get(item.id);
       return generated ? { ...item, testCase: generated } : item;
     }));
   };
