@@ -11,7 +11,7 @@ const compiled = ts.transpileModule(source, {
 }).outputText;
 const module = { exports: {} };
 vm.runInNewContext(compiled, { module, exports: module.exports });
-const { getTmsOverviewMetrics, createTmsTraceabilityCsv, createTmsRunCsv } = module.exports;
+const { getTmsOverviewMetrics, createTmsTraceabilityCsv, createTmsRunCsv, getTmsRunTrend } = module.exports;
 
 const data = {
   version: 1,
@@ -23,8 +23,9 @@ const data = {
   requirements: [{ id: "r1", key: "REQ-001", title: "Auth", status: "approved", priority: "P1" }, { id: "r2", key: "REQ-002", title: "Export", status: "draft", priority: "P2" }],
   runs: [{
     id: "run1", projectId: "p1", planId: "plan1", name: "Run", startedAt: "now",
+    planSnapshot: { environment: "Staging", milestoneName: "Release 2.4", release: "2.4", build: "build-42" },
     caseSnapshots: { c1: { key: "QA-001", title: "Login", version: 2, steps: [{ action: "Open", expected: "Form" }] } },
-    results: { c1: { status: "passed", actual: "OK", stepResults: [{ status: "passed", actual: "Form visible" }] }, c2: { status: "failed", actual: "Broken" } },
+    results: { c1: { status: "passed", actual: "OK", assignee: "QA Tester", comment: "Case-level note", stepResults: [{ status: "passed", actual: "Form visible", comment: "Step-level note" }] }, c2: { status: "failed", actual: "Broken" }, c3: { status: "in_progress", actual: "" }, c4: { status: "retest", actual: "Needs another run" } },
   }],
 };
 
@@ -36,6 +37,8 @@ test("TMS overview metrics calculate latest-run pass rate and requirement covera
   assert.equal(metrics.coveragePercent, 50);
   assert.equal(metrics.automationCoveragePercent, 100);
   assert.equal(metrics.passRate, 50);
+  assert.equal(metrics.inProgress, 1);
+  assert.equal(metrics.retest, 1);
   assert.equal(metrics.openDefects, 1);
 });
 
@@ -51,4 +54,19 @@ test("run CSV includes immutable case version and step evidence", () => {
   assert.match(csv, /QA-001/);
   assert.match(csv, /,2,/);
   assert.match(csv, /Form visible/);
+  assert.match(csv, /QA Tester/);
+  assert.match(csv, /Release 2.4/);
+  assert.match(csv, /Case-level note/);
+  assert.match(csv, /Step-level note/);
+});
+
+
+test("run trend is chronological and excludes pending statuses from pass rate", () => {
+  const earlier = { ...data.runs[0], id: "run-earlier", startedAt: "2026-01-01T00:00:00.000Z" };
+  const later = { ...data.runs[0], id: "run-later", startedAt: "2026-01-02T00:00:00.000Z" };
+  const trend = getTmsRunTrend([later, earlier]);
+  assert.deepEqual(Array.from(trend, (item) => item.id), ["run-earlier", "run-later"]);
+  assert.equal(trend[0].passRate, 50);
+  assert.equal(trend[0].inProgress, 1);
+  assert.equal(trend[0].retest, 1);
 });

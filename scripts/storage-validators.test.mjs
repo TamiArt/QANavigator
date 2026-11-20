@@ -158,4 +158,104 @@ test("TMS validator checks shared-step references", () => {
     cases: [{ ...base.cases[0], sharedStepIds: ["shared-1"] }],
   };
   assert.equal(validators.isTestManagementStorageValue([valid]), true);
+  const invalidHistory = {
+    ...valid,
+    sharedSteps: [{
+      ...valid.sharedSteps[0],
+      versions: [{ version: "bad", savedAt: "now", name: "Login", steps: [] }],
+    }],
+  };
+  assert.equal(validators.isTestManagementStorageValue([invalidHistory]), false);
+});
+
+
+test("TMS storage rejects cross-project records and duplicate project buckets", () => {
+  const project = {
+    version: 1, projectId: "p1", cases: [], suites: [], plans: [], runs: [], defects: [],
+  };
+  const crossProject = {
+    ...project,
+    cases: [{
+      id: "c1", projectId: "p2", key: "QA-001", title: "Case", folder: "Auth",
+      preconditions: "", steps: [], expected: "", priority: "P2", type: "Functional",
+      tags: [], requirementIds: [], createdAt: "now", updatedAt: "now", archived: false,
+    }],
+  };
+  assert.equal(validators.isTestManagementStorageValue([crossProject]), false);
+  assert.equal(validators.isTestManagementStorageValue([project, project]), false);
+});
+
+
+test("TMS storage validates immutable plan snapshots and expanded run statuses", () => {
+  const project = {
+    version: 1,
+    projectId: "p1",
+    cases: [{
+      id: "c1", projectId: "p1", key: "QA-001", title: "Login", folder: "Auth",
+      preconditions: "", steps: [{ action: "Open", expected: "Form" }], expected: "Success",
+      priority: "P1", type: "Functional", tags: [], requirementIds: [],
+      createdAt: "now", updatedAt: "now", archived: false,
+    }],
+    suites: [],
+    plans: [{
+      id: "plan-1", projectId: "p1", name: "Release regression",
+      environment: "Staging", suiteIds: [], caseIds: ["c1"], createdAt: "now",
+    }],
+    runs: [{
+      id: "run-1", projectId: "p1", planId: "plan-1", name: "Run", startedAt: "now",
+      planSnapshot: { id: "plan-1", name: "Release regression", environment: "Staging", release: "2.4" },
+      caseSnapshots: { c1: { id: "c1", key: "QA-001", title: "Login", steps: [{ action: "Open", expected: "Form" }] } },
+      results: { c1: {
+        status: "retest", actual: "", comment: "",
+        stepResults: [{ status: "in_progress", actual: "Loading", comment: "" }],
+      } },
+    }],
+    defects: [],
+  };
+  assert.equal(validators.isTestManagementStorageValue([project]), true);
+  const invalid = {
+    ...project,
+    runs: [{ ...project.runs[0], planSnapshot: { ...project.runs[0].planSnapshot, environment: 42 } }],
+  };
+  assert.equal(validators.isTestManagementStorageValue([invalid]), false);
+});
+
+
+test("TMS storage validates milestone ownership and plan links", () => {
+  const project = {
+    version: 1,
+    projectId: "p1",
+    cases: [], suites: [],
+    milestones: [{
+      id: "milestone-1", projectId: "p1", name: "Release 2.4",
+      status: "active", createdAt: "now", updatedAt: "now",
+    }],
+    plans: [{
+      id: "plan-1", projectId: "p1", name: "Regression", environment: "Staging",
+      suiteIds: [], caseIds: [], milestoneId: "milestone-1", createdAt: "now",
+    }],
+    runs: [{
+      id: "run-1", projectId: "p1", planId: "plan-1", name: "Run", startedAt: "now",
+      planSnapshot: {
+        id: "plan-1", name: "Regression", environment: "Staging",
+        milestoneId: "milestone-1", milestoneName: "Release 2.4",
+      },
+      results: {},
+    }],
+    defects: [],
+  };
+  assert.equal(validators.isTestManagementStorageValue([project]), true);
+  const broken = {
+    ...project,
+    plans: [{ ...project.plans[0], milestoneId: "missing-milestone" }],
+  };
+  assert.equal(validators.isTestManagementStorageValue([broken]), false);
+  const brokenRunSnapshot = {
+    ...project,
+    runs: [{
+      ...project.runs[0],
+      planSnapshot: { ...project.runs[0].planSnapshot, milestoneId: "missing-milestone" },
+    }],
+  };
+  assert.equal(validators.isTestManagementStorageValue([brokenRunSnapshot]), false);
 });

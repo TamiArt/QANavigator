@@ -11,6 +11,8 @@ export interface TmsOverviewMetrics {
   passed: number;
   failed: number;
   blocked: number;
+  retest: number;
+  inProgress: number;
   skipped: number;
   notRun: number;
   passRate: number;
@@ -27,7 +29,7 @@ export function getTmsOverviewMetrics(data: TmsData): TmsOverviewMetrics {
   const latestRun = data.runs[0];
   const results = latestRun ? Object.values(latestRun.results) : [];
   const count = (status: string) => results.filter((result) => result.status === status).length;
-  const executed = results.filter((result) => result.status !== "not_run").length;
+  const executed = results.filter((result) => !["not_run", "in_progress", "retest"].includes(result.status)).length;
   return {
     totalCases: data.cases.length,
     activeCases: data.cases.filter((item) => !item.archived).length,
@@ -39,6 +41,8 @@ export function getTmsOverviewMetrics(data: TmsData): TmsOverviewMetrics {
     passed: count("passed"),
     failed: count("failed"),
     blocked: count("blocked"),
+    retest: count("retest"),
+    inProgress: count("in_progress"),
     skipped: count("skipped"),
     notRun: count("not_run"),
     passRate: executed ? Math.round(count("passed") / executed * 100) : 0,
@@ -55,16 +59,65 @@ export function createTmsTraceabilityCsv(data: TmsData): string {
   return rows.map((row) => row.map(escapeCsv).join(",")).join("\r\n");
 }
 export function createTmsRunCsv(run: TmsRun): string {
-  const rows = [["Test Case ID", "Test Case", "Case Version", "Result", "Actual Result", "Step", "Step Result", "Step Actual"]];
+  const rows = [["Run Environment", "Milestone", "Release", "Build", "Test Case ID", "Test Case", "Assignee", "Case Version", "Result", "Actual Result", "Run Comment", "Step", "Step Result", "Step Actual", "Step Comment"]];
   for (const [caseId, result] of Object.entries(run.results)) {
     const snapshot = run.caseSnapshots?.[caseId];
     const title = snapshot?.title ?? caseId;
     const steps = snapshot?.steps ?? [];
-    if (!result.stepResults?.length) rows.push([snapshot?.key ?? caseId, title, String(snapshot?.version ?? ""), result.status, result.actual, "", "", ""]);
+    if (!result.stepResults?.length) rows.push([run.planSnapshot?.environment ?? "", run.planSnapshot?.milestoneName ?? "", run.planSnapshot?.release ?? "", run.planSnapshot?.build ?? "", snapshot?.key ?? caseId, title, result.assignee ?? "", String(snapshot?.version ?? ""), result.status, result.actual, result.comment, "", "", "", ""]);
     else result.stepResults.forEach((stepResult, index) => rows.push([
-      snapshot?.key ?? caseId, title, String(snapshot?.version ?? ""), result.status, result.actual,
-      steps[index]?.action ?? String(index + 1), stepResult.status, stepResult.actual,
+      run.planSnapshot?.environment ?? "", run.planSnapshot?.milestoneName ?? "", run.planSnapshot?.release ?? "", run.planSnapshot?.build ?? "",
+      snapshot?.key ?? caseId, title, result.assignee ?? "", String(snapshot?.version ?? ""), result.status, result.actual, result.comment,
+      steps[index]?.action ?? String(index + 1), stepResult.status, stepResult.actual, stepResult.comment,
     ]));
   }
   return rows.map((row) => row.map(escapeCsv).join(",")).join("\r\n");
+}
+
+
+export interface TmsRunTrendPoint {
+  id: string;
+  name: string;
+  startedAt: string;
+  environment: string;
+  milestone: string;
+  total: number;
+  passed: number;
+  failed: number;
+  blocked: number;
+  retest: number;
+  inProgress: number;
+  skipped: number;
+  notRun: number;
+  passRate: number;
+}
+
+export function getTmsRunTrend(runs: TmsRun[]): TmsRunTrendPoint[] {
+  return [...runs]
+    .sort((left, right) => Date.parse(left.startedAt) - Date.parse(right.startedAt))
+    .map((run) => {
+      const results = Object.values(run.results);
+      const count = (status: string) => results.filter((result) => result.status === status).length;
+      const passed = count("passed");
+      const failed = count("failed");
+      const blocked = count("blocked");
+      const skipped = count("skipped");
+      const executed = passed + failed + blocked + skipped;
+      return {
+        id: run.id,
+        name: run.name,
+        startedAt: run.startedAt,
+        environment: run.planSnapshot?.environment ?? "",
+        milestone: run.planSnapshot?.milestoneName ?? "",
+        total: results.length,
+        passed,
+        failed,
+        blocked,
+        retest: count("retest"),
+        inProgress: count("in_progress"),
+        skipped,
+        notRun: count("not_run"),
+        passRate: executed ? Math.round(passed / executed * 100) : 0,
+      };
+    });
 }

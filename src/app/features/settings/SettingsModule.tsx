@@ -71,6 +71,7 @@ export function SettingsModule() {
       const mode = getInitialTmsStorageMode();
       data[STORAGE_KEYS.testManagement] = await loadTmsProjects(mode);
       const attachments = typeof indexedDB === "undefined" ? [] : await listAllTmsAttachments();
+      if (attachments.length > 500) throw new Error("Количество вложений превышает лимит полной резервной копии 500 файлов");
       const totalBytes = attachments.reduce((sum, item) => sum + item.size, 0);
       if (totalBytes > 100 * 1024 * 1024) throw new Error("Размер вложений превышает лимит полной резервной копии 100 МБ");
       data[TMS_ATTACHMENTS_BACKUP_KEY] = await Promise.all(attachments.map(async (item) => ({

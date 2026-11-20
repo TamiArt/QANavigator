@@ -198,23 +198,47 @@ function isTmsCase(value: unknown): boolean {
 }
 
 function isTmsRunResult(value: unknown): boolean {
-  return isRecord(value) && ["not_run", "passed", "failed", "blocked", "skipped"].includes(String(value.status)) &&
+  return isRecord(value) && ["not_run", "in_progress", "passed", "failed", "blocked", "retest", "skipped"].includes(String(value.status)) &&
     typeof value.actual === "string" && typeof value.comment === "string" &&
-    (value.stepResults === undefined || (Array.isArray(value.stepResults) && value.stepResults.every((step) => isRecord(step) && ["not_run", "passed", "failed", "blocked", "skipped"].includes(String(step.status)) && typeof step.actual === "string" && typeof step.comment === "string"))) &&
+    (value.assignee === undefined || typeof value.assignee === "string") &&
+    (value.stepResults === undefined || (Array.isArray(value.stepResults) && value.stepResults.every((step) => isRecord(step) && ["not_run", "in_progress", "passed", "failed", "blocked", "retest", "skipped"].includes(String(step.status)) && typeof step.actual === "string" && typeof step.comment === "string" &&
+      (step.attachmentIds === undefined || isStringArray(step.attachmentIds))))) &&
     (value.defectId === undefined || typeof value.defectId === "string") &&
     (value.attachmentIds === undefined || isStringArray(value.attachmentIds));
 }
 
 function isTmsSharedStep(value: unknown): boolean {
   if (!isRecord(value) || typeof value.id !== "string" || typeof value.projectId !== "string" ||
-    typeof value.key !== "string" || typeof value.name !== "string" || typeof value.version !== "number" ||
-    typeof value.createdAt !== "string" || typeof value.updatedAt !== "string" ||
-    !Array.isArray(value.steps) ||
-    !value.steps.every((step) => isRecord(step) && typeof step.action === "string" && typeof step.expected === "string")) return false;
-  return value.versions === undefined || (Array.isArray(value.versions) && value.versions.every((version) =>
-    isRecord(version) && typeof version.version === "number" && typeof version.savedAt === "string" &&
-    typeof version.name === "string" && Array.isArray(version.steps) &&
-    version.steps.every((step) => isRecord(step) && typeof step.action === "string" && typeof step.expected === "string")));
+    typeof value.key !== "string" || typeof value.name !== "string" ||
+    typeof value.version !== "number" || typeof value.createdAt !== "string" ||
+    typeof value.updatedAt !== "string" || !Array.isArray(value.steps) ||
+    !value.steps.every((step) => isRecord(step) && typeof step.action === "string" && typeof step.expected === "string")) {
+    return false;
+  }
+  if (value.versions === undefined) return true;
+  return Array.isArray(value.versions) && value.versions.every((version) =>
+    isRecord(version) && typeof version.version === "number" &&
+    typeof version.savedAt === "string" && typeof version.name === "string" &&
+    Array.isArray(version.steps) &&
+    version.steps.every((step) => isRecord(step) && typeof step.action === "string" && typeof step.expected === "string"));
+}
+
+function isTmsMilestone(value: unknown): boolean {
+  return isRecord(value) && typeof value.id === "string" && typeof value.projectId === "string" &&
+    typeof value.name === "string" && ["planned", "active", "completed"].includes(String(value.status)) &&
+    typeof value.createdAt === "string" && typeof value.updatedAt === "string" &&
+    (value.description === undefined || typeof value.description === "string") &&
+    (value.startDate === undefined || typeof value.startDate === "string") &&
+    (value.endDate === undefined || typeof value.endDate === "string");
+}
+
+function isTmsPlanSnapshot(value: unknown): boolean {
+  if (!isRecord(value) || typeof value.id !== "string" || typeof value.name !== "string" ||
+    typeof value.environment !== "string" ||
+    (value.milestoneId !== undefined && typeof value.milestoneId !== "string") ||
+    (value.milestoneName !== undefined && typeof value.milestoneName !== "string")) return false;
+  return ["release", "build", "objective", "risks", "owner", "startDate", "endDate", "entryCriteria", "exitCriteria"]
+    .every((field) => value[field] === undefined || typeof value[field] === "string");
 }
 
 function isTmsProject(value: unknown): boolean {
@@ -222,17 +246,27 @@ function isTmsProject(value: unknown): boolean {
   if (!Array.isArray(value.cases) || !value.cases.every(isTmsCase) ||
     (value.requirements !== undefined && (!Array.isArray(value.requirements) || !value.requirements.every((item) => isRecord(item) && typeof item.id === "string" && typeof item.projectId === "string" && typeof item.key === "string" && typeof item.title === "string" && typeof item.description === "string" && typeof item.acceptanceCriteria === "string" && PRIORITIES.includes(item.priority as (typeof PRIORITIES)[number]) && ["draft", "approved", "implemented", "verified", "deprecated"].includes(String(item.status)) && typeof item.createdAt === "string" && typeof item.updatedAt === "string"))) ||
     (value.sharedSteps !== undefined && (!Array.isArray(value.sharedSteps) || !value.sharedSteps.every(isTmsSharedStep))) ||
+    (value.milestones !== undefined && (!Array.isArray(value.milestones) || !value.milestones.every(isTmsMilestone))) ||
     !Array.isArray(value.suites) || !Array.isArray(value.plans) ||
     !Array.isArray(value.runs) || !Array.isArray(value.defects)) return false;
   const hasUniqueField = (items: unknown[], field: string) => new Set(items.map((item) => (item as Record<string, unknown>)[field])).size === items.length;
   if (!hasUniqueField(value.cases, "id") || !hasUniqueField(value.cases, "key") ||
     !hasUniqueField(value.suites, "id") || !hasUniqueField(value.plans, "id") ||
+    (Array.isArray(value.milestones) && !hasUniqueField(value.milestones, "id")) ||
     !hasUniqueField(value.defects, "id") || !hasUniqueField(value.defects, "key") ||
     (Array.isArray(value.sharedSteps) && (!hasUniqueField(value.sharedSteps, "id") || !hasUniqueField(value.sharedSteps, "key"))) ||
     (Array.isArray(value.requirements) && (!hasUniqueField(value.requirements, "id") || !hasUniqueField(value.requirements, "key")))) return false;
+  const projectId = value.projectId;
+  const projectScopedCollections = [value.cases, value.suites, value.plans, value.runs, value.defects,
+    ...(Array.isArray(value.requirements) ? [value.requirements] : []),
+    ...(Array.isArray(value.sharedSteps) ? [value.sharedSteps] : []),
+    ...(Array.isArray(value.milestones) ? [value.milestones] : [])];
+  if (projectScopedCollections.some((items) => items.some((item) =>
+    !isRecord(item) || item.projectId !== projectId))) return false;
   const caseIds = new Set(value.cases.map((item) => (item as Record<string, unknown>).id));
   const suiteIds = new Set(value.suites.map((item) => (item as Record<string, unknown>).id));
   const planIds = new Set(value.plans.map((item) => (item as Record<string, unknown>).id));
+  const milestoneIds = new Set(Array.isArray(value.milestones) ? value.milestones.map((item) => (item as Record<string, unknown>).id) : []);
   const defectIds = new Set(value.defects.map((item) => (item as Record<string, unknown>).id));
   const runs = value.runs as unknown[];
   const requirementIds = new Set(Array.isArray(value.requirements) ? value.requirements.map((item) => (item as Record<string, unknown>).id) : []);
@@ -248,13 +282,16 @@ function isTmsProject(value: unknown): boolean {
     (item.parentId === undefined || (suiteIds.has(item.parentId) && item.parentId !== item.id)))) return false;
   if (!value.plans.every((item) => isRecord(item) && typeof item.id === "string" &&
     typeof item.projectId === "string" && typeof item.name === "string" && typeof item.environment === "string" &&
+    (item.milestoneId === undefined || milestoneIds.has(item.milestoneId)) &&
     ["release", "build", "objective", "risks", "owner", "startDate", "endDate", "entryCriteria", "exitCriteria"].every((key) => item[key] === undefined || typeof item[key] === "string") &&
     isStringArray(item.suiteIds) && item.suiteIds.every((id) => suiteIds.has(id)) &&
     isStringArray(item.caseIds) && item.caseIds.every((id) => caseIds.has(id)))) return false;
   if (!value.runs.every((item) => {
     if (!isRecord(item) || typeof item.id !== "string" || typeof item.projectId !== "string" ||
       typeof item.planId !== "string" || !planIds.has(item.planId) || !isRecord(item.results) ||
-      (item.caseSnapshots !== undefined && !isRecord(item.caseSnapshots))) return false;
+      (item.caseSnapshots !== undefined && !isRecord(item.caseSnapshots)) ||
+      (item.planSnapshot !== undefined && (!isTmsPlanSnapshot(item.planSnapshot) ||
+        (isRecord(item.planSnapshot) && item.planSnapshot.milestoneId !== undefined && !milestoneIds.has(item.planSnapshot.milestoneId))))) return false;
     return Object.entries(item.results).every(([caseId, result]) => {
       if (!isRecord(result) || !isTmsRunResult(result)) return false;
       const runResult = result as Record<string, unknown>;
@@ -280,7 +317,8 @@ function isTmsProject(value: unknown): boolean {
 /** Validates the versioned project-scoped Test Management collection and its references. */
 export function isTestManagementStorageValue(value: unknown): boolean {
   const data = unwrapCurrentStorageValue(value);
-  return Array.isArray(data) && data.every(isTmsProject);
+  if (!Array.isArray(data) || !data.every(isTmsProject)) return false;
+  return new Set(data.map((item) => (item as Record<string, unknown>).projectId)).size === data.length;
 }
 
 /** Validates the optional binary evidence section in a full workspace backup. */

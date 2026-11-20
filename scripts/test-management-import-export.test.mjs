@@ -55,3 +55,18 @@ test("CSV automation type mapping distinguishes manual, candidate and automated"
   const imported = parseTmsCasesCsv(csv, "p1", [], []);
   assert.deepEqual(Array.from(imported.map((item) => item.automationStatus)), ["not_automated", "candidate", "automated"]);
 });
+
+
+test("TMS CSV importer accepts Test IT-style Russian headers and duration units", () => {
+  const csv = [
+    "Название тест-кейса,Путь раздела,Предусловие,Шаги,Ожидаемый результат,Приоритет,Тип тест-кейса,Оценка времени,Тип автоматизации,Метки",
+    '"Проверка входа","API/Auth","Есть пользователь","Открыть форму\nОтправить данные","Доступ предоставлен",Critical,API,"1h 30m","To be automated","api;auth"',
+  ].join("\r\n");
+  const imported = parseTmsCasesCsv(csv, "p3", [], []);
+  assert.equal(imported[0].title, "Проверка входа");
+  assert.equal(imported[0].folder, "API/Auth");
+  assert.equal(imported[0].type, "API");
+  assert.equal(imported[0].estimateMinutes, 90);
+  assert.equal(imported[0].automationStatus, "candidate");
+  assert.deepEqual(Array.from(imported[0].tags), ["api", "auth"]);
+});

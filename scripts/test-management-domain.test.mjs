@@ -11,7 +11,7 @@ const compiled = ts.transpileModule(source, {
 }).outputText;
 const module = { exports: {} };
 vm.runInNewContext(compiled, { module, exports: module.exports });
-const { reviseTmsCase, createTmsRunSnapshot, createTmsRerun } = module.exports;
+const { reviseTmsCase, createTmsRunSnapshot, createTmsRerun, compareTmsCaseVersion, getTmsFolderPaths, isTmsRunReadyToComplete } = module.exports;
 
 const sampleCase = () => ({
   id: "case-1", projectId: "project-1", key: "QA-001", title: "Login", folder: "Auth",
@@ -32,26 +32,31 @@ test("case revisions preserve immutable previous versions", () => {
 
 test("test runs capture immutable case and step snapshots", () => {
   const original = sampleCase();
-  const plan = { id: "plan-1", projectId: "project-1", name: "Regression", environment: "Staging", suiteIds: [], caseIds: ["case-1"], createdAt: "now" };
+  const plan = { id: "plan-1", projectId: "project-1", name: "Regression", environment: "Staging", release: "2.4", build: "build-42", suiteIds: [], caseIds: ["case-1"], createdAt: "now" };
   const run = createTmsRunSnapshot("run-1", "project-1", plan, [original], "2026-01-03", "Regression run");
+  plan.environment = "Production";
   const revised = reviseTmsCase(original, { ...original, title: "Changed later" }, "2026-01-04");
   assert.equal(run.caseSnapshots["case-1"].title, "Login");
   assert.equal(run.caseSnapshots["case-1"].steps[0].expected, "Form appears");
   assert.equal(run.results["case-1"].stepResults.length, 1);
   assert.equal(revised.title, "Changed later");
   assert.equal(run.caseSnapshots["case-1"].title, "Login");
+  assert.equal(run.planSnapshot.environment, "Staging");
+  assert.equal(run.planSnapshot.release, "2.4");
 });
 
 test("selective reruns include only failed and blocked cases and retain source snapshots", () => {
   const original = sampleCase();
-  const plan = { id: "plan-1", projectId: "project-1", name: "Regression", environment: "Staging", suiteIds: [], caseIds: ["case-1", "case-2"], createdAt: "now" };
-  const run = createTmsRunSnapshot("run-1", "project-1", plan, [original, { ...original, id: "case-2", key: "QA-002" }], "2026-01-03", "Initial");
+  const plan = { id: "plan-1", projectId: "project-1", name: "Regression", environment: "Staging", suiteIds: [], caseIds: ["case-1", "case-2", "case-3"], createdAt: "now" };
+  const run = createTmsRunSnapshot("run-1", "project-1", plan, [original, { ...original, id: "case-2", key: "QA-002" }, { ...original, id: "case-3", key: "QA-003" }], "2026-01-03", "Initial");
   run.results["case-1"].status = "failed";
   run.results["case-2"].status = "passed";
+  run.results["case-3"].status = "retest";
   const rerun = createTmsRerun(run, "run-2", "2026-01-04", "Retest");
-  assert.deepEqual(Object.keys(rerun.results), ["case-1"]);
+  assert.deepEqual(Object.keys(rerun.results), ["case-1", "case-3"]);
   assert.equal(rerun.rerunOf, "run-1");
   assert.equal(rerun.caseSnapshots["case-1"].title, "Login");
+  assert.equal(rerun.planSnapshot.environment, "Staging");
   assert.equal(createTmsRerun({ ...run, results: { "case-2": run.results["case-2"] } }, "run-3", "now", "None"), null);
 });
 
@@ -67,4 +72,51 @@ test("shared steps are expanded into immutable run snapshots", () => {
   assert.equal(run.caseSnapshots["case-1"].steps.length, 2);
   assert.match(run.caseSnapshots["case-1"].steps[1].action, /SS-001/);
   assert.equal(run.caseSnapshots["case-1"].steps[1].expected, "Credentials accepted");
+});
+
+
+test("case version comparison reports changed fields and ignores unchanged values", () => {
+  const original = sampleCase();
+  const revised = reviseTmsCase(original, {
+    ...original,
+    title: "Updated login",
+    priority: "P2",
+    type: "Smoke",
+    steps: [
+      { action: "Open login", expected: "Form appears" },
+      { action: "Submit credentials", expected: "Dashboard appears" },
+    ],
+  }, "2026-01-02");
+  const differences = compareTmsCaseVersion(revised.versions[0], revised);
+  assert.deepEqual(Array.from(differences, (item) => item.field), ["Название", "Приоритет", "Тип теста", "Шаги"]);
+  assert.equal(differences[0].previous, "Login");
+  assert.equal(differences[0].current, "Updated login");
+  assert.match(differences[3].current, /Submit credentials/);
+});
+
+
+test("nested case folders expose unique parent paths in sorted order", () => {
+  const folders = getTmsFolderPaths([
+    { folder: "API/Auth" },
+    { folder: "API/Users" },
+    { folder: "UI/Login" },
+    { folder: "API/Auth" },
+    { folder: "  " },
+  ]);
+  assert.deepEqual(Array.from(folders), ["API", "API/Auth", "API/Users", "UI", "UI/Login"]);
+});
+
+
+test("run completion requires terminal case and step statuses", () => {
+  const original = sampleCase();
+  const plan = { id: "plan-1", projectId: "project-1", name: "Run", environment: "Staging", suiteIds: [], caseIds: ["case-1"], createdAt: "now" };
+  const run = createTmsRunSnapshot("run-1", "project-1", plan, [original], "2026-01-01", "Run");
+  assert.equal(isTmsRunReadyToComplete(run), false);
+  run.results["case-1"].status = "passed";
+  assert.equal(isTmsRunReadyToComplete(run), false);
+  run.results["case-1"].stepResults = [{ status: "passed", actual: "OK", comment: "" }];
+  assert.equal(isTmsRunReadyToComplete(run), true);
+  run.results["case-1"].status = "blocked";
+  run.results["case-1"].stepResults = [];
+  assert.equal(isTmsRunReadyToComplete(run), true);
 });

@@ -12,9 +12,27 @@ const PROJECT_STORE = "projects";
 function readLocalProjects(): TmsData[] {
   const raw = localStorage.getItem(STORAGE_KEYS.testManagement);
   if (!raw) return [];
-  const parsed = parseStoredValue<unknown>(raw, [], isTestManagementStorageValue);
+
+  let stored: unknown;
+  try {
+    stored = JSON.parse(raw);
+  } catch {
+    throw new Error("Локальные данные Test Management повреждены. Не переключайте хранилище до создания резервной копии.");
+  }
+  if (!isTestManagementStorageValue(stored)) {
+    throw new Error("Локальные данные Test Management не прошли проверку. Исходная копия сохранена; переключение остановлено.");
+  }
+
+  const parsed = parseStoredValue<TmsData[]>(raw, [], isTestManagementStorageValue);
   if (!Array.isArray(parsed)) throw new Error("Локальные данные Test Management имеют неизвестный формат");
-  return parsed as TmsData[];
+  return parsed;
+}
+
+function writeLocalProjects(projects: TmsData[]): void {
+  if (!isTestManagementStorageValue(projects)) {
+    throw new Error("Данные Test Management не прошли проверку целостности. Запись отменена.");
+  }
+  localStorage.setItem(STORAGE_KEYS.testManagement, serializeStoredValue(projects));
 }
 
 function openDatabase(): Promise<IDBDatabase> {
@@ -58,6 +76,9 @@ function transactionDone(transaction: IDBTransaction): Promise<void> {
 }
 
 async function writeIndexedDbProjects(projects: TmsData[]): Promise<void> {
+  if (!isTestManagementStorageValue(projects)) {
+    throw new Error("Данные Test Management не прошли проверку целостности. Запись отменена.");
+  }
   const database = await openDatabase();
   try {
     const transaction = database.transaction([PROJECT_STORE, "meta"], "readwrite");
@@ -95,6 +116,9 @@ export async function loadTmsProjects(mode: TmsStorageMode): Promise<TmsData[]> 
       const readTransaction = database.transaction(PROJECT_STORE, "readonly");
       const projects = await requestResult(readTransaction.objectStore(PROJECT_STORE).getAll()) as TmsData[];
       await transactionDone(readTransaction);
+      if (!isTestManagementStorageValue(projects)) {
+        throw new Error("Локальная база Test Management содержит некорректные данные. Исходная копия localStorage не удалена.");
+      }
       return projects;
     }
 
@@ -121,7 +145,7 @@ export async function switchTmsStorageMode(
   if (target === "indexedDB") {
     await writeIndexedDbProjects(projects);
   } else {
-    localStorage.setItem(STORAGE_KEYS.testManagement, serializeStoredValue(projects));
+    writeLocalProjects(projects);
   }
   localStorage.setItem(TMS_STORAGE_MODE_KEY, target);
 }
@@ -134,5 +158,5 @@ export async function persistTmsProjects(
     await writeIndexedDbProjects(projects);
     return;
   }
-  localStorage.setItem(STORAGE_KEYS.testManagement, serializeStoredValue(projects));
+  writeLocalProjects(projects);
 }

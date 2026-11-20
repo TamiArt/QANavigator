@@ -64,6 +64,23 @@ function parseSteps(value: string, expected: string): TmsStep[] {
   } catch { /* Treat non-JSON steps as multiline actions. */ }
   return value.split(/\r?\n/).map((action) => ({ action: action.trim(), expected })).filter((step) => step.action);
 }
+function parseEstimateMinutes(value: string): number | undefined {
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return undefined;
+  const numeric = Number(normalized);
+  if (Number.isFinite(numeric)) return Math.max(0, numeric);
+  const matches = Array.from(normalized.matchAll(/(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours|m|min|mins|minute|minutes|s|sec|secs|second|seconds)/g));
+  if (!matches.length) return undefined;
+  const minutes = matches.reduce((total, match) => {
+    const amount = Number(match[1]);
+    const unit = match[2];
+    if (unit.startsWith("h")) return total + amount * 60;
+    if (unit.startsWith("s")) return total + amount / 60;
+    return total + amount;
+  }, 0);
+  return Math.max(0, Math.round(minutes));
+}
+
 function normalizePriority(value: string): TmsCase["priority"] {
   const normalized = value.trim().toLowerCase();
   if (["p1", "critical", "urgent", "high", "1"].includes(normalized)) return "P1";
@@ -80,20 +97,20 @@ export function parseTmsCasesCsv(
   if (rows.length < 2) throw new Error("CSV не содержит строк тест-кейсов");
   const headers = rows[0].map((header) => header.trim().toLowerCase());
   const column = (...aliases: string[]) => headers.findIndex((header) => aliases.includes(header));
-  const titleIndex = column("title", "name", "название", "тест-кейс", "test case");
+  const titleIndex = column("title", "name", "название", "тест-кейс", "test case", "test case title", "case title", "testcase", "test_case", "test_case_title", "case_name", "название тест-кейса", "название теста", "имя тест-кейса");
   if (titleIndex < 0) throw new Error("В CSV не найден обязательный столбец Title / Название");
   const value = (row: string[], ...aliases: string[]) => {
     const index = column(...aliases);
     return index >= 0 ? row[index] ?? "" : "";
   };
   const validRequirements = new Set(validRequirementIds);
-  let nextNumber = existingCases.reduce((max,item)=>Math.max(max,Number(/^QA-(\\d+)$/.exec(item.key)?.[1]??0)),0);
+  let nextNumber = existingCases.reduce((max,item)=>Math.max(max,Number(/^QA-(\d+)$/.exec(item.key)?.[1]??0)),0);
   const imported: TmsCase[] = [];
   for (const row of rows.slice(1)) {
     const title = row[titleIndex]?.trim();
     if (!title) continue;
-    const expected = value(row, "expected result", "expected", "ожидаемый результат");
-    const rawSteps = value(row, "steps", "test steps", "шаги", "steps to reproduce");
+    const expected = value(row, "expected result", "expected", "expected_result", "ожидаемый результат", "ожидание");
+    const rawSteps = value(row, "steps", "test steps", "шаги", "steps to reproduce", "step", "шаг");
     const requestedRequirements = parseArray(value(row, "requirement ids", "requirementids", "требования"));
     nextNumber += 1;
     imported.push({
@@ -101,20 +118,20 @@ export function parseTmsCasesCsv(
       projectId,
       key: "QA-" + String(nextNumber).padStart(3, "0"),
       title,
-      folder: value(row, "folder", "section", "папка", "раздел") || "Импортированные кейсы",
+      folder: value(row, "folder", "section", "папка", "раздел", "section path", "section_path", "folder path", "folder_path", "suite", "категория", "путь к папке", "путь раздела") || "Импортированные кейсы",
       description: value(row, "description", "описание"),
-      preconditions: value(row, "preconditions", "precondition", "предусловия"),
+      preconditions: value(row, "preconditions", "precondition", "precondition text", "предусловия", "предусловие"),
       steps: parseSteps(rawSteps, expected),
       expected,
       testData: value(row, "test data", "testdata", "тестовые данные"),
       postconditions: value(row, "postconditions", "постусловия"),
       priority: normalizePriority(value(row, "priority", "приоритет")),
-      type: value(row, "type", "case type", "тип") || "Functional",
-      tags: parseArray(value(row, "tags", "labels", "теги")),
+      type: value(row, "type", "case type", "test type", "test_case_type", "тип", "тип теста", "тип тест-кейса") || "Functional",
+      tags: parseArray(value(row, "tags", "labels", "tag", "теги", "метки")),
       requirementIds: requestedRequirements.filter((id) => validRequirements.has(id)),
-      references: parseArray(value(row, "references", "external references", "ссылки")),
-      estimateMinutes: Number(value(row, "estimate minutes", "estimate", "effort", "оценка времени")) || undefined,
-      automationStatus: (() => { const status=value(row,"automation status","automation type","автоматизация").toLowerCase(); return status.includes("candidate") || status.includes("to be") || status.includes("planned") ? "candidate" as const : status.includes("not") || status.includes("manual") ? "not_automated" as const : status.includes("autom") ? "automated" as const : "not_automated" as const; })(),
+      references: parseArray(value(row, "references", "external references", "refs", "ссылки", "ссылка")),
+      estimateMinutes: parseEstimateMinutes(value(row, "estimate minutes", "estimate", "effort", "оценка времени")),
+      automationStatus: (() => { const status=value(row,"automation status","automation type","automation_status","автоматизация","тип автоматизации").toLowerCase(); return status.includes("candidate") || status.includes("to be") || status.includes("planned") ? "candidate" as const : status.includes("not") || status.includes("manual") ? "not_automated" as const : status.includes("autom") ? "automated" as const : "not_automated" as const; })(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       archived: false,

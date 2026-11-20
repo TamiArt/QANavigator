@@ -70,7 +70,26 @@ function isPlan(value: unknown): boolean {
   return isRecord(value) && isString(value.id) && isString(value.projectId) &&
     isString(value.name) && isString(value.environment) &&
     isStringArray(value.suiteIds) && isStringArray(value.caseIds) && isString(value.createdAt) &&
+    (value.milestoneId === undefined || isString(value.milestoneId)) &&
     ["release", "build", "objective", "risks", "owner", "startDate", "endDate", "entryCriteria", "exitCriteria"].every((key) => value[key] === undefined || isString(value[key]));
+}
+
+function isMilestone(value: unknown): boolean {
+  return isRecord(value) && isString(value.id) && isString(value.projectId) &&
+    isString(value.name) && ["planned", "active", "completed"].includes(String(value.status)) &&
+    isString(value.createdAt) && isString(value.updatedAt) &&
+    (value.description === undefined || isString(value.description)) &&
+    (value.startDate === undefined || isString(value.startDate)) &&
+    (value.endDate === undefined || isString(value.endDate));
+}
+
+function isPlanSnapshot(value: unknown): boolean {
+  if (!isRecord(value) || !isString(value.id) || !isString(value.name) || !isString(value.environment) ||
+    (value.milestoneId !== undefined && !isString(value.milestoneId)) ||
+    (value.milestoneName !== undefined && !isString(value.milestoneName))) return false;
+  const snapshot = value;
+  return ["release", "build", "objective", "risks", "owner", "startDate", "endDate", "entryCriteria", "exitCriteria"]
+    .every((field) => snapshot[field] === undefined || isString(snapshot[field]));
 }
 
 function isRun(value: unknown): boolean {
@@ -80,11 +99,13 @@ function isRun(value: unknown): boolean {
 
   const validResults = Object.values(value.results).every((result) =>
     isRecord(result) &&
-    ["not_run", "passed", "failed", "blocked", "skipped"].includes(String(result.status)) &&
+    ["not_run", "in_progress", "passed", "failed", "blocked", "retest", "skipped"].includes(String(result.status)) &&
     isString(result.actual) && isString(result.comment) &&
+    (result.assignee === undefined || isString(result.assignee)) &&
     (result.stepResults === undefined || (Array.isArray(result.stepResults) && result.stepResults.every((step) =>
-      isRecord(step) && ["not_run", "passed", "failed", "blocked", "skipped"].includes(String(step.status)) &&
-      isString(step.actual) && isString(step.comment)))) &&
+      isRecord(step) && ["not_run", "in_progress", "passed", "failed", "blocked", "retest", "skipped"].includes(String(step.status)) &&
+      isString(step.actual) && isString(step.comment) &&
+      (step.attachmentIds === undefined || isStringArray(step.attachmentIds))))) &&
     (result.defectId === undefined || isString(result.defectId)) &&
     (result.attachmentIds === undefined || isStringArray(result.attachmentIds)));
   const validSnapshots = value.caseSnapshots === undefined || (isRecord(value.caseSnapshots) &&
@@ -92,7 +113,8 @@ function isRun(value: unknown): boolean {
       isString(snapshot.id) && isString(snapshot.key) && isString(snapshot.title) &&
       Array.isArray(snapshot.steps) && snapshot.steps.every((step) =>
         isRecord(step) && isString(step.action) && isString(step.expected))));
-  return validResults && validSnapshots;
+  const validPlanSnapshot = value.planSnapshot === undefined || isPlanSnapshot(value.planSnapshot);
+  return validResults && validSnapshots && validPlanSnapshot;
 }
 
 function isDefect(value: unknown): boolean {
@@ -126,26 +148,34 @@ function isRequirement(value: unknown): boolean {
     isString(value.createdAt) && isString(value.updatedAt);
 }
 
+function isSharedStep(value: unknown): boolean {
+  if (!isRecord(value) || !isString(value.id) || !isString(value.projectId) ||
+    !isString(value.key) || !isString(value.name) || typeof value.version !== "number" ||
+    !isString(value.createdAt) || !isString(value.updatedAt) ||
+    !Array.isArray(value.steps) ||
+    !value.steps.every((step) => isRecord(step) && isString(step.action) && isString(step.expected))) {
+    return false;
+  }
+
+  if (value.versions === undefined) return true;
+  return Array.isArray(value.versions) && value.versions.every((version) =>
+    isRecord(version) && typeof version.version === "number" && isString(version.savedAt) &&
+    isString(version.name) && Array.isArray(version.steps) &&
+    version.steps.every((step) => isRecord(step) && isString(step.action) && isString(step.expected)));
+}
+
 function isTmsData(value: unknown): value is TmsData {
   if (!isRecord(value) || value.version !== 1 ||
     !Array.isArray(value.cases) || !value.cases.every(isCase) ||
     !Array.isArray(value.suites) || !value.suites.every(isSuite) ||
     !Array.isArray(value.plans) || !value.plans.every(isPlan) ||
     !Array.isArray(value.runs) || !value.runs.every(isRun) ||
-    !Array.isArray(value.defects) || !value.defects.every(isDefect)) return false;
-  const validRequirements = value.requirements === undefined || (Array.isArray(value.requirements) && value.requirements.every(isRequirement));
+    !Array.isArray(value.defects) || !value.defects.every(isDefect) ||
+    (value.milestones !== undefined && (!Array.isArray(value.milestones) || !value.milestones.every(isMilestone)))) return false;
+  const validRequirements = value.requirements === undefined ||
+    (Array.isArray(value.requirements) && value.requirements.every(isRequirement));
   const validSharedSteps = value.sharedSteps === undefined ||
-    (Array.isArray(value.sharedSteps) && value.sharedSteps.every((item) => {
-      if (!isRecord(item) || !isString(item.id) || !isString(item.projectId) || !isString(item.key) ||
-        !isString(item.name) || typeof item.version !== "number" || !isString(item.createdAt) ||
-        !isString(item.updatedAt) || !Array.isArray(item.steps) ||
-        !item.steps.every((step) => isRecord(step) && isString(step.action) && isString(step.expected))) return false;
-      return item.versions === undefined ||
-        (Array.isArray(item.versions) && item.versions.every((version) =>
-          isRecord(version) && typeof version.version === "number" && isString(version.savedAt) &&
-          isString(version.name) && Array.isArray(version.steps) &&
-          version.steps.every((step) => isRecord(step) && isString(step.action) && isString(step.expected))));
-    }));
+    (Array.isArray(value.sharedSteps) && value.sharedSteps.every(isSharedStep));
   return validRequirements && validSharedSteps;
 }
 
@@ -181,9 +211,17 @@ export function parseTmsProjectBackup(raw: string, targetProjectId: string): Tms
   }
 
   const data = parsed.testManagement;
+  const sourceProjectId = sourceProject.id;
+  const projectCollections = [...data.cases, ...data.suites, ...data.plans, ...data.runs, ...data.defects,
+    ...(data.requirements ?? []), ...(data.sharedSteps ?? []), ...(data.milestones ?? [])];
+  if ((data.projectId !== undefined && data.projectId !== sourceProjectId) ||
+    projectCollections.some((item) => item.projectId !== sourceProjectId)) {
+    throw new Error("Архив содержит записи, принадлежащие другому проекту");
+  }
   const caseIds = new Set(data.cases.map((item) => item.id));
   const suiteIds = new Set(data.suites.map((item) => item.id));
   const planIds = new Set(data.plans.map((item) => item.id));
+  const milestoneIds = new Set((data.milestones ?? []).map((item) => item.id));
   const defectIds = new Set(data.defects.map((item) => item.id));
   const requirementIds = new Set((data.requirements ?? []).map((item) => item.id));
   const sharedStepIds = new Set((data.sharedSteps ?? []).map((item) => item.id));
@@ -192,8 +230,11 @@ export function parseTmsProjectBackup(raw: string, targetProjectId: string): Tms
     (data.sharedSteps !== undefined && data.cases.some((item) => (item.sharedStepIds ?? []).some((id) => !sharedStepIds.has(id)))) ||
     data.suites.some((item) => item.caseIds.some((id) => !caseIds.has(id)) || (item.parentId !== undefined && (!suiteIds.has(item.parentId) || item.parentId === item.id))) ||
     data.plans.some((item) => item.caseIds.some((id) => !caseIds.has(id)) ||
-      item.suiteIds.some((id) => !suiteIds.has(id))) ||
-    data.runs.some((item) => !planIds.has(item.planId) || (item.caseSnapshots !== undefined && Object.keys(item.caseSnapshots).some((id) => !item.results[id])) ||
+      item.suiteIds.some((id) => !suiteIds.has(id)) ||
+      (item.milestoneId !== undefined && !milestoneIds.has(item.milestoneId))) ||
+    data.runs.some((item) => !planIds.has(item.planId) ||
+       (item.planSnapshot?.milestoneId !== undefined && !milestoneIds.has(item.planSnapshot.milestoneId)) ||
+       (item.caseSnapshots !== undefined && Object.keys(item.caseSnapshots).some((id) => !item.results[id])) ||
       Object.values(item.results).some((result) => result.defectId && !defectIds.has(result.defectId))) ||
     data.defects.some((item) => (item.caseId && !caseIds.has(item.caseId)) || (item.caseIds ?? []).some((id) => !caseIds.has(id)) || (item.runId && !data.runs.some((run) => run.id === item.runId)))) {
     throw new Error("Архив содержит нарушенные связи между тест-кейсами, наборами, планами и дефектами");
@@ -207,6 +248,7 @@ export function parseTmsProjectBackup(raw: string, targetProjectId: string): Tms
     plans: data.plans.map((item) => ({ ...item, projectId: targetProjectId })),
     runs: data.runs.map((item) => ({ ...item, projectId: targetProjectId })),
     defects: data.defects.map((item) => ({ ...item, projectId: targetProjectId })),
+    milestones: (data.milestones ?? []).map((item) => ({ ...item, projectId: targetProjectId })),
   };
 }
 
@@ -229,6 +271,11 @@ export function parseTmsProjectArchive(raw: string, targetProjectId: string): {
   if (!Array.isArray(rawAttachments) || !rawAttachments.every(isAttachmentArchive)) {
     throw new Error("Архив содержит некорректные вложения");
   }
+  const sourceProject = isRecord(parsed.sourceProject) ? parsed.sourceProject : parsed.project;
+  if (!isRecord(sourceProject) || !isString(sourceProject.id) ||
+    rawAttachments.some((item) => item.projectId !== sourceProject.id)) {
+    throw new Error("Вложения архива принадлежат другому проекту");
+  }
   const attachments = rawAttachments.map((item) => ({ ...item, projectId: targetProjectId }));
   const attachmentIds = new Set<string>();
   const referenced = new Map<string, string>();
@@ -237,6 +284,11 @@ export function parseTmsProjectArchive(raw: string, targetProjectId: string): {
   for (const run of testManagement.runs) {
     for (const [caseId, result] of Object.entries(run.results)) {
       for (const id of result.attachmentIds ?? []) referenced.set(id, "run-result:" + run.id + ":" + caseId);
+      for (const [stepIndex, stepResult] of (result.stepResults ?? []).entries()) {
+        for (const id of stepResult.attachmentIds ?? []) {
+          referenced.set(id, "run-result:" + run.id + ":" + caseId + ":step:" + stepIndex);
+        }
+      }
     }
   }
   for (const item of attachments) {

@@ -1,7 +1,7 @@
-import type { TmsCase, TmsCaseSnapshot, TmsPlan, TmsRun, TmsRunResult, TmsSharedStep, TmsSharedStepVersion } from "../../domain/test-management";
+import type { TmsCase, TmsCaseSnapshot, TmsCaseVersion, TmsPlan, TmsRun, TmsRunResult, TmsSharedStep, TmsSharedStepVersion } from "../../domain/test-management";
 
 export type TmsCaseEditableFields = Pick<TmsCase,
-  "title" | "folder" | "preconditions" | "steps" | "expected" | "priority" |
+  "title" | "folder" | "preconditions" | "steps" | "expected" | "priority" | "type" |
   "description" | "testData" | "postconditions" | "automationStatus" | "references" | "estimateMinutes" | "sharedStepIds" | "tags" | "requirementIds"
 >;
 
@@ -53,6 +53,7 @@ export function createTmsRunSnapshot(
   startedAt: string,
   displayName: string,
   sharedSteps: import("../../domain/test-management").TmsSharedStep[] = [],
+  milestoneName?: string,
 ): TmsRun {
   const caseSnapshots = Object.fromEntries(plan.caseIds.flatMap((caseId) => {
     const item = cases.find((candidate) => candidate.id === caseId);
@@ -72,6 +73,22 @@ export function createTmsRunSnapshot(
     planId: plan.id,
     name: displayName,
     startedAt,
+    planSnapshot: {
+      id: plan.id,
+      name: plan.name,
+      environment: plan.environment,
+      milestoneId: plan.milestoneId,
+      milestoneName,
+      release: plan.release,
+      build: plan.build,
+      objective: plan.objective,
+      risks: plan.risks,
+      owner: plan.owner,
+      startDate: plan.startDate,
+      endDate: plan.endDate,
+      entryCriteria: plan.entryCriteria,
+      exitCriteria: plan.exitCriteria,
+    },
     caseSnapshots,
     results,
   };
@@ -84,7 +101,7 @@ export function createTmsRerun(
   displayName: string,
 ): TmsRun | null {
   const retryEntries = Object.entries(source.results).filter(([, result]) =>
-    result.status === "failed" || result.status === "blocked");
+    result.status === "failed" || result.status === "blocked" || result.status === "retest");
   if (!retryEntries.length) return null;
   const results: TmsRun["results"] = {};
   const caseSnapshots: NonNullable<TmsRun["caseSnapshots"]> = {};
@@ -105,6 +122,7 @@ export function createTmsRerun(
     planId: source.planId,
     name: displayName,
     startedAt,
+    planSnapshot: source.planSnapshot ? { ...source.planSnapshot } : undefined,
     rerunOf: source.id,
     caseSnapshots,
     results,
@@ -131,4 +149,81 @@ export function reviseTmsSharedStep(
     updatedAt: savedAt,
     versions: [...(existing.versions ?? []), version],
   };
+}
+
+
+export interface TmsCaseVersionDifference {
+  field: string;
+  previous: string;
+  current: string;
+}
+
+function formatVersionValue(value: unknown): string {
+  if (value === undefined || value === null || value === "") return "—";
+  if (Array.isArray(value)) {
+    if (value.every((item) => item && typeof item === "object" && "action" in item && "expected" in item)) {
+      return value.map((item) => String(item.action) + " → " + String(item.expected)).join("\\n");
+    }
+    return value.map(String).join(", ") || "—";
+  }
+  return String(value);
+}
+
+export function compareTmsCaseVersion(
+  version: TmsCaseVersion,
+  current: TmsCase,
+): TmsCaseVersionDifference[] {
+  const fields: Array<[keyof TmsCaseVersion["snapshot"], string]> = [
+    ["title", "Название"],
+    ["folder", "Папка"],
+    ["priority", "Приоритет"],
+    ["type", "Тип теста"],
+    ["preconditions", "Предусловия"],
+    ["steps", "Шаги"],
+    ["expected", "Ожидаемый результат"],
+    ["description", "Описание"],
+    ["testData", "Тестовые данные"],
+    ["postconditions", "Постусловия"],
+    ["tags", "Теги"],
+    ["automationStatus", "Статус автоматизации"],
+    ["references", "Внешние ссылки"],
+    ["estimateMinutes", "Оценка времени"],
+  ];
+  return fields.flatMap(([field, label]) => {
+    const previousValue = version.snapshot[field];
+    const currentValue = current[field as keyof TmsCase];
+    if (JSON.stringify(previousValue ?? null) === JSON.stringify(currentValue ?? null)) return [];
+    return [{
+      field: label,
+      previous: formatVersionValue(previousValue),
+      current: formatVersionValue(currentValue),
+    }];
+  });
+}
+
+
+export function getTmsFolderPaths(cases: Array<Pick<TmsCase, "folder">>): string[] {
+  const paths = new Set<string>();
+  for (const item of cases) {
+    const parts = item.folder.split("/").map((part) => part.trim()).filter(Boolean);
+    let current = "";
+    for (const part of parts) {
+      current = current ? current + "/" + part : part;
+      paths.add(current);
+    }
+  }
+  return Array.from(paths).sort((left, right) => left.localeCompare(right));
+}
+
+
+export function isTmsRunReadyToComplete(run: TmsRun): boolean {
+  return Object.entries(run.results).every(([caseId, result]) => {
+    if (result.status === "not_run" || result.status === "in_progress") return false;
+    if (result.status === "blocked" || result.status === "skipped") return true;
+    const steps = run.caseSnapshots?.[caseId]?.steps ?? [];
+    return steps.every((_, index) => {
+      const status = result.stepResults?.[index]?.status;
+      return status !== undefined && status !== "not_run" && status !== "in_progress";
+    });
+  });
 }
