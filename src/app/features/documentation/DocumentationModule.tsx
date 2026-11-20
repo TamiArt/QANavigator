@@ -354,8 +354,11 @@ function ChecklistDocSection() {
                       <button onClick={() => downloadTextFile(toWordDocumentHtml(aiMarkdown), "checklist.doc", "application/msword;charset=utf-8")} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-muted text-muted-foreground border border-border hover:text-foreground transition-colors">.doc</button>
                     </>
                   )}
+                  <button onClick={convertWholeChecklist} disabled={!checklists.some((item) => !item.testCase)} className="flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-md bg-primary/10 text-primary border border-primary/20 hover:opacity-80 transition-opacity disabled:opacity-40">
+                    <Layers className="w-3.5 h-3.5" /> Преобразовать весь чек-лист в тест-кейсы
+                  </button>
                   <button onClick={() => setActiveModule("test-execution")} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:opacity-80 transition-opacity">
-                    <Layers className="w-3.5 h-3.5" /> Преобразовать весь чек-лист в тест-кейсы</button>\n                  <button onClick={() => setActiveModule("test-execution")} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:opacity-80 transition-opacity">\n                    <Play className="w-3.5 h-3.5" /> Запустить выполнение
+                    <Play className="w-3.5 h-3.5" /> Запустить выполнение
                   </button>
                 </div>
               )}
