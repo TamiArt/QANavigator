@@ -206,6 +206,26 @@ function ChecklistDocSection() {
     setExpandingId(null);
   };
 
+  const convertWholeChecklist = () => {
+    const pendingItems = checklists.filter((item) => !item.testCase);
+    if (!pendingItems.length) return;
+    const created = pendingItems.map((item): TestCase => ({
+      id: uid(),
+      title: item.text.length > 100 ? item.text.slice(0, 97) + "..." : item.text,
+      preconditions: featureDesc.trim() || "Подготовлено тестовое окружение и тестовые данные согласно требованиям.",
+      steps: ["Открыть тестируемую функциональность.", item.text],
+      expected: "Поведение системы соответствует требованиям; проверка завершается без ошибок и нежелательных побочных эффектов.",
+      priority: item.category === "negative" ? "P1" : "P2",
+      status: "pending",
+      source: "Чек-лист: " + item.text,
+    }));
+    setTestCases([...testCases, ...created]);
+    setChecklists(checklists.map((item) => {
+      const generated = created.find((testCase) => testCase.source === "Чек-лист: " + item.text);
+      return generated ? { ...item, testCase: generated } : item;
+    }));
+  };
+
   const catLabel: Record<string, string> = { positive: "Позитивные", negative: "Негативные", boundary: "Граничные значения", nonfunctional: "Нефункциональные" };
   const catOrder = ["positive", "negative", "boundary", "nonfunctional"];
   const grouped = catOrder.reduce((acc, cat) => { acc[cat] = checklists.filter(c => c.category === cat); return acc; }, {} as Record<string, ChecklistItem[]>);
@@ -335,7 +355,7 @@ function ChecklistDocSection() {
                     </>
                   )}
                   <button onClick={() => setActiveModule("test-execution")} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:opacity-80 transition-opacity">
-                    <Play className="w-3.5 h-3.5" /> Запустить выполнение
+                    <Layers className="w-3.5 h-3.5" /> Преобразовать весь чек-лист в тест-кейсы</button>\n                  <button onClick={() => setActiveModule("test-execution")} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:opacity-80 transition-opacity">\n                    <Play className="w-3.5 h-3.5" /> Запустить выполнение
                   </button>
                 </div>
               )}
