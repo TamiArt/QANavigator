@@ -57,23 +57,28 @@ export function TestManagementModule({ projectId }: { projectId: string }) {
  const runTrend = useMemo(() => getTmsRunTrend(data.runs).slice(-10), [data.runs]);
  const resetCaseForm = () => { setTitle(""); setCaseType("Functional"); setPreconditions(""); setSteps("Открыть функциональность\nВыполнить действие"); setExpected("Система обрабатывает действие согласно требованиям"); setDescription(""); setTestData(""); setPostconditions(""); setTagsText(""); setReferencesText(""); setEstimateMinutesText(""); setCaseRequirementIds([]); setCaseSharedStepIds([]); setAutomationStatus("not_automated"); setEditingCaseId(""); };
  const importChecklistCases = () => {
-  const pending = checklists.filter((item) => !cases.some((existing) => existing.title === item.text && existing.tags.includes("checklist-import")));
+  const pending = checklists.filter((item) => !cases.some((existing) => existing.tags.includes("checklist:" + item.id)));
   if (!pending.length) return;
-  const imported = pending.map((item): TmsCase => ({
-   id: uid(), projectId, key: nextKey("QA", [...cases, ...pending].map((entry) => "QA-" + entry.id)),
-   title: item.testCase?.title || item.text, folder: "Импорт из чек-листа",
-   preconditions: item.testCase?.preconditions || "Подготовлено тестовое окружение и данные согласно требованиям.",
-   steps: (item.testCase?.steps?.length ? item.testCase.steps : [item.text]).map((action) => ({
-    action, expected: item.testCase?.expected || "Результат соответствует требованиям; ошибок и нежелательных побочных эффектов нет.",
-   })),
-   expected: item.testCase?.expected || "Результат соответствует требованиям; ошибок и нежелательных побочных эффектов нет.",
-   priority: item.testCase?.priority || (item.category === "negative" ? "P1" : "P2"),
-   type: item.category === "negative" ? "Negative" : item.category === "boundary" ? "Boundary" : item.category === "nonfunctional" ? "Non-functional" : "Functional",
-   tags: ["checklist-import", item.category], requirementIds: [], createdAt: now(), updatedAt: now(),
-   archived: false, version: 1, automationStatus: "not_automated", references: [],
-  }));
+  const usedKeys = cases.map((item) => item.key);
+  const imported = pending.map((item): TmsCase => {
+   const key = nextKey("QA", usedKeys);
+   usedKeys.push(key);
+   const expectedResult = item.testCase?.expected || "Результат соответствует требованиям; ошибок и нежелательных побочных эффектов нет.";
+   return {
+    id: uid(), projectId, key,
+    title: item.testCase?.title || item.text, folder: "Импорт из чек-листа",
+    preconditions: item.testCase?.preconditions || "Подготовлено тестовое окружение и данные согласно требованиям.",
+    steps: (item.testCase?.steps?.length ? item.testCase.steps : [item.text]).map((action) => ({ action, expected: expectedResult })),
+    expected: expectedResult,
+    priority: item.testCase?.priority || (item.category === "negative" ? "P1" : "P2"),
+    type: item.category === "negative" ? "Negative" : item.category === "boundary" ? "Boundary" : item.category === "nonfunctional" ? "Non-functional" : "Functional",
+    tags: ["checklist-import", "checklist:" + item.id, item.category], requirementIds: [], createdAt: now(), updatedAt: now(),
+    archived: false, version: 1, automationStatus: "not_automated", references: [],
+   };
+  });
   save({ ...data, cases: [...cases, ...imported] });
  };
+
  const addCase = () => {
   if (!title.trim()) return;
   const nextSteps = steps.split("\n").map((line) => { const [action, ...expectedParts] = line.split("=>"); return { action: action.trim(), expected: expectedParts.join("=>").trim() || expected }; }).filter((step) => step.action);
