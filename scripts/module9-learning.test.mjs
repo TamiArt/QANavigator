@@ -39,7 +39,7 @@ test("Every Module 9 lesson has its own infographic model", () => {
 
 test("Module 9 covers the requested distributed-system investigation topics", () => {
   const source = fs.readFileSync("src/app/features/handbook/handbook-learning-module9.ts", "utf8").toLowerCase();
-  for (const term of ["reverse proxy", "jwt", "eventual consistency", "traceid", "fluent-bit", "kql", "discover", "producer", "consumer", "consumer group", "offset", "acks=0", "acks=1", "acks=all", "idempotency", "jenkins", "rollback", "swagger ui", "openapi", "antifraud", "p2p", "paymentid", "mongodb", "adminer", "glitchtip", "prometheus", "grafana", "camunda"]) {
+  for (const term of ["reverse proxy", "jwt", "eventual consistency", "traceid", "fluent-bit", "kql", "discover", "producer", "consumer", "consumer group", "offset", "acks=0", "acks=1", "acks=all", "idempotency", "jenkins", "rollback", "swagger ui", "openapi", "antifraud", "p2p", "paymentid", "mongodb", "adminer", "glitchtip", "prometheus", "grafana", "camunda", "4000000000000002", "4000000000009995", "4000000000000101", "night_operation", "large_amount", "velocity", "100 000", "payment.p2p.credited"]) {
     assert.ok(source.includes(term), "Missing topic: " + term);
   }
 });
