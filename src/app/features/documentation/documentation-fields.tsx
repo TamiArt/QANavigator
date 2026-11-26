@@ -1,9 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import { CopyButton } from "../../components/shared";
 import { downloadTextFile } from "../../lib/download";
 import { Download } from "lucide-react";
 import { formatDateInput, toPlainDocumentText, toWordDocumentHtml } from "./document-format";
+import { useApp } from "../../core/app-context";
+import { saveWorkspaceDocument } from "../project-workspace/workspace-documents";
 
 export function FieldLabel({ label, required }: { label: string; required?: boolean }) {
   return (
@@ -64,15 +66,32 @@ export function DocDateField({ label, value, onChange, required }: { label: stri
 }
 
 export function ExportCard({ text, filename }: { text: string; filename: string }) {
+  const { projects, activeProjectId } = useApp();
+  const [targetProjectId, setTargetProjectId] = useState(activeProjectId);
+  const [notice, setNotice] = useState("");
   const baseName = filename.replace(/\.[^.]+$/, "");
   const downloadMarkdown = () => downloadTextFile(text, baseName + ".md", "text/markdown;charset=utf-8");
   const downloadText = () => downloadTextFile(toPlainDocumentText(text), baseName + ".txt", "text/plain;charset=utf-8");
   const downloadDoc = () => downloadTextFile(toWordDocumentHtml(text), baseName + ".doc", "application/msword;charset=utf-8");
+  const sendToWorkspace = () => {
+    if (!targetProjectId || !text.trim()) return;
+    const project = projects.find((item) => item.id === targetProjectId);
+    if (!project) return;
+    saveWorkspaceDocument({
+      id: globalThis.crypto?.randomUUID?.() ?? `doc-${Date.now()}`,
+      projectId: targetProjectId,
+      title: baseName.replace(/[-_]+/g, " "),
+      filename: baseName + ".md",
+      content: text,
+      createdAt: new Date().toISOString(),
+    });
+    setNotice(`Документ отправлен в рабочее пространство «${project.name}».`);
+  };
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
-      <div className="px-4 py-3 border-b border-border bg-muted/50 flex items-center justify-between">
+      <div className="px-4 py-3 border-b border-border bg-muted/50 flex flex-wrap items-center justify-between gap-2">
         <span className="text-sm font-medium text-foreground">Предпросмотр / Экспорт</span>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <CopyButton text={text} label="Копировать" />
           <button onClick={downloadMarkdown} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-muted text-muted-foreground hover:text-foreground transition-colors"><Download className="w-3.5 h-3.5" /> .md</button>
           <button onClick={downloadText} className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-muted text-muted-foreground hover:text-foreground transition-colors">.txt</button>
@@ -80,6 +99,14 @@ export function ExportCard({ text, filename }: { text: string; filename: string 
         </div>
       </div>
       <pre className="px-4 py-4 text-xs text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed max-h-72 overflow-y-auto">{text}</pre>
+      <div className="border-t border-border p-3 flex flex-wrap items-center gap-2">
+        <label className="text-xs text-muted-foreground" htmlFor="workspace-document-target">Отправить в рабочее пространство</label>
+        <select id="workspace-document-target" value={targetProjectId} onChange={(event) => setTargetProjectId(event.target.value)} disabled={!projects.length} className="min-w-0 flex-1 rounded-lg border border-border bg-background px-2.5 py-2 text-xs">
+          {projects.length ? projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>) : <option value="">Сначала создайте рабочее пространство</option>}
+        </select>
+        <button type="button" onClick={sendToWorkspace} disabled={!projects.length || !targetProjectId} className="rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground disabled:opacity-40">Отправить</button>
+        {notice && <p role="status" className="w-full text-xs text-emerald-600 dark:text-emerald-400">{notice}</p>}
+      </div>
     </div>
   );
 }

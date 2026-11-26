@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Activity, Clock3, Copy, Plus, Send, Trash2 } from "lucide-react";
 import { STORAGE_KEYS } from "../../core/constants";
 import { isApiWorkbenchStorageValue } from "../../core/storage-validators";
+import { OpenApiPostmanImport } from "./OpenApiPostmanImport";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
 type HeaderRow = { id: string; key: string; value: string };
@@ -198,6 +199,8 @@ export function ApiTestingModule() {
         <div><p className="text-sm text-muted-foreground">API TESTING / HTTP WORKBENCH</p><h2 className="text-2xl font-bold mt-1">API Workbench</h2><p className="text-sm text-muted-foreground mt-2 max-w-2xl">Отправляйте HTTP-запросы, изучайте ответы сервера и сохраняйте часто используемые запросы в локальной истории.</p></div>
         <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs text-muted-foreground"><Activity className="w-4 h-4 text-primary" /> Выполняется в браузере</div>
       </div>
+
+      <OpenApiPostmanImport />
 
       <section className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-4">
         <div className="flex flex-col sm:flex-row gap-2">
