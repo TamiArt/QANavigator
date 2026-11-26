@@ -7,6 +7,7 @@ import {
   Monitor, ArrowLeftRight, Search, Rocket, Gauge, ClipboardList, FileSearch,
 } from "lucide-react";
 import type { LearningLesson, LearningModule } from "./handbook-learning";
+import { MODULE_9_LESSON_VISUALS } from "./handbook-learning-module9-visuals";
 import { useApp } from "../../core/app-context";
 import { getLearningLessonTitle } from "./handbook-learning";
 import { getModuleTitle } from "../../core/i18n";
@@ -170,51 +171,7 @@ const LESSON_VISUALS: Partial<Record<string, LessonVisual>> = {
     { title: "4. Первая команда", text: "В консоли MySQL выполни SHOW DATABASES;." },
   ], "Не вставляй пароль в команду и не сохраняй его в открытых файлах."),
 
-  "m9-01": V("flow", ["Frontend", "Reverse proxy", "Payment", "Antifraud", "Accounts", "Kafka"], Network, "blue", [
-    { title: "Синхронный этап", text: "Запрос проходит проверку и списание до ответа клиенту." },
-    { title: "Асинхронный этап", text: "Событие передаётся consumer, который выполняет последующую обработку." },
-    { title: "Проверка QA", text: "HTTP-ответ не подтверждает завершение всей распределённой операции." },
-  ], "Проверяй цепочку целиком, включая асинхронные последствия."),
-  "m9-02": V("layers", ["Сервис", "stdout", "fluent-bit", "Elasticsearch", "Kibana"], FileText, "lavender", [
-    { title: "Уровни", text: "TRACE → DEBUG → INFO → WARNING → ERROR → FATAL." },
-    { title: "Структура", text: "JSON-поля: время, сервис, окружение, статус и traceId." },
-    { title: "Диагностика", text: "Отсутствие записи может быть связано с порогом логирования или сбором." },
-  ], "Лог — свидетельство этапа, а не самостоятельное доказательство дефекта."),
-  "m9-03": V("flow", ["Время", "Окружение", "KQL", "traceId", "Хронология"], Search, "mint", [
-    { title: "Discover", text: "Выбери data view, временной интервал и окружение." },
-    { title: "Фильтрация", text: "Используй event.status, service, level и traceId.keyword." },
-    { title: "Контекст", text: "Сравни событие с запросом, тестовыми данными и ожидаемым результатом." },
-  ], "traceId связывает события одной операции между сервисами."),
-  "m9-04": V("network", ["Producer", "Topic", "Partition", "Consumer group"], Network, "blue", [
-    { title: "Producer", text: "Публикует событие в топик." },
-    { title: "Topic / Partition", text: "Топик хранит поток; партиции обеспечивают параллелизм и порядок внутри партиции." },
-    { title: "Consumer", text: "Читает события; offset хранит позицию чтения." },
-  ], "Чтение сообщения не удаляет его из топика."),
-  "m9-05": V("compare", ["acks=0", "acks=1", "acks=all", "Retry", "Idempotency"], ShieldCheck, "orange", [
-    { title: "Подтверждения", text: "Разные acks задают уровень подтверждения записи producer." },
-    { title: "Повторная доставка", text: "После сбоя consumer может обработать сообщение повторно." },
-    { title: "Защита от дублей", text: "Идемпотентный обработчик не создаёт повторный бизнес-эффект." },
-  ], "Проверяй не только доставку, но и результат повторной обработки."),
-  "m9-06": V("cycle", ["Checkout", "Lint", "Test", "Build", "Deploy", "Approval"], GitBranch, "lavender", [
-    { title: "CI", text: "Автоматическая проверка изменений: lint, тесты и сборка." },
-    { title: "CD", text: "Доставка проверенного артефакта на окружение." },
-    { title: "QA", text: "Сверяет build, версию, окружение и результат после deploy." },
-  ], "Rollback кода не отменяет автоматически миграции базы данных."),
-  "m9-07": V("network", ["Frontend", "Auth", "Payments", "Accounts", "Antifraud", "Notifications"], Database, "blue", [
-    { title: "Сервисы", text: "Каждый сервис отвечает за отдельную бизнес-область и контракт." },
-    { title: "Хранилища", text: "PostgreSQL, MySQL и MongoDB используются для разных типов данных." },
-    { title: "Swagger / OpenAPI", text: "Контракт помогает проверить методы, схемы, параметры и коды ответов." },
-  ], "Сначала определи владельца функции и её API-контракт."),
-  "m9-08": V("flow", ["Запрос", "Проверка карты", "Antifraud", "Списание", "Kafka"], ShieldCheck, "pink", [
-    { title: "Платёж", text: "Проверь статус, проводки, событие и уведомление." },
-    { title: "P2P", text: "Проверь получателя, лимит, атомарность и отсутствие повторного списания." },
-    { title: "Антифрод", text: "Проверь правила, пороги, аудит и согласованную политику отказа." },
-  ], "Сверяй HTTP-код, бизнес-статус и реальные изменения данных."),
-  "m9-09": V("timeline", ["Воспроизвести", "API", "Kibana", "Kafka", "БД", "Версия"], ClipboardCheck, "mint", [
-    { title: "Найти разрыв", text: "Ищи первый отсутствующий или некорректный этап цепочки." },
-    { title: "Собрать evidence", text: "Сохрани безопасные request/response, traceId, логи и состояние данных." },
-    { title: "Оформить результат", text: "Тест-кейс описывает проверку; баг-репорт фиксирует отклонение от ожиданий." },
-  ], "Не назначай виноватый сервис без подтверждающих данных."),
+  ...MODULE_9_LESSON_VISUALS,
 
   "m1-01": V("flow", ["Цель", "Проверка", "Результат"], TestTube2, "blue", [
     { title: "Цель", text: "Получить информацию о качестве продукта." },
