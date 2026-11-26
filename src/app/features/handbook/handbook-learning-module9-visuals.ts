@@ -1,5 +1,5 @@
 import { ClipboardCheck, Database, FileText, GitBranch, Network, Search, ShieldCheck } from "lucide-react";
-import type { LessonVisual } from "./LearningInfographic";
+import type { LessonVisual } from "./handbook-learning-visual-types";
 
 const V = (
   kind: LessonVisual["kind"],
