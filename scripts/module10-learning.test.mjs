@@ -29,7 +29,7 @@ test("Module 10 includes essential Git, GitHub and Bash concepts for QA", () => 
   for (const term of [
     "Working directory", "Staging area", "HEAD", "commit", "branch", "git status",
     "git add", "git diff", "git switch", "git fetch", "git pull", "git push",
-    "git restore", "git revert", "git stash", "merge conflict", "git reset --hard",
+    "git restore", "git revert", "git stash", "Merge conflict", "git reset --hard",
     "Pull Request", "Code Review", "GitHub Actions", "Files changed", "CI",
     "pwd", "ls -la", "cd", "mkdir", "touch", "cp", "mv", "rm -rf", "cat",
     "less", "head", "tail -f", "grep", "find", "wc", "sort", "uniq", "diff",
