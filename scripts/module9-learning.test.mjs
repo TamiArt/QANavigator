@@ -30,7 +30,7 @@ test("Module 9 is registered after Mobile QA and contains nine ordered lessons",
 });
 
 test("Every Module 9 lesson has its own infographic model", () => {
-  const visuals = fs.readFileSync("src/app/features/handbook/LearningInfographic.tsx", "utf8");
+  const visuals = fs.readFileSync("src/app/features/handbook/handbook-learning-module9-visuals.ts", "utf8");
   for (let i = 1; i <= 9; i += 1) {
     const id = "m9-" + String(i).padStart(2, "0");
     assert.ok(visuals.includes('"' + id + '": V('), "Missing infographic for " + id);
