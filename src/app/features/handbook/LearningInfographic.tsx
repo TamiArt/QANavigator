@@ -14,32 +14,7 @@ import { getModuleTitle } from "../../core/i18n";
 import type { Language } from "../../core/i18n";
 import { Module1LessonInfographic, Module1StyleInfographic, type Module1InfographicVisual } from "./Module1LessonInfographics";
 
-type VisualKind =
-  | "flow"
-  | "layers"
-  | "cycle"
-  | "compare"
-  | "checklist"
-  | "network"
-  | "timeline"
-  | "pyramid";
-
-type Accent = "blue" | "lavender" | "mint" | "yellow" | "pink" | "orange";
-
-type VisualCard = {
-  title: string;
-  text: string;
-  icon?: React.ComponentType<{ className?: string }>;
-};
-
-export type LessonVisual = {
-  kind: VisualKind;
-  labels: string[];
-  icon: React.ComponentType<{ className?: string }>;
-  accent: Accent;
-  cards: VisualCard[];
-  callout?: string;
-};
+import type { Accent, LessonVisual, VisualCard, VisualKind } from "./handbook-learning-visual-types";
 
 const V = (
   kind: VisualKind,
