@@ -32,7 +32,7 @@ type VisualCard = {
   icon?: React.ComponentType<{ className?: string }>;
 };
 
-type LessonVisual = {
+export type LessonVisual = {
   kind: VisualKind;
   labels: string[];
   icon: React.ComponentType<{ className?: string }>;
