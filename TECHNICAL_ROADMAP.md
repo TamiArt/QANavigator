@@ -2221,3 +2221,16 @@ Validation status: source and regression tests have been added, but this remote 
 - No storage schema or existing user data was changed. Query examples are templates: table and column names must be adapted to the target database. The in-app execution console remains an isolated SQLite/WASM environment, not a direct PostgreSQL/MySQL connection.
 
 Validation still required: npm run test:navigation, npm run test:database-workbench, npm run typecheck, and full npm run verify; inspect desktop and mobile layouts before considering the change production-verified.
+
+
+### 7.1.5 Learning Mode — Module 9: distributed systems and incident investigation (2026-11-26)
+
+Implemented on `feat/learning-module9-distributed-systems`:
+
+- added Module 9 to Learning Mode after Module 8 without changing existing lesson IDs or content;
+- added nine concise lessons based on the supplied Finverse Bank study notes: microservice request flow, synchronous/asynchronous processing, logs and centralized collection, Kibana Discover/KQL, Kafka topics/partitions/offsets/consumer groups, Kafka reliability and idempotency, CI/CD/Jenkins, Finverse service/data/API architecture, payments/P2P/antifraud and end-to-end incident investigation;
+- added one semantic infographic model per new lesson;
+- added Module 9 curriculum/content/visual regression tests and included them in `npm run verify`;
+- existing Learning Mode progress storage remains unchanged; new lessons use stable `m9-01`–`m9-09` IDs.
+
+The module is based on the user-supplied Finverse Bank notes. Environment-specific URLs, IP addresses, secrets and real customer data are intentionally not included. The examples describe the educational stand and must be checked against the current stand contract before execution.

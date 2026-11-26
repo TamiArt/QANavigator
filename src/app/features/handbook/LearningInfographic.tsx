@@ -7,38 +7,14 @@ import {
   Monitor, ArrowLeftRight, Search, Rocket, Gauge, ClipboardList, FileSearch,
 } from "lucide-react";
 import type { LearningLesson, LearningModule } from "./handbook-learning";
+import { MODULE_9_LESSON_VISUALS } from "./handbook-learning-module9-visuals";
 import { useApp } from "../../core/app-context";
 import { getLearningLessonTitle } from "./handbook-learning";
 import { getModuleTitle } from "../../core/i18n";
 import type { Language } from "../../core/i18n";
 import { Module1LessonInfographic, Module1StyleInfographic, type Module1InfographicVisual } from "./Module1LessonInfographics";
 
-type VisualKind =
-  | "flow"
-  | "layers"
-  | "cycle"
-  | "compare"
-  | "checklist"
-  | "network"
-  | "timeline"
-  | "pyramid";
-
-type Accent = "blue" | "lavender" | "mint" | "yellow" | "pink" | "orange";
-
-type VisualCard = {
-  title: string;
-  text: string;
-  icon?: React.ComponentType<{ className?: string }>;
-};
-
-type LessonVisual = {
-  kind: VisualKind;
-  labels: string[];
-  icon: React.ComponentType<{ className?: string }>;
-  accent: Accent;
-  cards: VisualCard[];
-  callout?: string;
-};
+import type { Accent, LessonVisual, VisualCard, VisualKind } from "./handbook-learning-visual-types";
 
 const V = (
   kind: VisualKind,
@@ -169,6 +145,8 @@ const LESSON_VISUALS: Partial<Record<string, LessonVisual>> = {
     { title: "3. Подключиться", text: "mysql -u root -p; пароль не отображается при вводе." },
     { title: "4. Первая команда", text: "В консоли MySQL выполни SHOW DATABASES;." },
   ], "Не вставляй пароль в команду и не сохраняй его в открытых файлах."),
+
+  ...MODULE_9_LESSON_VISUALS,
 
   "m1-01": V("flow", ["Цель", "Проверка", "Результат"], TestTube2, "blue", [
     { title: "Цель", text: "Получить информацию о качестве продукта." },
