@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import type { LearningLesson, LearningModule } from "./handbook-learning";
 import { MODULE_9_LESSON_VISUALS } from "./handbook-learning-module9-visuals";
+import { MODULE_10_LESSON_VISUALS } from "./handbook-learning-module10-visuals";
 import { useApp } from "../../core/app-context";
 import { getLearningLessonTitle } from "./handbook-learning";
 import { getModuleTitle } from "../../core/i18n";
@@ -147,6 +148,7 @@ const LESSON_VISUALS: Partial<Record<string, LessonVisual>> = {
   ], "Не вставляй пароль в команду и не сохраняй его в открытых файлах."),
 
   ...MODULE_9_LESSON_VISUALS,
+  ...MODULE_10_LESSON_VISUALS,
 
   "m1-01": V("flow", ["Цель", "Проверка", "Результат"], TestTube2, "blue", [
     { title: "Цель", text: "Получить информацию о качестве продукта." },
