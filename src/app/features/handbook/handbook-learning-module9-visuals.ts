@@ -1,6 +1,16 @@
 import { ClipboardCheck, Database, FileText, GitBranch, Network, Search, ShieldCheck } from "lucide-react";
+import type { LessonVisual } from "./LearningInfographic";
 
-export const MODULE_9_LESSON_VISUALS = {
+const V = (
+  kind: LessonVisual["kind"],
+  labels: string[],
+  icon: LessonVisual["icon"],
+  accent: LessonVisual["accent"],
+  cards: LessonVisual["cards"],
+  callout?: string,
+): LessonVisual => ({ kind, labels, icon, accent, cards, callout });
+
+export const MODULE_9_LESSON_VISUALS: Partial<Record<string, LessonVisual>> = {
   "m9-01": V("flow", ["Frontend", "Reverse proxy", "Payment", "Antifraud", "Accounts", "Kafka"], Network, "blue", [
     { title: "Синхронный этап", text: "Запрос проходит проверку и списание до ответа клиенту." },
     { title: "Асинхронный этап", text: "Событие передаётся consumer, который выполняет последующую обработку." },
