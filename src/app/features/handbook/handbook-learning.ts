@@ -8,6 +8,7 @@ import { HANDBOOK_LEARNING_MODULE_6_LESSONS } from "./handbook-learning-module6"
 import { HANDBOOK_LEARNING_MODULE_7_LESSONS } from "./handbook-learning-module7";
 import { HANDBOOK_LEARNING_MODULE_8_LESSONS } from "./handbook-learning-module8";
 import { HANDBOOK_LEARNING_MODULE_9_LESSONS } from "./handbook-learning-module9";
+import { HANDBOOK_LEARNING_MODULE_10_LESSONS } from "./handbook-learning-module10";
 
 
 export interface LearningLesson {
@@ -387,6 +388,11 @@ export const HANDBOOK_LEARNING_MODULES: readonly LearningModule[] = [
     id: "module-9-distributed-systems",
     title: "Модуль 9 — Микросервисы, Kafka, логи и расследование инцидентов",
     lessons: HANDBOOK_LEARNING_MODULE_9_LESSONS,
+  },
+  {
+    id: "module-10-git-github-bash",
+    title: "Модуль 10 — Git, GitHub и Bash для QA",
+    lessons: HANDBOOK_LEARNING_MODULE_10_LESSONS,
   },
 ];
 
